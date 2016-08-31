@@ -1,0 +1,21 @@
+= Jenkins DSL Pipeline
+
+The repository contains job definitions using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+
+== How to build it
+
+`./gradlew clean build`
+
+WARNING: The ran test only checks if your scripts compile.
+
+== How to use it in Jenkins?
+
+Check out the https://github.com/jenkinsci/job-dsl-plugin/wiki/Tutorial---Using-the-Jenkins-Job-DSL[tutorial].
+Provide the link to this repository in your Jenkins installation.
+
+The seed job for Spring Cloud should scan the `jobs/springcloud/*.groovy` files.
+
+Remember to add `src/main/groovy` and `src/main/resources` for processing
+
+WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
+ for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).

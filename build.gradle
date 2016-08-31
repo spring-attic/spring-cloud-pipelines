@@ -1,0 +1,40 @@
+apply plugin: 'groovy'
+
+sourceSets {
+    jobs {
+        groovy {
+            srcDirs 'jobs'
+        }
+    }
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+    maven { url 'http://repo.jenkins-ci.org/releases/' }
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.3'
+    compile 'org.jenkins-ci.plugins:job-dsl-core:1.46'
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude module: 'groovy-all'
+    }
+    testCompile 'xmlunit:xmlunit:1.6'
+}
+
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+task workspace(type: Copy) {
+    from fileTree(dir: 'jobs')
+    from 'src/main/groovy'
+    into 'build/workspace'
+}
+
+wrapper {
+    gradleVersion '3.0'
+}
