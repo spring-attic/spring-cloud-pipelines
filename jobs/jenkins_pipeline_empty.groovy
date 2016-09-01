@@ -14,7 +14,9 @@ dsl.job("${projectName}-build") {
 	}
 	publishers {
 		downstreamParameterized {
-			trigger("${projectName}-test-env-deploy")
+			trigger("${projectName}-test-env-deploy") {
+				triggerWithNoParameters()
+			}
 		}
 	}
 }
@@ -29,7 +31,9 @@ dsl.job("${projectName}-test-env-deploy") {
 	}
 	publishers {
 		downstreamParameterized {
-			trigger("${projectName}-test-env-test")
+			trigger("${projectName}-test-env-test") {
+				triggerWithNoParameters()
+			}
 		}
 	}
 }
@@ -44,7 +48,9 @@ dsl.job("${projectName}-test-env-test") {
 	}
 	publishers {
 		downstreamParameterized {
-			trigger("${projectName}-stage-env-deploy")
+			trigger("${projectName}-stage-env-deploy") {
+				triggerWithNoParameters()
+			}
 		}
 	}
 }
@@ -59,7 +65,9 @@ dsl.job("${projectName}-stage-env-deploy") {
 	}
 	publishers {
 		downstreamParameterized {
-			trigger("${projectName}-stage-env-test")
+			trigger("${projectName}-stage-env-test") {
+				triggerWithNoParameters()
+			}
 		}
 	}
 }
