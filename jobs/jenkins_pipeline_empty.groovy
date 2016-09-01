@@ -1,0 +1,125 @@
+import javaposse.jobdsl.dsl.DslFactory
+
+DslFactory dsl = this
+
+String projectName = 'jenkins-pipeline-empty'
+
+dsl.job("${projectName}-build") {
+	deliveryPipelineConfiguration('Build', 'Build and Upload')
+	wrappers {
+		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+	}
+	steps {
+		shell("echo 'Building and publishing'")
+	}
+	publishers {
+		downstreamParameterized {
+			trigger("${projectName}-test-env-deploy")
+		}
+	}
+}
+
+dsl.job("${projectName}-test-env-deploy") {
+	deliveryPipelineConfiguration('Test', 'Deploy to test')
+	wrappers {
+		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+	}
+	steps {
+		shell("echo 'Deploying to test env'")
+	}
+	publishers {
+		downstreamParameterized {
+			trigger("${projectName}-test-env-test")
+		}
+	}
+}
+
+dsl.job("${projectName}-test-env-test") {
+	deliveryPipelineConfiguration('Test', 'Tests on test')
+	wrappers {
+		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+	}
+	steps {
+		shell("echo 'Running tests on test env'")
+	}
+	publishers {
+		downstreamParameterized {
+			trigger("${projectName}-stage-env-deploy")
+		}
+	}
+}
+
+dsl.job("${projectName}-stage-env-deploy") {
+	deliveryPipelineConfiguration('Stage', 'Deploy to stage')
+	wrappers {
+		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+	}
+	steps {
+		shell("echo 'Deploying to stage env'")
+	}
+	publishers {
+		downstreamParameterized {
+			trigger("${projectName}-stage-env-test")
+		}
+	}
+}
+
+dsl.job("${projectName}-stage-env-test") {
+	deliveryPipelineConfiguration('Stage', 'Tests on stage')
+	wrappers {
+		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+	}
+	steps {
+		shell("echo 'Running tests on stage env'")
+	}
+	publishers {
+		buildPipelineTrigger("${projectName}-prod-env-deploy")
+	}
+}
+
+dsl.job("${projectName}-prod-env-deploy") {
+	deliveryPipelineConfiguration('Prod', 'Deploy to prod')
+	wrappers {
+		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+	}
+	steps {
+		shell("echo 'Deploying to prod env blue instance'")
+	}
+	publishers {
+		downstreamParameterized {
+			trigger("${projectName}-prod-env-complete")
+		}
+	}
+}
+
+dsl.job("${projectName}-prod-env-complete") {
+	deliveryPipelineConfiguration('Prod', 'Complete switch over')
+	wrappers {
+		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+	}
+	steps {
+		shell("echo 'Disabling blue instance'")
+	}
+}
+
+dsl.deliveryPipelineView("${projectName}-pipeline") {
+	allowPipelineStart()
+	pipelineInstances(5)
+	showAggregatedPipeline(false)
+	columns(1)
+	updateInterval(5)
+	enableManualTriggers()
+	showAvatars()
+	showChangeLog()
+	pipelines {
+		component("Deployment", "${projectName}-build")
+	}
+	allowRebuild()
+	showDescription()
+	showPromotions()
+	showTotalBuildTime()
+	configure {
+		(it / 'showTestResults').setValue(true)
+		(it / 'pagingEnabled').setValue(true)
+	}
+}

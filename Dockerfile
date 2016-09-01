@@ -7,7 +7,7 @@ FROM jenkins:2.7.1
 MAINTAINER Marcin Grzejszczak <mgrzejszczak@pivotal.io>
 
 COPY seed/init.groovy /usr/share/jenkins/ref/init.groovy
-COPY seed/jenkins-pipeline.groovy /usr/share/jenkins/jenkins-pipeline.groovy
+COPY seed/jenkins_pipeline.groovy /usr/share/jenkins/jenkins_pipeline.groovy
 
 USER jenkins
 

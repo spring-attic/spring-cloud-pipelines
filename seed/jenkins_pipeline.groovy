@@ -1,9 +1,8 @@
-
 job('jenkins-pipeline-seed') {
     scm {
         git {
             remote {
-                github('marcingrzejszczak/jenkins-pipeline')
+                github('marcingrzejszczak/jenkins_pipeline')
             }
             branch('wip')
             createTag(false)
