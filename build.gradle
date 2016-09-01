@@ -1,9 +1,12 @@
 apply plugin: 'groovy'
 
 sourceSets {
-    jobs {
+    main {
         groovy {
-            srcDirs 'jobs'
+            srcDirs 'jobs', 'src/main/groovy'
+        }
+        resources {
+            srcDirs 'src/main/resources'
         }
     }
 }
@@ -15,8 +18,8 @@ repositories {
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.4.3'
-    compile 'org.jenkins-ci.plugins:job-dsl-core:1.48'
+    compile 'org.codehaus.groovy:groovy-all:2.4.7'
+    compile 'org.jenkins-ci.plugins:job-dsl-core:1.50'
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
     }

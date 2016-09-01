@@ -17,17 +17,24 @@ function getLockFile() {
     echo -n "$REF_DIR/${1}.lock"
 }
 
+function rmLockFile() {
+    rm -rf "$REF_DIR/${1}.lock"
+}
+
 function getArchiveFilename() {
     echo -n "$REF_DIR/${1}.jpi"
 }
 
 function download() {
     SUCCESS="no"
+    DOWNLOADED="yes"
+    CORRUPT="no"
     for i in $( seq 1 "${RETRIES}" ); do
         echo "Trying ${i} out of "${RETRIES}""
         local plugin originalPlugin version lock ignoreLockFile
         plugin="$1"
         version="${2:-latest}"
+        rmLockFile "$plugin"
         ignoreLockFile="${3:-}"
         lock="$(getLockFile "$plugin")"
 
@@ -38,17 +45,17 @@ function download() {
                 originalPlugin="$plugin"
                 plugin="${plugin}-plugin"
                 if ! doDownload "$plugin" "$version"; then
+                    DOWNLOADED="no"
                     echo "Failed to download plugin: $originalPlugin or $plugin" >&2
-                    echo "Not downloaded: ${originalPlugin}" >> "$FAILED"
-                    echo "Fail #${i}/${RETRIES}... will try again" >$2 && continue
+                    echo "Fail #${i}/${RETRIES}... will try again" >&2 && continue
                     return 1
                 fi
             fi
 
             if ! checkIntegrity "$plugin"; then
+                CORRUPT="yes"
                 echo "Downloaded file is not a valid ZIP: $(getArchiveFilename "$plugin")" >&2
-                echo "Download integrity: ${plugin}" >> "$FAILED"
-                echo "Fail #${i}/${RETRIES}... will try again" >$2 && continue
+                echo "Fail #${i}/${RETRIES}... will try again" >&2 && continue
                 return 1
             fi
 
@@ -57,6 +64,8 @@ function download() {
         if [[ "${SUCCESS}" == "yes" ]] ; then
             exit 0
         else
+            echo "Not downloaded: ${originalPlugin}" >> "$FAILED"
+            echo "Download integrity: ${plugin}" >> "$FAILED"
             exit 1
         fi
     done
@@ -67,6 +76,7 @@ function doDownload() {
     plugin="$1"
     version="$2"
     jpi="$(getArchiveFilename "$plugin")"
+    rm -rf ${jpi}
 
     # If plugin already exists and is the same version do not download
     if test -f "$jpi" && unzip -p "$jpi" META-INF/MANIFEST.MF | tr -d '\r' | grep "^Plugin-Version: ${version}$" > /dev/null; then
