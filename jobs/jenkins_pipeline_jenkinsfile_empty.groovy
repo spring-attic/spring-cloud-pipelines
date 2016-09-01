@@ -2,7 +2,7 @@ import javaposse.jobdsl.dsl.DslFactory
 
 DslFactory dsl = this
 
-dsl.pipelineJob('jenkins-pipeline-empty') {
+dsl.pipelineJob('jenkins-pipeline-jenkinsfile-empty') {
 	definition {
 		cps {
 			script("""
