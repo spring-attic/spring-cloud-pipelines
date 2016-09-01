@@ -340,7 +340,7 @@ String deployRabbitMqToCf(String rabbitMqAppName = "rabbitmq") {
 String deployAppWithName(String appName) {
 	return """
 	cf push ${appName} -m 1024m -i 1 -p target/${appName}-\${PIPELINE_VERSION}.jar -n ${appName} --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
-	APPLICATION_DOMAIN=`app_domain ${appName}`
+	APPLICATION_DOMAIN=`cf apps | grep ${appName} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
 	echo -e "\n\nDetermined that application_domain for $appName is \${APPLICATION_DOMAIN}\n\n"
 	cf env ${appName} | grep APPLICATION_DOMAIN || cf set-env ${appName} APPLICATION_DOMAIN \${APPLICATION_DOMAIN}
 	cf env ${appName} | grep JAVA_OPTS || cf set-env ${appName} JAVA_OPTS '-Djava.security.egd=file:///dev/urandom'
