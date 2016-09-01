@@ -29,6 +29,14 @@ String jdkVersion = 'jdk8'
 	- click the `Allow token macro processing` in the Jenkins configuration
 	- define the aforementioned masked env vars
 	- customize the java version
+	- add a Credential to allow pushing the Git tag
+	- if you can't see ${PIPELINE_VERSION} being resolved in the initial job, check the logs
+
+	WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
+	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
+	to be injected as environment variables or
+	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
+	to whitelist specific parameter names, even though it represents a security breach
 */
 
 //  ======= GLOBAL =======
@@ -42,6 +50,7 @@ String fullGitRepo = "https://github.com/${organization}/${gitRepoName}"
 String projectGroupId = 'org.springframework.github'
 String projectArtifactId = 'github-webhook'
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
+String gitCredentialsId = 'git'
 //  ======= PER REPO VARIABLES =======
 
 
@@ -67,6 +76,7 @@ dsl.job("${projectName}-build") {
 			remote {
 				url(fullGitRepo)
 				branch('master')
+				credentials(gitCredentialsId)
 			}
 			extensions {
 				wipeOutWorkspace()
@@ -88,6 +98,7 @@ dsl.job("${projectName}-build") {
 		}
 		git {
 			tag('origin', "dev/\${PIPELINE_VERSION}") {
+				pushOnlyIfSuccess()
 				create()
 				update()
 			}
