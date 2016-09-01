@@ -57,6 +57,9 @@ dsl.job("${projectName}-build") {
 		// Example of a version with date and time in the name
 		//deliveryPipelineVersion('${new Date().format("yyyyMMddHHss")}', true)
 		deliveryPipelineVersion('0.0.1.BUILD-SNAPSHOT', true)
+		environmentVariables {
+			maskPasswords()
+		}
 	}
 	jdk(jdkVersion)
 	scm {
@@ -84,7 +87,7 @@ dsl.job("${projectName}-build") {
 			}
 		}
 		git {
-			tag(fullGitRepo, "dev/\${PIPELINE_VERSION}") {
+			tag('origin', "dev/\${PIPELINE_VERSION}") {
 				create()
 				update()
 			}
@@ -245,7 +248,7 @@ dsl.job("${projectName}-prod-env-deploy") {
 			trigger("${projectName}-prod-env-complete")
 		}
 		git {
-			tag(fullGitRepo, "prod/\${PIPELINE_VERSION}") {
+			tag('origin', "prod/\${PIPELINE_VERSION}") {
 				create()
 				update()
 			}
@@ -328,6 +331,7 @@ String deployAppWithName(String appName) {
 	APPLICATION_DOMAIN=`app_domain ${appName}`
 	echo -e "\n\nDetermined that application_domain for $appName is \${APPLICATION_DOMAIN}\n\n"
 	cf env ${appName} | grep APPLICATION_DOMAIN || cf set-env ${appName} APPLICATION_DOMAIN \${APPLICATION_DOMAIN}
+	cf env ${appName} | grep JAVA_OPTS || cf set-env ${appName} JAVA_OPTS '-Djava.security.egd=file:///dev/urandom'
 	cf restart ${appName}
 	"""
 }
