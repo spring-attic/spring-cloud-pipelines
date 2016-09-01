@@ -24,7 +24,7 @@ dsl.job("${projectName}-build") {
 dsl.job("${projectName}-test-env-deploy") {
 	deliveryPipelineConfiguration('Test', 'Deploy to test')
 	wrappers {
-		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 	}
 	steps {
 		shell("echo 'Deploying to test env'")
@@ -41,7 +41,7 @@ dsl.job("${projectName}-test-env-deploy") {
 dsl.job("${projectName}-test-env-test") {
 	deliveryPipelineConfiguration('Test', 'Tests on test')
 	wrappers {
-		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 	}
 	steps {
 		shell("echo 'Running tests on test env'")
@@ -58,7 +58,7 @@ dsl.job("${projectName}-test-env-test") {
 dsl.job("${projectName}-stage-env-deploy") {
 	deliveryPipelineConfiguration('Stage', 'Deploy to stage')
 	wrappers {
-		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 	}
 	steps {
 		shell("echo 'Deploying to stage env'")
@@ -75,7 +75,7 @@ dsl.job("${projectName}-stage-env-deploy") {
 dsl.job("${projectName}-stage-env-test") {
 	deliveryPipelineConfiguration('Stage', 'Tests on stage')
 	wrappers {
-		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 	}
 	steps {
 		shell("echo 'Running tests on stage env'")
@@ -88,7 +88,7 @@ dsl.job("${projectName}-stage-env-test") {
 dsl.job("${projectName}-prod-env-deploy") {
 	deliveryPipelineConfiguration('Prod', 'Deploy to prod')
 	wrappers {
-		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 	}
 	steps {
 		shell("echo 'Deploying to prod env blue instance'")
@@ -103,7 +103,7 @@ dsl.job("${projectName}-prod-env-deploy") {
 dsl.job("${projectName}-prod-env-complete") {
 	deliveryPipelineConfiguration('Prod', 'Complete switch over')
 	wrappers {
-		deliveryPipelineVersion('BUILD-${BUILD_NUMBER}', true)
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 	}
 	steps {
 		shell("echo 'Disabling blue instance'")
