@@ -24,7 +24,8 @@ String cfProdSpace = '$CF_PROD_SPACE'
 String jdkVersion = 'jdk8'
 
 /*
-	Remember that you need to
+	TODO BEFORE RUNNING THE PIPELINE
+
 	- define the `Artifact Resolver` Global Configuration. I.e. point to your Nexus / Artifactory
 	- click the `Allow token macro processing` in the Jenkins configuration
 	- define the aforementioned masked env vars
@@ -125,10 +126,10 @@ dsl.job("${projectName}-test-env-deploy") {
 		}
 		shell("""\
 		${logInToCf(cfTestUsername, cfTestPassword, cfTestOrg, cfTestSpace)}
-		// setup infra
+		# setup infra
 		${deployRabbitMqToCf()}
-		// deploy spring cloud contract boot
-		// deploy the app
+		# deploy spring cloud contract boot
+		# deploy the app
 		${deployAppWithName(projectArtifactId)}
 		""")
 	}
@@ -188,10 +189,10 @@ dsl.job("${projectName}-stage-env-deploy") {
 		}
 		shell("""\
 		${logInToCf(cfStageUsername, cfStagePassword, cfStageOrg, cfStageSpace)}
-		// setup infra
+		# setup infra
 		${deployRabbitMqToCf()}
-		// deploy spring cloud contract boot
-		// deploy the app
+		# deploy spring cloud contract boot
+		# deploy the app
 		${deployAppWithName(projectArtifactId)}
 		""")
 	}
@@ -247,10 +248,10 @@ dsl.job("${projectName}-prod-env-deploy") {
 		}
 		shell("""\
 		${logInToCf(cfProdUsername, cfProdPassword, cfProdOrg, cfProdSpace)}
-		// setup infra
+		# setup infra
 		${deployRabbitMqToCf()}
-		// deploy spring cloud contract boot
-		// deploy the app
+		# deploy spring cloud contract boot
+		# deploy the app
 		${deployAppWithName(projectArtifactId)}
 		""")
 	}
