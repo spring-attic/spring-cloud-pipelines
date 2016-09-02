@@ -45,11 +45,11 @@ String jdkVersion = 'jdk8'
 
 //  ======= PER REPO VARIABLES =======
 String projectName = 'jenkins-pipeline-sample'
-String organization = "marcingrzejszczak"
-String gitRepoName = "atom-feed"
+String organization = "dsyer"
+String gitRepoName = "github-analytics"
 String fullGitRepo = "https://github.com/${organization}/${gitRepoName}"
 String projectGroupId = 'org.springframework.github'
-String projectArtifactId = 'github-webhook'
+String projectArtifactId = gitRepoName
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
 String gitCredentialsId = 'git'
 //  ======= PER REPO VARIABLES =======
@@ -187,7 +187,7 @@ dsl.job("${projectName}-stage-env-deploy") {
 				extension('jar')
 			}
 		}
-		shell("""\
+		shell("""#!/bin/bash\
 		${logInToCf(cfStageUsername, cfStagePassword, cfStageOrg, cfStageSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
@@ -246,7 +246,7 @@ dsl.job("${projectName}-prod-env-deploy") {
 				extension('jar')
 			}
 		}
-		shell("""\
+		shell("""#!/bin/bash\
 		${logInToCf(cfProdUsername, cfProdPassword, cfProdOrg, cfProdSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
