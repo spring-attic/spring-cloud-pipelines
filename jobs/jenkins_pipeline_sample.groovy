@@ -25,6 +25,9 @@ import javaposse.jobdsl.dsl.DslFactory
 	to be injected as environment variables or
 	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
 	to whitelist specific parameter names, even though it represents a security breach
+
+	TODO: TO develop
+	- change artifact resolution from plugin to standard wget / curl
 */
 
 DslFactory dsl = this
@@ -48,6 +51,7 @@ String cfProdSpace = '$CF_PROD_SPACE'
 
 // Adjust this to be in accord with your installations
 String jdkVersion = 'jdk8'
+String repoWithJars = "http://repo.spring.io/snapshot"
 //  ======= GLOBAL =======
 
 
@@ -152,7 +156,7 @@ dsl.job("${projectName}-test-env-deploy") {
 				extension('jar')
 			}
 		}
-		shell("""#!/bin/bash\
+		shell("""\
 		${logInToCf(cfTestUsername, cfTestPassword, cfTestOrg, cfTestSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
@@ -240,7 +244,7 @@ dsl.job("${projectName}-stage-env-deploy") {
 				extension('jar')
 			}
 		}
-		shell("""#!/bin/bash\
+		shell("""\
 		${logInToCf(cfStageUsername, cfStagePassword, cfStageOrg, cfStageSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
@@ -312,7 +316,7 @@ dsl.job("${projectName}-prod-env-deploy") {
 				extension('jar')
 			}
 		}
-		shell("""#!/bin/bash\
+		shell("""\
 		${logInToCf(cfProdUsername, cfProdPassword, cfProdOrg, cfProdSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
@@ -464,12 +468,21 @@ String createServiceWithName(String name) {
 // The function uses Maven Wrapper - if you're using Maven you have to have it on your classpath
 // and change this function
 String extractMavenProperty(String prop) {
-return """
-		MAVEN_PROPERTY=\$(./mvnw -q \\
-		-Dexec.executable="echo" \\
-		-Dexec.args='\${${prop}}' \\
-		--non-recursive \\
-		org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
+	return """
+			MAVEN_PROPERTY=\$(./mvnw -q \\
+			-Dexec.executable="echo" \\
+			-Dexec.args='\${${prop}}' \\
+			--non-recursive \\
+			org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
         """
 }
+
+// The values of group / artifact ids can be later retrieved from Maven
+String downloadJar(String repoWithJars, String groupId, String artifactId, String version) {
+	return """
+	curl -P target ${repoWithJars}/${groupId.replace(".", "/")}/${artifactId}
+
+	"""
+}
+
 //  ======= FUNCTIONS =======
