@@ -133,6 +133,17 @@ dsl.job("${projectName}-test-env-deploy") {
 		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 		maskPasswords()
 	}
+	scm {
+		git {
+			remote {
+				url(fullGitRepo)
+				branch('dev/${PIPELINE_VERSION}')
+			}
+			extensions {
+				wipeOutWorkspace()
+			}
+		}
+	}
 	steps {
 		resolveArtifacts {
 			failOnError()
@@ -221,6 +232,17 @@ dsl.job("${projectName}-stage-env-deploy") {
 		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 		maskPasswords()
 	}
+	scm {
+		git {
+			remote {
+				url(fullGitRepo)
+				branch('dev/${PIPELINE_VERSION}')
+			}
+			extensions {
+				wipeOutWorkspace()
+			}
+		}
+	}
 	steps {
 		resolveArtifacts {
 			failOnError()
@@ -304,6 +326,17 @@ dsl.job("${projectName}-prod-env-deploy") {
 	wrappers {
 		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 		maskPasswords()
+	}
+	scm {
+		git {
+			remote {
+				url(fullGitRepo)
+				branch('dev/${PIPELINE_VERSION}')
+			}
+			extensions {
+				wipeOutWorkspace()
+			}
+		}
 	}
 	steps {
 		resolveArtifacts {
