@@ -1,7 +1,33 @@
 import javaposse.jobdsl.dsl.DslFactory
 
-DslFactory dsl = this
+/*
+	INTRODUCTION:
 
+	The projects involved in the sample pipeline are:
+	- Github-Analytics - the app that has a REST endpoint and uses messaging. Our app under test
+		- https://github.com/dsyer/github-analytics
+	- Eureka - simple Eureka Server
+		- https://github.com/marcingrzejszczak/github-eureka
+	- Github Analytics Stub Runner Boot - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging.
+		- https://github.com/marcingrzejszczak/github-analytics-stub-runner-boot
+
+	TODO BEFORE RUNNING THE PIPELINE
+
+	- define the `Artifact Resolver` Global Configuration. I.e. point to your Nexus / Artifactory
+	- click the `Allow token macro processing` in the Jenkins configuration
+	- define the aforementioned masked env vars
+	- customize the java version
+	- add a Credential to allow pushing the Git tag
+	- if you can't see ${PIPELINE_VERSION} being resolved in the initial job, check the logs
+
+	WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
+	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
+	to be injected as environment variables or
+	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
+	to whitelist specific parameter names, even though it represents a security breach
+*/
+
+DslFactory dsl = this
 
 //  ======= GLOBAL =======
 // You need to pass the following as ENV VARS in Mask Passwords section
@@ -22,24 +48,6 @@ String cfProdSpace = '$CF_PROD_SPACE'
 
 // Adjust this to be in accord with your installations
 String jdkVersion = 'jdk8'
-
-/*
-	TODO BEFORE RUNNING THE PIPELINE
-
-	- define the `Artifact Resolver` Global Configuration. I.e. point to your Nexus / Artifactory
-	- click the `Allow token macro processing` in the Jenkins configuration
-	- define the aforementioned masked env vars
-	- customize the java version
-	- add a Credential to allow pushing the Git tag
-	- if you can't see ${PIPELINE_VERSION} being resolved in the initial job, check the logs
-
-	WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
-	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
-	to be injected as environment variables or
-	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
-	to whitelist specific parameter names, even though it represents a security breach
-*/
-
 //  ======= GLOBAL =======
 
 
@@ -52,6 +60,14 @@ String projectGroupId = 'org.springframework.github'
 String projectArtifactId = gitRepoName
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
 String gitCredentialsId = 'git'
+// Discovery + Stub runner boot
+String eurekaGroupId = 'com.example.eureka'
+String eurekaArtifactId = 'github-eureka'
+String eurekaVersion = '0.0.1-SNAPSHOT'
+String stubRunnerBootGroupId = 'com.example.github'
+String stubRunnerBootArtifactId = 'github-analytics-stub-runner-boot'
+String stubRunnerBootVersion = '0.0.1-SNAPSHOT'
+
 //  ======= PER REPO VARIABLES =======
 
 
@@ -123,19 +139,42 @@ dsl.job("${projectName}-test-env-deploy") {
 				version('${PIPELINE_VERSION}')
 				extension('jar')
 			}
+			artifact {
+				groupId(eurekaGroupId)
+				artifactId(eurekaArtifactId)
+				version(eurekaVersion)
+				extension('jar')
+			}
+			artifact {
+				groupId(stubRunnerBootGroupId)
+				artifactId(stubRunnerBootArtifactId)
+				version(stubRunnerBootVersion)
+				extension('jar')
+			}
 		}
-		shell("""\
+		shell("""#!/bin/bash\
 		${logInToCf(cfTestUsername, cfTestPassword, cfTestOrg, cfTestSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
-		# deploy spring cloud contract boot
-		# deploy the app
-		${deployAppWithName(projectArtifactId)}
+		${deployEureka("${eurekaArtifactId-eurekaVersion}")}
+		${deployStubRunnerBoot("${stubRunnerBootArtifactId-stubRunnerBootVersion}")}
+		# deploy app
+		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
+		# retrieve host of the app / stubrunner
+		# we have to store them in a file that will be picked as properties
+		rm target/test.properties
+		${appHost(projectArtifactId)}
+		echo "application.url=\${APP_HOST}" >> target/test.properties
+		${appHost('stubRunner')}
+		echo "stubrunner.url=\${APP_HOST}" >> target/test.properties
 		""")
 	}
 	publishers {
 		downstreamParameterized {
 			trigger("${projectName}-test-env-test") {
+				parameters {
+					propertiesFile('target/test.properties')
+				}
 				triggerWithNoParameters()
 			}
 		}
@@ -159,7 +198,9 @@ dsl.job("${projectName}-test-env-test") {
 		}
 	}
 	steps {
-		shell("echo 'Running tests on test env'")
+		shell('''#!/bin/bash\
+		./mvnw clean install -Pintegration -Dapplication.url=${application.url} -Dstubrunner.url=${stubrunner.url}
+		''')
 	}
 	publishers {
 		downstreamParameterized {
@@ -186,19 +227,42 @@ dsl.job("${projectName}-stage-env-deploy") {
 				version('${PIPELINE_VERSION}')
 				extension('jar')
 			}
+			artifact {
+				groupId(eurekaGroupId)
+				artifactId(eurekaArtifactId)
+				version(eurekaVersion)
+				extension('jar')
+			}
+			artifact {
+				groupId(stubRunnerBootGroupId)
+				artifactId(stubRunnerBootArtifactId)
+				version(stubRunnerBootVersion)
+				extension('jar')
+			}
 		}
 		shell("""#!/bin/bash\
 		${logInToCf(cfStageUsername, cfStagePassword, cfStageOrg, cfStageSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
-		# deploy spring cloud contract boot
-		# deploy the app
-		${deployAppWithName(projectArtifactId)}
+		${deployEureka("${eurekaArtifactId - eurekaVersion}")}
+		${deployStubRunnerBoot("${stubRunnerBootArtifactId - stubRunnerBootVersion}")}
+		# deploy app
+		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
+		# retrieve host of the app / stubrunner
+		# we have to store them in a file that will be picked as properties
+		rm target/test.properties
+		${appHost(projectArtifactId)}
+		echo "application.url=\${APP_HOST}" >> target/test.properties
+		${appHost('stubRunner')}
+		echo "stubrunner.url=\${APP_HOST}" >> target/test.properties
 		""")
 	}
 	publishers {
 		downstreamParameterized {
 			trigger("${projectName}-stage-env-test") {
+				parameters {
+					propertiesFile('target/test.properties')
+				}
 				triggerWithNoParameters()
 			}
 		}
@@ -222,7 +286,9 @@ dsl.job("${projectName}-stage-env-test") {
 		}
 	}
 	steps {
-		shell("echo 'Running tests on stage env'")
+		shell('''#!/bin/bash\
+		./mvnw clean install -Pintegration -Dapplication.url=${application.url} -Dstubrunner.url=${stubrunner.url}
+		''')
 	}
 	publishers {
 		buildPipelineTrigger("${projectName}-prod-env-deploy")
@@ -250,9 +316,9 @@ dsl.job("${projectName}-prod-env-deploy") {
 		${logInToCf(cfProdUsername, cfProdPassword, cfProdOrg, cfProdSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
-		# deploy spring cloud contract boot
+		${deployEureka("${eurekaArtifactId - eurekaVersion}")}
 		# deploy the app
-		${deployAppWithName(projectArtifactId)}
+		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
 		""")
 	}
 	publishers {
@@ -337,14 +403,73 @@ String deployRabbitMqToCf(String rabbitMqAppName = "rabbitmq") {
 	"""
 }
 
-String deployAppWithName(String appName) {
+String deployAndRestartAppWithName(String appName, String jarName) {
 	return """
-	cf push ${appName} -m 1024m -i 1 -p target/${appName}-\${PIPELINE_VERSION}.jar -n ${appName} --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+	${deployAppWithName(appName, jarName)}
+	${restartApp(appName)}
+	"""
+}
+
+String appHost(String appName) {
+	return """
+	APP_HOST=`app_domain ${appName}`
+	echo "\${APP_HOST}"
+	"""
+}
+
+String deployAppWithName(String appName, String jarName) {
+	return """
+	cf push ${appName} -m 1024m -i 1 -p target/${jarName}.jar -n ${appName} --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
 	APPLICATION_DOMAIN=`cf apps | grep ${appName} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
 	echo -e "\n\nDetermined that application_domain for $appName is \${APPLICATION_DOMAIN}\n\n"
-	cf env ${appName} | grep APPLICATION_DOMAIN || cf set-env ${appName} APPLICATION_DOMAIN \${APPLICATION_DOMAIN}
-	cf env ${appName} | grep JAVA_OPTS || cf set-env ${appName} JAVA_OPTS '-Djava.security.egd=file:///dev/urandom'
-	cf restart ${appName}
+	${setEnvVar(appName, 'APPLICATION_DOMAIN', '${APPLICATION_DOMAIN}')}
+	${setEnvVar(appName, 'JAVA_OPTS', '-Djava.security.egd=file:///dev/urandom')}
 	"""
+}
+
+String setEnvVar(String appName, String key, String value) {
+	return "cf env ${appName} | grep ${key} || cf set-env ${appName} ${key} ${value}"
+}
+
+String restartApp(String appName) {
+	return "cf restart ${appName}"
+}
+
+String deployEureka(String jarName) {
+	return """
+	${deployAppWithName("eureka", jarName)}
+	${restartApp("eureka")}
+	${createServiceWithName("eureka")}
+	"""
+}
+
+String deployStubRunnerBoot(String jarName) {
+	return """
+	${deployAppWithName("stubRunner", jarName)}
+	${extractMavenProperty("stubrunner.ids")}
+	${setEnvVar("stubRunner", "stubrunner.ids", '${MAVEN_PROPERTY}')}
+	${restartApp("stubRunner")}
+	${createServiceWithName("stubRunner")}
+	"""
+}
+
+String createServiceWithName(String name) {
+	return """
+	APPLICATION_DOMAIN=`cf apps | grep ${name} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
+	JSON='{"uri":"http://'\${APPLICATION_DOMAIN}'"}'
+	cf create-user-provided-service ${name} -p \${JSON}
+	"""
+}
+
+// The function uses Maven Wrapper - if you're using Maven you have to have it on your classpath
+// and change this function
+String extractMavenProperty(String prop) {
+return """
+		MAVEN_PROPERTY=\$(./mvnw -q \\
+		-Dexec.executable="echo" \\
+		-Dexec.args='\${${prop}}' \\
+		--non-recursive \\
+		org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
+        """
 }
 //  ======= FUNCTIONS =======
