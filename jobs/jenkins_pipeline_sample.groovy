@@ -201,9 +201,7 @@ dsl.job("${projectName}-test-env-test") {
 		}
 	}
 	steps {
-		shell('''#!/bin/bash\
-		./mvnw clean install -Pintegration -Dapplication.url=${application.url} -Dstubrunner.url=${stubrunner.url}
-		''')
+		shell(runSmokeTests())
 	}
 	publishers {
 		downstreamParameterized {
@@ -284,9 +282,7 @@ dsl.job("${projectName}-stage-env-test") {
 		}
 	}
 	steps {
-		shell('''#!/bin/bash\
-		./mvnw clean install -Pintegration -Dapplication.url=${application.url} -Dstubrunner.url=${stubrunner.url}
-		''')
+		shell(runSmokeTests())
 	}
 	publishers {
 		buildPipelineTrigger("${projectName}-prod-env-deploy")
@@ -482,6 +478,11 @@ String downloadJar(String repoWithJars, String groupId, String artifactId, Strin
 	mkdir target --parents
 	curl ${repoWithJars}/${groupId.replace(".", "/")}/${artifactId}/${version}/${artifactId}-${version}.jar -o target/${artifactId}-${version}.jar
 	"""
+}
+
+// Function that executes integration tests
+String runSmokeTests() {
+	return './mvnw clean install -Pintegration -Dapplication.url=${application.url} --Dstubrunner.url=${stubrunner.url}'
 }
 
 //  ======= FUNCTIONS =======
