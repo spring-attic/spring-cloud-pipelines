@@ -411,12 +411,13 @@ String appHost(String appName) {
 }
 
 String deployAppWithName(String appName, String jarName, boolean useManifest = false) {
+	String lowerCaseAppName = appName.toLowerCase()
 	return """
-	cf push ${appName} -m 1024m -i 1 -p target/${jarName}.jar -n ${appName} --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${useManifest ? '' : '--no-manifest'}
-	APPLICATION_DOMAIN=`cf apps | grep ${appName} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
-	echo -e "\n\nDetermined that application_domain for $appName is \${APPLICATION_DOMAIN}\n\n"
-	${setEnvVar(appName, 'APPLICATION_DOMAIN', '${APPLICATION_DOMAIN}')}
-	${setEnvVar(appName, 'JAVA_OPTS', '-Djava.security.egd=file:///dev/urandom')}
+	cf push ${lowerCaseAppName} -m 1024m -i 1 -p target/${jarName}.jar -n ${lowerCaseAppName} --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${useManifest ? '' : '--no-manifest'}
+	APPLICATION_DOMAIN=`cf apps | grep ${lowerCaseAppName} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
+	echo -e "\n\nDetermined that application_domain for ${lowerCaseAppName} is \${APPLICATION_DOMAIN}\n\n"
+	${setEnvVar(lowerCaseAppName, 'APPLICATION_DOMAIN', '${APPLICATION_DOMAIN}')}
+	${setEnvVar(lowerCaseAppName, 'JAVA_OPTS', '-Djava.security.egd=file:///dev/urandom')}
 	"""
 }
 
