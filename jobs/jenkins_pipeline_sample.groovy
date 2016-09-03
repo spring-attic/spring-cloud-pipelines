@@ -159,8 +159,8 @@ dsl.job("${projectName}-test-env-deploy") {
 		${logInToCf(cfTestUsername, cfTestPassword, cfTestOrg, cfTestSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
-		${deployEureka("${eurekaArtifactId-eurekaVersion}")}
-		${deployStubRunnerBoot("${stubRunnerBootArtifactId-stubRunnerBootVersion}")}
+		${deployEureka("${eurekaArtifactId}-${eurekaVersion}")}
+		${deployStubRunnerBoot("${stubRunnerBootArtifactId}-${stubRunnerBootVersion}")}
 		# deploy app
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
 		# retrieve host of the app / stubrunner
@@ -240,8 +240,8 @@ dsl.job("${projectName}-stage-env-deploy") {
 		${logInToCf(cfStageUsername, cfStagePassword, cfStageOrg, cfStageSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
-		${deployEureka("${eurekaArtifactId - eurekaVersion}")}
-		${deployStubRunnerBoot("${stubRunnerBootArtifactId - stubRunnerBootVersion}")}
+		${deployEureka("${eurekaArtifactId}-${eurekaVersion}")}
+		${deployStubRunnerBoot("${stubRunnerBootArtifactId}-${stubRunnerBootVersion}")}
 		# deploy app
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
 		# retrieve host of the app / stubrunner
