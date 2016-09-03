@@ -417,7 +417,7 @@ String deployAppWithName(String appName, String jarName, boolean useManifest = f
 	return """
 	cf push ${lowerCaseAppName} -m 1024m -i 1 -p target/${jarName}.jar -n ${lowerCaseAppName} --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${useManifest ? '' : '--no-manifest'}
 	APPLICATION_DOMAIN=`cf apps | grep ${lowerCaseAppName} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
-	echo -e "\n\nDetermined that application_domain for ${lowerCaseAppName} is \${APPLICATION_DOMAIN}\n\n"
+	echo "Determined that application_domain for ${lowerCaseAppName} is \${APPLICATION_DOMAIN}"
 	${setEnvVar(lowerCaseAppName, 'APPLICATION_DOMAIN', '${APPLICATION_DOMAIN}')}
 	${setEnvVar(lowerCaseAppName, 'JAVA_OPTS', '-Djava.security.egd=file:///dev/urandom')}
 	"""
