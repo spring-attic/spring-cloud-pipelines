@@ -404,7 +404,7 @@ String deployRabbitMqToCf(String rabbitMqAppName = "github-rabbitmq") {
 
 String deployAndRestartAppWithName(String appName, String jarName) {
 	return """
-	${deployAppWithName(appName, jarName)}
+	${deployAppWithName(appName, jarName, true)}
 	${restartApp(appName)}
 	"""
 }
@@ -416,9 +416,9 @@ String appHost(String appName) {
 	"""
 }
 
-String deployAppWithName(String appName, String jarName) {
+String deployAppWithName(String appName, String jarName, boolean useManifest = false) {
 	return """
-	cf push ${appName} -m 1024m -i 1 -p target/${jarName}.jar -n ${appName} --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+	cf push ${appName} -m 1024m -i 1 -p target/${jarName}.jar -n ${appName} --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${useManifest ? '' : '--no-manifest'}
 	APPLICATION_DOMAIN=`cf apps | grep ${appName} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
 	echo -e "\n\nDetermined that application_domain for $appName is \${APPLICATION_DOMAIN}\n\n"
 	${setEnvVar(appName, 'APPLICATION_DOMAIN', '${APPLICATION_DOMAIN}')}
