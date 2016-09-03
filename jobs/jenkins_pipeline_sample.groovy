@@ -165,13 +165,7 @@ dsl.job("${projectName}-test-env-deploy") {
 		${deployStubRunnerBoot("${stubRunnerBootArtifactId}-${stubRunnerBootVersion}")}
 		# deploy app
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
-		# retrieve host of the app / stubrunner
-		# we have to store them in a file that will be picked as properties
-		rm -rf target/test.properties
-		${appHost(projectArtifactId)}
-		echo "application.url=\${APP_HOST}" >> target/test.properties
-		${appHost('stubrunner')}
-		echo "stubrunner.url=\${APP_HOST}" >> target/test.properties
+		${propagatePropertiesForTests(projectArtifactId)}
 		""")
 	}
 	publishers {
@@ -246,13 +240,7 @@ dsl.job("${projectName}-stage-env-deploy") {
 		${deployStubRunnerBoot("${stubRunnerBootArtifactId}-${stubRunnerBootVersion}")}
 		# deploy app
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
-		# retrieve host of the app / stubrunner
-		# we have to store them in a file that will be picked as properties
-		rm -rf target/test.properties
-		${appHost(projectArtifactId)}
-		echo "application.url=\${APP_HOST}" >> target/test.properties
-		${appHost('stubrunner')}
-		echo "stubrunner.url=\${APP_HOST}" >> target/test.properties
+		${propagatePropertiesForTests(projectArtifactId)}
 		""")
 	}
 	publishers {
@@ -483,9 +471,21 @@ String downloadJar(String repoWithJars, String groupId, String artifactId, Strin
 	"""
 }
 
+String propagatePropertiesForTests(String projectArtifactId) {
+	return """
+	# retrieve host of the app / stubrunner
+	# we have to store them in a file that will be picked as properties
+	rm -rf target/test.properties
+	${appHost(projectArtifactId)}
+	echo "APPLICATION_URL=\${APP_HOST}" >> target/test.properties
+	${appHost('stubrunner')}
+	echo "STUBRUNNER_URL=\${APP_HOST}" >> target/test.properties
+	"""
+}
+
 // Function that executes integration tests
 String runSmokeTests() {
-	return './mvnw clean install -Pintegration -Dapplication.url=${application.url} --Dstubrunner.url=${stubrunner.url}'
+	return './mvnw clean install -Pintegration -Dapplication.url=${APPLICATION_URL} -Dstubrunner.url=${STUBRUNNER_URL}'
 }
 
 //  ======= FUNCTIONS =======
