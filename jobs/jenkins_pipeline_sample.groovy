@@ -387,18 +387,12 @@ String logInToCf(String cfUsername, String cfPassword, String cfOrg, String cfSp
 
 String deployRabbitMqToCf(String rabbitMqAppName = "github-rabbitmq") {
 	return """
-		READY_FOR_TESTS="no"
 		echo "Waiting for RabbitMQ to start"
 		# create RabbitMQ
 		APP_NAME="${rabbitMqAppName}"
-		cf s | grep \${APP_NAME} && echo "found \${APP_NAME}" && READY_FOR_TESTS="yes" ||
-			cf cs cloudamqp lemur \${APP_NAME} && echo "Started RabbitMQ" && READY_FOR_TESTS="yes" ||
-			cf cs p-rabbitmq standard \${APP_NAME}  && echo "Started RabbitMQ for PCF Dev" && READY_FOR_TESTS="yes"
-
-		if [[ "\${READY_FOR_TESTS}" == "no" ]] ; then
-			echo "RabbitMQ failed to start..."
-			exit 1
-		fi
+		cf s | grep \${APP_NAME} && echo "found \${APP_NAME}" ||
+			cf cs cloudamqp lemur \${APP_NAME} && echo "Started RabbitMQ" ||
+			cf cs p-rabbitmq standard \${APP_NAME}  && echo "Started RabbitMQ for PCF Dev"
 	"""
 }
 
