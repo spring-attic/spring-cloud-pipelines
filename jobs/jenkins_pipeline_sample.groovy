@@ -479,7 +479,8 @@ String extractMavenProperty(String prop) {
 // The values of group / artifact ids can be later retrieved from Maven
 String downloadJar(String repoWithJars, String groupId, String artifactId, String version) {
 	return """
-	curl -P target ${repoWithJars}/${groupId.replace(".", "/")}/${artifactId}/${version}/${artifactId}-${version}.jar
+	mkdir target --parents
+	curl ${repoWithJars}/${groupId.replace(".", "/")}/${artifactId}/${version}/${artifactId}-${version}.jar -o target/${artifactId}-${version}.jar
 	"""
 }
 
