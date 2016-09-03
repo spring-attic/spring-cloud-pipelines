@@ -451,7 +451,7 @@ String createServiceWithName(String name) {
 	return """
 	APPLICATION_DOMAIN=`cf apps | grep ${name} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
 	JSON='{"uri":"http://'\${APPLICATION_DOMAIN}'"}'
-	cf create-user-provided-service ${name} -p \${JSON}
+	cf create-user-provided-service ${name} -p \${JSON} || echo "Service already created. Proceeding with the script"
 	"""
 }
 
