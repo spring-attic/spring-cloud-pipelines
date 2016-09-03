@@ -165,10 +165,10 @@ dsl.job("${projectName}-test-env-deploy") {
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
 		# retrieve host of the app / stubrunner
 		# we have to store them in a file that will be picked as properties
-		rm target/test.properties
+		rm -rf target/test.properties
 		${appHost(projectArtifactId)}
 		echo "application.url=\${APP_HOST}" >> target/test.properties
-		${appHost('stubRunner')}
+		${appHost('stubrunner')}
 		echo "stubrunner.url=\${APP_HOST}" >> target/test.properties
 		""")
 	}
@@ -246,10 +246,10 @@ dsl.job("${projectName}-stage-env-deploy") {
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
 		# retrieve host of the app / stubrunner
 		# we have to store them in a file that will be picked as properties
-		rm target/test.properties
+		rm -rf target/test.properties
 		${appHost(projectArtifactId)}
 		echo "application.url=\${APP_HOST}" >> target/test.properties
-		${appHost('stubRunner')}
+		${appHost('stubrunner')}
 		echo "stubrunner.url=\${APP_HOST}" >> target/test.properties
 		""")
 	}
@@ -405,7 +405,7 @@ String deployAndRestartAppWithName(String appName, String jarName) {
 
 String appHost(String appName) {
 	return """
-	APP_HOST=`app_domain ${appName}`
+	APP_HOST=`app_domain ${appName.toLowerCase()}`
 	echo "\${APP_HOST}"
 	"""
 }
@@ -439,11 +439,11 @@ String deployEureka(String jarName, String appName = "github-eureka") {
 
 String deployStubRunnerBoot(String jarName) {
 	return """
-	${deployAppWithName("stubRunner", jarName)}
+	${deployAppWithName("stubrunner", jarName)}
 	${extractMavenProperty("stubrunner.ids")}
-	${setEnvVar("stubRunner", "stubrunner.ids", '${MAVEN_PROPERTY}')}
-	${restartApp("stubRunner")}
-	${createServiceWithName("stubRunner")}
+	${setEnvVar("stubrunner", "stubrunner.ids", '${MAVEN_PROPERTY}')}
+	${restartApp("stubrunner")}
+	${createServiceWithName("stubrunner")}
 	"""
 }
 
