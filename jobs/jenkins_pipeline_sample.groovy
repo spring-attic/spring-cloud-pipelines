@@ -440,9 +440,9 @@ String restartApp(String appName) {
 
 String deployEureka(String jarName) {
 	return """
-	${deployAppWithName("eureka", jarName)}
-	${restartApp("eureka")}
-	${createServiceWithName("eureka")}
+	${deployAppWithName("github-eureka", jarName)}
+	${restartApp("github-eureka")}
+	${createServiceWithName("github-eureka")}
 	"""
 }
 
