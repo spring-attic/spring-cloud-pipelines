@@ -64,7 +64,9 @@ String projectName = 'jenkins-pipeline-sample'
 String organization = "dsyer"
 String gitRepoName = "github-analytics"
 String fullGitRepo = "https://github.com/${organization}/${gitRepoName}"
+// TODO: Retrieve from maven
 String projectGroupId = 'com.example.github'
+// TODO: Retrieve from maven
 String projectArtifactId = gitRepoName
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
 String gitCredentialsId = 'git'
@@ -405,7 +407,7 @@ String deployAndRestartAppWithName(String appName, String jarName) {
 
 String appHost(String appName) {
 	return """
-	APP_HOST=`app_domain ${appName.toLowerCase()}`
+	APP_HOST=`cf apps | grep ${appName.toLowerCase()} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
 	echo "\${APP_HOST}"
 	"""
 }
@@ -437,14 +439,20 @@ String deployEureka(String jarName, String appName = "github-eureka") {
 	"""
 }
 
-String deployStubRunnerBoot(String jarName) {
+String deployStubRunnerBoot(String jarName, String eurekaService = "github-eureka", String rabbitmqService = "github-rabbitmq") {
 	return """
 	${deployAppWithName("stubrunner", jarName)}
 	${extractMavenProperty("stubrunner.ids")}
 	${setEnvVar("stubrunner", "stubrunner.ids", '${MAVEN_PROPERTY}')}
+	${bindService(eurekaService, "stubrunner")}
+	${bindService(rabbitmqService, "stubrunner")}
 	${restartApp("stubrunner")}
 	${createServiceWithName("stubrunner")}
 	"""
+}
+
+String bindService(String serviceName, String appName) {
+	return "cf bind-service ${appName} ${serviceName}"
 }
 
 String createServiceWithName(String name) {
