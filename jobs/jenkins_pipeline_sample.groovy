@@ -389,7 +389,7 @@ String logInToCf(String cfUsername, String cfPassword, String cfOrg, String cfSp
 	"""
 }
 
-String deployRabbitMqToCf(String rabbitMqAppName = "rabbitmq") {
+String deployRabbitMqToCf(String rabbitMqAppName = "github-rabbitmq") {
 	return """
 		READY_FOR_TESTS="no"
 		echo "Waiting for RabbitMQ to start"
@@ -438,11 +438,11 @@ String restartApp(String appName) {
 	return "cf restart ${appName}"
 }
 
-String deployEureka(String jarName) {
+String deployEureka(String jarName, String appName = "github-eureka") {
 	return """
-	${deployAppWithName("github-eureka", jarName)}
-	${restartApp("github-eureka")}
-	${createServiceWithName("github-eureka")}
+	${deployAppWithName(appName, jarName)}
+	${restartApp(appName)}
+	${createServiceWithName(appName)}
 	"""
 }
 
