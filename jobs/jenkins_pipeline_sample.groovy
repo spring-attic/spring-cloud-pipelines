@@ -11,6 +11,10 @@ import javaposse.jobdsl.dsl.DslFactory
 	- Github Analytics Stub Runner Boot - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging.
 		- https://github.com/marcingrzejszczak/github-analytics-stub-runner-boot
 
+	Also there's another project:
+	- Github Webhook - project that uses Github-Analytics
+		- https://github.com/marcingrzejszczak/atom-feed
+
 	TODO BEFORE RUNNING THE PIPELINE
 
 	- define the `Artifact Resolver` Global Configuration. I.e. point to your Nexus / Artifactory
@@ -51,7 +55,7 @@ String cfProdSpace = '$CF_PROD_SPACE'
 
 // Adjust this to be in accord with your installations
 String jdkVersion = 'jdk8'
-String repoWithJars = "http://repo.spring.io/snapshot"
+String repoWithJars = "http://repo.spring.io/libs-milestone"
 //  ======= GLOBAL =======
 
 
@@ -60,17 +64,17 @@ String projectName = 'jenkins-pipeline-sample'
 String organization = "dsyer"
 String gitRepoName = "github-analytics"
 String fullGitRepo = "https://github.com/${organization}/${gitRepoName}"
-String projectGroupId = 'org.springframework.github'
+String projectGroupId = 'com.example.github'
 String projectArtifactId = gitRepoName
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
 String gitCredentialsId = 'git'
 // Discovery + Stub runner boot
 String eurekaGroupId = 'com.example.eureka'
 String eurekaArtifactId = 'github-eureka'
-String eurekaVersion = '0.0.1-SNAPSHOT'
+String eurekaVersion = '0.0.1.M1'
 String stubRunnerBootGroupId = 'com.example.github'
 String stubRunnerBootArtifactId = 'github-analytics-stub-runner-boot'
-String stubRunnerBootVersion = '0.0.1-SNAPSHOT'
+String stubRunnerBootVersion = '0.0.1.M1'
 
 //  ======= PER REPO VARIABLES =======
 
@@ -145,28 +149,12 @@ dsl.job("${projectName}-test-env-deploy") {
 		}
 	}
 	steps {
-		resolveArtifacts {
-			failOnError()
-			targetDirectory('target')
-			artifact {
-				groupId(projectGroupId)
-				artifactId(projectArtifactId)
-				version('${PIPELINE_VERSION}')
-				extension('jar')
-			}
-			artifact {
-				groupId(eurekaGroupId)
-				artifactId(eurekaArtifactId)
-				version(eurekaVersion)
-				extension('jar')
-			}
-			artifact {
-				groupId(stubRunnerBootGroupId)
-				artifactId(stubRunnerBootArtifactId)
-				version(stubRunnerBootVersion)
-				extension('jar')
-			}
-		}
+		shell("""\
+		# Download all the necessary jars
+		${downloadJar(repoWithJars, projectGroupId, projectArtifactId, '${PIPELINE_VERSION}')}
+		${downloadJar(repoWithJars, eurekaGroupId, eurekaArtifactId, eurekaVersion)}
+		${downloadJar(repoWithJars, stubRunnerBootGroupId, stubRunnerBootArtifactId, stubRunnerBootVersion)}
+		""")
 		shell("""\
 		${logInToCf(cfTestUsername, cfTestPassword, cfTestOrg, cfTestSpace)}
 		# setup infra
@@ -244,28 +232,12 @@ dsl.job("${projectName}-stage-env-deploy") {
 		}
 	}
 	steps {
-		resolveArtifacts {
-			failOnError()
-			targetDirectory('target')
-			artifact {
-				groupId(projectGroupId)
-				artifactId(projectArtifactId)
-				version('${PIPELINE_VERSION}')
-				extension('jar')
-			}
-			artifact {
-				groupId(eurekaGroupId)
-				artifactId(eurekaArtifactId)
-				version(eurekaVersion)
-				extension('jar')
-			}
-			artifact {
-				groupId(stubRunnerBootGroupId)
-				artifactId(stubRunnerBootArtifactId)
-				version(stubRunnerBootVersion)
-				extension('jar')
-			}
-		}
+		shell("""\
+		# Download all the necessary jars
+		${downloadJar(repoWithJars, projectGroupId, projectArtifactId, '${PIPELINE_VERSION}')}
+		${downloadJar(repoWithJars, eurekaGroupId, eurekaArtifactId, eurekaVersion)}
+		${downloadJar(repoWithJars, stubRunnerBootGroupId, stubRunnerBootArtifactId, stubRunnerBootVersion)}
+		""")
 		shell("""\
 		${logInToCf(cfStageUsername, cfStagePassword, cfStageOrg, cfStageSpace)}
 		# setup infra
@@ -339,16 +311,10 @@ dsl.job("${projectName}-prod-env-deploy") {
 		}
 	}
 	steps {
-		resolveArtifacts {
-			failOnError()
-			targetDirectory('target')
-			artifact {
-				groupId(projectGroupId)
-				artifactId(projectArtifactId)
-				version('${PIPELINE_VERSION}')
-				extension('jar')
-			}
-		}
+		shell("""\
+		# Download all the necessary jars
+		${downloadJar(repoWithJars, projectGroupId, projectArtifactId, '${PIPELINE_VERSION}')}
+		""")
 		shell("""\
 		${logInToCf(cfProdUsername, cfProdPassword, cfProdOrg, cfProdSpace)}
 		# setup infra
@@ -513,8 +479,7 @@ String extractMavenProperty(String prop) {
 // The values of group / artifact ids can be later retrieved from Maven
 String downloadJar(String repoWithJars, String groupId, String artifactId, String version) {
 	return """
-	curl -P target ${repoWithJars}/${groupId.replace(".", "/")}/${artifactId}
-
+	curl -P target ${repoWithJars}/${groupId.replace(".", "/")}/${version}/${artifactId}-${version}.jar
 	"""
 }
 
