@@ -210,6 +210,7 @@ dsl.job("${projectName}-test-env-test") {
 		shell(runSmokeTests())
 	}
 	publishers {
+		archiveJunit('**/surefire-reports/*.xml')
 		downstreamParameterized {
 			trigger("${projectName}-stage-env-deploy") {
 				triggerWithNoParameters()
@@ -285,6 +286,7 @@ dsl.job("${projectName}-stage-env-test") {
 		shell(runSmokeTests())
 	}
 	publishers {
+		archiveJunit('**/surefire-reports/*.xml')
 		buildPipelineTrigger("${projectName}-prod-env-deploy")
 	}
 }
