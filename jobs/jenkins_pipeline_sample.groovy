@@ -38,6 +38,7 @@ import javaposse.jobdsl.dsl.DslFactory
 	- resolve group / artifact / version ids from Maven instead of passing them
 	- perform blue green deployment
 	- implement the complete step
+	- add tests for StubRUnner + Eureka
 */
 
 DslFactory dsl = this
