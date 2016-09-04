@@ -77,6 +77,10 @@ String eurekaVersion = '0.0.1.M1'
 String stubRunnerBootGroupId = 'com.example.github'
 String stubRunnerBootArtifactId = 'github-analytics-stub-runner-boot'
 String stubRunnerBootVersion = '0.0.1.M1'
+// TODO: Change to sth like this
+// Example of a version with date and time in the name
+//String pipelineVersion = '${new Date().format("yyyyMMddHHss")}'
+String pipelineVersion = '0.0.1.M1'
 
 //  ======= PER REPO VARIABLES =======
 
@@ -92,7 +96,7 @@ dsl.job("${projectName}-build") {
 	wrappers {
 		// Example of a version with date and time in the name
 		//deliveryPipelineVersion('${new Date().format("yyyyMMddHHss")}', true)
-		deliveryPipelineVersion('0.0.1.BUILD-SNAPSHOT', true)
+		deliveryPipelineVersion(pipelineVersion, true)
 		environmentVariables {
 			maskPasswords()
 		}
