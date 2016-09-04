@@ -31,7 +31,13 @@ import javaposse.jobdsl.dsl.DslFactory
 	to whitelist specific parameter names, even though it represents a security breach
 
 	TODO: TO develop
-	- change artifact resolution from plugin to standard wget / curl
+	- download eureka + stubrunner on demand only (will speed up things dramatically)
+	- convert all groovy functions into bash functions
+	- move the functions to src/main/bash and write bash tests
+	- always override the property of stubrunner.ids
+	- resolve group / artifact / version ids from Maven instead of passing them
+	- perform blue green deployment
+	- implement the complete step
 */
 
 DslFactory dsl = this
