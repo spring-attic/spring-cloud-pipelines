@@ -313,9 +313,6 @@ dsl.job("${projectName}-prod-env-deploy") {
 		""")
 		shell("""\
 		${logInToCf(cfProdUsername, cfProdPassword, cfProdOrg, cfProdSpace)}
-		# setup infra
-		${deployRabbitMqToCf()}
-		${deployEureka("${eurekaArtifactId}-${eurekaVersion}")}
 		# deploy the app
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
 		""")
