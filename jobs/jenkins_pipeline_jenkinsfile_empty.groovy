@@ -14,6 +14,10 @@ dsl.pipelineJob('jenkins-pipeline-jenkinsfile-empty') {
 				echo 'Deploying to test'
 				stage 'Tests on test'
 				echo 'Running tests on test'
+				stage 'Deploy to test latest prod version'
+				echo 'Deploying to test latest prod version'
+				stage 'Tests on test latest prod version'
+				echo 'Running tests on test with latest prod version'
 
 				stage 'Deploy to stage'
 				echo 'Deploying to stage'

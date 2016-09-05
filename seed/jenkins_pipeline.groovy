@@ -16,7 +16,7 @@ job('jenkins-pipeline-seed') {
             removeViewAction('DELETE')
             ignoreExisting(false)
             additionalClasspath([
-                'src/main/groovy', 'src/main/resources'
+                'src/main/groovy', 'src/main/resources', 'src/main/bash'
             ].join("\n"))
         }
     }

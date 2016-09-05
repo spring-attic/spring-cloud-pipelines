@@ -48,6 +48,40 @@ dsl.job("${projectName}-test-env-test") {
 	}
 	publishers {
 		downstreamParameterized {
+			trigger("${projectName}-test-env-rollback-deploy") {
+				triggerWithNoParameters()
+			}
+		}
+	}
+}
+
+dsl.job("${projectName}-test-env-rollback-deploy") {
+	deliveryPipelineConfiguration('Test', 'Deploy to test latest prod version')
+	wrappers {
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+	}
+	steps {
+		shell("echo 'Deploying to test env previous prod version'")
+	}
+	publishers {
+		downstreamParameterized {
+			trigger("${projectName}-test-env-rollback-test") {
+				triggerWithNoParameters()
+			}
+		}
+	}
+}
+
+dsl.job("${projectName}-test-env-rollback-test") {
+	deliveryPipelineConfiguration('Test', 'Tests on test latest prod version')
+	wrappers {
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+	}
+	steps {
+		shell("echo 'Running tests on test env with latest prod version'")
+	}
+	publishers {
+		downstreamParameterized {
 			trigger("${projectName}-stage-env-deploy") {
 				triggerWithNoParameters()
 			}
@@ -81,7 +115,11 @@ dsl.job("${projectName}-stage-env-test") {
 		shell("echo 'Running tests on stage env'")
 	}
 	publishers {
-		buildPipelineTrigger("${projectName}-prod-env-deploy")
+		buildPipelineTrigger("${projectName}-prod-env-deploy") {
+			parameters {
+				currentBuild()
+			}
+		}
 	}
 }
 
@@ -94,8 +132,10 @@ dsl.job("${projectName}-prod-env-deploy") {
 		shell("echo 'Deploying to prod env blue instance'")
 	}
 	publishers {
-		downstreamParameterized {
-			trigger("${projectName}-prod-env-complete")
+		buildPipelineTrigger("${projectName}-prod-env-complete") {
+			parameters {
+				currentBuild()
+			}
 		}
 	}
 }

@@ -21,7 +21,9 @@ import javaposse.jobdsl.dsl.DslFactory
 	- click the `Allow token macro processing` in the Jenkins configuration
 	- define the aforementioned masked env vars
 	- customize the java version
-	- add a Credential to allow pushing the Git tag
+	- add a Credential to allow pushing the Git tag. Credential is called 'git'
+	- setup `Config File Management` to ensure that every slave has the Maven's settings.xml set up.
+		Otherwise `./mvnw clean deploy` won't work
 	- if you can't see ${PIPELINE_VERSION} being resolved in the initial job, check the logs
 
 	WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
@@ -31,14 +33,12 @@ import javaposse.jobdsl.dsl.DslFactory
 	to whitelist specific parameter names, even though it represents a security breach
 
 	TODO: TO develop
-	- download eureka + stubrunner on demand only (will speed up things dramatically)
 	- convert all groovy functions into bash functions
 	- move the functions to src/main/bash and write bash tests
-	- always override the property of stubrunner.ids
 	- resolve group / artifact / version ids from Maven instead of passing them
 	- perform blue green deployment
 	- implement the complete step
-	- add tests for StubRUnner + Eureka
+	- add tests for StubRunner + Eureka
 */
 
 DslFactory dsl = this
@@ -107,11 +107,16 @@ dsl.job("${projectName}-build") {
 		environmentVariables {
 			maskPasswords()
 		}
+		parameters {
+			booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
+			booleanParam('REDEPLOY_INFRA', false, "If Eureka & StubRunner binaries should be redeployed if already present")
+		}
 	}
 	jdk(jdkVersion)
 	scm {
 		git {
 			remote {
+				name('origin')
 				url(fullGitRepo)
 				branch('master')
 				credentials(gitCredentialsId)
@@ -156,24 +161,23 @@ dsl.job("${projectName}-test-env-deploy") {
 				url(fullGitRepo)
 				branch('dev/${PIPELINE_VERSION}')
 			}
-			extensions {
-				wipeOutWorkspace()
-			}
 		}
 	}
 	steps {
-		shell("""\
+		shell("""#!/bin/bash
+		set -e
 		# Download all the necessary jars
-		${downloadJar(repoWithJars, projectGroupId, projectArtifactId, '${PIPELINE_VERSION}')}
-		${downloadJar(repoWithJars, eurekaGroupId, eurekaArtifactId, eurekaVersion)}
-		${downloadJar(repoWithJars, stubRunnerBootGroupId, stubRunnerBootArtifactId, stubRunnerBootVersion)}
+		${downloadJar('true', repoWithJars, projectGroupId, projectArtifactId, '${PIPELINE_VERSION}')}
+		${downloadJar('${REDEPLOY_INFRA}', repoWithJars, eurekaGroupId, eurekaArtifactId, eurekaVersion)}
+		${downloadJar('${REDEPLOY_INFRA}', repoWithJars, stubRunnerBootGroupId, stubRunnerBootArtifactId, stubRunnerBootVersion)}
 		""")
-		shell("""\
-		${logInToCf(cfTestUsername, cfTestPassword, cfTestOrg, cfTestSpace)}
+		shell("""#!/bin/bash
+		set -e
+		${logInToCf('${REDOWNLOAD_INFRA}',cfTestUsername, cfTestPassword, cfTestOrg, cfTestSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
-		${deployEureka("${eurekaArtifactId}-${eurekaVersion}")}
-		${deployStubRunnerBoot("${stubRunnerBootArtifactId}-${stubRunnerBootVersion}")}
+		${deployEureka('${REDEPLOY_INFRA}', "${eurekaArtifactId}-${eurekaVersion}")}
+		${deployStubRunnerBoot('${REDEPLOY_INFRA}', "${stubRunnerBootArtifactId}-${stubRunnerBootVersion}")}
 		# deploy app
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
 		${propagatePropertiesForTests(projectArtifactId)}
@@ -183,7 +187,8 @@ dsl.job("${projectName}-test-env-deploy") {
 		downstreamParameterized {
 			trigger("${projectName}-test-env-test") {
 				parameters {
-					propertiesFile('target/test.properties')
+					propertiesFile('target/test.properties', true)
+					currentBuild()
 				}
 				triggerWithNoParameters()
 			}
@@ -202,9 +207,6 @@ dsl.job("${projectName}-test-env-test") {
 				url(fullGitRepo)
 				branch('dev/${PIPELINE_VERSION}')
 			}
-			extensions {
-				wipeOutWorkspace()
-			}
 		}
 	}
 	steps {
@@ -213,7 +215,100 @@ dsl.job("${projectName}-test-env-test") {
 	publishers {
 		archiveJunit('**/surefire-reports/*.xml')
 		downstreamParameterized {
+			trigger("${projectName}-test-env-rollback-deploy") {
+				parameters {
+					currentBuild()
+				}
+				triggerWithNoParameters()
+			}
+		}
+	}
+}
+
+dsl.job("${projectName}-test-env-rollback-deploy") {
+	deliveryPipelineConfiguration('Test', 'Deploy to test latest prod version')
+	wrappers {
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+		maskPasswords()
+	}
+	scm {
+		git {
+			remote {
+				url(fullGitRepo)
+				branch('dev/${PIPELINE_VERSION}')
+			}
+		}
+	}
+	steps {
+		shell("""#!/bin/bash
+		set -e
+		# Find latest prod version
+		LATEST_PROD_TAG=\$( ${findLatestProdTag()} )
+		echo "Last prod tag equals \${LATEST_PROD_TAG}"
+		if [[ -z "\${LATEST_PROD_TAG}" ]]; then
+			echo "No prod release took place - skipping this step"
+		else
+			# Downloading latest jar
+			LATEST_PROD_VERSION=\${LATEST_PROD_TAG#prod/}
+			echo "Last prod version equals \${LATEST_PROD_VERSION}"
+			${downloadJar('true', repoWithJars, projectGroupId, projectArtifactId, '${LATEST_PROD_VERSION}')}
+			${logInToCf('${REDOWNLOAD_INFRA}',cfTestUsername, cfTestPassword, cfTestOrg, cfTestSpace)}
+			# deploy app
+			${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${LATEST_PROD_VERSION}")}
+			${propagatePropertiesForTests(projectArtifactId)}
+			# Adding latest prod tag
+			echo "LATEST_PROD_TAG=\${LATEST_PROD_TAG}" >> target/test.properties
+		fi
+		""")
+	}
+	publishers {
+		downstreamParameterized {
+			trigger("${projectName}-test-env-rollback-test") {
+				triggerWithNoParameters()
+				parameters {
+					propertiesFile('target/test.properties', true)
+					currentBuild()
+				}
+			}
+		}
+	}
+}
+
+dsl.job("${projectName}-test-env-rollback-test") {
+	deliveryPipelineConfiguration('Test', 'Tests on test latest prod version')
+	wrappers {
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+		parameters {
+			stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
+		}
+	}
+	scm {
+		git {
+			remote {
+				url(fullGitRepo)
+				branch('${LATEST_PROD_TAG}')
+			}
+		}
+	}
+	steps {
+		shell("""#!/bin/bash
+		set -e
+		if [[ "\${LATEST_PROD_TAG}" == "master" ]]; then
+			echo "No prod release took place - skipping this step"
+		else
+			${runSmokeTests()}
+		fi
+		""")
+	}
+	publishers {
+		archiveJunit('**/surefire-reports/*.xml') {
+			allowEmptyResults()
+		}
+		downstreamParameterized {
 			trigger("${projectName}-stage-env-deploy") {
+				parameters {
+					currentBuild()
+				}
 				triggerWithNoParameters()
 			}
 		}
@@ -232,24 +327,23 @@ dsl.job("${projectName}-stage-env-deploy") {
 				url(fullGitRepo)
 				branch('dev/${PIPELINE_VERSION}')
 			}
-			extensions {
-				wipeOutWorkspace()
-			}
 		}
 	}
 	steps {
-		shell("""\
+		shell("""#!/bin/bash
+		set -e
 		# Download all the necessary jars
-		${downloadJar(repoWithJars, projectGroupId, projectArtifactId, '${PIPELINE_VERSION}')}
-		${downloadJar(repoWithJars, eurekaGroupId, eurekaArtifactId, eurekaVersion)}
-		${downloadJar(repoWithJars, stubRunnerBootGroupId, stubRunnerBootArtifactId, stubRunnerBootVersion)}
+		${downloadJar('true', repoWithJars, projectGroupId, projectArtifactId, '${PIPELINE_VERSION}')}
+		${downloadJar('${REDEPLOY_INFRA}', repoWithJars, eurekaGroupId, eurekaArtifactId, eurekaVersion)}
+		${downloadJar('${REDEPLOY_INFRA}', repoWithJars, stubRunnerBootGroupId, stubRunnerBootArtifactId, stubRunnerBootVersion)}
 		""")
-		shell("""\
-		${logInToCf(cfStageUsername, cfStagePassword, cfStageOrg, cfStageSpace)}
+		shell("""#!/bin/bash
+		set -e
+		${logInToCf('${REDOWNLOAD_INFRA}',cfStageUsername, cfStagePassword, cfStageOrg, cfStageSpace)}
 		# setup infra
 		${deployRabbitMqToCf()}
-		${deployEureka("${eurekaArtifactId}-${eurekaVersion}")}
-		${deployStubRunnerBoot("${stubRunnerBootArtifactId}-${stubRunnerBootVersion}")}
+		${deployEureka('${REDOWNLOAD_INFRA}', "${eurekaArtifactId}-${eurekaVersion}")}
+		${deployStubRunnerBoot('${REDOWNLOAD_INFRA}', "${stubRunnerBootArtifactId}-${stubRunnerBootVersion}")}
 		# deploy app
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
 		${propagatePropertiesForTests(projectArtifactId)}
@@ -259,7 +353,8 @@ dsl.job("${projectName}-stage-env-deploy") {
 		downstreamParameterized {
 			trigger("${projectName}-stage-env-test") {
 				parameters {
-					propertiesFile('target/test.properties')
+					currentBuild()
+					propertiesFile('target/test.properties', true)
 				}
 				triggerWithNoParameters()
 			}
@@ -278,17 +373,21 @@ dsl.job("${projectName}-stage-env-test") {
 				url(fullGitRepo)
 				branch('dev/${PIPELINE_VERSION}')
 			}
-			extensions {
-				wipeOutWorkspace()
-			}
 		}
 	}
 	steps {
-		shell(runSmokeTests())
+		shell("""#!/bin/bash
+		set -e
+		${runSmokeTests()}
+		""")
 	}
 	publishers {
 		archiveJunit('**/surefire-reports/*.xml')
-		buildPipelineTrigger("${projectName}-prod-env-deploy")
+		buildPipelineTrigger("${projectName}-prod-env-deploy") {
+			parameters {
+				currentBuild()
+			}
+		}
 	}
 }
 
@@ -301,27 +400,31 @@ dsl.job("${projectName}-prod-env-deploy") {
 	scm {
 		git {
 			remote {
+				name('origin')
 				url(fullGitRepo)
 				branch('dev/${PIPELINE_VERSION}')
-			}
-			extensions {
-				wipeOutWorkspace()
 			}
 		}
 	}
 	steps {
-		shell("""\
+		shell("""#!/bin/bash
+		set -e
 		# Download all the necessary jars
-		${downloadJar(repoWithJars, projectGroupId, projectArtifactId, '${PIPELINE_VERSION}')}
+		${downloadJar('true', repoWithJars, projectGroupId, projectArtifactId, '${PIPELINE_VERSION}')}
 		""")
-		shell("""\
-		${logInToCf(cfProdUsername, cfProdPassword, cfProdOrg, cfProdSpace)}
+		shell("""#!/bin/bash
+		set -e
+		${logInToCf('${REDOWNLOAD_INFRA}',cfProdUsername, cfProdPassword, cfProdOrg, cfProdSpace)}
 		# deploy the app
 		${deployAndRestartAppWithName(projectArtifactId, "${projectArtifactId}-\${PIPELINE_VERSION}")}
 		""")
 	}
 	publishers {
-		buildPipelineTrigger("${projectName}-prod-env-complete")
+		buildPipelineTrigger("${projectName}-prod-env-complete") {
+			parameters {
+				currentBuild()
+			}
+		}
 		git {
 			tag('origin', "prod/\${PIPELINE_VERSION}") {
 				pushOnlyIfSuccess()
@@ -366,14 +469,23 @@ dsl.deliveryPipelineView("${projectName}-pipeline") {
 //  ======= JOBS =======
 
 //  ======= FUNCTIONS =======
-String logInToCf(String cfUsername, String cfPassword, String cfOrg, String cfSpace) {
+String logInToCf(String redownloadInfra, String cfUsername, String cfPassword, String cfOrg, String cfSpace) {
 	return """
-		echo "Downloading Cloud Foundry"
-		curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" | tar -zx
+		CF_INSTALLED=\$( cf --version || echo "false" )
+		CF_DOWNLOADED=\$( test -r cf && echo "true" || echo "false" )
+		if [[ \${CF_INSTALLED} == "false" && (\${CF_DOWNLOADED} == "false" || \${CF_DOWNLOADED} == "true" && ${redownloadInfra} == "true") ]]; then
+			echo "Downloading Cloud Foundry"
+			curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" | tar -zx
+			CF_DOWNLOADED="true"
+		else
+			echo "CF is already installed or was already downloaded but the flag to redownload was disabled"
+		fi
 
-		echo "Setting alias to cf"
-		alias cf=`pwd`/cf
-		export cf=`pwd`/cf
+		if [[ \${CF_DOWNLOADED} == "true" ]]; then
+			echo "Adding CF to PATH"
+			PATH=\${PATH}:`pwd`
+			chmod +x cf
+		fi
 
 		echo "Cloud foundry version"
 		cf --version
@@ -420,31 +532,44 @@ String deployAppWithName(String appName, String jarName, boolean useManifest = f
 	"""
 }
 
+String setEnvVarIfMissing(String appName, String key, String value) {
+	return "cf env ${appName} | grep ${key} || ${setEnvVar(appName, key, value)}"
+}
+
 String setEnvVar(String appName, String key, String value) {
-	return "cf env ${appName} | grep ${key} || cf set-env ${appName} ${key} ${value}"
+	return "cf set-env ${appName} ${key} ${value}"
 }
 
 String restartApp(String appName) {
 	return "cf restart ${appName}"
 }
 
-String deployEureka(String jarName, String appName = "github-eureka") {
+String deployEureka(String redeploy, String jarName, String appName = "github-eureka") {
 	return """
-	${deployAppWithName(appName, jarName)}
-	${restartApp(appName)}
-	${createServiceWithName(appName)}
+	if [[ ! -e target/${jarName}.jar || ( -e target/${jarName}.jar && ${redeploy} == "true" ) ]]; then
+		${deployAppWithName(appName, jarName)}
+		${restartApp(appName)}
+		${createServiceWithName(appName)}
+	else
+		echo "The target/${jarName}.jar is missing or redeploy flag was turned off"
+	fi
 	"""
 }
 
-String deployStubRunnerBoot(String jarName, String eurekaService = "github-eureka", String rabbitmqService = "github-rabbitmq") {
+String deployStubRunnerBoot(String redeploy, String jarName, String eurekaService = "github-eureka",
+							String rabbitmqService = "github-rabbitmq", String stubRunnerName = "stubrunner") {
 	return """
-	${deployAppWithName("stubrunner", jarName)}
-	${extractMavenProperty("stubrunner.ids")}
-	${setEnvVar("stubrunner", "stubrunner.ids", '${MAVEN_PROPERTY}')}
-	${bindService(eurekaService, "stubrunner")}
-	${bindService(rabbitmqService, "stubrunner")}
-	${restartApp("stubrunner")}
-	${createServiceWithName("stubrunner")}
+	if [[ ! -e target/${jarName}.jar || ( -e target/${jarName}.jar && ${redeploy} == "true" ) ]]; then
+		${deployAppWithName(stubRunnerName, jarName)}
+		${extractMavenProperty("stubrunner.ids")}
+		${setEnvVar(stubRunnerName, "stubrunner.ids", '${MAVEN_PROPERTY}')}
+		${bindService(eurekaService, stubRunnerName)}
+		${bindService(rabbitmqService, stubRunnerName)}
+		${restartApp(stubRunnerName)}
+		${createServiceWithName(stubRunnerName)}
+	else
+		echo "The target/${jarName}.jar is missing or redeploy flag was turned off"
+	fi
 	"""
 }
 
@@ -473,21 +598,26 @@ String extractMavenProperty(String prop) {
 }
 
 // The values of group / artifact ids can be later retrieved from Maven
-String downloadJar(String repoWithJars, String groupId, String artifactId, String version) {
+String downloadJar(String redownloadInfra, String repoWithJars, String groupId, String artifactId, String version) {
 	return """
-	mkdir target --parents
-	curl ${repoWithJars}/${groupId.replace(".", "/")}/${artifactId}/${version}/${artifactId}-${version}.jar -o target/${artifactId}-${version}.jar
+	DESTINATION=target/${artifactId}-${version}.jar
+	if [[ ! -e \${DESTINATION} || ( -e \${DESTINATION} && ${redownloadInfra} == "true" ) ]]; then
+		mkdir target --parents
+		PATH_TO_JAR=${repoWithJars}/${groupId.replace(".", "/")}/${artifactId}/${version}/${artifactId}-${version}.jar
+		echo "Downloading \${PATH_TO_JAR} to \${DESTINATION}"
+		curl \${PATH_TO_JAR} -o \${DESTINATION}
+	fi
 	"""
 }
 
-String propagatePropertiesForTests(String projectArtifactId) {
+String propagatePropertiesForTests(String projectArtifactId, String stubRunnerHost = 'stubrunner') {
 	return """
 	# retrieve host of the app / stubrunner
 	# we have to store them in a file that will be picked as properties
 	rm -rf target/test.properties
 	${appHost(projectArtifactId)}
 	echo "APPLICATION_URL=\${APP_HOST}" >> target/test.properties
-	${appHost('stubrunner')}
+	${appHost(stubRunnerHost)}
 	echo "STUBRUNNER_URL=\${APP_HOST}" >> target/test.properties
 	"""
 }
@@ -495,6 +625,21 @@ String propagatePropertiesForTests(String projectArtifactId) {
 // Function that executes integration tests
 String runSmokeTests() {
 	return './mvnw clean install -Pintegration -Dapplication.url=${APPLICATION_URL} -Dstubrunner.url=${STUBRUNNER_URL}'
+}
+
+String findLatestProdTag() {
+	return '''
+	LAST_PROD_TAG=$(git for-each-ref --sort=taggerdate --format '%(refname) %(taggerdate)' refs/tags/prod | head -n 1)
+	LAST_PROD_TAG=${LAST_PROD_TAG#refs/tags/}
+	echo ${LAST_PROD_TAG}
+	'''
+}
+
+String extractVersionFromProdTag(String tag) {
+	return """
+	LAST_PROD_VERSION=\${${tag}#prod/}
+	echo \${LAST_PROD_VERSION}
+	"""
 }
 
 //  ======= FUNCTIONS =======
