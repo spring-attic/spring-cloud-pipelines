@@ -321,11 +321,7 @@ dsl.job("${projectName}-prod-env-deploy") {
 		""")
 	}
 	publishers {
-		downstreamParameterized {
-			trigger("${projectName}-prod-env-complete") {
-				triggerWithNoParameters()
-			}
-		}
+		buildPipelineTrigger("${projectName}-prod-env-complete")
 		git {
 			tag('origin', "prod/\${PIPELINE_VERSION}") {
 				pushOnlyIfSuccess()
