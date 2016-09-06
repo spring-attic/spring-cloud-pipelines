@@ -115,7 +115,7 @@ function deployStubRunnerBoot() {
     local eurekaService=${3:-github-eureka}
     local rabbitmqService=${4:-github-rabbitmq}
     local stubRunnerName=${5:-stubrunner}
-    echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}], eureka [${eurekaService}], rabimq [${rabbitmqService}]"
+    echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}], eureka [${eurekaService}], rabbitmq [${rabbitmqService}]"
     if [[ ! -e target/${jarName}.jar || ( -e target/${jarName}.jar && ${redeploy} == "true" ) ]]; then
         deployAppWithName ${stubRunnerName} jarName
         local mavenProp = $( extractMavenProperty "stubrunner.ids" )
@@ -205,4 +205,14 @@ function extractVersionFromProdTag() {
     local tag=${1}
     LAST_PROD_VERSION=${tag#prod/}
     echo ${LAST_PROD_VERSION}
+}
+
+function retrieveGroupId() {
+    local result=$( ./mvnw org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
+    echo "${result}"
+}
+
+function retrieveArtifactId() {
+    local result=$( ./mvnw org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
+    echo "${result}"
 }

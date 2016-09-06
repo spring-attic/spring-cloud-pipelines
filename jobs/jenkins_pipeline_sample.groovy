@@ -49,48 +49,34 @@ String cfTestUsername = '${CF_TEST_USERNAME}'
 String cfTestPassword = '${CF_TEST_PASSWORD}'
 String cfTestOrg = '${CF_TEST_ORG}'
 String cfTestSpace = '${CF_TEST_SPACE}'
-
 String cfStageUsername = '${CF_STAGE_USERNAME}'
 String cfStagePassword = '${CF_STAGE_PASSWORD}'
 String cfStageOrg = '${CF_STAGE_ORG}'
 String cfStageSpace = '${CF_STAGE_SPACE}'
-
 String cfProdUsername = '${CF_PROD_USERNAME}'
 String cfProdPassword = '${CF_PROD_PASSWORD}'
 String cfProdOrg = '${CF_PROD_ORG}'
 String cfProdSpace = '${CF_PROD_SPACE}'
+String repoWithJarsEnvVar = '${REPO_WITH_JARS}'
 
 // Adjust this to be in accord with your installations
 String jdkVersion = 'jdk8'
-String repoWithJars = "http://repo.spring.io/libs-milestone"
 //  ======= GLOBAL =======
-
 
 //  ======= PER REPO VARIABLES =======
 String projectName = 'jenkins-pipeline-sample'
 String organization = "dsyer"
 String gitRepoName = "github-analytics"
 String fullGitRepo = "https://github.com/${organization}/${gitRepoName}"
-// TODO: Retrieve from maven
-String projectGroupId = 'com.example.github'
-// TODO: Retrieve from maven
-String projectArtifactId = gitRepoName
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
 String gitCredentialsId = 'git'
-// Discovery + Stub runner boot
-String eurekaGroupId = 'com.example.eureka'
-String eurekaArtifactId = 'github-eureka'
-String eurekaVersion = '0.0.1.M1'
-String stubRunnerBootGroupId = 'com.example.github'
-String stubRunnerBootArtifactId = 'github-analytics-stub-runner-boot'
-String stubRunnerBootVersion = '0.0.1.M1'
+
 // TODO: Change to sth like this
 // Example of a version with date and time in the name
 //String pipelineVersion = '${new Date().format("yyyyMMddHHss")}'
 String pipelineVersion = '0.0.1.M1'
 
 //  ======= PER REPO VARIABLES =======
-
 
 
 //  ======= JOBS =======
@@ -110,6 +96,12 @@ dsl.job("${projectName}-build") {
 		parameters {
 			booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
 			booleanParam('REDEPLOY_INFRA', false, "If Eureka & StubRunner binaries should be redeployed if already present")
+			stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
+			stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
+			stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
+			stringParam('STUBRUNNER_GROUP_ID', 'com.example.eureka', "Group Id for Stub Runner used by tests")
+			stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
+			stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
 		}
 	}
 	jdk(jdkVersion)
@@ -127,7 +119,12 @@ dsl.job("${projectName}-build") {
 		}
 	}
 	steps {
-		shell('./mvnw clean verify deploy -Dversion=${PIPELINE_VERSION}')
+		shell("""#!/bin/bash
+		set -e
+
+		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
+		${readFileFromWorkspace('src/main/bash/build_and_upload.sh')}
+		""")
 	}
 	publishers {
 		archiveJunit('**/surefire-reports/*.xml')
@@ -168,25 +165,7 @@ dsl.job("${projectName}-test-env-deploy") {
 		set -e
 
 		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
-
-		# Download all the necessary jars
-		downloadJar 'true' $repoWithJars $projectGroupId $projectArtifactId \${PIPELINE_VERSION}
-		downloadJar \${REDEPLOY_INFRA} $repoWithJars $eurekaGroupId $eurekaArtifactId $eurekaVersion
-		downloadJar \${REDEPLOY_INFRA} $repoWithJars $stubRunnerBootGroupId $stubRunnerBootArtifactId $stubRunnerBootVersion
-		""")
-		shell("""#!/bin/bash
-		set -e
-
-		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
-
-		logInToCf \${REDOWNLOAD_INFRA} $cfTestUsername $cfTestPassword $cfTestOrg $cfTestSpace
-		# setup infra
-		deployRabbitMqToCf
-		deployEureka \${REDEPLOY_INFRA} "${eurekaArtifactId}-${eurekaVersion}"
-		deployStubRunnerBoot \${REDEPLOY_INFRA} "${stubRunnerBootArtifactId}-${stubRunnerBootVersion}"
-		# deploy app
-		deployAndRestartAppWithName $projectArtifactId "${projectArtifactId}-\${PIPELINE_VERSION}"
-		propagatePropertiesForTests $projectArtifactId
+		${readFileFromWorkspace('src/main/bash/test_deploy.sh')}
 		""")
 	}
 	publishers {
@@ -217,9 +196,10 @@ dsl.job("${projectName}-test-env-test") {
 	}
 	steps {
 		shell("""#!/bin/bash
-		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
+		set -e
 
-		runSmokeTests \${APPLICATION_URL} \${STUBRUNNER_URL}
+		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
+		${readFileFromWorkspace('src/main/bash/test_smoke.sh')}
 		""")
 	}
 	publishers {
@@ -254,25 +234,7 @@ dsl.job("${projectName}-test-env-rollback-deploy") {
 		set -e
 
 		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
-
-		# Find latest prod version
-		rm -rf target/test.properties
-		LATEST_PROD_TAG=\$( findLatestProdTag )
-		echo "Last prod tag equals \${LATEST_PROD_TAG}"
-		if [[ -z "\${LATEST_PROD_TAG}" ]]; then
-			echo "No prod release took place - skipping this step"
-		else
-			# Downloading latest jar
-			LATEST_PROD_VERSION=\${LATEST_PROD_TAG#prod/}
-			echo "Last prod version equals \${LATEST_PROD_VERSION}"
-			downloadJar 'true' $repoWithJars $projectGroupId $projectArtifactId \${LATEST_PROD_VERSION}
-			logInToCf \${REDOWNLOAD_INFRA} $cfTestUsername $cfTestPassword $cfTestOrg $cfTestSpace
-			# deploy app
-			deployAndRestartAppWithName $projectArtifactId "${projectArtifactId}-\${LATEST_PROD_VERSION}"
-			propagatePropertiesForTests $projectArtifactId
-			# Adding latest prod tag
-			echo "LATEST_PROD_TAG=\${LATEST_PROD_TAG}" >> target/test.properties
-		fi
+		${readFileFromWorkspace('src/main/bash/test_rollback_deploy.sh')}
 		""")
 	}
 	publishers {
@@ -309,12 +271,7 @@ dsl.job("${projectName}-test-env-rollback-test") {
 		set -e
 
 		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
-
-		if [[ "\${LATEST_PROD_TAG}" == "master" ]]; then
-			echo "No prod release took place - skipping this step"
-		else
-			runSmokeTests \${APPLICATION_URL} \${STUBRUNNER_URL}
-		fi
+		${readFileFromWorkspace('src/main/bash/test_rollback_smoke.sh')}
 		""")
 	}
 	publishers {
@@ -351,25 +308,7 @@ dsl.job("${projectName}-stage-env-deploy") {
 		set -e
 
 		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
-
-		# Download all the necessary jars
-		downloadJar 'true' $repoWithJars $projectGroupId $projectArtifactId \${PIPELINE_VERSION}
-		downloadJar \${REDEPLOY_INFRA} $repoWithJars $eurekaGroupId $eurekaArtifactId $eurekaVersion
-		downloadJar \${REDEPLOY_INFRA} $repoWithJars $stubRunnerBootGroupId $stubRunnerBootArtifactId $stubRunnerBootVersion
-		""")
-		shell("""#!/bin/bash
-		set -e
-
-		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
-
-		logInToCf \${REDOWNLOAD_INFRA} $cfStageUsername $cfStagePassword $cfStageOrg $cfStageSpace
-		# setup infra
-		deployRabbitMqToCf
-		deployEureka \${REDOWNLOAD_INFRA} "${eurekaArtifactId}-${eurekaVersion}"
-		deployStubRunnerBoot \${REDOWNLOAD_INFRA} "${stubRunnerBootArtifactId}-${stubRunnerBootVersion}"
-		# deploy app
-		deployAndRestartAppWithName $projectArtifactId "${projectArtifactId}-\${PIPELINE_VERSION}"
-		propagatePropertiesForTests $projectArtifactId
+		${readFileFromWorkspace('src/main/bash/stage_deploy.sh')}
 		""")
 	}
 	publishers {
@@ -403,8 +342,7 @@ dsl.job("${projectName}-stage-env-test") {
 		set -e
 
 		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
-
-		runSmokeTests \${APPLICATION_URL} \${STUBRUNNER_URL}
+		${readFileFromWorkspace('src/main/bash/stage_smoke.sh')}
 		""")
 	}
 	publishers {
@@ -437,18 +375,7 @@ dsl.job("${projectName}-prod-env-deploy") {
 		set -e
 
 		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
-
-		# Download all the necessary jars
-		downloadJar 'true' $repoWithJars $projectGroupId $projectArtifactId \${PIPELINE_VERSION}
-		""")
-		shell("""#!/bin/bash
-		set -e
-
-		${readFileFromWorkspace('src/main/bash/pipeline.sh')}
-
-		logInToCf \${REDOWNLOAD_INFRA} $cfProdUsername $cfProdPassword $cfProdOrg $cfProdSpace
-		# deploy the app
-		deployAndRestartAppWithName $projectArtifactId "${projectArtifactId}-\${PIPELINE_VERSION}"
+		${readFileFromWorkspace('src/main/bash/prod_deploy.sh')}
 		""")
 	}
 	publishers {
@@ -473,7 +400,12 @@ dsl.job("${projectName}-prod-env-complete") {
 		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 	}
 	steps {
-		shell("echo 'Disabling blue instance'")
+		shell("""#!/bin/bash
+			set - e
+
+			${readFileFromWorkspace('src/main/bash/pipeline.sh') }
+			${readFileFromWorkspace('src/main/bash/prod_complete.sh') }
+		""")
 	}
 }
 
