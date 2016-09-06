@@ -17,6 +17,7 @@ class JobScriptsSpec extends Specification {
 		given:
 
 		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.availableFiles['src/main/bash/pipeline.sh'] = JobScriptsSpec.getResource('/pipeline.sh').text
 		DslScriptLoader loader = new DslScriptLoader(jm)
 
 		when:

@@ -6,7 +6,7 @@ sourceSets {
             srcDirs 'jobs', 'src/main/groovy'
         }
         resources {
-            srcDirs 'src/main/resources'
+            srcDirs 'src/main/resources', 'src/main/bash'
         }
     }
 }
@@ -35,6 +35,7 @@ test {
 task workspace(type: Copy) {
     from fileTree(dir: 'jobs')
     from 'src/main/groovy'
+    from 'src/main/bash'
     into 'build/workspace'
 }
 
