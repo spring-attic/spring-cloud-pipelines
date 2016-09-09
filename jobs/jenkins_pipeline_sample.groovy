@@ -70,7 +70,8 @@ String cronValue = "H H * * 7" //every Sunday - I guess you should run it more o
 String gitCredentialsId = binding.variables['GIT_CREDENTIAL_ID'] ?: 'git'
 
 // Example of a version with date and time in the name
-String pipelineVersion = '1.0.0.M1-${new Date().format("yyMMdd_HHmmss")}-VERSION'
+//String pipelineVersion = '1.0.0.M1-${new Date().format("yyMMdd_HHmmss")}-VERSION'
+String pipelineVersion = '0.0.1.M1'
 
 //  ======= PER REPO VARIABLES =======
 
