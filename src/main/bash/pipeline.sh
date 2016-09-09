@@ -185,8 +185,10 @@ function propagatePropertiesForTests() {
     # we have to store them in a file that will be picked as properties
     rm -rf target/test.properties
     local host=$( appHost "${projectArtifactId}" )
+    APPLICATION_URL="${host}"
     echo "APPLICATION_URL=${host}" >> ${fileLocation}
     host=$( appHost "${stubRunnerHost}" )
+    STUBRUNNER_URL="${host}"
     echo "STUBRUNNER_URL=${host}" >> ${fileLocation}
 }
 
