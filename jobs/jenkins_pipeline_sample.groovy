@@ -69,7 +69,7 @@ String organization = "dsyer"
 String gitRepoName = "github-analytics"
 String fullGitRepo = "https://github.com/${organization}/${gitRepoName}"
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
-String gitCredentialsId = 'git'
+String gitCredentialsId = binding.variables['GIT_CREDENTIAL_ID'] ?: 'git'
 
 // TODO: Change to sth like this
 // Example of a version with date and time in the name
