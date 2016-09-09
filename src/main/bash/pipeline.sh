@@ -178,13 +178,29 @@ function downloadJar() {
 function propagatePropertiesForTests() {
     local projectArtifactId=${1} 
     local stubRunnerHost=${2:-stubrunner}
+    local fileLocation=${3:-target/test.properties}
     # retrieve host of the app / stubrunner
     # we have to store them in a file that will be picked as properties
     rm -rf target/test.properties
     local host=$( appHost "${projectArtifactId}" )
-    echo "APPLICATION_URL=${host}" >> target/test.properties
+    echo "APPLICATION_URL=${host}" >> ${fileLocation}
     host=$( appHost "${stubRunnerHost}" )
-    echo "STUBRUNNER_URL=${host}" >> target/test.properties
+    echo "STUBRUNNER_URL=${host}" >> ${fileLocation}
+}
+
+function readTestPropertiesFromFile() {
+    local fileLocation=${1:-target/test.properties}
+    if [ -f "${fileLocation}" ]
+    then
+      echo "${fileLocation} found."
+      while IFS='=' read -r key value
+      do
+        key=$(echo ${key} | tr '.' '_')
+        eval "${key}='${value}'"
+      done < "${fileLocation}"
+    else
+      echo "${fileLocation} not found."
+    fi
 }
 
 # Function that executes integration tests
