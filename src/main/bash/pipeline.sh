@@ -150,7 +150,7 @@ function createServiceWithName() {
 # and change this function
 function extractMavenProperty() {
     local prop=${1}
-    MAVEN_PROPERTY=$(./mvnw -q \
+    MAVEN_PROPERTY=$(./mvnw ${MAVEN_ARGS} -q \
                     -Dexec.executable="echo" \
                     -Dexec.args="\${${prop}}" \
                     --non-recursive \
@@ -212,7 +212,7 @@ function runSmokeTests() {
     local applicationHost=${1}
     local stubrunnerHost=${2}
     echo "Running smoke tests"
-    ./mvnw clean install -Pintegration -Dapplication.url=${applicationHost} -Dstubrunner.url=${stubrunnerHost}
+    ./mvnw clean install -Pintegration -Dapplication.url=${applicationHost} -Dstubrunner.url=${stubrunnerHost} ${MAVEN_ARGS}
 }
 
 function findLatestProdTag() {
@@ -228,11 +228,11 @@ function extractVersionFromProdTag() {
 }
 
 function retrieveGroupId() {
-    local result=$( ./mvnw org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
+    local result=$( ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
     echo "${result}"
 }
 
 function retrieveArtifactId() {
-    local result=$( ./mvnw org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
+    local result=$( ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
     echo "${result}"
 }
