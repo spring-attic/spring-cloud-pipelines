@@ -18,7 +18,7 @@ else
     LATEST_PROD_VERSION=${LATEST_PROD_TAG#prod/}
     echo "Last prod version equals ${LATEST_PROD_VERSION}"
     downloadJar 'true' ${REPO_WITH_JARS} ${projectGroupId} ${projectArtifactId} ${LATEST_PROD_VERSION}
-    logInToCf ${REDOWNLOAD_INFRA} ${CF_TEST_USERNAME} ${CF_TEST_PASSWORD} ${CF_TEST_ORG} ${CF_TEST_SPACE}
+    logInToCf ${REDOWNLOAD_INFRA} ${CF_TEST_USERNAME} ${CF_TEST_PASSWORD} ${CF_TEST_ORG} ${CF_TEST_SPACE} ${CF_API_URL}
     # deploy app
     deployAndRestartAppWithName ${projectArtifactId} "${projectArtifactId}-${LATEST_PROD_VERSION}"
     propagatePropertiesForTests ${projectArtifactId}
