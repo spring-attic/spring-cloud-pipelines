@@ -33,9 +33,7 @@ import javaposse.jobdsl.dsl.DslFactory
 	to whitelist specific parameter names, even though it represents a security breach
 
 	TODO: TO develop
-	- convert all groovy functions into bash functions
-	- move the functions to src/main/bash and write bash tests
-	- resolve group / artifact / version ids from Maven instead of passing them
+	- write bash tests
 	- perform blue green deployment
 	- implement the complete step
 	- add tests for StubRunner + Eureka
