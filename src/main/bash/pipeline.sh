@@ -33,7 +33,7 @@ function logInToCf() {
     cf api --skip-ssl-validation ${apiUrl}
     set +x
     cf login -u ${cfUsername} -p ${cfPassword} -o ${cfOrg} -s ${cfSpace}
-    set -x
+
 }
 
 function deployRabbitMqToCf() {
@@ -119,7 +119,7 @@ function deployStubRunnerBoot() {
     local stubRunnerName=${5:-stubrunner}
     echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}], eureka [${eurekaService}], rabbitmq [${rabbitmqService}]"
     if [[ ! -e target/${jarName}.jar || ( -e target/${jarName}.jar && ${redeploy} == "true" ) ]]; then
-        deployAppWithName ${stubRunnerName} jarName
+        deployAppWithName ${stubRunnerName} ${jarName}
         local mavenProp = $( extractMavenProperty "stubrunner.ids" )
         setEnvVar ${stubRunnerName} "stubrunner.ids" "${mavenProp}"
         bindService ${eurekaService} ${stubRunnerName}
