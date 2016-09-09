@@ -367,6 +367,7 @@ dsl.job("${projectName}-prod-env-deploy") {
 				name('origin')
 				url(fullGitRepo)
 				branch('dev/${PIPELINE_VERSION}')
+				credentials(gitCredentialsId)
 			}
 		}
 	}
