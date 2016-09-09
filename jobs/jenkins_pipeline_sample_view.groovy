@@ -1,4 +1,8 @@
+import javaposse.jobdsl.dsl.DslFactory
+
 String projectName = 'jenkins-pipeline-sample'
+
+DslFactory dsl = this
 
 dsl.deliveryPipelineView("${projectName}-pipeline") {
 	allowPipelineStart()
