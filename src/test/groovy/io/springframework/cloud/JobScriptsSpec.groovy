@@ -2,11 +2,11 @@ package io.springframework.cloud
 
 import groovy.io.FileType
 import javaposse.jobdsl.dsl.DslScriptLoader
+import javaposse.jobdsl.dsl.GeneratedItems
 import javaposse.jobdsl.dsl.MemoryJobManagement
 import javaposse.jobdsl.dsl.ScriptRequest
 import spock.lang.Specification
 import spock.lang.Unroll
-
 /**
  * Tests that all dsl scripts in the jobs directory will compile.
  */
@@ -30,10 +30,17 @@ class JobScriptsSpec extends Specification {
 		DslScriptLoader loader = new DslScriptLoader(jm)
 
 		when:
-		loader.runScripts([new ScriptRequest(file.text)])
+		GeneratedItems scripts = loader.runScripts([new ScriptRequest(file.text)])
 
 		then:
 		noExceptionThrown()
+
+		and:
+		if (file.name.endsWith('jenkins_pipeline_sample.groovy')) {
+			List<String> jobNames = scripts.jobs.collect { it.jobName }
+			assert jobNames.find { it == "github-analytics-pipeline-build" }
+			assert jobNames.find { it == "github-webhook-pipeline-build" }
+		}
 
 		where:
 		file << jobFiles
