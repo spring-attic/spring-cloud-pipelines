@@ -253,7 +253,7 @@ parsedRepos.each {
 				trigger("${projectName}-test-env-rollback-test") {
 					triggerWithNoParameters()
 					parameters {
-						propertiesFile('target/test.properties', true)
+						propertiesFile('target/test.properties', false)
 						currentBuild()
 					}
 				}
