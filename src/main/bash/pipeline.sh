@@ -155,6 +155,8 @@ function extractMavenProperty() {
                     -Dexec.args="\${${prop}}" \
                     --non-recursive \
                     org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
+    # In some spring cloud projects there is info about deactivating some stuff
+    MAVEN_PROPERTY=$( echo "${MAVEN_PROPERTY}" | tail -1 )
     echo "${MAVEN_PROPERTY}"
 }
 
@@ -229,10 +231,14 @@ function extractVersionFromProdTag() {
 
 function retrieveGroupId() {
     local result=$( ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
+    # In some spring cloud projects there is info about deactivating some stuff
+    result=$( echo "${result}" | tail -1 )
     echo "${result}"
 }
 
 function retrieveArtifactId() {
     local result=$( ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
+    # In some spring cloud projects there is info about deactivating some stuff
+    result=$( echo "${result}" | tail -1 )
     echo "${result}"
 }
