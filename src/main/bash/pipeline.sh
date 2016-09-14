@@ -169,7 +169,7 @@ function downloadJar() {
     local changedGroupId=$( echo "${groupId}" | tr . / )
     local pathToJar=${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.jar
     if [[ ! -e ${destination} || ( -e ${destination} && ${redownloadInfra} == "true" ) ]]; then
-        mkdir target
+        mkdir -p target
         echo "Downloading [${pathToJar}] to [${destination}]"
         curl ${pathToJar} -o ${destination}
     else
