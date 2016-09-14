@@ -67,7 +67,7 @@ String repoWithJarsEnvVar = '${REPO_WITH_JARS}'
 // Adjust this to be in accord with your installations
 String jdkVersion = 'jdk8'
 // Example of a version with date and time in the name
-String pipelineVersion = '1.0.0.M1-${new Date().format("yyMMdd_HHmmss")}-VERSION'
+String pipelineVersion = '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
 //  ======= GLOBAL =======
 
 //  ======= PER REPO VARIABLES =======
