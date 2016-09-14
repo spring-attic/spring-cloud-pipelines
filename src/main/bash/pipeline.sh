@@ -213,8 +213,9 @@ function readTestPropertiesFromFile() {
 function runSmokeTests() {
     local applicationHost=${1}
     local stubrunnerHost=${2}
+    local version=${3}
     echo "Running smoke tests"
-    ./mvnw clean install -Pintegration -Dapplication.url=${applicationHost} -Dstubrunner.url=${stubrunnerHost} ${MAVEN_ARGS}
+    ./mvnw clean install -Pintegration -Dapplication.url=${applicationHost} -Dstubrunner.url=${stubrunnerHost} ${MAVEN_ARGS} -Dversion=${version}
 }
 
 function findLatestProdTag() {
