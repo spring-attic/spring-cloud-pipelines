@@ -99,15 +99,11 @@ parsedRepos.each {
 			githubPush()
 		}
 		wrappers {
-			// Example of a version with date and time in the name
-			//deliveryPipelineVersion('${new Date().format("yyyyMMddHHss")}', true)
 			deliveryPipelineVersion(pipelineVersion, true)
 			environmentVariables {
 				maskPasswords()
 			}
-			parameters {
-				PipelineDefaults.defaultParams(delegate)
-			}
+			parameters PipelineDefaults.defaultParams()
 		}
 		jdk(jdkVersion)
 		scm {
@@ -156,9 +152,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters {
-				PipelineDefaults.defaultParams(delegate)
-			}
+			parameters PipelineDefaults.defaultParams()
 		}
 		scm {
 			git {
@@ -193,9 +187,7 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Tests on test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters {
-				PipelineDefaults.defaultParams(delegate)
-			}
+			parameters PipelineDefaults.defaultParams()
 		}
 		scm {
 			git {
@@ -231,9 +223,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters {
-				PipelineDefaults.defaultParams(delegate)
-			}
+			parameters PipelineDefaults.defaultParams()
 		}
 		scm {
 			git {
@@ -268,9 +258,9 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Tests on test latest prod version')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+			parameters PipelineDefaults.defaultParams()
 			parameters {
 				stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
-				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		scm {
@@ -309,9 +299,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters {
-				PipelineDefaults.defaultParams(delegate)
-			}
+			parameters PipelineDefaults.defaultParams()
 		}
 		scm {
 			git {
@@ -346,9 +334,7 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Stage', 'Tests on stage')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters {
-				PipelineDefaults.defaultParams(delegate)
-			}
+			parameters PipelineDefaults.defaultParams()
 		}
 		scm {
 			git {
@@ -381,9 +367,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters {
-				PipelineDefaults.defaultParams(delegate)
-			}
+			parameters PipelineDefaults.defaultParams()
 		}
 		scm {
 			git {
@@ -423,9 +407,7 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Prod', 'Complete switch over')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters {
-				PipelineDefaults.defaultParams(delegate)
-			}
+			parameters PipelineDefaults.defaultParams()
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -444,9 +426,8 @@ parsedRepos.each {
  */
 class PipelineDefaults {
 
-	protected static Closure context(BuildParametersContext context, @DelegatesTo(BuildParametersContext) Closure params) {
+	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
 		params.resolveStrategy = Closure.DELEGATE_FIRST
-		params.delegate = context
 		return params
 	}
 
@@ -455,8 +436,8 @@ class PipelineDefaults {
 	 * has to define the parameters on input. In order not to copy paste the params we're doing this
 	 * default params method.
 	 */
-	static Closure defaultParams(BuildParametersContext parametersContext) {
-		context(parametersContext) {
+	static Closure defaultParams() {
+		return context {
 			booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
 			booleanParam('REDEPLOY_INFRA', false, "If Eureka & StubRunner binaries should be redeployed if already present")
 			stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
