@@ -1,4 +1,5 @@
 import javaposse.jobdsl.dsl.DslFactory
+import javaposse.jobdsl.dsl.helpers.BuildParametersContext
 
 /*
 	INTRODUCTION:
@@ -105,14 +106,7 @@ parsedRepos.each {
 				maskPasswords()
 			}
 			parameters {
-				booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
-				booleanParam('REDEPLOY_INFRA', false, "If Eureka & StubRunner binaries should be redeployed if already present")
-				stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
-				stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
-				stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
-				stringParam('STUBRUNNER_GROUP_ID', 'com.example.eureka', "Group Id for Stub Runner used by tests")
-				stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
-				stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
+				PipelineDefaults.defaultParams()
 			}
 		}
 		jdk(jdkVersion)
@@ -162,6 +156,9 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
+			parameters {
+				PipelineDefaults.defaultParams()
+			}
 		}
 		scm {
 			git {
@@ -196,6 +193,9 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Tests on test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+			parameters {
+				PipelineDefaults.defaultParams()
+			}
 		}
 		scm {
 			git {
@@ -231,6 +231,9 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
+			parameters {
+				PipelineDefaults.defaultParams()
+			}
 		}
 		scm {
 			git {
@@ -267,6 +270,7 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters {
 				stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
+				PipelineDefaults.defaultParams()
 			}
 		}
 		scm {
@@ -305,6 +309,9 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
+			parameters {
+				PipelineDefaults.defaultParams()
+			}
 		}
 		scm {
 			git {
@@ -339,6 +346,9 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Stage', 'Tests on stage')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+			parameters {
+				PipelineDefaults.defaultParams()
+			}
 		}
 		scm {
 			git {
@@ -371,6 +381,9 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
+			parameters {
+				PipelineDefaults.defaultParams()
+			}
 		}
 		scm {
 			git {
@@ -410,6 +423,9 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Prod', 'Complete switch over')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+			parameters {
+				PipelineDefaults.defaultParams()
+			}
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -422,3 +438,35 @@ parsedRepos.each {
 	}
 }
 //  ======= JOBS =======
+
+/**
+ * A helper class to provide delegation for Closures. That way your IDE will help you in defining parameters.
+ */
+class PipelineDefaults {
+
+	protected static void context(@DelegatesTo(BuildParametersContext) Closure params) {
+		params.resolveStrategy = Closure.DELEGATE_FIRST
+		params.call()
+	}
+
+	/**
+	 * With the Security constraints in Jenkins in order to pass the parameters between jobs, every job
+	 * has to define the parameters on input. In order not to copy paste the params we're doing this
+	 * default params method.
+	 */
+	static Closure defaultParams() {
+		return  {
+			context {
+				booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
+				booleanParam('REDEPLOY_INFRA', false, "If Eureka & StubRunner binaries should be redeployed if already present")
+				stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
+				stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
+				stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
+				stringParam('STUBRUNNER_GROUP_ID', 'com.example.eureka', "Group Id for Stub Runner used by tests")
+				stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
+				stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
+			}
+		}
+
+	}
+}
