@@ -106,7 +106,7 @@ parsedRepos.each {
 				maskPasswords()
 			}
 			parameters {
-				PipelineDefaults.defaultParams()
+				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		jdk(jdkVersion)
@@ -157,7 +157,7 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
 			parameters {
-				PipelineDefaults.defaultParams()
+				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		scm {
@@ -194,7 +194,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters {
-				PipelineDefaults.defaultParams()
+				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		scm {
@@ -232,7 +232,7 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
 			parameters {
-				PipelineDefaults.defaultParams()
+				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		scm {
@@ -270,7 +270,7 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters {
 				stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
-				PipelineDefaults.defaultParams()
+				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		scm {
@@ -310,7 +310,7 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
 			parameters {
-				PipelineDefaults.defaultParams()
+				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		scm {
@@ -347,7 +347,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters {
-				PipelineDefaults.defaultParams()
+				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		scm {
@@ -382,7 +382,7 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
 			parameters {
-				PipelineDefaults.defaultParams()
+				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		scm {
@@ -424,7 +424,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters {
-				PipelineDefaults.defaultParams()
+				PipelineDefaults.defaultParams(delegate)
 			}
 		}
 		steps {
@@ -444,8 +444,9 @@ parsedRepos.each {
  */
 class PipelineDefaults {
 
-	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
+	protected static Closure context(BuildParametersContext context, @DelegatesTo(BuildParametersContext) Closure params) {
 		params.resolveStrategy = Closure.DELEGATE_FIRST
+		params.delegate = context
 		return params
 	}
 
@@ -454,8 +455,8 @@ class PipelineDefaults {
 	 * has to define the parameters on input. In order not to copy paste the params we're doing this
 	 * default params method.
 	 */
-	static Closure defaultParams() {
-		context {
+	static Closure defaultParams(BuildParametersContext parametersContext) {
+		context(parametersContext) {
 			booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
 			booleanParam('REDEPLOY_INFRA', false, "If Eureka & StubRunner binaries should be redeployed if already present")
 			stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
