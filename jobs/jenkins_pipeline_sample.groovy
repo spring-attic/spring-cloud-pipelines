@@ -188,6 +188,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters PipelineDefaults.defaultParams()
+			parameters PipelineDefaults.smokeTestParams()
 		}
 		scm {
 			git {
@@ -259,6 +260,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters PipelineDefaults.defaultParams()
+			parameters PipelineDefaults.smokeTestParams()
 			parameters {
 				stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
 			}
@@ -335,6 +337,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters PipelineDefaults.defaultParams()
+			parameters PipelineDefaults.smokeTestParams()
 		}
 		scm {
 			git {
@@ -446,6 +449,17 @@ class PipelineDefaults {
 			stringParam('STUBRUNNER_GROUP_ID', 'com.example.eureka', "Group Id for Stub Runner used by tests")
 			stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
 			stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
+		}
+	}
+
+	/**
+	 * With the Security constraints in Jenkins in order to pass the parameters between jobs, every job
+	 * has to define the parameters on input. We provide additional smoke tests parameters.
+	 */
+	static Closure smokeTestParams() {
+		return context {
+			stringParam('APPLICATION_URL', '', "URL of the deployed application")
+			stringParam('STUBRUNNER_URL', '', "URL of the deployed stub runner application")
 		}
 	}
 }
