@@ -444,9 +444,9 @@ parsedRepos.each {
  */
 class PipelineDefaults {
 
-	protected static void context(@DelegatesTo(BuildParametersContext) Closure params) {
+	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
 		params.resolveStrategy = Closure.DELEGATE_FIRST
-		params.call()
+		return params
 	}
 
 	/**
@@ -455,18 +455,15 @@ class PipelineDefaults {
 	 * default params method.
 	 */
 	static Closure defaultParams() {
-		return  {
-			context {
-				booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
-				booleanParam('REDEPLOY_INFRA', false, "If Eureka & StubRunner binaries should be redeployed if already present")
-				stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
-				stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
-				stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
-				stringParam('STUBRUNNER_GROUP_ID', 'com.example.eureka', "Group Id for Stub Runner used by tests")
-				stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
-				stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
-			}
+		context {
+			booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
+			booleanParam('REDEPLOY_INFRA', false, "If Eureka & StubRunner binaries should be redeployed if already present")
+			stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
+			stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
+			stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
+			stringParam('STUBRUNNER_GROUP_ID', 'com.example.eureka', "Group Id for Stub Runner used by tests")
+			stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
+			stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
 		}
-
 	}
 }
