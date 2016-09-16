@@ -120,7 +120,7 @@ function deployStubRunnerBoot() {
     echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}], eureka [${eurekaService}], rabbitmq [${rabbitmqService}]"
     if [[ ! -e target/${jarName}.jar || ( -e target/${jarName}.jar && ${redeploy} == "true" ) ]]; then
         deployAppWithName ${stubRunnerName} ${jarName}
-        local mavenProp = $( extractMavenProperty "stubrunner.ids" )
+        local mavenProp=$( extractMavenProperty "stubrunner.ids" )
         setEnvVar ${stubRunnerName} "stubrunner.ids" "${mavenProp}"
         bindService ${eurekaService} ${stubRunnerName}
         bindService ${rabbitmqService} ${stubRunnerName}
