@@ -446,7 +446,7 @@ class PipelineDefaults {
 			stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
 			stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
 			stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
-			stringParam('STUBRUNNER_GROUP_ID', 'com.example.eureka', "Group Id for Stub Runner used by tests")
+			stringParam('STUBRUNNER_GROUP_ID', 'com.example.eureka.github', "Group Id for Stub Runner used by tests")
 			stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
 			stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
 		}
