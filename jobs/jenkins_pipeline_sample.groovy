@@ -285,12 +285,9 @@ parsedRepos.each {
 			archiveJunit('**/surefire-reports/*.xml') {
 				allowEmptyResults()
 			}
-			downstreamParameterized {
-				trigger("${projectName}-stage-env-deploy") {
-					parameters {
-						currentBuild()
-					}
-					triggerWithNoParameters()
+			buildPipelineTrigger("${projectName}-stage-env-deploy") {
+				parameters {
+					currentBuild()
 				}
 			}
 		}
@@ -320,20 +317,17 @@ parsedRepos.each {
 		""")
 		}
 		publishers {
-			downstreamParameterized {
-				trigger("${projectName}-stage-env-test") {
-					parameters {
-						currentBuild()
-						propertiesFile('target/test.properties', true)
-					}
-					triggerWithNoParameters()
+			buildPipelineTrigger("${projectName}-stage-env-test") {
+				parameters {
+					currentBuild()
+					propertiesFile('target/test.properties', true)
 				}
 			}
 		}
 	}
 
 	dsl.job("${projectName}-stage-env-test") {
-		deliveryPipelineConfiguration('Stage', 'Tests on stage')
+		deliveryPipelineConfiguration('Stage', 'End to end tests on stage')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters PipelineDefaults.defaultParams()
@@ -352,7 +346,7 @@ parsedRepos.each {
 		set -e
 
 		${dsl.readFileFromWorkspace('src/main/bash/pipeline.sh')}
-		${dsl.readFileFromWorkspace('src/main/bash/stage_smoke.sh')}
+		${dsl.readFileFromWorkspace('src/main/bash/stage_e2e.sh')}
 		""")
 		}
 		publishers {

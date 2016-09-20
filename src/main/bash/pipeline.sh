@@ -54,6 +54,16 @@ function deployAndRestartAppWithName() {
     restartApp ${appName}
 }
 
+function deployAndRestartAppWithNameForSmokeTests() {
+    local appName=${1}
+    local jarName=${2}
+    local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
+    echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
+    deployAppWithName ${appName} ${jarName} 'true'
+    setEnvVar ${lowerCaseAppName} 'spring.profiles.active' "cloud,smoke"
+    restartApp ${appName}
+}
+
 function appHost() {
     local appName=${1}
     local lowerCase=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
@@ -218,7 +228,15 @@ function runSmokeTests() {
         MAVEN_ARGS="${MAVEN_ARGS} -Dversion=${version}"
     fi
     echo "Running smoke tests"
-    ./mvnw clean install -Pintegration -Dapplication.url=${applicationHost} -Dstubrunner.url=${stubrunnerHost} ${MAVEN_ARGS}
+    ./mvnw clean install -Psmoke -Dapplication.url=${applicationHost} -Dstubrunner.url=${stubrunnerHost} ${MAVEN_ARGS}
+}
+
+# Function that executes end to end tests
+function runE2eTests() {
+    local applicationHost=${1}
+    local stubrunnerHost=${2}
+    echo "Running smoke tests"
+    ./mvnw clean install -Pe2e -Dapplication.url=${applicationHost} ${MAVEN_ARGS}
 }
 
 function findLatestProdTag() {

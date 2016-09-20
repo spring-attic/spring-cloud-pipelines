@@ -24,7 +24,7 @@ class JobScriptsSpec extends Specification {
 		jm.availableFiles['src/main/bash/test_rollback_deploy.sh'] = JobScriptsSpec.getResource('/test_rollback_deploy.sh').text
 		jm.availableFiles['src/main/bash/test_rollback_smoke.sh'] = JobScriptsSpec.getResource('/test_rollback_smoke.sh').text
 		jm.availableFiles['src/main/bash/stage_deploy.sh'] = JobScriptsSpec.getResource('/stage_deploy.sh').text
-		jm.availableFiles['src/main/bash/stage_smoke.sh'] = JobScriptsSpec.getResource('/stage_smoke.sh').text
+		jm.availableFiles['src/main/bash/stage_e2e.sh'] = JobScriptsSpec.getResource('/stage_e2e.sh').text
 		jm.availableFiles['src/main/bash/prod_deploy.sh'] = JobScriptsSpec.getResource('/prod_deploy.sh').text
 		jm.availableFiles['src/main/bash/prod_complete.sh'] = JobScriptsSpec.getResource('/prod_complete.sh').text
 		DslScriptLoader loader = new DslScriptLoader(jm)

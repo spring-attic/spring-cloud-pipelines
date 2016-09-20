@@ -81,9 +81,9 @@ dsl.job("${projectName}-test-env-rollback-test") {
 		shell("echo 'Running tests on test env with latest prod version'")
 	}
 	publishers {
-		downstreamParameterized {
-			trigger("${projectName}-stage-env-deploy") {
-				triggerWithNoParameters()
+		buildPipelineTrigger("${projectName}-stage-env-deploy") {
+			parameters {
+				currentBuild()
 			}
 		}
 	}
@@ -98,16 +98,16 @@ dsl.job("${projectName}-stage-env-deploy") {
 		shell("echo 'Deploying to stage env'")
 	}
 	publishers {
-		downstreamParameterized {
-			trigger("${projectName}-stage-env-test") {
-				triggerWithNoParameters()
+		buildPipelineTrigger("${projectName}-stage-env-test") {
+			parameters {
+				currentBuild()
 			}
 		}
 	}
 }
 
 dsl.job("${projectName}-stage-env-test") {
-	deliveryPipelineConfiguration('Stage', 'Tests on stage')
+	deliveryPipelineConfiguration('Stage', 'End to end tests on stage')
 	wrappers {
 		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 	}

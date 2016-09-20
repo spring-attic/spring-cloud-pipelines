@@ -21,8 +21,8 @@ dsl.pipelineJob('jenkins-pipeline-jenkinsfile-empty') {
 
 				stage 'Deploy to stage'
 				echo 'Deploying to stage'
-				stage 'Tests on stage'
-				echo 'Running tests on stage'
+				stage 'End to end tests on stage'
+				echo 'Running end to end tests on stage'
 
 				stage 'Deploy to prod'
 				echo 'Deploying to prod green instance'
