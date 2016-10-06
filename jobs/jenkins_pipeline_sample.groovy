@@ -78,7 +78,7 @@ of your ~/.m2/settings.xml
 
 of env vars:
 M2_SETTINGS_REPO_ID=artifactory-local
-REPO_WITH_JARS=http://localhost:8081/libs-release-local
+REPO_WITH_JARS=http://localhost:8081/artifactory/libs-release-local
  */
 
 /*
