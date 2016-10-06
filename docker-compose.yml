@@ -7,3 +7,8 @@ master:
     - "8080:8080"
   volumes:
     - /var/jenkins_home
+
+artifactory:
+  image: jfrog-docker-registry.bintray.io/artifactory/artifactory-oss:latest
+  ports:
+    - "8081:8081"
