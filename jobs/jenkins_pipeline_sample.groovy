@@ -90,6 +90,8 @@ email: user
 org: pcfdev-org
 space: pcfdev-space
 
+CF_API_URL: api.local.pcfdev.io
+
  */
 
 // Adjust this to be in accord with your installations
