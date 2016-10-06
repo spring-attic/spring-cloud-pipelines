@@ -64,6 +64,8 @@ String cfProdPassword = '${CF_PROD_PASSWORD}'
 String cfProdOrg = '${CF_PROD_ORG}'
 String cfProdSpace = '${CF_PROD_SPACE}'
 String repoWithJarsEnvVar = '${REPO_WITH_JARS}'
+String m2SettingsRepoId = '${M2_SETTINGS_REPO_ID}'
+String m2SettingsRepoUrl = '${REPO_WITH_JARS}'
 
 // Adjust this to be in accord with your installations
 String jdkVersion = 'jdk8'
