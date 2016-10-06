@@ -105,7 +105,11 @@ String cronValue = "H H * * 7" //every Sunday - I guess you should run it more o
 String gitCredentialsId = binding.variables['GIT_CREDENTIAL_ID'] ?: 'git'
 //  ======= PER REPO VARIABLES =======
 
-String repos = binding.variables['REPOS'] ?: 'https://github.com/dsyer/github-analytics,github-webhook$https://github.com/marcingrzejszczak/atom-feed'
+String repos = binding.variables['REPOS'] ?:
+		['https://github.com/dsyer/github-analytics',
+		 'github-webhook$https://github.com/marcingrzejszczak/atom-feed',
+		 'github-stub-runner$https://github.com/marcingrzejszczak/github-analytics-stub-runner-boot',
+		 'https://github.com/marcingrzejszczak/github-eureka'].join(',')
 List<String> parsedRepos = repos.split(',')
 parsedRepos.each {
 	List<String> parsedEntry = it.split('\\$')
