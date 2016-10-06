@@ -44,7 +44,6 @@ import javaposse.jobdsl.dsl.helpers.BuildParametersContext
 	- write bash tests
 	- perform blue green deployment
 	- implement the complete step
-	- add tests for StubRunner + Eureka
 */
 
 DslFactory dsl = this
@@ -66,6 +65,32 @@ String cfProdSpace = '${CF_PROD_SPACE}'
 String repoWithJarsEnvVar = '${REPO_WITH_JARS}'
 String m2SettingsRepoId = '${M2_SETTINGS_REPO_ID}'
 String m2SettingsRepoUrl = '${REPO_WITH_JARS}'
+
+/*
+The default configuration for Artifactory from Docker
+
+of your ~/.m2/settings.xml
+<server>
+  <id>artifactory-local</id>
+  <username>admin</username>
+  <password>password</password>
+</server>
+
+of env vars:
+M2_SETTINGS_REPO_ID=artifactory-local
+REPO_WITH_JARS=http://localhost:8081/libs-release-local
+ */
+
+/*
+The default configuration of env vars for PCF Dev.
+
+username: user
+password: pass
+email: user
+org: pcfdev-org
+space: pcfdev-space
+
+ */
 
 // Adjust this to be in accord with your installations
 String jdkVersion = 'jdk8'
