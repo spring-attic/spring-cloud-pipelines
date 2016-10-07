@@ -4,23 +4,9 @@ import javaposse.jobdsl.dsl.helpers.BuildParametersContext
 /*
 	INTRODUCTION:
 
-	The projects involved in the sample pipeline are:
-	- Github-Analytics - the app that has a REST endpoint and uses messaging. Our app under test
-		- https://github.com/dsyer/github-analytics
-	- Eureka - simple Eureka Server
-		- https://github.com/marcingrzejszczak/github-eureka
-	- Github Analytics Stub Runner Boot - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging.
-		- https://github.com/marcingrzejszczak/github-analytics-stub-runner-boot
-
-	Also there's another project:
-	- Github Webhook - project that uses Github-Analytics
-		- https://github.com/marcingrzejszczak/atom-feed
-
 	TODO BEFORE RUNNING THE PIPELINE
 
 	- define the `Artifact Resolver` Global Configuration. I.e. point to your Nexus / Artifactory
-	- click the `Allow token macro processing` in the Jenkins configuration
-	- define the aforementioned masked env vars
 	- customize the java version
 	- add a Credential to allow pushing the Git tag. Credential is called 'git'
 	- setup `Config File Management` to ensure that every slave has the Maven's settings.xml set up.
