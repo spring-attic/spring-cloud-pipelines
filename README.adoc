@@ -96,6 +96,42 @@ image::docs/groovy_token.png[]
 
 === Add Jenkins credentials for Github
 
+== FAQ
+
+=== Pipeline version contains ${PIPELINE_VERSION}
+
+You can check the Jenkins logs and you'll see
+
+[source,bash]
+----
+WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
+	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
+	to be injected as environment variables or
+	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
+	to whitelist specific parameter names, even though it represents a security breach
+----
+
+To fix it you have to do exactly what the warning suggests...
+
+=== Can I use the pipeline for some other repos?
+
+Sure! you can pass `REPOS` variable with comma separated list of
+`project_name$project_url` format. If you don't provide the PROJECT_NAME the
+repo name will be extracted and used as the name of the project.
+
+E.g. for `REPOS` equal to:
+
+`https://github.com/dsyer/github-analytics,https://github.com/marcingrzejszczak/atom-feed`
+
+will result in the creation of pipelines with root names `github-analytics` and `atom-feed`.
+
+E.g. for `REPOS` equal to:
+
+`foo$https://github.com/dsyer/github-analytics,bar$https://github.com/marcingrzejszczak/atom-feed`
+
+will result in the creation of pipelines with root names `foo` for `github-analytics`
+and `bar` for `atom-feed`.
+
 == How to build it
 
 `./gradlew clean build`

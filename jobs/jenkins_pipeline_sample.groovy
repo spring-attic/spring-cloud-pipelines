@@ -11,20 +11,6 @@ import javaposse.jobdsl.dsl.helpers.BuildParametersContext
 	- add a Credential to allow pushing the Git tag. Credential is called 'git'
 	- setup `Config File Management` to ensure that every slave has the Maven's settings.xml set up.
 		Otherwise `./mvnw clean deploy` won't work
-	- if you can't see ${PIPELINE_VERSION} being resolved in the initial job, check the logs
-
-	WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
-	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
-	to be injected as environment variables or
-	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
-	to whitelist specific parameter names, even though it represents a security breach
-
-	YOU CAN PASS `REPOS` VARIABLE WITH COMMA SEPARATED LIST OF PROJECT_NAME$PROJECT_URL FORMAT
-	E.G.
-		github-analytics$https://github.com/dsyer/github-analytics,github-webhook:https://github.com/marcingrzejszczak/atom-feed
-	If you don't provide the PROJECT_NAME the repo name will be extracted and used as the name of the project. E.g.:
-		https://github.com/dsyer/github-analytics,https://github.com/marcingrzejszczak/atom-feed
-	would lead in creation of two projects, one named `gihub-analytics-pipeline` and the other `atom-feed-pipeline`
 
 	TODO: TO develop
 	- write bash tests
