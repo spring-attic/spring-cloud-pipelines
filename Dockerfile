@@ -8,10 +8,9 @@ MAINTAINER Marcin Grzejszczak <mgrzejszczak@pivotal.io>
 
 COPY seed/init.groovy /usr/share/jenkins/ref/init.groovy
 COPY seed/jenkins_pipeline.groovy /usr/share/jenkins/jenkins_pipeline.groovy
+COPY seed/settings.xml /usr/share/jenkins/settings.xml
 
 USER jenkins
-
-COPY seed/settings.xml /home/jenkins/.m2/settings.xml
 
 #COPY plugins.txt /usr/share/jenkins/plugins.txt
 
