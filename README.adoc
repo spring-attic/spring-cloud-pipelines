@@ -235,6 +235,10 @@ image::docs/groovy_token.png[]
 - by default we assume that you have jdk with id `jdk8` configured
 - if you want a different one just override `JDK_VERSION` env var and point to the proper one
 
+TIP: The docker image comes in with Java installed at `/usr/lib/jvm/java-8-openjdk-amd64`.
+You can go to `Global Tools` and create a JDK with `jdk8` id and JAVA_HOME
+ pointing to `/usr/lib/jvm/java-8-openjdk-amd64`
+
 To set the default one just follow these steps:
 
 {nbsp}
@@ -255,20 +259,7 @@ image::docs/jdk_installation.png[caption="Step 3: ", title="Click 'JDK Installat
 {nbsp}
 {nbsp}
 
-image::docs/jdk_installation_oracle.png[caption="Step 4: ", title="Fill out Oracle installation"]
-
-{nbsp}
-{nbsp}
-
-image::docs/jdk_user_pass.png[caption="Step 5: ", title="Enter Oracle username and pass"]
-
-{nbsp}
-{nbsp}
-
-image::docs/jdk_account.png[caption="Step 6: ", title="Provide your credentials for Oracle"]
-
-{nbsp}
-{nbsp}
+image::docs/jdk.png[caption="Step 4: ", title="Fill out JDK Installation with `/usr/lib/jvm/java-8-openjdk-amd64`"]
 
 And that's it!
 
