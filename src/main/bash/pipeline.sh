@@ -2,6 +2,9 @@
 
 set -e
 
+# It takes ages on Docker to build the app without this
+MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
+
 function logInToCf() {
     local redownloadInfra="${1}"
     local cfUsername="${2}"
