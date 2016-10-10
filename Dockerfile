@@ -3,13 +3,15 @@
 #   https://github.com/jenkinsci/docker#preinstalling-plugins
 #   https://engineering.riotgames.com/news/jenkins-docker-proxies-and-compose
 
-FROM jenkins:2.7.1
+FROM jenkins:2.19.1
 MAINTAINER Marcin Grzejszczak <mgrzejszczak@pivotal.io>
 
 COPY seed/init.groovy /usr/share/jenkins/ref/init.groovy
 COPY seed/jenkins_pipeline.groovy /usr/share/jenkins/jenkins_pipeline.groovy
 
 USER jenkins
+
+COPY seed/settings.xml /home/jenkins/.m2/settings.xml
 
 #COPY plugins.txt /usr/share/jenkins/plugins.txt
 

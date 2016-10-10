@@ -2,7 +2,7 @@ import javaposse.jobdsl.dsl.DslFactory
 
 DslFactory dsl = this
 
-['github-analytics','github-webhook','github-stub-runner', 'github-eureka'].each {
+['github-analytics','github-webhook'].each {
 	String projectName = "${it}-pipeline"
 	dsl.deliveryPipelineView(projectName) {
 		allowPipelineStart()

@@ -2,16 +2,6 @@ import javaposse.jobdsl.dsl.DslFactory
 import javaposse.jobdsl.dsl.helpers.BuildParametersContext
 
 /*
-	INTRODUCTION:
-
-	TODO BEFORE RUNNING THE PIPELINE
-
-	- define the `Artifact Resolver` Global Configuration. I.e. point to your Nexus / Artifactory
-	- customize the java version
-	- add a Credential to allow pushing the Git tag. Credential is called 'git'
-	- setup `Config File Management` to ensure that every slave has the Maven's settings.xml set up.
-		Otherwise `./mvnw clean deploy` won't work
-
 	TODO: TO develop
 	- write bash tests
 	- perform blue green deployment
@@ -20,68 +10,23 @@ import javaposse.jobdsl.dsl.helpers.BuildParametersContext
 
 DslFactory dsl = this
 
-//  ======= GLOBAL =======
-// You need to pass the following as ENV VARS in Mask Passwords section
-String cfTestUsername = '${CF_TEST_USERNAME}'
-String cfTestPassword = '${CF_TEST_PASSWORD}'
-String cfTestOrg = '${CF_TEST_ORG}'
-String cfTestSpace = '${CF_TEST_SPACE}'
-String cfStageUsername = '${CF_STAGE_USERNAME}'
-String cfStagePassword = '${CF_STAGE_PASSWORD}'
-String cfStageOrg = '${CF_STAGE_ORG}'
-String cfStageSpace = '${CF_STAGE_SPACE}'
-String cfProdUsername = '${CF_PROD_USERNAME}'
-String cfProdPassword = '${CF_PROD_PASSWORD}'
-String cfProdOrg = '${CF_PROD_ORG}'
-String cfProdSpace = '${CF_PROD_SPACE}'
-String repoWithJarsEnvVar = '${REPO_WITH_JARS}'
-String m2SettingsRepoId = '${M2_SETTINGS_REPO_ID}'
-String m2SettingsRepoUrl = '${REPO_WITH_JARS}'
+// These will be taken either from seed or global variables
+PipelineDefaults defaults = new PipelineDefaults(binding.variables)
 
-/*
-The default configuration for Artifactory from Docker
-
-of your ~/.m2/settings.xml
-<server>
-  <id>artifactory-local</id>
-  <username>admin</username>
-  <password>password</password>
-</server>
-
-of env vars:
-M2_SETTINGS_REPO_ID=artifactory-local
-REPO_WITH_JARS=http://localhost:8081/artifactory/libs-release-local
- */
-
-/*
-The default configuration of env vars for PCF Dev.
-
-username: user
-password: pass
-email: user
-org: pcfdev-org
-space: pcfdev-space
-
-CF_API_URL: api.local.pcfdev.io
-
- */
-
-// Adjust this to be in accord with your installations
-String jdkVersion = 'jdk8'
 // Example of a version with date and time in the name
 String pipelineVersion = '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
-//  ======= GLOBAL =======
-
-//  ======= PER REPO VARIABLES =======
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
-String gitCredentialsId = binding.variables['GIT_CREDENTIAL_ID'] ?: 'git'
-//  ======= PER REPO VARIABLES =======
+String testReports = '**/surefire-reports/*.xml'
+String gitCredentials = binding.variables['GIT_CREDENTIAL_ID'] ?: 'git'
+String jdkVersion = binding.variables['JDK_VERSION'] ?: 'jdk8'
+String cfTestCredentialId = binding.variables['CF_TEST_CREDENTIAL_ID'] ?: 'cf-test'
+String cfStageCredentialId = binding.variables['CF_STAGE_CREDENTIAL_ID'] ?: 'cf-stage'
+String cfProdCredentialId = binding.variables['CF_PROD_CREDENTIAL_ID'] ?: 'cf-prod'
 
+// we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables['REPOS'] ?:
 		['https://github.com/dsyer/github-analytics',
-		 'github-webhook$https://github.com/marcingrzejszczak/atom-feed',
-		 'github-stub-runner$https://github.com/marcingrzejszczak/github-analytics-stub-runner-boot',
-		 'https://github.com/marcingrzejszczak/github-eureka'].join(',')
+		 'github-webhook$https://github.com/marcingrzejszczak/atom-feed'].join(',')
 List<String> parsedRepos = repos.split(',')
 parsedRepos.each {
 	List<String> parsedEntry = it.split('\\$')
@@ -105,10 +50,16 @@ parsedRepos.each {
 		}
 		wrappers {
 			deliveryPipelineVersion(pipelineVersion, true)
-			environmentVariables {
-				maskPasswords()
+			environmentVariables(defaults.defaultEnvVars)
+			parameters(PipelineDefaults.defaultParams())
+			timestamps()
+			colorizeOutput()
+			maskPasswords()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 			}
-			parameters PipelineDefaults.defaultParams()
 		}
 		jdk(jdkVersion)
 		scm {
@@ -117,7 +68,7 @@ parsedRepos.each {
 					name('origin')
 					url(fullGitRepo)
 					branch('master')
-					credentials(gitCredentialsId)
+					credentials(gitCredentials)
 				}
 				extensions {
 					wipeOutWorkspace()
@@ -133,7 +84,7 @@ parsedRepos.each {
 		""")
 		}
 		publishers {
-			archiveJunit('**/surefire-reports/*.xml')
+			archiveJunit(testReports)
 			downstreamParameterized {
 				trigger("${projectName}-test-env-deploy") {
 					triggerWithNoParameters()
@@ -156,8 +107,19 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Deploy to test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+			parameters(PipelineDefaults.defaultParams())
+			environmentVariables(defaults.defaultEnvVars)
+			credentialsBinding {
+				usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
+			}
+			timestamps()
+			colorizeOutput()
 			maskPasswords()
-			parameters PipelineDefaults.defaultParams()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
 		}
 		scm {
 			git {
@@ -192,8 +154,17 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Tests on test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters PipelineDefaults.defaultParams()
+			parameters(PipelineDefaults.defaultParams())
 			parameters PipelineDefaults.smokeTestParams()
+			environmentVariables(defaults.defaultEnvVars)
+			timestamps()
+			colorizeOutput()
+			maskPasswords()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
 		}
 		scm {
 			git {
@@ -212,7 +183,7 @@ parsedRepos.each {
 		""")
 		}
 		publishers {
-			archiveJunit('**/surefire-reports/*.xml')
+			archiveJunit(testReports)
 			downstreamParameterized {
 				trigger("${projectName}-test-env-rollback-deploy") {
 					parameters {
@@ -228,8 +199,19 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Deploy to test latest prod version')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+			parameters(PipelineDefaults.defaultParams())
+			environmentVariables(defaults.defaultEnvVars)
+			credentialsBinding {
+				usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
+			}
+			timestamps()
+			colorizeOutput()
 			maskPasswords()
-			parameters PipelineDefaults.defaultParams()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
 		}
 		scm {
 			git {
@@ -264,10 +246,18 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Tests on test latest prod version')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters PipelineDefaults.defaultParams()
+			parameters(PipelineDefaults.defaultParams())
 			parameters PipelineDefaults.smokeTestParams()
 			parameters {
 				stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
+			}
+			timestamps()
+			colorizeOutput()
+			maskPasswords()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 			}
 		}
 		scm {
@@ -287,7 +277,7 @@ parsedRepos.each {
 		""")
 		}
 		publishers {
-			archiveJunit('**/surefire-reports/*.xml') {
+			archiveJunit(testReports) {
 				allowEmptyResults()
 			}
 			buildPipelineTrigger("${projectName}-stage-env-deploy") {
@@ -303,7 +293,18 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters PipelineDefaults.defaultParams()
+			parameters(PipelineDefaults.defaultParams())
+			credentialsBinding {
+				usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
+			}
+			timestamps()
+			colorizeOutput()
+			maskPasswords()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
 		}
 		scm {
 			git {
@@ -335,8 +336,17 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Stage', 'End to end tests on stage')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters PipelineDefaults.defaultParams()
+			parameters(PipelineDefaults.defaultParams())
 			parameters PipelineDefaults.smokeTestParams()
+			environmentVariables(defaults.defaultEnvVars)
+			timestamps()
+			colorizeOutput()
+			maskPasswords()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
 		}
 		scm {
 			git {
@@ -355,7 +365,7 @@ parsedRepos.each {
 		""")
 		}
 		publishers {
-			archiveJunit('**/surefire-reports/*.xml')
+			archiveJunit(testReports)
 			buildPipelineTrigger("${projectName}-prod-env-deploy") {
 				parameters {
 					currentBuild()
@@ -369,7 +379,19 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters PipelineDefaults.defaultParams()
+			parameters(PipelineDefaults.defaultParams())
+			environmentVariables(defaults.defaultEnvVars)
+			credentialsBinding {
+				usernamePassword('CF_PROD_USERNAME', 'CF_PROD_PASSWORD', cfProdCredentialId)
+			}
+			timestamps()
+			colorizeOutput()
+			maskPasswords()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
 		}
 		scm {
 			git {
@@ -377,7 +399,7 @@ parsedRepos.each {
 					name('origin')
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
-					credentials(gitCredentialsId)
+					credentials(gitCredentials)
 				}
 			}
 		}
@@ -409,7 +431,16 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Prod', 'Complete switch over')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters PipelineDefaults.defaultParams()
+			parameters(PipelineDefaults.defaultParams())
+			environmentVariables(defaults.defaultEnvVars)
+			timestamps()
+			colorizeOutput()
+			maskPasswords()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -425,8 +456,29 @@ parsedRepos.each {
 
 /**
  * A helper class to provide delegation for Closures. That way your IDE will help you in defining parameters.
+ * Also it contains the default env vars setting
  */
 class PipelineDefaults {
+
+	final Map<String, String> defaultEnvVars
+
+	PipelineDefaults(Map<String, String> variables) {
+		this.defaultEnvVars = defaultEnvVars(variables)
+	}
+
+	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
+		Map<String, String> envs = [:]
+		envs['CF_API_URL'] = variables['CF_API_URL'] ?: 'api.local.pcfdev.io'
+		envs['CF_TEST_ORG'] = variables['CF_TEST_ORG'] ?: 'pcfdev-org'
+		envs['CF_TEST_SPACE'] = variables['CF_TEST_SPACE'] ?: 'pfcdev-test'
+		envs['CF_STAGE_ORG'] = variables['CF_STAGE_ORG'] ?: 'pcfdev-org'
+		envs['CF_STAGE_SPACE'] = variables['CF_STAGE_SPACE'] ?: 'pfcdev-stage'
+		envs['CF_PROD_ORG'] = variables['CF_PROD_ORG'] ?: 'pcfdev-org'
+		envs['CF_PROD_SPACE'] = variables['CF_PROD_SPACE'] ?: 'pfcdev-prod'
+		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
+		envs['REPO_WITH_JARS'] = variables['REPO_WITH_JARS'] ?: 'http://localhost:8081/artifactory/libs-release-local'
+		return envs
+	}
 
 	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
 		params.resolveStrategy = Closure.DELEGATE_FIRST

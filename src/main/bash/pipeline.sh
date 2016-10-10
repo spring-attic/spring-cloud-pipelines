@@ -33,7 +33,6 @@ function logInToCf() {
     cf api --skip-ssl-validation "${apiUrl}"
     set +x
     cf login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
-
 }
 
 function deployRabbitMqToCf() {
@@ -49,17 +48,19 @@ function deployRabbitMqToCf() {
 function deployAndRestartAppWithName() {
     local appName="${1}"
     local jarName="${2}"
+    local env="${3}"
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
-    deployAppWithName "${appName}" "${jarName}" 'true'
+    deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
     restartApp "${appName}"
 }
 
 function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
     local jarName="${2}"
+    local env="${3:-test}"
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
-    echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
-    deployAppWithName "${appName}" "${jarName}" 'true'
+    echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
+    deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
     setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "cloud,smoke"
     restartApp "${appName}"
 }
@@ -74,11 +75,20 @@ function appHost() {
 function deployAppWithName() {
     local appName="${1}"
     local jarName="${2}"
-    local useManifest="${3:-false}"
-    local manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo ""; else echo "--no-manifest" ; fi )
+    local env="${3}"
+    local useManifest="${4:-false}"
+    local manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo "--no-manifest"; else echo "" ; fi )
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
-    echo "Deploying app with name [${lowerCaseAppName}]"
-    cf push "${lowerCaseAppName}" -m 1024m -i 1 -p target/${jarName}.jar -n ${lowerCaseAppName} --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
+    local hostname="${lowerCaseAppName}"
+    if [[ ${env} != "prod" ]]; then
+        hostname="${hostname}-${env}"
+    fi
+    echo "Deploying app with name [${lowerCaseAppName}], env [${env}] with manifest [${useManifest}] and host [${hostname}]"
+    if [[ ! -z "${manifestOption}" ]]; then
+        cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "target/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
+    else
+        cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "target/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+    fi
     APPLICATION_DOMAIN="$( appHost ${lowerCaseAppName} )"
     echo "Determined that application_domain for [${lowerCaseAppName}] is [${APPLICATION_DOMAIN}]"
     setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"
@@ -110,10 +120,11 @@ function restartApp() {
 function deployEureka() {
     local redeploy="${1}"
     local jarName="${2}"
-    local appName="${3:-github-eureka}"
-    echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${appName}]"
+    local appName="${3}"
+    local env="${4}"
+    echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${appName}], env [${env}]"
     if [[ ! -e target/${jarName}.jar || ( -e target/${jarName}.jar && ${redeploy} == "true" ) ]]; then
-        deployAppWithName "${appName}" "${jarName}"
+        deployAppWithName "${appName}" "${jarName}" "${env}"
         restartApp "${appName}"
         createServiceWithName "${appName}"
     else
@@ -124,12 +135,13 @@ function deployEureka() {
 function deployStubRunnerBoot() {
     local redeploy="${1}"
     local jarName="${2}"
-    local eurekaService="${3:-github-eureka}"
-    local rabbitmqService="${4:-github-rabbitmq}"
-    local stubRunnerName="${5:-stubrunner}"
+    local env="${3:-test}"
+    local eurekaService="${4:-github-eureka}"
+    local rabbitmqService="${5:-github-rabbitmq}"
+    local stubRunnerName="${6:-stubrunner}"
     echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}], eureka [${eurekaService}], rabbitmq [${rabbitmqService}]"
     if [[ ! -e target/${jarName}.jar || ( -e target/${jarName}.jar && ${redeploy} == "true" ) ]]; then
-        deployAppWithName "${stubRunnerName}" "${jarName}"
+        deployAppWithName "${stubRunnerName}" "${jarName}" "${env}"
         local mavenProp="$( extractMavenProperty "stubrunner.ids" )"
         setEnvVar "${stubRunnerName}" "stubrunner.ids" "${mavenProp}"
         bindService "${eurekaService}" "${stubRunnerName}"
@@ -223,12 +235,12 @@ function readTestPropertiesFromFile() {
 function runSmokeTests() {
     local applicationHost="${1}"
     local stubrunnerHost="${2}"
-    local version="${3}"
-    if [[ ! -z ${version} ]]; then
-        MAVEN_ARGS="${MAVEN_ARGS} -Dversion=${version}"
-    fi
     echo "Running smoke tests"
-    ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+    if [[ ! -z ${MAVEN_ARGS} ]]; then
+        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+    else
+        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+    fi
 }
 
 # Function that executes end to end tests
@@ -236,7 +248,11 @@ function runE2eTests() {
     local applicationHost="${1}"
     local stubrunnerHost="${2}"
     echo "Running smoke tests"
-    ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" "${MAVEN_ARGS}"
+    if [[ ! -z ${MAVEN_ARGS} ]]; then
+        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" "${MAVEN_ARGS}"
+    else
+        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}"
+    fi
 }
 
 function findLatestProdTag() {
