@@ -43,6 +43,18 @@ For the other two
 
 You have to build locally and upload their artifacts to Artifactory.
 
+==== Remove the tags
+
+If you keep playing around with your repo you might end up with some tags that
+point to versions that have not been deployed to your Artifactory. That often happens
+when you remove the volume that Artifactory is using. To fix this issue just remove
+all the tags.
+
+[source,bash]
+----
+git tag -l | xargs -n 1 git push --delete origin
+----
+
 ==== Set up your local Maven to work with Artifactory
 
 First, you have to ensure that this section is present under your `~/.m2/settings.xml`
@@ -228,7 +240,22 @@ The env vars that are used in all of the jobs are as follows:
 
 you need this to allow generation of Pipeline Version
 
-image::docs/groovy_token.png[]
+{nbsp}
+{nbsp}
+
+image::docs/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/groovy_token.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+
 
 ==== Provide your JDK version
 
@@ -261,7 +288,20 @@ image::docs/jdk_installation.png[caption="Step 3: ", title="Click 'JDK Installat
 
 image::docs/jdk.png[caption="Step 4: ", title="Fill out JDK Installation with `/usr/lib/jvm/java-8-openjdk-amd64`"]
 
+{nbsp}
+{nbsp}
+
 And that's it!
+
+==== Set Git email / user
+
+{nbsp}
+{nbsp}
+
+image::docs/git.png[caption="Step 4: ", title="Fill out JDK Installation with `/usr/lib/jvm/java-8-openjdk-amd64`"]
+
+{nbsp}
+{nbsp}
 
 === Add Jenkins credentials for GitHub
 
@@ -390,7 +430,8 @@ image::docs/pipeline_manual.png[caption="Step 8: ", title="Click the manual step
 
 image::docs/pipeline_finished.png[caption="Step 9: ", title="The full pipeline should look like this"]
 
-
+{nbsp}
+{nbsp}
 
 === Run the github-webhook pipeline
 
@@ -450,6 +491,16 @@ cf target -o pcfdev-org -s pcfdev-test
 cf stop github-webhook
 cf stop github-eureka
 cf stop stubrunner
+----
+
+=== The rollback step fails due to missing JAR ?!
+
+You must have pushed some tags and have removed the Artifactory volume that
+contained them. To fix this, just remove the tags
+
+[source,bash]
+----
+git tag -l | xargs -n 1 git push --delete origin
 ----
 
 == How to build it
