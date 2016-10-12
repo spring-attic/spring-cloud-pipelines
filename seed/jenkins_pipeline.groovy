@@ -13,7 +13,7 @@ factory.job('jenkins-pipeline-seed') {
     }
     wrappers {
         parameters {
-            stringParam('REPOS', 'https://github.com/dsyer/github-analytics,github-webhook$https://github.com/marcingrzejszczak/atom-feed',
+            stringParam('REPOS', 'https://github.com/marcingrzejszczak/github-analytics,https://github.com/marcingrzejszczak/github-webhook',
                     "Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
                             "first provide the name and separate the url with \$ sign")
             stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
