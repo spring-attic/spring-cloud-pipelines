@@ -460,9 +460,13 @@ To fix it you have to do exactly what the warning suggests...
 
 === The build times out with `pipeline.sh` info
 
-Docker, docker, docker... The problem is that for some reason, only in Docker, the execution of
+Docker compose, docker compose, docker compose... The problem is that for some reason, only in Docker, the execution of
 Java hangs. But it hangs randomly and only the first time you try to execute the pipeline.
 
+The solution to this is to run the pipeline again. If once it suddenly, magically passes then
+it will pass for any subsequent build.
+
+Another thing that you can try is to run it with plain Docker. Maybe that will help.
 
 === Can I use the pipeline for some other repos?
 
