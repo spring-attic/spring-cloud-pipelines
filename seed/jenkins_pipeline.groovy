@@ -29,7 +29,7 @@ factory.job('jenkins-pipeline-seed') {
             stringParam('CF_PROD_ORG', 'pcfdev-org', 'Name of the CF organization for prod env')
             stringParam('CF_PROD_SPACE', 'pcfdev-prod', 'Name of the CF space for prod env')
             stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
-            stringParam('REPO_WITH_JARS', 'http://localhost:8081/artifactory/libs-release-local', "Address to hosted JARs")
+            stringParam('REPO_WITH_JARS', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs")
         }
     }
     steps {

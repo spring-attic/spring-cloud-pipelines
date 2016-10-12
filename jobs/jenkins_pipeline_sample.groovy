@@ -14,7 +14,7 @@ DslFactory dsl = this
 PipelineDefaults defaults = new PipelineDefaults(binding.variables)
 
 // Example of a version with date and time in the name
-String pipelineVersion = '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
+String pipelineVersion = binding.variables['PIPIELINE_VERSION'] ?: '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
 String testReports = '**/surefire-reports/*.xml'
 String gitCredentials = binding.variables['GIT_CREDENTIAL_ID'] ?: 'git'
@@ -476,7 +476,7 @@ class PipelineDefaults {
 		envs['CF_PROD_ORG'] = variables['CF_PROD_ORG'] ?: 'pcfdev-org'
 		envs['CF_PROD_SPACE'] = variables['CF_PROD_SPACE'] ?: 'pfcdev-prod'
 		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
-		envs['REPO_WITH_JARS'] = variables['REPO_WITH_JARS'] ?: 'http://localhost:8081/artifactory/libs-release-local'
+		envs['REPO_WITH_JARS'] = variables['REPO_WITH_JARS'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 		return envs
 	}
 

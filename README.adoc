@@ -182,10 +182,6 @@ Then Jenkins will be running on port `8080` and Artifactory `8081`.
 TIP: If you want to only play around with the demo that we've prepared
 you can skip this section and use our defaults.
 
-IMPORTANT: If you're using a docker-machine then for sure you have to update
- the `REPO_WITH_JARS` to point to your Docker Machine address e.g. `192.168.99.100`
- instead of `localhost`
-
 IMPORTANT: If you're choosing the global envs, you *HAVE* to remove the other approach
 (e.g. if you set the global env for `REPO_WITH_JARS`, please remove that property in the
 seed job
@@ -229,9 +225,10 @@ The env vars that are used in all of the jobs are as follows:
 |CF_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
 |CF_PROD_ORG   | Name of the org for the prod env | pcfdev-org
 |CF_PROD_SPACE | Name of the space for the prod env | pcfdev-space
-|REPO_WITH_JARS | URL to repo with the deployed jars | http://localhost:8081/artifactory/libs-release-local
+|REPO_WITH_JARS | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |JDK_VERSION | The name of the JDK installation | jdk8
+|PIPIELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | jdk8
 |======================
 
 === Additional setup
@@ -460,6 +457,12 @@ WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pip
 ----
 
 To fix it you have to do exactly what the warning suggests...
+
+=== The build times out with `pipeline.sh` info
+
+Docker, docker, docker... The problem is that for some reason, only in Docker, the execution of
+Java hangs. But it hangs randomly and only the first time you try to execute the pipeline.
+
 
 === Can I use the pipeline for some other repos?
 

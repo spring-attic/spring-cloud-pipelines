@@ -7,6 +7,8 @@ master:
     - "8080:8080"
   volumes:
     - /var/jenkins_home
+  links:
+    - artifactory
 
 artifactory:
   image: jfrog-docker-registry.bintray.io/artifactory/artifactory-oss:latest
