@@ -177,27 +177,24 @@ cf stop stubrunner
 
 === Setup Jenkins env vars
 
-TIP: If you want to only play around with the demo that we've prepared
-you can skip this section and use our defaults.
+If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
+That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs. 
+
+You can do it in the following ways:
+
+- globally via Jenkins global env vars (then when you run the seed that variable will be taken into consideration and proper pipelines will get built)
+- modify the seed job parameters (you'll have to modify the seed job configuration and change the `REPOS` property)
+- provide the repos parameter when running the seed job
+
+For the sake of simplicity let's go with the *last* option.
 
 IMPORTANT: If you're choosing the global envs, you *HAVE* to remove the other approach
-(e.g. if you set the global env for `REPO_WITH_JARS`, please remove that property in the
+(e.g. if you set the global env for `REPOS`, please remove that property in the
 seed job
-
-==== Global envs
-
-You can add env vars (go to configure Jenkins -> Global Properties) for the following
- properties (the defaults are for PCF Dev):
-
-Example screen:
-
-image::docs/env_vars.png[]
 
 ==== Seed properties
 
-Another approach is to run the seed job with parameters / env vars. Whatever
-you set will be parsed by the seed job and passed to the generated Jenkins
-jobs.
+Click on the seed job and pick `Build with parameters`. Then as presented in the screen below (you'll have far more properties to set) just modify the `REPOS` property by providing the colon separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.
 
 TIP: This is very useful when the repos you want to build differ. E.g. use
 different JDK. Then some seeds can set the `JDK_VERSION` param to one version
@@ -207,9 +204,22 @@ Example screen:
 
 image::docs/seed.png[]
 
-In this example we could parametrize the `REPOS` and `REPO_WITH_JARS` params.
+In the screenshot we could parametrize the `REPOS` and `REPO_WITH_JARS` params.
+
+==== Global envs
+
+IMPORTANT: This section is presented only for informational purposes - for the sake of demo you can skip it
+
+You can add env vars (go to configure Jenkins -> Global Properties) for the following
+ properties (the defaults are for PCF Dev):
+
+Example screen:
+
+image::docs/env_vars.png[]
 
 ==== All env vars
+
+IMPORTANT: This section is presented only for informational purposes - for the sake of demo you can skip it
 
 The env vars that are used in all of the jobs are as follows:
 
