@@ -411,7 +411,7 @@ image::docs/seed_run.png[caption="Step 2: ", title="Click the 'Build with parame
 {nbsp}
 {nbsp}
 
-image::docs/seed.png[caption="Step 3: ", title="Provide the `REPOS` parameter with URLs of your forks (you'll have more of them)"]
+image::docs/seed.png[caption="Step 3: ", title="Provide the `REPOS` parameter with URLs of your forks (you'll have more properties than the ones in the screenshot)"]
 
 {nbsp}
 {nbsp}
