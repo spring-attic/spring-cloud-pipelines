@@ -26,14 +26,14 @@ just check out the section on how to update the URL to Artifactory)
 
 There are 4 apps that are composing the pipeline
 
-  - https://github.com/spring-cloud-samples/github-webook[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
   - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
   - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Stub Runner Boot]
 
 You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
 
-  - https://github.com/spring-cloud-samples/github-webook[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
 For the other two
