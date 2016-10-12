@@ -503,7 +503,7 @@ E.g. for `REPOS` equal to:
 will result in the creation of pipelines with root names `foo` for `github-analytics`
 and `bar` for `github-webhook`.
 
-=== Will this work for ANY project?
+=== Will this work for ANY project out of the box?
 
 Not really. This is an `opinionated pipeline` that's why we took some
 opinionated decisions like:
@@ -516,6 +516,12 @@ opinionated decisions like:
 - running e2e tests on a deployed app via the `e2e` Maven profile
 
 This is the initial approach that can be easily changed in the future.
+
+=== Can I modify this to reuse in my project?
+
+Sure! It's open-source! The important thing is that the core part of the logic is written
+in Bash scripts. That way, in the majority of cases, you could change only the bash
+scripts without changing the whole pipeline.
 
 === I've ran out of resources!!
 
