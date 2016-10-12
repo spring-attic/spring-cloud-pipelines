@@ -294,6 +294,7 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
 			parameters(PipelineDefaults.defaultParams())
+			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
 			}
