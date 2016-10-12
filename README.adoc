@@ -65,7 +65,16 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 
 [source,xml]
 ----
-include::seed/settings.xml[]
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<servers>
+		<server>
+			<id>artifactory-local</id>
+			<username>admin</username>
+			<password>password</password>
+		</server>
+	</servers>
+</settings>
 ----
 
 === Start Docker Compose
