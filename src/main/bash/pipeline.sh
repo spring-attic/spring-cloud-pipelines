@@ -90,7 +90,7 @@ function deployAppWithName() {
     if [[ ! -z "${manifestOption}" ]]; then
         cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "target/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
     else
-        cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "target/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+        cf push "${lowerCaseAppName}" -p "target/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
     fi
     APPLICATION_DOMAIN="$( appHost ${lowerCaseAppName} )"
     echo "Determined that application_domain for [${lowerCaseAppName}] is [${APPLICATION_DOMAIN}]"
