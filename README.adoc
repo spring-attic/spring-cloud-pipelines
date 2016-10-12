@@ -453,6 +453,10 @@ seed.
 Anyways, to run the demo just provide in the `REPOS` var the comma separated
  list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics'.
 
+IMPORTANT: Most likely your 1st build will suddenly hang for 10 minutes. If you rerun it
+again it should work after 2-3 minutes. My guess is that it's related to Docker Compose
+so sorry for this unfortunate situation.
+
 == FAQ
 
 === Pipeline version contains ${PIPELINE_VERSION}
