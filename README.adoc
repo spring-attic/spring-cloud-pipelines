@@ -72,7 +72,12 @@ include::seed/settings.xml[]
 
 Jenkins + Artifactory can be ran locally. To do that just execute
 
-`docker-compose up`
+[source,bash]
+----
+git clone https://github.com/marcingrzejszczak/jenkins-pipeline
+cd jenkins-pipeline
+docker-compose up -d
+----
 
 Then Jenkins will be running on port `8080` and Artifactory `8081`.
 
