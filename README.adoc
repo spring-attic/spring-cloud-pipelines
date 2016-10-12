@@ -252,7 +252,7 @@ image::docs/configure_system.png[caption="Step 2: ", title="Click 'Configure Sys
 {nbsp}
 {nbsp}
 
-image::docs/groovy_token.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+image::docs/groovy_token.png[caption="Step 3: ", title="Click 'Manage Jenkins'"]
 
 
 
@@ -297,7 +297,17 @@ And that's it!
 {nbsp}
 {nbsp}
 
-image::docs/git.png[caption="Step 4: ", title="Fill out JDK Installation with `/usr/lib/jvm/java-8-openjdk-amd64`"]
+image::docs/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/git.png[caption="Step 3: ", title="Fill out Git user information"]
 
 {nbsp}
 {nbsp}
