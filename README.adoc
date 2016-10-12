@@ -218,7 +218,9 @@ The env vars that are used in all of the jobs are as follows:
 [frame="topbot",options="header,footer"]
 |======================
 |Property Name  | Property Description | Default value
-|CF_API_URL | The URL to the CF Api | api.local.pcfdev.io
+|CF_TEST_API_URL | The URL to the CF Api for TEST env| api.local.pcfdev.io
+|CF_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
+|CF_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
 |CF_TEST_ORG    | Name of the org for the test env | pcfdev-org
 |CF_TEST_SPACE  | Name of the space for the test env | pcfdev-space
 |CF_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
