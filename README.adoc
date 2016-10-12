@@ -194,7 +194,7 @@ seed job
 
 ==== Seed properties
 
-Click on the seed job and pick `Build with parameters`. Then as presented in the screen below (you'll have far more properties to set) just modify the `REPOS` property by providing the colon separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.
+Click on the seed job and pick `Build with parameters`. Then as presented in the screen below (you'll have far more properties to set) just modify the `REPOS` property by providing the comma separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.
 
 TIP: This is very useful when the repos you want to build differ. E.g. use
 different JDK. Then some seeds can set the `JDK_VERSION` param to one version
