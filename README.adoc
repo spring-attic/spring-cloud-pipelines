@@ -36,13 +36,6 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
-For the other two
-
-  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
-  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Stub Runner Boot]
-
-You have to build locally and upload their artifacts to Artifactory.
-
 ==== Remove the tags
 
 If you keep playing around with your repo you might end up with some tags that
