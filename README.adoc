@@ -409,38 +409,7 @@ image::docs/seed.png[caption="Step 3: ", title="Provide the parameters (you'll h
 
 image::docs/seed_built.png[caption="Step 4: ", title="This is how the results of seed should look like"]
 
-{nbsp}
-{nbsp}
-
-image::docs/seed_views.png[caption="Step 5: ", title="Click the 'github-webhook' view"]
-
-{nbsp}
-{nbsp}
-
-image::docs/pipeline_run.png[caption="Step 6: ", title="Run the pipeline"]
-
-{nbsp}
-{nbsp}
-
-image::docs/pipeline_run_props.png[caption="Step 7: ", title="You can set some properties (just click 'Build' to proceed) "]
-
-{nbsp}
-{nbsp}
-
-image::docs/pipeline_manual.png[caption="Step 8: ", title="Click the manual step to go to stage (remember about killing the apps on test env)"]
-
-IMPORTANT: Most likely you will run out of memory so when reaching the stage
-environment it's good to kill all apps on test. Check out the FAQ section for more details!
-
-{nbsp}
-{nbsp}
-
-image::docs/pipeline_finished.png[caption="Step 9: ", title="The full pipeline should look like this"]
-
-{nbsp}
-{nbsp}
-
-=== Run the github-webhook pipeline
+=== Run the `github-webhook` pipeline
 
 We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
@@ -450,10 +419,48 @@ seed.
 
 Anyways, to run the demo just provide in the `REPOS` var the comma separated
  list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics`.
+ 
+{nbsp}
+{nbsp}
+
+image::docs/seed_views.png[caption="Step 1: ", title="Click the 'github-webhook' view"]
+
+{nbsp}
+{nbsp}
+
+image::docs/pipeline_run.png[caption="Step 2: ", title="Run the pipeline"]
+
+{nbsp}
+{nbsp}
+
+image::docs/pipeline_run_props.png[caption="Step 3: ", title="You can set some properties (just click 'Build' to proceed) "]
+
+{nbsp}
+{nbsp}
+
 
 IMPORTANT: Most likely your 1st build will suddenly hang for 10 minutes. If you rerun it
 again it should work after 2-3 minutes. My guess is that it's related to Docker Compose
 so sorry for this unfortunate situation.
+
+{nbsp}
+{nbsp}
+
+image::docs/pipeline_manual.png[caption="Step 4: ", title="Click the manual step to go to stage (remember about killing the apps on test env)"]
+
+{nbsp}
+{nbsp}
+
+IMPORTANT: Most likely you will run out of memory so when reaching the stage
+environment it's good to kill all apps on test. Check out the FAQ section for more details!
+
+{nbsp}
+{nbsp}
+
+image::docs/pipeline_finished.png[caption="Step 5: ", title="The full pipeline should look like this"]
+
+{nbsp}
+{nbsp}
 
 == FAQ
 
