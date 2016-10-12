@@ -438,7 +438,6 @@ image::docs/pipeline_run_props.png[caption="Step 3: ", title="You can set some p
 {nbsp}
 {nbsp}
 
-
 IMPORTANT: Most likely your 1st build will suddenly hang for 10 minutes. If you rerun it
 again it should work after 2-3 minutes. My guess is that it's related to Docker Compose
 so sorry for this unfortunate situation.
@@ -452,7 +451,7 @@ image::docs/pipeline_manual.png[caption="Step 4: ", title="Click the manual step
 {nbsp}
 
 IMPORTANT: Most likely you will run out of memory so when reaching the stage
-environment it's good to kill all apps on test. Check out the FAQ section for more details!
+environment it's good to kill all apps on test. <<faq,Check out the FAQ section for more details>>!
 
 {nbsp}
 {nbsp}
@@ -462,7 +461,7 @@ image::docs/pipeline_finished.png[caption="Step 5: ", title="The full pipeline s
 {nbsp}
 {nbsp}
 
-== FAQ
+== FAQ[[faq]]
 
 === Pipeline version contains ${PIPELINE_VERSION}
 
