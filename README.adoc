@@ -2,12 +2,12 @@
 
 The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
 
-The projects that take part in the whole setup are:
+All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our app under test
-- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server
-- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging.
-- https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that uses Github-Analytics
+- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
+- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
+- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
 
 == Step by step
 
@@ -503,11 +503,12 @@ E.g. for `REPOS` equal to:
 will result in the creation of pipelines with root names `foo` for `github-analytics`
 and `bar` for `github-webhook`.
 
-=== Will this work on ANY project?
+=== Will this work for ANY project?
 
 Not really. This is an `opinionated pipeline` that's why we took some
 opinionated decisions like:
 
+- usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
 - usage of Maven Wrapper
 - artifacts deployment by `./mvnw clean deploy`
 - application deployment to Cloud Foundry
