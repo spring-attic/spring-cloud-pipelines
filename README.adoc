@@ -11,7 +11,7 @@ All in all there are the following projects taking part in the whole `microservi
 
 == Step by step
 
-- Fork repos
+- Fork repos and deploy infra to Artifactory
 - Start PCF Dev (if you don't want to use an existing one)
 - Start Docker Compose with Jenkins + Artifactory
 - Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
@@ -22,7 +22,7 @@ just check out the section on how to update the URL to Artifactory)
 - Run the seed job
 - Run the `github-webhook` pipeline
 
-=== Fork repos
+=== Fork repos and deploy infra to Artifactory
 
 There are 4 apps that are composing the pipeline
 
@@ -75,7 +75,7 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 include::seed/settings.xml[]
 ----
 
-==== Deploy the infra JARs
+==== Deploy the infra JARs to Artifactory
 
 If you're running without Docker Machine
 
