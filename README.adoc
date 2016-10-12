@@ -68,6 +68,14 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 include::seed/settings.xml[]
 ----
 
+=== Start Docker Compose
+
+Jenkins + Artifactory can be ran locally. To do that just execute
+
+`docker-compose up`
+
+Then Jenkins will be running on port `8080` and Artifactory `8081`.
+
 ==== Deploy the infra JARs to Artifactory
 
 If you're running without Docker Machine
@@ -161,14 +169,6 @@ cf stop github-webhook
 cf stop github-eureka
 cf stop stubrunner
 ----
-
-=== Start Docker Compose
-
-Jenkins + Artifactory can be ran locally. To do that just execute
-
-`docker-compose up`
-
-Then Jenkins will be running on port `8080` and Artifactory `8081`.
 
 === Setup Jenkins env vars
 
