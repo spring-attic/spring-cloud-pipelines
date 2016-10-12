@@ -503,6 +503,19 @@ E.g. for `REPOS` equal to:
 will result in the creation of pipelines with root names `foo` for `github-analytics`
 and `bar` for `github-webhook`.
 
+=== Will this work on ANY project?
+
+Not really. This is an `opinionated pipeline` that's why we took some
+opinionated decisions like:
+
+- usage of Maven Wrapper
+- artifacts deployment by `./mvnw clean deploy`
+- application deployment to Cloud Foundry
+- running smoke tests on a deployed app via the `smoke` Maven profile
+- running e2e tests on a deployed app via the `e2e` Maven profile
+
+This is the initial approach that can be easily changed in the future.
+
 === I've ran out of resources!!
 
 When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
