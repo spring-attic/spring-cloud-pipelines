@@ -162,19 +162,6 @@ cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 ----
 
-IMPORTANT: Most likely you will run out of memory so when reaching the stage
-environment it's good to kill all apps on test. You can do it like this:
-
-E.g. for `github-webhook` app
-
-[source,bash]
-----
-cf target -o pcfdev-org -s pcfdev-test
-cf stop github-webhook
-cf stop github-eureka
-cf stop stubrunner
-----
-
 === Setup Jenkins env vars
 
 If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
@@ -441,6 +428,9 @@ image::docs/pipeline_run_props.png[caption="Step 7: ", title="You can set some p
 {nbsp}
 
 image::docs/pipeline_manual.png[caption="Step 8: ", title="Click the manual step to go to stage (remember about killing the apps on test env)"]
+
+IMPORTANT: Most likely you will run out of memory so when reaching the stage
+environment it's good to kill all apps on test. Check out the FAQ section for more details!
 
 {nbsp}
 {nbsp}
