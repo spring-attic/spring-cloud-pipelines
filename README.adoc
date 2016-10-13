@@ -36,18 +36,6 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
-==== Remove the tags
-
-If you keep playing around with your repo you might end up with some tags that
-point to versions that have not been deployed to your Artifactory. That often happens
-when you remove the volume that Artifactory is using. To fix this issue just remove
-all the tags.
-
-[source,bash]
-----
-git tag -l | xargs -n 1 git push --delete origin
-----
-
 ==== Set up your local Maven to work with Artifactory
 
 First, you have to ensure that this section is present under your `~/.m2/settings.xml`
@@ -451,6 +439,11 @@ IMPORTANT: Most likely your 1st build will suddenly hang for 10 minutes. If you 
 again it should work after 2-3 minutes. My guess is that it's related to Docker Compose
 so sorry for this unfortunate situation.
 
+IMPORTANT: If your build fails on the *deploy previous version to stage* due to missing jar,
+that means that you've forgotten to clear the tags in your repo. Typically that's due to the fact that
+you've removed the Artifactory volume with deployed JAR whereas a tag in the repo is still pointing there.
+<<tags,Check out this section on how to remove the tag.>>
+
 {nbsp}
 {nbsp}
 
@@ -549,7 +542,7 @@ cf stop github-eureka
 cf stop stubrunner
 ----
 
-=== The rollback step fails due to missing JAR ?!
+=== The rollback step fails due to missing JAR ?! [[tags]]
 
 You must have pushed some tags and have removed the Artifactory volume that
 contained them. To fix this, just remove the tags
