@@ -11,6 +11,7 @@ COPY seed/jenkins_pipeline.groovy /usr/share/jenkins/jenkins_pipeline.groovy
 COPY seed/settings.xml /usr/share/jenkins/settings.xml
 
 # Generated via start.sh
+# If you don't want to provide it just put empty files there
 COPY build/gituser /usr/share/jenkins/gituser
 COPY build/gitpass /usr/share/jenkins/gitpass
 

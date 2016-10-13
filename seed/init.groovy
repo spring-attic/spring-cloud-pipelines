@@ -34,8 +34,8 @@ println "Creating the credentials"
 	SystemCredentialsProvider.getInstance().save()
 }
 
-String gitUser = new File('/usr/share/jenkins/gituser').text
-String gitPass = new File('/usr/share/jenkins/gitpass').text
+String gitUser = new File('/usr/share/jenkins/gituser')?.text ?: "changeme"
+String gitPass = new File('/usr/share/jenkins/gitpass')?.text ?: "changeme"
 
 SystemCredentialsProvider.getInstance().getCredentials().add(
 		new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, 'git',
