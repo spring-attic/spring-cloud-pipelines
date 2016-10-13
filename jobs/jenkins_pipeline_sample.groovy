@@ -60,7 +60,7 @@ parsedRepos.each {
 			colorizeOutput()
 			maskPasswords()
 			timeout {
-				noActivity(600)
+				noActivity(1200)
 				failBuild()
 				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 			}
