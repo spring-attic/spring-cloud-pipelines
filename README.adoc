@@ -121,7 +121,7 @@ space: pcfdev-space
 api: api.local.pcfdev.io
 ----
 
-You can start the PCF dev with more memory
+You can start the PCF dev like this:
 
 [source,bash]
 ----
