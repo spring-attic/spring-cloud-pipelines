@@ -232,6 +232,9 @@ image::docs/pipeline_finished.png[caption="Step 5: ", title="The full pipeline s
 
 == Optional steps [[optional]]
 
+All the steps below are not necessary to run the demo. They are needed only
+when you want to do some custom changes.
+
 === Deploying infra jars to a different location
 
 It's enough to provide the `distribution.management.release.url` system prop to Maven.
