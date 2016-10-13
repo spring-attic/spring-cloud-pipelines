@@ -4,6 +4,7 @@ import com.cloudbees.plugins.credentials.*
 import com.cloudbees.plugins.credentials.impl.*
 import hudson.model.*
 import jenkins.model.*
+import hudson.plugins.groovy.*
 
 def jobScript = new File('/usr/share/jenkins/jenkins_pipeline.groovy')
 def jobManagement = new JenkinsJobManagement(System.out, [:], new File('.'))
@@ -21,15 +22,31 @@ if (m2Created) {
 
 println "Creating the seed job"
 new DslScriptLoader(jobManagement).with {
-	runScript(jobScript.text)
+	runScript(jobScript.text.replace('https://github.com/marcingrzejszczak',
+			"https://github.com/${System.getenv('FORKED_ORG')}"))
 }
 
 println "Creating the credentials"
 ['cf-test', 'cf-stage', 'cf-prod'].each { String id ->
 	SystemCredentialsProvider.getInstance().getCredentials().add(
-			new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, id, "CF credential [$id]", "user", "pass"));
+			new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, id,
+					"CF credential [$id]", "user", "pass"))
 	SystemCredentialsProvider.getInstance().save()
 }
 
+String gitUser = new File('/usr/share/jenkins/gituser').text
+String gitPass = new File('/usr/share/jenkins/gitpass').text
+
+SystemCredentialsProvider.getInstance().getCredentials().add(
+		new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, 'git',
+				"GIT credential", gitUser, gitPass))
+SystemCredentialsProvider.getInstance().save()
+
+
 println "Adding jdk"
 Jenkins.getInstance().getJDKs().add(new JDK("jdk8", "/usr/lib/jvm/java-8-openjdk-amd64"))
+
+println "Marking allow macro token"
+Groovy.DescriptorImpl descriptor =
+		(Groovy.DescriptorImpl) Jenkins.getInstance().getDescriptorOrDie(Groovy)
+descriptor.configure(null, net.sf.json.JSONObject.fromObject('''{"allowMacro":"true"}'''))

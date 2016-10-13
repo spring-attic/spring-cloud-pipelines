@@ -2,6 +2,8 @@ import javaposse.jobdsl.dsl.DslFactory
 
 DslFactory factory = this
 
+String repos = 'https://github.com/marcingrzejszczak/github-analytics,https://github.com/marcingrzejszczak/github-webhook'
+
 factory.job('jenkins-pipeline-seed') {
     scm {
         git {
@@ -13,7 +15,7 @@ factory.job('jenkins-pipeline-seed') {
     }
     wrappers {
         parameters {
-            stringParam('REPOS', 'https://github.com/marcingrzejszczak/github-analytics,https://github.com/marcingrzejszczak/github-webhook',
+            stringParam('REPOS', repos,
                     "Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
                             "first provide the name and separate the url with \$ sign")
             stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')

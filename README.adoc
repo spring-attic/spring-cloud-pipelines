@@ -11,18 +11,24 @@ All in all there are the following projects taking part in the whole `microservi
 
 == Step by step
 
-- <<fork,Fork repos and deploy infra to Artifactory>>
+If you want to just run the demo as far as possible using PCF Dev and Docker Compose
+
+- <<fork,Fork repos>>
 - <<start,Start Jenkins and Artifactory>>
-- <<pcfdev,[OPTIONAL] Start PCF Dev (if you don't want to use an existing one)>>
-- <<env,[OPTIONAL] Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
-just check out the section on how to update the URL to Artifactory)>>
-- <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
-- <<credentials,Setup Jenkins credentials>>
-- <<settings,[OPTIONAL] Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
+- <<deploy,Deploy infra to Artifactory>>
+- <<pcfdev,Start PCF Dev (if you don't want to use an existing one)>>
 - <<seed,Run the seed job>>
 - <<pipeline,Run the `github-webhook` pipeline>>
 
-=== Fork repos and deploy infra to Artifactory[[fork]]
+Below you can find <<optional,optional>> steps needed to be taken when you want to customize the pipeline
+
+- <<env,Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
+just check out the section on how to update the URL to Artifactory)>>
+- <<settings,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
+- <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
+- <<credentials,Setup Jenkins credentials>>
+
+=== Fork repos[[fork]]
 
 There are 4 apps that are composing the pipeline
 
@@ -67,62 +73,39 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 
 === Start Jenkins and Artifactory[[start]]
 
-Jenkins + Artifactory can be ran locally. To do that just execute
+Jenkins + Artifactory can be ran locally. To do that just execute the
+`start.sh` script from this repo.
 
 [source,bash]
 ----
 git clone https://github.com/marcingrzejszczak/jenkins-pipeline
 cd jenkins-pipeline
-docker-compose up -d
+./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg
 ----
 
 Then Jenkins will be running on port `8080` and Artifactory `8081`.
+The provided parameters will be passed as env variables to Jenkins VM
+and credentials will be set in your set. That way you don't have to do
+any manual work on the Jenkins side. Also the `REPOS` env variable will
+contain your GitHub org in which you have the forked repos.
 
-==== Deploy the infra JARs to Artifactory
+==== Deploy the infra JARs to Artifactory[[deploy]]
 
-If you're running without Docker Machine
-
-Github Eureka:
-
-[source,bash]
-----
-git clone https://github.com/spring-cloud-samples/github-eureka
-cd github-eureka
-./mvnw clean deploy
-----
-
-Github Stub Runner:
+When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
 
 [source,bash]
 ----
-git clone https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot
-cd github-analytics-stub-runner-boot
-./mvnw clean deploy
+git clone https://github.com/marcingrzejszczak/jenkins-pipeline
+cd jenkins-pipeline
+./deploy_infra.sh
 ----
 
-If you're running with Docker Machine (e.g. Docker Machine running on 192.168.99.100):
-
-Github Eureka:
-
-[source,bash]
-----
-git clone https://github.com/spring-cloud-samples/github-eureka
-cd github-eureka
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
-----
-
-Github Stub Runner:
-
-[source,bash]
-----
-git clone https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot
-cd github-analytics-stub-runner-boot
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
-----
+As a result both `eureka` and `stub runner` repos will be cloned, built
+and uploaded to Artifactory.
 
 === Start PCF Dev[[pcfdev]]
 
-TIP: You can skip this step if you have CF installed already
+TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 
 You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
 
@@ -158,182 +141,6 @@ cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
 cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 ----
-
-=== Setup Jenkins env vars[[env]]
-
-If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
-That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs. 
-
-You can do it in the following ways:
-
-- globally via Jenkins global env vars (then when you run the seed that variable will be taken into consideration and proper pipelines will get built)
-- modify the seed job parameters (you'll have to modify the seed job configuration and change the `REPOS` property)
-- provide the repos parameter when running the seed job
-
-For the sake of simplicity let's go with the *last* option.
-
-IMPORTANT: If you're choosing the global envs, you *HAVE* to remove the other approach
-(e.g. if you set the global env for `REPOS`, please remove that property in the
-seed job
-
-==== Seed properties
-
-Click on the seed job and pick `Build with parameters`. Then as presented in the screen below (you'll have far more properties to set) just modify the `REPOS` property by providing the comma separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.
-
-TIP: This is very useful when the repos you want to build differ. E.g. use
-different JDK. Then some seeds can set the `JDK_VERSION` param to one version
-of Java installation and the others to another one.
-
-Example screen:
-
-image::docs/seed.png[]
-
-In the screenshot we could parametrize the `REPOS` and `REPO_WITH_JARS` params.
-
-==== Global envs
-
-IMPORTANT: This section is presented only for informational purposes - for the sake of demo you can skip it
-
-You can add env vars (go to configure Jenkins -> Global Properties) for the following
- properties (the defaults are for PCF Dev):
-
-Example screen:
-
-image::docs/env_vars.png[]
-
-==== All env vars
-
-IMPORTANT: This section is presented only for informational purposes - for the sake of demo you can skip it
-
-The env vars that are used in all of the jobs are as follows:
-
-[frame="topbot",options="header,footer"]
-|======================
-|Property Name  | Property Description | Default value
-|CF_TEST_API_URL | The URL to the CF Api for TEST env| api.local.pcfdev.io
-|CF_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
-|CF_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
-|CF_TEST_ORG    | Name of the org for the test env | pcfdev-org
-|CF_TEST_SPACE  | Name of the space for the test env | pcfdev-space
-|CF_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
-|CF_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
-|CF_PROD_ORG   | Name of the org for the prod env | pcfdev-org
-|CF_PROD_SPACE | Name of the space for the prod env | pcfdev-space
-|REPO_WITH_JARS | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
-|M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
-|JDK_VERSION | The name of the JDK installation | jdk8
-|PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
-|======================
-
-=== Additional setup[[misc]]
-
-==== Enable Groovy Token Macro Processing
-
-you need this to allow generation of Pipeline Version
-
-{nbsp}
-{nbsp}
-
-image::docs/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
-
-==== Set Git email / user
-
-{nbsp}
-{nbsp}
-
-image::docs/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/git.png[caption="Step 3: ", title="Fill out Git user information"]
-
-{nbsp}
-{nbsp}
-
-=== Add Jenkins credentials for GitHub[[credentials]]
-
-The scripts will need to access the credential in order to tag the repo.
-
-You have to set credentials with id: `git`.
-
-Below you can find instructions on how to set a credential (e.g. for `cf-test` credential but
-remember to provide the one with id `git`).
-
-{nbsp}
-{nbsp}
-
-image::docs/credentials_system.png[caption="Step 1: ", title="Click 'Credentials, System'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/credentials_global.png[caption="Step 2: ", title="Click 'Global Credentials'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/credentials_add.png[caption="Step 3: ", title="Click 'Add credentials'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/credentials_example.png[caption="Step 4: ", title="Fill out the user / password and provide the `git` credential ID (in this example `cf-test`)"]
-
-{nbsp}
-{nbsp}
-
-TIP: The following section is just for informational purposes. You can skip it if you just want
-to run the demo
-
-In your scripts we reference the credentials via IDs. These are the defaults for credentials
-
-[frame="topbot",options="header,footer"]
-|======================
-|Property Name  | Property Description | Default value
-|GIT_CREDENTIAL_ID    | Credential ID used to tag a git repo | git
-|CF_TEST_CREDENTIAL_ID  | Credential ID for CF Test env access | cf-test
-|CF_STAGE_CREDENTIAL_ID   | Credential ID for CF Stage env access | cf-stage
-|CF_PROD_CREDENTIAL_ID | Credential ID for CF Prod env access | cf-prod
-|======================
-
-If you already have in your system a credential to for example tag a repo
-you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
-
-=== Setup settings.xml for Maven deployment[[settings]]
-
-TIP: If you want to use the default connection to the Docker version
-of Artifactory you can skip this step
-
-So that `./mvnw deploy` works with Artifactory from Docker we're
-already copying the missing `settings.xml` file for you. It looks like this:
-
-[source,xml]
-----
-<server>
-  <id>artifactory-local</id>
-  <username>admin</username>
-  <password>password</password>
-</server>
-----
-
-If you want to use your own version of Artifactory / Nexus you have to update
-the file (it's in `seed/settings.xml`).
 
 === Run the seed job[[seed]]
 
@@ -422,6 +229,211 @@ image::docs/pipeline_finished.png[caption="Step 5: ", title="The full pipeline s
 
 {nbsp}
 {nbsp}
+
+== Optional steps [[optional]]
+
+=== Deploying infra jars to a different location
+
+It's enough to provide the `distribution.management.release.url` system prop to Maven.
+Example for deploying to Artifactory at IP `192.168.99.100`
+
+Github Eureka:
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud-samples/github-eureka
+cd github-eureka
+./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
+----
+
+Github Stub Runner:
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot
+cd github-analytics-stub-runner-boot
+./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
+----
+
+=== Setup settings.xml for Maven deployment[[settings]]
+
+TIP: If you want to use the default connection to the Docker version
+of Artifactory you can skip this step
+
+So that `./mvnw deploy` works with Artifactory from Docker we're
+already copying the missing `settings.xml` file for you. It looks like this:
+
+[source,xml]
+----
+<server>
+  <id>artifactory-local</id>
+  <username>admin</username>
+  <password>password</password>
+</server>
+----
+
+If you want to use your own version of Artifactory / Nexus you have to update
+the file (it's in `seed/settings.xml`).
+
+=== Setup Jenkins env vars[[env]]
+
+If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
+That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.
+
+You can do it in the following ways:
+
+- globally via Jenkins global env vars (then when you run the seed that variable will be taken into consideration and proper pipelines will get built)
+- modify the seed job parameters (you'll have to modify the seed job configuration and change the `REPOS` property)
+- provide the repos parameter when running the seed job
+
+For the sake of simplicity let's go with the *last* option.
+
+IMPORTANT: If you're choosing the global envs, you *HAVE* to remove the other approach
+(e.g. if you set the global env for `REPOS`, please remove that property in the
+seed job
+
+==== Seed properties
+
+Click on the seed job and pick `Build with parameters`. Then as presented in the screen below (you'll have far more properties to set) just modify the `REPOS` property by providing the comma separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.
+
+TIP: This is very useful when the repos you want to build differ. E.g. use
+different JDK. Then some seeds can set the `JDK_VERSION` param to one version
+of Java installation and the others to another one.
+
+Example screen:
+
+image::docs/seed.png[]
+
+In the screenshot we could parametrize the `REPOS` and `REPO_WITH_JARS` params.
+
+==== Global envs
+
+IMPORTANT: This section is presented only for informational purposes - for the sake of demo you can skip it
+
+You can add env vars (go to configure Jenkins -> Global Properties) for the following
+ properties (the defaults are for PCF Dev):
+
+Example screen:
+
+image::docs/env_vars.png[]
+
+==== All env vars
+
+The env vars that are used in all of the jobs are as follows:
+
+[frame="topbot",options="header,footer"]
+|======================
+|Property Name  | Property Description | Default value
+|CF_TEST_API_URL | The URL to the CF Api for TEST env| api.local.pcfdev.io
+|CF_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
+|CF_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
+|CF_TEST_ORG    | Name of the org for the test env | pcfdev-org
+|CF_TEST_SPACE  | Name of the space for the test env | pcfdev-space
+|CF_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
+|CF_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
+|CF_PROD_ORG   | Name of the org for the prod env | pcfdev-org
+|CF_PROD_SPACE | Name of the space for the prod env | pcfdev-space
+|REPO_WITH_JARS | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
+|JDK_VERSION | The name of the JDK installation | jdk8
+|PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
+|GIT_EMAIL | The email used by Git to tag repo | email@example.com
+|GIT_NAME | The name used by Git to tag repo | Pivo Tal
+|======================
+
+==== Set Git email / user
+
+Since our pipeline is setting the git user / name explicitly for the build step
+ you'd have to go to `Configure` of the build step and modify the Git name / email.
+ If you want to set it globally you'll have to remove the section from the build
+ step and follow these steps to set it globally.
+
+You can set Git email / user globally like this:
+
+{nbsp}
+{nbsp}
+
+image::docs/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/git.png[caption="Step 3: ", title="Fill out Git user information"]
+
+{nbsp}
+{nbsp}
+
+=== Jenkins Credentials
+
+In your scripts we reference the credentials via IDs. These are the defaults for credentials
+
+[frame="topbot",options="header,footer"]
+|======================
+|Property Name  | Property Description | Default value
+|GIT_CREDENTIAL_ID    | Credential ID used to tag a git repo | git
+|CF_TEST_CREDENTIAL_ID  | Credential ID for CF Test env access | cf-test
+|CF_STAGE_CREDENTIAL_ID   | Credential ID for CF Stage env access | cf-stage
+|CF_PROD_CREDENTIAL_ID | Credential ID for CF Prod env access | cf-prod
+|======================
+
+If you already have in your system a credential to for example tag a repo
+you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
+
+==== Add Jenkins credentials for GitHub[[credentials]]
+
+The scripts will need to access the credential in order to tag the repo.
+
+You have to set credentials with id: `git`.
+
+Below you can find instructions on how to set a credential (e.g. for `cf-test` credential but
+remember to provide the one with id `git`).
+
+{nbsp}
+{nbsp}
+
+image::docs/credentials_system.png[caption="Step 1: ", title="Click 'Credentials, System'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/credentials_global.png[caption="Step 2: ", title="Click 'Global Credentials'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/credentials_add.png[caption="Step 3: ", title="Click 'Add credentials'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/credentials_example.png[caption="Step 4: ", title="Fill out the user / password and provide the `git` credential ID (in this example `cf-test`)"]
+
+{nbsp}
+{nbsp}
+
+=== Enable Groovy Token Macro Processing
+
+With scripted that but if you needed to this manually then this is how to do it:
+
+{nbsp}
+{nbsp}
+
+image::docs/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
 == FAQ[[faq]]
 

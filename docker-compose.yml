@@ -2,6 +2,7 @@ master:
   build: .
   environment:
     JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Djava.awt.headless=true -Dhudson.model.ParametersAction.keepUndefinedParameters=true"
+    FORKED_ORG: "${FORKED_ORG}"
   ports:
     - "50000:50000"
     - "8080:8080"

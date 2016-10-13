@@ -10,6 +10,10 @@ COPY seed/init.groovy /usr/share/jenkins/ref/init.groovy
 COPY seed/jenkins_pipeline.groovy /usr/share/jenkins/jenkins_pipeline.groovy
 COPY seed/settings.xml /usr/share/jenkins/settings.xml
 
+# Generated via start.sh
+COPY build/gituser /usr/share/jenkins/gituser
+COPY build/gitpass /usr/share/jenkins/gitpass
+
 USER jenkins
 
 #COPY plugins.txt /usr/share/jenkins/plugins.txt
