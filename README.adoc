@@ -246,44 +246,6 @@ image::docs/configure_system.png[caption="Step 2: ", title="Click 'Configure Sys
 
 image::docs/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
-
-
-==== Provide your JDK version
-
-- by default we assume that you have jdk with id `jdk8` configured
-- if you want a different one just override `JDK_VERSION` env var and point to the proper one
-
-TIP: The docker image comes in with Java installed at `/usr/lib/jvm/java-8-openjdk-amd64`.
-You can go to `Global Tools` and create a JDK with `jdk8` id and JAVA_HOME
- pointing to `/usr/lib/jvm/java-8-openjdk-amd64`
-
-To set the default one just follow these steps:
-
-{nbsp}
-{nbsp}
-
-image::docs/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/global_tool.png[caption="Step 2: ", title="Click 'Global Tool'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/jdk_installation.png[caption="Step 3: ", title="Click 'JDK Installations'"]
-
-{nbsp}
-{nbsp}
-
-image::docs/jdk.png[caption="Step 4: ", title="Fill out JDK Installation with `/usr/lib/jvm/java-8-openjdk-amd64`"]
-
-{nbsp}
-{nbsp}
-
-And that's it!
-
 ==== Set Git email / user
 
 {nbsp}
@@ -549,6 +511,42 @@ contained them. To fix this, just remove the tags
 ----
 git tag -l | xargs -n 1 git push --delete origin
 ----
+
+==== I want to provide a different JDK version
+
+- by default we assume that you have jdk with id `jdk8` configured
+- if you want a different one just override `JDK_VERSION` env var and point to the proper one
+
+TIP: The docker image comes in with Java installed at `/usr/lib/jvm/java-8-openjdk-amd64`.
+You can go to `Global Tools` and create a JDK with `jdk8` id and JAVA_HOME
+ pointing to `/usr/lib/jvm/java-8-openjdk-amd64`
+
+To change the default one just follow these steps:
+
+{nbsp}
+{nbsp}
+
+image::docs/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/global_tool.png[caption="Step 2: ", title="Click 'Global Tool'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/jdk_installation.png[caption="Step 3: ", title="Click 'JDK Installations'"]
+
+{nbsp}
+{nbsp}
+
+image::docs/jdk.png[caption="Step 4: ", title="Fill out JDK Installation with path to your JDK"]
+
+{nbsp}
+{nbsp}
+
+And that's it!
 
 == How to build it
 

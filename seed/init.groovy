@@ -2,6 +2,8 @@ import javaposse.jobdsl.dsl.DslScriptLoader
 import javaposse.jobdsl.plugin.JenkinsJobManagement
 import com.cloudbees.plugins.credentials.*
 import com.cloudbees.plugins.credentials.impl.*
+import hudson.model.*
+import jenkins.model.*
 
 def jobScript = new File('/usr/share/jenkins/jenkins_pipeline.groovy')
 def jobManagement = new JenkinsJobManagement(System.out, [:], new File('.'))
@@ -26,5 +28,8 @@ println "Creating the credentials"
 ['cf-test', 'cf-stage', 'cf-prod'].each { String id ->
 	SystemCredentialsProvider.getInstance().getCredentials().add(
 			new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, id, "CF credential [$id]", "user", "pass"));
-	SystemCredentialsProvider.getInstance().save();
+	SystemCredentialsProvider.getInstance().save()
 }
+
+println "Adding jdk"
+Jenkins.getInstance().getJDKs().add(new JDK("jdk8", "/usr/lib/jvm/java-8-openjdk-amd64"))
