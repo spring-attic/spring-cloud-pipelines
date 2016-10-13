@@ -24,6 +24,8 @@ String cfStageCredentialId = binding.variables['CF_STAGE_CREDENTIAL_ID'] ?: 'cf-
 String cfProdCredentialId = binding.variables['CF_PROD_CREDENTIAL_ID'] ?: 'cf-prod'
 String gitEmail = binding.variables['GIT_EMAIL'] ?: 'pivo@tal.com'
 String gitName = binding.variables['GIT_NAME'] ?: 'Pivo Tal'
+boolean autoStage = binding.variables['AUTO_DEPLOY_TO_STAGE'] ?:  false
+boolean autoProd = binding.variables['AUTO_DEPLOY_TO_PROD'] ?:  true
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables['REPOS'] ?:
@@ -289,9 +291,20 @@ parsedRepos.each {
 			archiveJunit(testReports) {
 				allowEmptyResults()
 			}
-			buildPipelineTrigger("${projectName}-stage-env-deploy") {
-				parameters {
-					currentBuild()
+			String nextJob = "${projectName}-stage-env-deploy"
+			if (autoStage) {
+				downstreamParameterized {
+					trigger(nextJob) {
+						parameters {
+							currentBuild()
+						}
+					}
+				}
+			} else {
+				buildPipelineTrigger(nextJob) {
+					parameters {
+						currentBuild()
+					}
 				}
 			}
 		}
@@ -376,9 +389,20 @@ parsedRepos.each {
 		}
 		publishers {
 			archiveJunit(testReports)
-			buildPipelineTrigger("${projectName}-prod-env-deploy") {
-				parameters {
-					currentBuild()
+			String nextJob = "${projectName}-prod-env-deploy"
+			if (autoProd) {
+				downstreamParameterized {
+					trigger(nextJob) {
+						parameters {
+							currentBuild()
+						}
+					}
+				}
+			} else {
+				buildPipelineTrigger(nextJob) {
+					parameters {
+						currentBuild()
+					}
 				}
 			}
 		}
