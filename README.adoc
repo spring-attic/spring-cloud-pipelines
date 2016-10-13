@@ -306,17 +306,12 @@ image::docs/git.png[caption="Step 3: ", title="Fill out Git user information"]
 
 === Add Jenkins credentials for GitHub[[credentials]]
 
-The scripts will need to access the credentials for Cloud Foundry access.
-Additionally there is one that is required in order to tag the repo.
+The scripts will need to access the credential in order to tag the repo.
 
-In order for the scripts to find the credentials you have to pass the IDs
-of the stored credentials. Below you can find the list of env vars that you
-can set in order to find the proper credential. There are of course
-some defaults too.
+You have to set credentials with id: `git`.
 
-You have to set credentials with ids: `cf-test`, `cf-stage`, `cf-prod`, `git`.
-
-Below you can find instructions on how to set a credential (e.g. for `cf-test` credential).
+Below you can find instructions on how to set a credential (e.g. for `cf-test` credential but
+remember to provide the one with id `git`).
 
 {nbsp}
 {nbsp}
@@ -336,10 +331,13 @@ image::docs/credentials_add.png[caption="Step 3: ", title="Click 'Add credential
 {nbsp}
 {nbsp}
 
-image::docs/credentials_example.png[caption="Step 4: ", title="Fill out the user / password and provide the ID (in this example `cf-test`)"]
+image::docs/credentials_example.png[caption="Step 4: ", title="Fill out the user / password and provide the `git` credential ID (in this example `cf-test`)"]
 
 {nbsp}
 {nbsp}
+
+TIP: The following section is just for informational purposes. You can skip it if you just want
+to run the demo
 
 In your scripts we reference the credentials via IDs. These are the defaults for credentials
 
