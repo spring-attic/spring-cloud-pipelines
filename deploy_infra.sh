@@ -15,6 +15,7 @@ fi
 
 FOLDER=${1:-build}
 CURRENT=`pwd`
+mkdir -p ${FOLDER}
 
 echo "Docker is running at [${POTENTIAL_DOCKER_HOST}]"
 echo "Folder to clone the apps is [${FOLDER}]"
