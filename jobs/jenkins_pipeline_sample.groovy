@@ -78,7 +78,10 @@ parsedRepos.each {
 			}
 		}
 		configure { def project ->
-			appendGitNameAndEmail(project, gitEmail, gitName)
+			project / 'scm' / 'extensions' << 'hudson.plugins.git.extensions.impl.UserIdentity' {
+				'email'(gitEmail)
+				'name'(gitName)
+			}
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -459,11 +462,6 @@ parsedRepos.each {
 	}
 }
 
-private void appendGitNameAndEmail(def project, String gitEmail, String gitName) {
-	def identity = (project / 'scm' / 'extensions') << 'hudson.plugins.git.extensions.impl.UserIdentity'
-	(identity / 'email').setValue(gitEmail)
-	(identity / 'name').setValue(gitName)
-}
 //  ======= JOBS =======
 
 /**
