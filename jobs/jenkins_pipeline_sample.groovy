@@ -22,6 +22,8 @@ String jdkVersion = binding.variables['JDK_VERSION'] ?: 'jdk8'
 String cfTestCredentialId = binding.variables['CF_TEST_CREDENTIAL_ID'] ?: 'cf-test'
 String cfStageCredentialId = binding.variables['CF_STAGE_CREDENTIAL_ID'] ?: 'cf-stage'
 String cfProdCredentialId = binding.variables['CF_PROD_CREDENTIAL_ID'] ?: 'cf-prod'
+String gitEmail = binding.variables['GIT_EMAIL'] ?: 'pivo@tal.com'
+String gitName = binding.variables['GIT_NAME'] ?: 'Pivo Tal'
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables['REPOS'] ?:
@@ -74,6 +76,9 @@ parsedRepos.each {
 					wipeOutWorkspace()
 				}
 			}
+		}
+		configure { def project ->
+			appendGitNameAndEmail(project, gitEmail, gitName)
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -452,6 +457,12 @@ parsedRepos.each {
 		""")
 		}
 	}
+}
+
+private void appendGitNameAndEmail(def project, String gitEmail, String gitName) {
+	def identity = (project / 'scm' / 'extensions') << 'hudson.plugins.git.extensions.impl.UserIdentity'
+	(identity / 'email').setValue(gitEmail)
+	(identity / 'name').setValue(gitName)
 }
 //  ======= JOBS =======
 
