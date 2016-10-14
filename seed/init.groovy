@@ -33,7 +33,7 @@ println "Creating the credentials"
 	}.empty
 	if (credsMissing) {
 		SystemCredentialsProvider.getInstance().getCredentials().add(
-				new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, id,
+				new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, id,
 						"CF credential [$id]", "user", "pass"))
 		SystemCredentialsProvider.getInstance().save()
 	}
@@ -48,7 +48,7 @@ boolean gitCredsMissing = SystemCredentialsProvider.getInstance().getCredentials
 
 if (gitCredsMissing) {
 	SystemCredentialsProvider.getInstance().getCredentials().add(
-			new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, 'git',
+			new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'git',
 					"GIT credential", gitUser, gitPass))
 	SystemCredentialsProvider.getInstance().save()
 }
