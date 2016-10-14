@@ -17,8 +17,8 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-org="marcingrzejszczak"
-repo="jenkins-pipeline"
+org="spring-cloud"
+repo="spring-cloud-pipelines"
 branch="master"
 source_file = File.join(File.dirname(__FILE__), options[:input])
 output_file = options[:output] || File.join(File.dirname(__FILE__),'README.adoc')

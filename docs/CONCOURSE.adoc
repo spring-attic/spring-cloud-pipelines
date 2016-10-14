@@ -80,8 +80,8 @@ Concourse + Artifactory can be ran locally. To do that just execute the
 
 [source,bash]
 ----
-git clone https://github.com/marcingrzejszczak/jenkins-pipeline
-cd jenkins-pipeline/concourse
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/concourse
 ./setup-docker-compose.sh
 ./start.sh 192.168.99.100
 ----
@@ -100,8 +100,8 @@ When Artifactory is running, just execute the `deploy_infra.sh` script from this
 
 [source,bash]
 ----
-git clone https://github.com/marcingrzejszczak/jenkins-pipeline
-cd jenkins-pipeline/concourse
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/concourse
 ./deploy_infra.sh
 ----
 
@@ -291,7 +291,9 @@ This is the initial approach that can be easily changed in the future.
 
 ==== Can I modify this to reuse in my project?
 
-Sure! It's open-source! The important thing is that the core part of the logic is written in Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the whole pipeline. https://github.com/marcingrzejszczak/jenkins-pipeline/tree/master/src/main/bash[You can check out the scripts here.]
+Sure! It's open-source! The important thing is that the core part of the logic is written in
+Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
+whole pipeline. https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash[You can check out the scripts here.]
 
 ==== I've ran out of resources!!
 

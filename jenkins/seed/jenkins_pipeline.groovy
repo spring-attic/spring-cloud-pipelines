@@ -8,7 +8,7 @@ factory.job('jenkins-pipeline-seed') {
     scm {
         git {
             remote {
-                github('marcingrzejszczak/jenkins-pipeline')
+                github('spring-cloud/spring-cloud-pipelines')
             }
             branch('master')
         }

@@ -78,8 +78,8 @@ Jenkins + Artifactory can be ran locally. To do that just execute the
 
 [source,bash]
 ----
-git clone https://github.com/marcingrzejszczak/jenkins-pipeline
-cd jenkins-pipeline/jenkins
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/jenkins
 ./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg
 ----
 
@@ -95,8 +95,8 @@ When Artifactory is running, just execute the `deploy_infra.sh` script from this
 
 [source,bash]
 ----
-git clone https://github.com/marcingrzejszczak/jenkins-pipeline
-cd jenkins-pipeline/jenkins
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/jenkins
 ./deploy_infra.sh
 ----
 
