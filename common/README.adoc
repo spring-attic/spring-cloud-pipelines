@@ -1,0 +1,36 @@
+= Common scripts
+
+The logic behind the deployment pipeline is written using Bash scripts.
+
+== Scripts
+
+[source,bash]
+----
+.
+├── build_and_upload.sh
+├── pipeline.sh
+├── prod_complete.sh
+├── prod_deploy.sh
+├── stage_deploy.sh
+├── stage_e2e.sh
+├── test_deploy.sh
+├── test_rollback_deploy.sh
+├── test_rollback_smoke.sh
+└── test_smoke.sh
+----
+
+There is one script called `pipeline.sh` that contains all the functions
+reused by other scripts.
+
+Every other script represents the logic required to perform a step in the
+pipeline.
+
+Currently the flow looks like this:
+
+*Build phase*
+
+`build and upload -> `
+
+*Test phase*
+
+`test deploy -> test smoke -> test rollback smoke

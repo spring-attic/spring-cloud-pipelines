@@ -1,0 +1,26 @@
+= Spring Cloud Microservice Java Pipeline
+
+This repo contains an `opinionated pipeline` to deploy a Spring Cloud based microservice.
+We've taken the following opinionated decisions:
+
+- usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
+- usage of Maven Wrapper
+- artifacts deployment by `./mvnw clean deploy`
+- application deployment to Cloud Foundry
+- running smoke tests on a deployed app via the `smoke` Maven profile
+- running e2e tests on a deployed app via the `e2e` Maven profile
+
+This is the initial approach that can be easily changed since all the core
+deployment logic is done in a form of bash scripts.
+
+You can go through the setup for
+
+- <<jenkins, Jenkins using Jenkins Job DSL plugin>>
+- <<concourse, Concourse>>
+
+Each of these setups are available under the folders `jenkins` and
+`concourse` respectively.
+
+include::JENKINS.adoc[]
+
+include::CONCOURSE.adoc[]

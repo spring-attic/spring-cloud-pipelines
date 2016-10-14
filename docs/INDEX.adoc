@@ -1,0 +1,4 @@
+:jenkins-root-docs: jenkins
+:concourse-root-docs: concourse
+
+include::README.adoc[]
