@@ -1,4 +1,6 @@
 :jenkins-root-docs: jenkins
 :concourse-root-docs: concourse
+:toc: left
+:nofooter:
 
 include::README.adoc[]
