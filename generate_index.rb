@@ -1,3 +1,3 @@
 require 'asciidoctor'
 
-Asciidoctor.convert_file 'docs/index.adoc', to_file: true, safe: :safe
+Asciidoctor.convert_file 'docs/spring-cloud-pipelines.adoc', to_file: true, safe: :safe
