@@ -931,6 +931,34 @@ No problem, just set the property / env var to true
 - `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage
 - `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod
 
+===== I can't tag the repo!
+
+When you get sth like this:
+
+[source,bash]
+----
+19:01:44 stderr: remote: Invalid username or password.
+19:01:44 fatal: Authentication failed for 'https://github.com/marcingrzejszczak/github-webhook/'
+19:01:44
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1740)
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:1476)
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.access$300(CliGitAPIImpl.java:63)
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$8.execute(CliGitAPIImpl.java:1816)
+19:01:44 	at hudson.plugins.git.GitPublisher.perform(GitPublisher.java:295)
+19:01:44 	at hudson.tasks.BuildStepMonitor$3.perform(BuildStepMonitor.java:45)
+19:01:44 	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:779)
+19:01:44 	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:720)
+19:01:44 	at hudson.model.Build$BuildExecution.post2(Build.java:185)
+19:01:44 	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:665)
+19:01:44 	at hudson.model.Run.execute(Run.java:1745)
+19:01:44 	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+19:01:44 	at hudson.model.ResourceController.execute(ResourceController.java:98)
+19:01:44 	at hudson.model.Executor.run(Executor.java:404)
+----
+
+most likely you've passed a wrong password. Check the <<credentials,credentials>> section
+on how to update your credentials.
+
 === How to build it
 
 `./gradlew clean build`
