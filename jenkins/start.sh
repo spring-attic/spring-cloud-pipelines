@@ -9,15 +9,9 @@ if [[ $# < 3 ]] ; then
     exit 0
 fi
 
-PIPELINE_GIT_USERNAME="${1}"
-PIPELINE_GIT_PASSWORD="${2}"
+export PIPELINE_GIT_USERNAME="${1}"
+export PIPELINE_GIT_PASSWORD="${2}"
 export FORKED_ORG="${3}"
-
-mkdir -p build
-rm -rf build/gituser
-rm -rf build/gitpass
-echo "${PIPELINE_GIT_USERNAME}" >> build/gituser
-echo "${PIPELINE_GIT_PASSWORD}" >> build/gitpass
 
 docker-compose build
 docker-compose up -d

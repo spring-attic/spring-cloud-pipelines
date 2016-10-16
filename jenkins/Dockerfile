@@ -4,6 +4,9 @@
 #   https://engineering.riotgames.com/news/jenkins-docker-proxies-and-compose
 
 FROM jenkins:2.19.1
+ARG gituser=changeme
+ARG gitpass=changeme
+
 MAINTAINER Marcin Grzejszczak <mgrzejszczak@pivotal.io>
 
 COPY seed/init.groovy /usr/share/jenkins/ref/init.groovy
@@ -12,13 +15,14 @@ COPY seed/settings.xml /usr/share/jenkins/settings.xml
 
 # Generated via start.sh
 # If you don't want to provide it just put empty files there
-COPY build/gituser /usr/share/jenkins/gituser
-COPY build/gitpass /usr/share/jenkins/gitpass
+RUN echo "${gituser}" > /usr/share/jenkins/gituser
+RUN echo "${gitpass}" > /usr/share/jenkins/gitpass
 
 USER root
 
 RUN apt-get update && apt-get install -y \
-  ruby
+  ruby \
+  curl
 
 USER jenkins
 

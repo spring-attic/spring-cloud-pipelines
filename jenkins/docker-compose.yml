@@ -1,17 +1,22 @@
-master:
-  build: .
-  environment:
-    JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Djava.awt.headless=true -Dhudson.model.ParametersAction.keepUndefinedParameters=true"
-    FORKED_ORG: "${FORKED_ORG}"
-  ports:
-    - "50000:50000"
-    - "8080:8080"
-  volumes:
-    - /var/jenkins_home
-  links:
-    - artifactory
-
-artifactory:
-  image: jfrog-docker-registry.bintray.io/artifactory/artifactory-oss:latest
-  ports:
-    - "8081:8081"
+version: "2"
+services:
+  jenkins:
+    build:
+      context: .
+      args:
+        gituser: "${PIPELINE_GIT_USERNAME}"
+        gitpass: "${PIPELINE_GIT_PASSWORD}"
+    environment:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Djava.awt.headless=true -Dhudson.model.ParametersAction.keepUndefinedParameters=true"
+      FORKED_ORG: "${FORKED_ORG}"
+    ports:
+      - "50000:50000"
+      - "8080:8080"
+    volumes:
+      - /var/jenkins_home
+    links:
+      - artifactory
+  artifactory:
+    image: jfrog-docker-registry.bintray.io/artifactory/artifactory-oss:latest
+    ports:
+      - "8081:8081"
