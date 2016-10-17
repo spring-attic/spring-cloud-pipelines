@@ -361,10 +361,22 @@ parsedRepos.each {
 		""")
 		}
 		publishers {
-			buildPipelineTrigger("${projectName}-stage-env-test") {
-				parameters {
-					currentBuild()
-					propertiesFile('target/test.properties', true)
+			if (autoStage) {
+				downstreamParameterized {
+					trigger("${projectName}-stage-env-test") {
+						triggerWithNoParameters()
+						parameters {
+							currentBuild()
+							propertiesFile('target/test.properties', true)
+						}
+					}
+				}
+			} else {
+				buildPipelineTrigger("${projectName}-stage-env-test") {
+					parameters {
+						currentBuild()
+						propertiesFile('target/test.properties', true)
+					}
 				}
 			}
 		}
