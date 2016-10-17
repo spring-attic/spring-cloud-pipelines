@@ -24,8 +24,9 @@ String cfStageCredentialId = binding.variables['CF_STAGE_CREDENTIAL_ID'] ?: 'cf-
 String cfProdCredentialId = binding.variables['CF_PROD_CREDENTIAL_ID'] ?: 'cf-prod'
 String gitEmail = binding.variables['GIT_EMAIL'] ?: 'pivo@tal.com'
 String gitName = binding.variables['GIT_NAME'] ?: 'Pivo Tal'
-boolean autoStage = Boolean.parseBoolean(binding.variables['AUTO_DEPLOY_TO_STAGE'] as String)
-boolean autoProd = Boolean.parseBoolean(binding.variables['AUTO_DEPLOY_TO_PROD'] as String)
+boolean autoStage = binding.variables['AUTO_DEPLOY_TO_STAGE'] == null ? false : binding.variables['AUTO_DEPLOY_TO_STAGE']
+boolean autoProd = binding.variables['AUTO_DEPLOY_TO_PROD'] == null ? false : binding.variables['AUTO_DEPLOY_TO_PROD']
+boolean rollbackStep = binding.variables['ROLLBACK_STEP_REQUIRED'] == null ? false : binding.variables['ROLLBACK_STEP_REQUIRED']
 String scriptsDir = binding.variables['SCRIPTS_DIR'] ?: "${WORKSPACE}/common/src/main/bash"
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
@@ -196,115 +197,128 @@ parsedRepos.each {
 		}
 		publishers {
 			archiveJunit(testReports)
-			downstreamParameterized {
-				trigger("${projectName}-test-env-rollback-deploy") {
-					parameters {
-						currentBuild()
+			if (rollbackStep) {
+				downstreamParameterized {
+					trigger("${projectName}-test-env-rollback-deploy") {
+						parameters {
+							currentBuild()
+						}
+						triggerWithNoParameters()
 					}
-					triggerWithNoParameters()
+				}
+			} else {
+				downstreamParameterized {
+					trigger("${projectName}-stage-env-deploy") {
+						parameters {
+							currentBuild()
+						}
+						triggerWithNoParameters()
+					}
 				}
 			}
 		}
 	}
 
-	dsl.job("${projectName}-test-env-rollback-deploy") {
-		deliveryPipelineConfiguration('Test', 'Deploy to test latest prod version')
-		wrappers {
-			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters(PipelineDefaults.defaultParams())
-			environmentVariables(defaults.defaultEnvVars)
-			credentialsBinding {
-				usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
-			}
-			timestamps()
-			colorizeOutput()
-			maskPasswords()
-			timeout {
-				noActivity(300)
-				failBuild()
-				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
-			}
-		}
-		scm {
-			git {
-				remote {
-					url(fullGitRepo)
-					branch('dev/${PIPELINE_VERSION}')
+	if (rollbackStep) {
+		dsl.job("${projectName}-test-env-rollback-deploy") {
+			deliveryPipelineConfiguration('Test', 'Deploy to test latest prod version')
+			wrappers {
+				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+				parameters(PipelineDefaults.defaultParams())
+				environmentVariables(defaults.defaultEnvVars)
+				credentialsBinding {
+					usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
+				}
+				timestamps()
+				colorizeOutput()
+				maskPasswords()
+				timeout {
+					noActivity(300)
+					failBuild()
+					writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 				}
 			}
-		}
-		steps {
-			shell("""#!/bin/bash
+			scm {
+				git {
+					remote {
+						url(fullGitRepo)
+						branch('dev/${PIPELINE_VERSION}')
+					}
+				}
+			}
+			steps {
+				shell("""#!/bin/bash
 		set -e
 
 		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
 		${dsl.readFileFromWorkspace(scriptsDir + '/test_rollback_deploy.sh')}
 		""")
-		}
-		publishers {
-			downstreamParameterized {
-				trigger("${projectName}-test-env-rollback-test") {
-					triggerWithNoParameters()
-					parameters {
-						propertiesFile('target/test.properties', false)
-						currentBuild()
+			}
+			publishers {
+				downstreamParameterized {
+					trigger("${projectName}-test-env-rollback-test") {
+						triggerWithNoParameters()
+						parameters {
+							propertiesFile('target/test.properties', false)
+							currentBuild()
+						}
 					}
 				}
 			}
 		}
-	}
 
-	dsl.job("${projectName}-test-env-rollback-test") {
-		deliveryPipelineConfiguration('Test', 'Tests on test latest prod version')
-		wrappers {
-			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters(PipelineDefaults.defaultParams())
-			parameters PipelineDefaults.smokeTestParams()
-			parameters {
-				stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
-			}
-			timestamps()
-			colorizeOutput()
-			maskPasswords()
-			timeout {
-				noActivity(300)
-				failBuild()
-				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
-			}
-		}
-		scm {
-			git {
-				remote {
-					url(fullGitRepo)
-					branch('${LATEST_PROD_TAG}')
+		dsl.job("${projectName}-test-env-rollback-test") {
+			deliveryPipelineConfiguration('Test', 'Tests on test latest prod version')
+			wrappers {
+				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+				parameters(PipelineDefaults.defaultParams())
+				parameters PipelineDefaults.smokeTestParams()
+				parameters {
+					stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
+				}
+				timestamps()
+				colorizeOutput()
+				maskPasswords()
+				timeout {
+					noActivity(300)
+					failBuild()
+					writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 				}
 			}
-		}
-		steps {
-			shell("""#!/bin/bash
+			scm {
+				git {
+					remote {
+						url(fullGitRepo)
+						branch('${LATEST_PROD_TAG}')
+					}
+				}
+			}
+			steps {
+				shell("""#!/bin/bash
 		set -e
 
 		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
 		${dsl.readFileFromWorkspace(scriptsDir + '/test_rollback_smoke.sh')}
 		""")
-		}
-		publishers {
-			archiveJunit(testReports) {
-				allowEmptyResults()
 			}
-			String nextJob = "${projectName}-stage-env-deploy"
-			if (autoStage) {
-				downstreamParameterized {
-					trigger(nextJob) {
+			publishers {
+				archiveJunit(testReports) {
+					allowEmptyResults()
+				}
+				String nextJob = "${projectName}-stage-env-deploy"
+				if (autoStage) {
+					downstreamParameterized {
+						trigger(nextJob) {
+							parameters {
+								currentBuild()
+							}
+						}
+					}
+				} else {
+					buildPipelineTrigger(nextJob) {
 						parameters {
 							currentBuild()
 						}
-					}
-				}
-			} else {
-				buildPipelineTrigger(nextJob) {
-					parameters {
-						currentBuild()
 					}
 				}
 			}
