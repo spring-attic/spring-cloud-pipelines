@@ -959,20 +959,33 @@ When you get sth like this:
 most likely you've passed a wrong password. Check the <<credentials,credentials>> section
 on how to update your credentials.
 
+===== Deploying to test / stage / prod fails - error finding space
+
+If you receive a similar exception:
+
+[source,bash]
+----
+20:26:18 API endpoint:   https://api.local.pcfdev.io (API version: 2.58.0)
+20:26:18 User:           user
+20:26:18 Org:            pcfdev-org
+20:26:18 Space:          No space targeted, use 'cf target -s SPACE'
+20:26:18 FAILED
+20:26:18 Error finding space pcfdev-test
+20:26:18 Space pcfdev-test not found
+----
+
+It means that you've forgotten to <<pcfdev,create the spaces>> in your PCF Dev installation.
+
 === How to build it
 
 `./gradlew clean build`
 
 WARNING: The ran test only checks if your scripts compile.
 
-=== How to use it in Jenkins?
+=== How to work with Jenkins Job DSL plugin
 
 Check out the https://github.com/jenkinsci/job-dsl-plugin/wiki/Tutorial---Using-the-Jenkins-Job-DSL[tutorial].
 Provide the link to this repository in your Jenkins installation.
-
-The seed job should scan the `jobs/jenkins_pipeline_sample*.groovy` files.
-
-Remember to add `src/main/groovy` and `src/main/resources` for processing
 
 WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
  for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).

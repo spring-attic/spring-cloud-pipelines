@@ -15,8 +15,8 @@ COPY seed/settings.xml /usr/share/jenkins/settings.xml
 
 # Generated via start.sh
 # If you don't want to provide it just put empty files there
-RUN echo "${gituser}" > /usr/share/jenkins/gituser
-RUN echo "${gitpass}" > /usr/share/jenkins/gitpass
+RUN printf "%s" "${gituser}" > /usr/share/jenkins/gituser
+RUN printf "%s" "${gitpass}" > /usr/share/jenkins/gitpass
 
 USER root
 
