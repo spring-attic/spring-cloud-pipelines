@@ -359,6 +359,27 @@ Don't worry... most likely you've just forgotten to click the `play` button to
 unpause the pipeline. Click to the top left, expand the list of pipelines and click
 the `play` button next to `github-webhook`.
 
+==== The route is already in use
+
+If you play around with Jenkins / Concourse you might end up with the routes occupied
+
+[source,bash]
+----
+Using route github-webhook-test.local.pcfdev.io
+Binding github-webhook-test.local.pcfdev.io to github-webhook...
+FAILED
+The route github-webhook-test.local.pcfdev.io is already in use.
+----
+
+Just delete the routes
+
+[source,bash]
+----
+cf delete-route local.pcfdev.io -n github-webhook
+cf delete-route local.pcfdev.io -n github-eureka
+cf delete-route local.pcfdev.io -n stubrunner
+----
+
 == Jenkins DSL Pipeline [[jenkins]]
 
 The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
@@ -975,6 +996,27 @@ If you receive a similar exception:
 ----
 
 It means that you've forgotten to <<pcfdev,create the spaces>> in your PCF Dev installation.
+
+==== The route is already in use
+
+If you play around with Jenkins / Concourse you might end up with the routes occupied
+
+[source,bash]
+----
+Using route github-webhook-test.local.pcfdev.io
+Binding github-webhook-test.local.pcfdev.io to github-webhook...
+FAILED
+The route github-webhook-test.local.pcfdev.io is already in use.
+----
+
+Just delete the routes
+
+[source,bash]
+----
+cf delete-route local.pcfdev.io -n github-webhook
+cf delete-route local.pcfdev.io -n github-eureka
+cf delete-route local.pcfdev.io -n stubrunner
+----
 
 === How to build it
 
