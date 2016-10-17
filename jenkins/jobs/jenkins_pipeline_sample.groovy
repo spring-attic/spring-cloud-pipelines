@@ -24,9 +24,9 @@ String cfStageCredentialId = binding.variables['CF_STAGE_CREDENTIAL_ID'] ?: 'cf-
 String cfProdCredentialId = binding.variables['CF_PROD_CREDENTIAL_ID'] ?: 'cf-prod'
 String gitEmail = binding.variables['GIT_EMAIL'] ?: 'pivo@tal.com'
 String gitName = binding.variables['GIT_NAME'] ?: 'Pivo Tal'
-boolean autoStage = binding.variables['AUTO_DEPLOY_TO_STAGE'] == null ? false : binding.variables['AUTO_DEPLOY_TO_STAGE']
-boolean autoProd = binding.variables['AUTO_DEPLOY_TO_PROD'] == null ? false : binding.variables['AUTO_DEPLOY_TO_PROD']
-boolean rollbackStep = binding.variables['ROLLBACK_STEP_REQUIRED'] == null ? false : binding.variables['ROLLBACK_STEP_REQUIRED']
+boolean autoStage = binding.variables['AUTO_DEPLOY_TO_STAGE'] == null ? false : Boolean.parseBoolean(binding.variables['AUTO_DEPLOY_TO_STAGE'])
+boolean autoProd = binding.variables['AUTO_DEPLOY_TO_PROD'] == null ? false : Boolean.parseBoolean(binding.variables['AUTO_DEPLOY_TO_PROD'])
+boolean rollbackStep = binding.variables['ROLLBACK_STEP_REQUIRED'] == null ? false : Boolean.parseBoolean(binding.variables['ROLLBACK_STEP_REQUIRED'])
 String scriptsDir = binding.variables['SCRIPTS_DIR'] ?: "${WORKSPACE}/common/src/main/bash"
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
