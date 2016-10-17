@@ -375,9 +375,9 @@ Just delete the routes
 
 [source,bash]
 ----
-cf delete-route local.pcfdev.io -n github-webhook
-cf delete-route local.pcfdev.io -n github-eureka
-cf delete-route local.pcfdev.io -n stubrunner
+cf delete-route local.pcfdev.io -n github-webhook-test
+cf delete-route local.pcfdev.io -n github-eureka-test
+cf delete-route local.pcfdev.io -n stubrunner-test
 ----
 
 == Jenkins DSL Pipeline [[jenkins]]
@@ -1013,9 +1013,9 @@ Just delete the routes
 
 [source,bash]
 ----
-cf delete-route local.pcfdev.io -n github-webhook
-cf delete-route local.pcfdev.io -n github-eureka
-cf delete-route local.pcfdev.io -n stubrunner
+cf delete-route local.pcfdev.io -n github-webhook-test
+cf delete-route local.pcfdev.io -n github-eureka-test
+cf delete-route local.pcfdev.io -n stubrunner-test
 ----
 
 === How to build it
