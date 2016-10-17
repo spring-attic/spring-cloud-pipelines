@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 1.5.5">
+<meta name="generator" content="Asciidoctor 1.5.4">
 <title>Spring Cloud Microservice Java Pipeline</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -17,6 +17,7 @@ audio:not([controls]){display:none;height:0}
 [hidden],template{display:none}
 script{display:none!important}
 html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}
+body{margin:0}
 a{background:transparent}
 a:focus{outline:thin dotted}
 a:active,a:hover{outline:0}
@@ -51,7 +52,7 @@ textarea{overflow:auto;vertical-align:top}
 table{border-collapse:collapse;border-spacing:0}
 *,*:before,*:after{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}
 html,body{font-size:100%}
-body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto;tab-size:4;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased}
+body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto}
 a:hover{cursor:pointer}
 img,object,embed{max-width:100%;height:auto}
 object,embed{height:100%}
@@ -63,6 +64,7 @@ img{-ms-interpolation-mode:bicubic}
 .text-center{text-align:center!important}
 .text-justify{text-align:justify!important}
 .hide{display:none}
+body{-webkit-font-smoothing:antialiased}
 img,object,svg{display:inline-block;vertical-align:middle}
 textarea{height:auto;min-height:50px}
 select{width:100%}
@@ -117,16 +119,13 @@ table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:
 table tr th,table tr td{padding:.5625em .625em;font-size:inherit;color:rgba(0,0,0,.8)}
 table tr.even,table tr.alt,table tr:nth-of-type(even){background:#f8f8f7}
 table thead tr th,table tfoot tr th,table tbody tr td,table tr td,table tfoot tr td{display:table-cell;line-height:1.6}
+body{tab-size:4}
 h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;word-spacing:-.05em}
 h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
 .clearfix:before,.clearfix:after,.float-group:before,.float-group:after{content:" ";display:table}
 .clearfix:after,.float-group:after{clear:both}
-*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed;word-wrap:break-word}
-*:not(pre)>code.nobreak{word-wrap:normal}
-*:not(pre)>code.nowrap{white-space:nowrap}
+*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
 pre,pre>code{line-height:1.45;color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;text-rendering:optimizeSpeed}
-em em{font-style:normal}
-strong strong{font-weight:400}
 .keyseq{color:rgba(51,51,51,.8)}
 kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background-color:#f7f7f7;border:1px solid #ccc;-webkit-border-radius:3px;border-radius:3px;-webkit-box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em white inset;box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em #fff inset;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
 .keyseq kbd:first-child{margin-left:0}
@@ -424,6 +423,19 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
+<li><a href="#_the_opinionated_pipeline">The opinionated pipeline</a></li>
+<li><a href="#_introduction">Introduction</a>
+<ul class="sectlevel2">
+<li><a href="#_environments">Environments</a></li>
+<li><a href="#_tests">Tests</a></li>
+<li><a href="#_the_flow">The flow</a>
+<ul class="sectlevel3">
+<li><a href="#_testing_against_stubs">Testing against stubs</a></li>
+<li><a href="#_general_view">General view</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="#concourse">Concourse Pipeline</a>
 <ul class="sectlevel2">
 <li><a href="#_step_by_step">Step by step</a>
@@ -510,10 +522,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_i_want_to_provide_a_different_jdk_version">I want to provide a different JDK version</a>
 <ul class="sectlevel4">
 <li><a href="#_i_want_deployment_to_stage_and_prod_be_automatic">I want deployment to stage and prod be automatic</a></li>
-<li><a href="#_i_can_t_tag_the_repo">I can&#8217;t tag the repo!</a></li>
-<li><a href="#_deploying_to_test_stage_prod_fails_error_finding_space">Deploying to test / stage / prod fails - error finding space</a></li>
 </ul>
 </li>
+<li><a href="#_i_can_t_tag_the_repo">I can&#8217;t tag the repo!</a></li>
+<li><a href="#_deploying_to_test_stage_prod_fails_error_finding_space">Deploying to test / stage / prod fails - error finding space</a></li>
 <li><a href="#_the_route_is_already_in_use_2">The route is already in use</a></li>
 </ul>
 </li>
@@ -528,6 +540,37 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
+<p>Spring, Spring Boot and Spring Cloud are tools that allow developers speed up the
+time of creating new business features. It&#8217;s common knowledge however that the
+ feature is only valuable if it&#8217;s on production. That&#8217;s why companies
+ spend a lot of time and resources on building their own deployment pipelines.</p>
+</div>
+<div class="paragraph">
+<p>This project tries to solve the following problems:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Creation of a common deployment pipeline</p>
+</li>
+<li>
+<p>Propagation of good testing &amp; deployment practices</p>
+</li>
+<li>
+<p>Speed up the time required to deploy a feature to production</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A common way of running, configuring and deploying applications equals lower costs required
+to support it and lower time needed by new developers to blend in when they change projects.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_opinionated_pipeline">The opinionated pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
 <p>This repo contains an <code>opinionated pipeline</code> to deploy a Spring Cloud based microservice.
 We&#8217;ve taken the following opinionated decisions:</p>
 </div>
@@ -537,7 +580,7 @@ We&#8217;ve taken the following opinionated decisions:</p>
 <p>usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka</p>
 </li>
 <li>
-<p>usage of Maven Wrapper</p>
+<p>usage of Maven Wrapper (we&#8217;re working on Gradle)</p>
 </li>
 <li>
 <p>artifacts deployment by <code>./mvnw clean deploy</code></p>
@@ -573,6 +616,256 @@ deployment logic is done in a form of bash scripts.</p>
 <div class="paragraph">
 <p>Each of these setups are available under the folders <code>jenkins</code> and
 <code>concourse</code> respectively.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_introduction">Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the following section we will describe in more depth the rationale
+behind the presented opinionated pipeline. We will go through each deployment
+step and describe it in details.</p>
+</div>
+<div class="sect2">
+<h3 id="_environments">Environments</h3>
+<div class="paragraph">
+<p>So we&#8217;re on the same page let&#8217;s define some common vocabulary. We discern 4 typical
+environments in terms of running the pipeline.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>build</p>
+</li>
+<li>
+<p>test</p>
+</li>
+<li>
+<p>stage</p>
+</li>
+<li>
+<p>prod</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Build</strong> environment is a machine where the building of the application takes place.
+It&#8217;s a CI / CD tool worker.</p>
+</div>
+<div class="paragraph">
+<p><strong>Test</strong> is an environment where you can deploy an application to test it. It doesn’t
+resemble production, we can&#8217;t be sure of it&#8217;s state (which application is deployed there
+and in which version). It can be used by multiple teams at the same time.</p>
+</div>
+<div class="paragraph">
+<p><strong>Stage</strong> is an environment that does resemble production. Most likely applications
+ are deployed there in versions that correspond to those deployed to production.
+ Typically databases there are filled up with (obfuscated) production data. Most
+ often this environment is a single, shared one between many teams. In other
+ words in order to run some performance, user acceptance tests you have to block
+ and wait until the environment is free.</p>
+</div>
+<div class="paragraph">
+<p><strong>Prod</strong> is a production environment where we want our tested applications to be deployed
+for our customers.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tests">Tests</h3>
+<div class="paragraph">
+<p><strong>Unit tests</strong> - tests that are executed on the built application during the build phase.
+No integrations with databases / HTTP server stubs etc. take place. Generally speaking your application should
+ have plenty of these.</p>
+</div>
+<div class="paragraph">
+<p><strong>Integration tests</strong> - tests that are executed on the built application during the build phase.
+Integrations with in memory databases / HTTP server stubs take place. In most cases you should
+have not too many of these kind of tests.</p>
+</div>
+<div class="paragraph">
+<p><strong>Smoke tests</strong> - tests that are executed on a deployed application. The concept of these tests
+is to check the crucial parts of your application are working properly. If you have 100 features
+in your application but you gain most money from e.g. 5 features then you could write smoke tests
+ for those 5 features. As you can see we&#8217;re talking about smoke tests of an application, not of
+ the whole system. In our understanding inside the opinionated pipeline, these tests are
+ executed against an application that is surrounded with stubs.</p>
+</div>
+<div class="paragraph">
+<p><strong>End to end tests</strong> - tests that are executed on a system composing of multiple applications.
+The idea of these tests is to check if the tested feature works when the whole system is set up.
+Due to the fact that it takes a lot of time, effort, resources to maintain such an environment
+and that often those tests are unreliable (due to many different moving pieces like network
+database etc.) you should have a handful of those tests. Only for critical parts of your business.
+Since only production is the key verifier of whether your feature works, some companies
+don&#8217;t even want to do those and move directly to deployment to production. When your
+system contains KPI monitoring and alerting you can quickly react when your deployed application
+is not behaving properly.</p>
+</div>
+<div class="paragraph">
+<p><strong>Performance testing</strong> - tests executed on an application or set of applications
+to check if your system can handle big load of input. In case of our opinionated pipeline
+ these tests could be executed either on test (against stubbed environment) or
+  stage (against the whole system)</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_flow">The flow</h3>
+<div class="paragraph">
+<p>Let&#8217;s take a look at the flow of the opinionated pipeline</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/flow.png" alt="flow">
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll first describe the overall concept behind the flow and then
+we&#8217;ll split it into pieces and describe every piece independently.</p>
+</div>
+<div class="sect3">
+<h4 id="_testing_against_stubs">Testing against stubs</h4>
+<div class="paragraph">
+<p>Before we go into details of the flow let&#8217;s take a look at the following example.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/monolith.png" alt="monolith">
+</div>
+<div class="title">Figure 1. Two monolithic applications deployed for end to end testing</div>
+</div>
+<div class="paragraph">
+<p>When having only a handful of applications, performing end to end testing is beneficial.
+From the operations perspective it&#8217;s maintainable for a finite number of deployed instances.
+From the developers perspective it&#8217;s nice to verify the whole flow in the system
+for a feature.</p>
+</div>
+<div class="paragraph">
+<p>In case of microservices the scale starts to be a problem:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/many_microservices.png" alt="many microservices">
+</div>
+<div class="title">Figure 2. Many microservices deployed in different versions</div>
+</div>
+<div class="paragraph">
+<p>The questions arise:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Should I queue deployments of microservices on one testing environment or should I have an environment per microservice?</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If I queue deployments people will have to wait for hours to have their tests ran - that can be a problem</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>To remove that issue I can have an environment per microservice</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Who will pay the bills (imagine 100 microservices - each having each own environment).</p>
+</li>
+<li>
+<p>Who will support each of those environments?</p>
+</li>
+<li>
+<p>Should we spawn a new environment each time we execute a new pipeline and then wrap it up or should we have
+them up and running for the whole day?</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>In which versions should I deploy the dependent microservices - development or production versions?</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If I have development versions then I can test my application against a feature that is not yet on production.
+That can lead to exceptions on production</p>
+</li>
+<li>
+<p>If I test against production versions then I&#8217;ll never be able to test against a feature under development
+anytime before deployment to production.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>One of the possibilities of tackling these problems is to&#8230;&#8203; not do end to end tests.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/stubbed_dependencies.png" alt="stubbed dependencies">
+</div>
+<div class="title">Figure 3. Execute tests on a deployed microservice on stubbed dependencies</div>
+</div>
+<div class="paragraph">
+<p>If we stub out all the dependencies of our application then most of the problems presented above
+disappear. There is no need to start and setup infrastructure required by the dependant
+microservices. That way the testing setup looks like this:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/stubbed_dependencies.png" alt="stubbed dependencies">
+</div>
+<div class="title">Figure 4. We&#8217;re testing microservices in isolation</div>
+</div>
+<div class="paragraph">
+<p>Such an approach to testing and deployment gives the following benefits
+(thanks to the usage of <a href="http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html">Spring Cloud Contract</a>):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>No need to deploy dependant services</p>
+</li>
+<li>
+<p>The stubs used for the tests ran on a deployed microservice are the same as those used during integration tests</p>
+</li>
+<li>
+<p>Those stubs have been tested against the application that produces them (check <a href="http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html">Spring Cloud Contract</a> for more information)</p>
+</li>
+<li>
+<p>We don&#8217;t have many slow tests running on a deployed application - thus the pipeline gets executed much faster</p>
+</li>
+<li>
+<p>We don&#8217;t have to queue deployments - we&#8217;re testing in isolation thus pipelines don&#8217;t interfere with each other</p>
+</li>
+<li>
+<p>We don&#8217;t have to spawn virtual machines each time for deployment purposes</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It brings however the following challenges:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>No end to end tests before production - you don&#8217;t have the full certainty that a feature is working</p>
+</li>
+<li>
+<p>First time the applications will talk in a real way will be on production</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Like every solution it has its benefits and drawbacks. The opinionated pipeline
+ allows you to configure whether you want to follow this flow or not.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_general_view">General view</h4>
+
+</div>
 </div>
 </div>
 </div>
@@ -829,7 +1122,7 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/running_concourse.png" alt="running concourse">
+<img src="img/concourse/running_concourse.png" alt="running concourse">
 </div>
 </div>
 <div class="paragraph">
@@ -979,7 +1272,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/concourse_login.png" alt="concourse login">
+<img src="img/concourse/concourse_login.png" alt="concourse login">
 </div>
 <div class="title">Step 1: Click <code>Login</code></div>
 </div>
@@ -989,7 +1282,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/concourse_team_main.png" alt="concourse team main">
+<img src="img/concourse/concourse_team_main.png" alt="concourse team main">
 </div>
 <div class="title">Step 2: Pick <code>main</code> team</div>
 </div>
@@ -999,7 +1292,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/concourse_user_pass.png" alt="concourse user pass">
+<img src="img/concourse/concourse_user_pass.png" alt="concourse user pass">
 </div>
 <div class="title">Step 3: Log in with <code>concourse</code> user and <code>changeme</code> password</div>
 </div>
@@ -1009,7 +1302,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/concourse_pipeline.png" alt="concourse pipeline">
+<img src="img/concourse/concourse_pipeline.png" alt="concourse pipeline">
 </div>
 <div class="title">Step 4: Your screen should look more or less like this</div>
 </div>
@@ -1019,7 +1312,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/start_pipeline.png" alt="start pipeline">
+<img src="img/concourse/start_pipeline.png" alt="start pipeline">
 </div>
 <div class="title">Step 5: Unpause the pipeline by clicking in the top lefr corner and then clicking the <code>play</code> button</div>
 </div>
@@ -1029,7 +1322,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/generate_version.png" alt="generate version">
+<img src="img/concourse/generate_version.png" alt="generate version">
 </div>
 <div class="title">Step 6: Click 'generate-version'</div>
 </div>
@@ -1039,7 +1332,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/run_pipeline.png" alt="run pipeline">
+<img src="img/concourse/run_pipeline.png" alt="run pipeline">
 </div>
 <div class="title">Step 7: Click <code>+</code> sign to start a new build</div>
 </div>
@@ -1049,7 +1342,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/concourse_pending.png" alt="concourse pending">
+<img src="img/concourse/concourse_pending.png" alt="concourse pending">
 </div>
 <div class="title">Step 8: The job is pending</div>
 </div>
@@ -1059,7 +1352,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/job_running.png" alt="job running">
+<img src="img/concourse/job_running.png" alt="job running">
 </div>
 <div class="title">Step 9: Job is pending in the main screen</div>
 </div>
@@ -1069,7 +1362,7 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="concourse/running_pipeline.png" alt="running pipeline">
+<img src="img/concourse/running_pipeline.png" alt="running pipeline">
 </div>
 <div class="title">Step 10: Job is running in the main screen</div>
 </div>
@@ -1446,7 +1739,7 @@ seed.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/seed_click.png" alt="seed click">
+<img src="img/jenkins/seed_click.png" alt="seed click">
 </div>
 <div class="title">Step 1: Click the 'jenkins-pipeline-seed' job</div>
 </div>
@@ -1456,7 +1749,7 @@ seed.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/seed_run.png" alt="seed run">
+<img src="img/jenkins/seed_run.png" alt="seed run">
 </div>
 <div class="title">Step 2: Click the 'Build with parameters'</div>
 </div>
@@ -1466,7 +1759,7 @@ seed.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/seed.png" alt="seed">
+<img src="img/jenkins/seed.png" alt="seed">
 </div>
 <div class="title">Step 3: Provide the <code>REPOS</code> parameter with URLs of your forks (you&#8217;ll have more properties than the ones in the screenshot)</div>
 </div>
@@ -1476,7 +1769,7 @@ seed.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/seed_built.png" alt="seed built">
+<img src="img/jenkins/seed_built.png" alt="seed built">
 </div>
 <div class="title">Step 4: This is how the results of seed should look like</div>
 </div>
@@ -1500,7 +1793,7 @@ seed.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/seed_views.png" alt="seed views">
+<img src="img/jenkins/seed_views.png" alt="seed views">
 </div>
 <div class="title">Step 1: Click the 'github-webhook' view</div>
 </div>
@@ -1510,7 +1803,7 @@ seed.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/pipeline_run.png" alt="pipeline run">
+<img src="img/jenkins/pipeline_run.png" alt="pipeline run">
 </div>
 <div class="title">Step 2: Run the pipeline</div>
 </div>
@@ -1520,7 +1813,7 @@ seed.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/pipeline_run_props.png" alt="pipeline run props">
+<img src="img/jenkins/pipeline_run_props.png" alt="pipeline run props">
 </div>
 <div class="title">Step 3: You can set some properties (just click 'Build' to proceed) </div>
 </div>
@@ -1563,7 +1856,7 @@ you&#8217;ve removed the Artifactory volume with deployed JAR whereas a tag in t
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/pipeline_manual.png" alt="pipeline manual">
+<img src="img/jenkins/pipeline_manual.png" alt="pipeline manual">
 </div>
 <div class="title">Step 4: Click the manual step to go to stage (remember about killing the apps on test env)</div>
 </div>
@@ -1590,7 +1883,7 @@ environment it&#8217;s good to kill all apps on test. <a href="#faq">Check out t
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/pipeline_finished.png" alt="pipeline finished">
+<img src="img/jenkins/pipeline_finished.png" alt="pipeline finished">
 </div>
 <div class="title">Step 5: The full pipeline should look like this</div>
 </div>
@@ -1729,7 +2022,7 @@ of Java installation and the others to another one.
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/seed.png" alt="seed">
+<img src="img/jenkins/seed.png" alt="seed">
 </div>
 </div>
 <div class="paragraph">
@@ -1759,7 +2052,7 @@ This section is presented only for informational purposes - for the sake of demo
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/env_vars.png" alt="env vars">
+<img src="img/jenkins/env_vars.png" alt="env vars">
 </div>
 </div>
 </div>
@@ -1880,7 +2173,7 @@ This section is presented only for informational purposes - for the sake of demo
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/manage_jenkins.png" alt="manage jenkins">
+<img src="img/jenkins/manage_jenkins.png" alt="manage jenkins">
 </div>
 <div class="title">Step 1: Click 'Manage Jenkins'</div>
 </div>
@@ -1890,7 +2183,7 @@ This section is presented only for informational purposes - for the sake of demo
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/configure_system.png" alt="configure system">
+<img src="img/jenkins/configure_system.png" alt="configure system">
 </div>
 <div class="title">Step 2: Click 'Configure System'</div>
 </div>
@@ -1900,7 +2193,7 @@ This section is presented only for informational purposes - for the sake of demo
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/git.png" alt="git">
+<img src="img/jenkins/git.png" alt="git">
 </div>
 <div class="title">Step 3: Fill out Git user information</div>
 </div>
@@ -1974,7 +2267,7 @@ remember to provide the one with id <code>git</code>).</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/credentials_system.png" alt="credentials system">
+<img src="img/jenkins/credentials_system.png" alt="credentials system">
 </div>
 <div class="title">Step 1: Click 'Credentials, System'</div>
 </div>
@@ -1984,7 +2277,7 @@ remember to provide the one with id <code>git</code>).</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/credentials_global.png" alt="credentials global">
+<img src="img/jenkins/credentials_global.png" alt="credentials global">
 </div>
 <div class="title">Step 2: Click 'Global Credentials'</div>
 </div>
@@ -1994,7 +2287,7 @@ remember to provide the one with id <code>git</code>).</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/credentials_add.png" alt="credentials add">
+<img src="img/jenkins/credentials_add.png" alt="credentials add">
 </div>
 <div class="title">Step 3: Click 'Add credentials'</div>
 </div>
@@ -2004,7 +2297,7 @@ remember to provide the one with id <code>git</code>).</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/credentials_example.png" alt="credentials example">
+<img src="img/jenkins/credentials_example.png" alt="credentials example">
 </div>
 <div class="title">Step 4: Fill out the user / password and provide the <code>git</code> credential ID (in this example <code>cf-test</code>)</div>
 </div>
@@ -2025,7 +2318,7 @@ remember to provide the one with id <code>git</code>).</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/manage_jenkins.png" alt="manage jenkins">
+<img src="img/jenkins/manage_jenkins.png" alt="manage jenkins">
 </div>
 <div class="title">Step 1: Click 'Manage Jenkins'</div>
 </div>
@@ -2035,7 +2328,7 @@ remember to provide the one with id <code>git</code>).</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/configure_system.png" alt="configure system">
+<img src="img/jenkins/configure_system.png" alt="configure system">
 </div>
 <div class="title">Step 2: Click 'Configure System'</div>
 </div>
@@ -2045,7 +2338,7 @@ remember to provide the one with id <code>git</code>).</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/groovy_token.png" alt="groovy token">
+<img src="img/jenkins/groovy_token.png" alt="groovy token">
 </div>
 <div class="title">Step 3: Click 'Allow token macro processing'</div>
 </div>
@@ -2214,7 +2507,7 @@ You can go to <code>Global Tools</code> and create a JDK with <code>jdk8</code> 
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/manage_jenkins.png" alt="manage jenkins">
+<img src="img/jenkins/manage_jenkins.png" alt="manage jenkins">
 </div>
 <div class="title">Step 1: Click 'Manage Jenkins'</div>
 </div>
@@ -2224,7 +2517,7 @@ You can go to <code>Global Tools</code> and create a JDK with <code>jdk8</code> 
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/global_tool.png" alt="global tool">
+<img src="img/jenkins/global_tool.png" alt="global tool">
 </div>
 <div class="title">Step 2: Click 'Global Tool'</div>
 </div>
@@ -2234,7 +2527,7 @@ You can go to <code>Global Tools</code> and create a JDK with <code>jdk8</code> 
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/jdk_installation.png" alt="jdk installation">
+<img src="img/jenkins/jdk_installation.png" alt="jdk installation">
 </div>
 <div class="title">Step 3: Click 'JDK Installations'</div>
 </div>
@@ -2244,7 +2537,7 @@ You can go to <code>Global Tools</code> and create a JDK with <code>jdk8</code> 
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="jenkins/jdk.png" alt="jdk">
+<img src="img/jenkins/jdk.png" alt="jdk">
 </div>
 <div class="title">Step 4: Fill out JDK Installation with path to your JDK</div>
 </div>
@@ -2271,8 +2564,9 @@ You can go to <code>Global Tools</code> and create a JDK with <code>jdk8</code> 
 </ul>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_i_can_t_tag_the_repo">I can&#8217;t tag the repo!</h5>
+</div>
+<div class="sect3">
+<h4 id="_i_can_t_tag_the_repo">I can&#8217;t tag the repo!</h4>
 <div class="paragraph">
 <p>When you get sth like this:</p>
 </div>
@@ -2302,8 +2596,8 @@ You can go to <code>Global Tools</code> and create a JDK with <code>jdk8</code> 
 on how to update your credentials.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_deploying_to_test_stage_prod_fails_error_finding_space">Deploying to test / stage / prod fails - error finding space</h5>
+<div class="sect3">
+<h4 id="_deploying_to_test_stage_prod_fails_error_finding_space">Deploying to test / stage / prod fails - error finding space</h4>
 <div class="paragraph">
 <p>If you receive a similar exception:</p>
 </div>
@@ -2320,7 +2614,6 @@ on how to update your credentials.</p>
 </div>
 <div class="paragraph">
 <p>It means that you&#8217;ve forgotten to <a href="#pcfdev">create the spaces</a> in your PCF Dev installation.</p>
-</div>
 </div>
 </div>
 <div class="sect3">

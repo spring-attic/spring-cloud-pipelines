@@ -22,8 +22,8 @@ repo="spring-cloud-pipelines"
 branch="master"
 source_file = File.join(File.dirname(__FILE__), options[:input])
 output_file = options[:output] || File.join(File.dirname(__FILE__),'README.adoc')
-jenkins_docs = "https://raw.githubusercontent.com/" + org + "/" + repo + "/" + branch + "/docs/jenkins"
-concourse_docs = "https://raw.githubusercontent.com/" + org + "/" + repo + "/" + branch + "/docs/concourse"
+jenkins_docs = "https://raw.githubusercontent.com/" + org + "/" + repo + "/" + branch + "/docs/img/jenkins"
+concourse_docs = "https://raw.githubusercontent.com/" + org + "/" + repo + "/" + branch + "/docs/img/concourse"
 
 #unless (source_file = ARGV.shift)
 #  warn 'Please specify an AsciiDoc source file to coalesce.'

@@ -570,7 +570,7 @@ No problem, just set the property / env var to true
 - `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage
 - `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod
 
-===== I can't tag the repo!
+==== I can't tag the repo!
 
 When you get sth like this:
 
@@ -598,7 +598,7 @@ When you get sth like this:
 most likely you've passed a wrong password. Check the <<credentials,credentials>> section
 on how to update your credentials.
 
-===== Deploying to test / stage / prod fails - error finding space
+==== Deploying to test / stage / prod fails - error finding space
 
 If you receive a similar exception:
 
