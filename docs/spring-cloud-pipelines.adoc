@@ -5,4 +5,4 @@
 :toclevels: 8
 :nofooter:
 
-include::README.adoc[]
+include::DOCS.adoc[]
