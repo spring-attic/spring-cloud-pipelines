@@ -17,8 +17,6 @@ test:
     - find . -type f -regex ".*/target/.*-reports/.*" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
     - find . -type f -regex ".*/build/test-results/.*" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
     - bash <(curl -s https://codecov.io/bash)
-#notify:
-  #webhooks:
-    # A list of hook hashes, containing the url field
-    # gitter hook
-    #- url: https://webhooks.gitter.im/e/ece0ece9a76a5af2aa91
+notify:
+  webhooks:
+    - url: https://webhooks.gitter.im/e/88e79dc8c8c5d55210f1

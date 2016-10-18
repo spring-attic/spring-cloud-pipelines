@@ -1,0 +1,21 @@
+== How to build it
+
+=== Build and test
+
+You can execute
+
+[source,bash]
+----
+./gradlew clean build
+----
+
+to build and test the project.
+
+=== Generate readme
+
+To generate readme just run
+
+[source,bash]
+----
+./gradlew generateReadme
+----

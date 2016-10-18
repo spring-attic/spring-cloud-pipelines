@@ -2,6 +2,9 @@
 :jenkins-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/jenkins 
 :concourse-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/concourse
 :intro-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/intro
+image::https://badges.gitter.im/Join%20Chat.svg[Gitter, link="https://gitter.im/spring-cloud/spring-cloud-pipelines?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
+image::https://circleci.com/gh/spring-cloud/spring-cloud-pipelines.svg?style=svg["CircleCI", link="https://circleci.com/gh/spring-cloud/spring-cloud-pipelines"]
+
 = Spring Cloud Microservice Java Pipeline
 
 Spring, Spring Boot and Spring Cloud are tools that allow developers speed up the
@@ -1184,3 +1187,26 @@ Provide the link to this repository in your Jenkins installation.
 
 WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
  for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).
+
+
+== How to build it
+
+=== Build and test
+
+You can execute
+
+[source,bash]
+----
+./gradlew clean build
+----
+
+to build and test the project.
+
+=== Generate readme
+
+To generate readme just run
+
+[source,bash]
+----
+./gradlew generateReadme
+----
