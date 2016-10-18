@@ -29,8 +29,20 @@ badges:
 
 {% capture billboard_description %}
 
-Spring Cloud Pipelines is a project containing CD pipelines for your applications.
-It contains empty pipelines templates and also its opinionated implementation.
+Spring, Spring Boot and Spring Cloud are tools that allow developers speed up the
+time of creating new business features. It's common knowledge however that the
+feature is only valuable if it's on production. That's why companies
+spend a lot of time and resources on building their own deployment pipelines.
+
+This project tries to solve the following problems:
+
+- Creation of a common deployment pipeline
+- Propagation of good testing & deployment practices
+- Speed up the time required to deploy a feature to production
+
+A common way of running, configuring and deploying applications lowers support costs
+and time needed by new developers to blend in when they change projects.
+
 Currently we support the following CI / CD systems out of the box
 
 * Concourse
@@ -48,6 +60,8 @@ Spring Cloud Pipelines comes with the following features
 
 * opinionated microservice pipeline for Jenkins using Job DSL plugin
 
+* empty template of a pipeline for Jenkins using Job DSL Plugin
+
 * empty template of a pipeline for Jenkins using `Jenkinsfiles`
 
 <span id="quick-start"></span>
@@ -55,6 +69,8 @@ Spring Cloud Pipelines comes with the following features
 ## Quick Start
 
 <script type="text/javascript">{% include custom.js %}</script>
+
+## Running the demo
 
 You can easily start by running the default demo setup to run the whole system locally using
 Docker and PCF Dev.
@@ -100,6 +116,25 @@ are your Github credentials required by the pipeline to tag the forked repo that
 * Run `./deploy_infra.sh` to upload to your Artifactory the infrastructure apps (`eureka` and `stub runner`)
 * Go to Jenkins and click the `jenkins-pipeline-seed` in order to generate the pipeline jobs
 * Go to the `github-webhook` pipeline view and click the `play` button to run the pipeline
+
+## Adjusting the pipelines to your needs
+
+Since all of the pipeline generating projects should be versioned, what you can do is to
+download the project as ZIP, then init a Git project there and modify it as you wish.
+
+Example for using the code from `master` branch.
+
+```
+curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.zip
+unzip master.zip
+cd spring-cloud-pipelines-master
+git init
+# do all the changes
+git add .
+git commit -m "Initial commit"
+git remote add origin ${YOUR_REPOSITORY_URL}
+git push origin master
+```
 
 {% endcapture %}
 
