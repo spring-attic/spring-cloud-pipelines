@@ -7,6 +7,8 @@ image::https://circleci.com/gh/spring-cloud/spring-cloud-pipelines.svg?style=svg
 
 = Spring Cloud Pipeline
 
+_Documentation Authors: Marcin Grzejszczak_
+
 Spring, Spring Boot and Spring Cloud are tools that allow developers speed up the
 time of creating new business features. It's common knowledge however that the
  feature is only valuable if it's on production. That's why companies
