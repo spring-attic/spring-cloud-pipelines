@@ -54,8 +54,10 @@ step and describe it in details.
 
 === How to use it?
 
-Since all of the pipeline generating projects should be versioned, what you can do is to
-download the project as ZIP, then init a Git project there and modify it as you wish.
+This repository can be treated as a template for your pipeline. We provide some opinionated
+implementation that you can alter to suit your needs. The best approach to use it
+to build your production projects would be to download the project as ZIP, then
+init a Git project there and modify it as you wish.
 
 Example for using the code from `master` branch.
 
