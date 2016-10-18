@@ -429,9 +429,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_project_setup">Project setup</a></li>
 <li><a href="#_how_to_use_it">How to use it?</a></li>
+<li><a href="#_the_flow">The flow</a></li>
 <li><a href="#_environments">Environments</a></li>
-<li><a href="#_tests">Tests</a></li>
-<li><a href="#_the_flow">The flow</a>
+<li><a href="#_tests">Tests</a>
 <ul class="sectlevel3">
 <li><a href="#_testing_against_stubs">Testing against stubs</a></li>
 <li><a href="#_general_view">General view</a></li>
@@ -714,6 +714,28 @@ history dragged along with you, don&#8217;t you?
 </div>
 </div>
 <div class="sect2">
+<h3 id="_the_flow">The flow</h3>
+<div class="paragraph">
+<p>Let&#8217;s take a look at the flow of the opinionated pipeline</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/flow_concourse.png" alt="flow concourse">
+</div>
+<div class="title">Figure 1. Flow in Concourse</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/flow.png" alt="flow">
+</div>
+<div class="title">Figure 2. Flow in Jenkins</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll first describe the overall concept behind the flow and then
+we&#8217;ll split it into pieces and describe every piece independently.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_environments">Environments</h3>
 <div class="paragraph">
 <p>So we&#8217;re on the same page let&#8217;s define some common vocabulary. We discern 4 typical
@@ -793,28 +815,6 @@ is not behaving properly.</p>
 to check if your system can handle big load of input. In case of our opinionated pipeline
  these tests could be executed either on test (against stubbed environment) or
   stage (against the whole system)</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_the_flow">The flow</h3>
-<div class="paragraph">
-<p>Let&#8217;s take a look at the flow of the opinionated pipeline</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="img/intro/flow_concourse.png" alt="flow concourse">
-</div>
-<div class="title">Figure 1. Flow in Concourse</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="img/intro/flow.png" alt="flow">
-</div>
-<div class="title">Figure 2. Flow in Jenkins</div>
-</div>
-<div class="paragraph">
-<p>We&#8217;ll first describe the overall concept behind the flow and then
-we&#8217;ll split it into pieces and describe every piece independently.</p>
 </div>
 <div class="sect3">
 <h4 id="_testing_against_stubs">Testing against stubs</h4>
