@@ -52,11 +52,31 @@ In the following section we will describe in more depth the rationale
 behind the presented opinionated pipeline. We will go through each deployment
 step and describe it in details.
 
+=== Project setup
+
+[source,bash]
+----
+.
+├── common
+├── concourse
+├── docs
+└── jenkins
+----
+
+In the `common` folder you can find all the Bash scripts containing the pipeline logic. These
+scripts are reused by both Concourse and Jenkins pipelines.
+
+In the `concourse` folder you can find all the necessary scripts and setup to run Concourse demo.
+
+In the `docs` section you have the whole documentation of the project.
+
+In the `jenkins` folder you can find all the necessary scripts and setup to run Jenkins demo.
+
 === How to use it?
 
 This repository can be treated as a template for your pipeline. We provide some opinionated
 implementation that you can alter to suit your needs. The best approach to use it
-to build your production projects would be to download the project as ZIP, then
+to build your production projects would be to download the Spring Cloud Pipelines repository as ZIP, then
 init a Git project there and modify it as you wish.
 
 Example for using the code from `master` branch.
