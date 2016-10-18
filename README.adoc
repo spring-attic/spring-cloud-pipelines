@@ -434,6 +434,9 @@ and uploaded to Artifactory.
 TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 The only thing you have to do is to set up spaces.
 
+WARNING: It's more than likely that you'll run out of resources when you reach stage step.
+Don't worry! Keep calm and <<resources,clear some apps from PCF Dev and continue>>.
+
 You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
 
 The default credentials when using PCF Dev are:
@@ -619,7 +622,7 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
 whole pipeline. https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash[You can check out the scripts here.]
 
-==== I've ran out of resources!!
+==== I ran out of resources!![[resources]]
 
 When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
@@ -798,6 +801,9 @@ and uploaded to Artifactory.
 
 TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 The only thing you have to do is to set up spaces.
+
+WARNING: It's more than likely that you'll run out of resources when you reach stage step.
+Don't worry! Keep calm and <<resources,clear some apps from PCF Dev and continue>>.
 
 You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
 
@@ -1198,7 +1204,7 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 in Bash scripts. That way, in the majority of cases, you could change only the bash
 scripts without changing the whole pipeline.
 
-==== I've ran out of resources!!
+==== I ran out of resources!![[resources]]
 
 When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
