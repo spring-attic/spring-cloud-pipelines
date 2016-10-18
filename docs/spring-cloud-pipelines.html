@@ -918,6 +918,29 @@ microservices. That way the testing setup looks like this:</p>
 </div>
 <div class="sect3">
 <h4 id="_opinionated_implementation">Opinionated implementation</h4>
+<div class="paragraph">
+<p>For the demo purposes we&#8217;re providing Docker Compose setup with Artifactory and Concourse / Jenkins tools.
+Regardless of the picked CD application for the pipeline to pass one needs a Cloud Foundry instance (for example
+<a href="https://run.pivotal.io/">Pivotal Web Services</a> or <a href="https://pivotal.io/pcf-dev">PCF Dev</a>) and the
+infrastructure applications deployed to the JAR hosting application (for the demo we&#8217;re providing Artifactory).
+The infrastructure applications are <code>Eureka</code> for Service Discovery and <code>Stub Runner Boot</code> for running
+Spring Cloud Contract stubs.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+In the demos we&#8217;re showing you how to first build the <code>github-webhook</code> project. That&#8217;s because
+the <code>github-analytics</code> needs the stubs of <code>github-webhook</code> to pass the tests. Below you&#8217;ll find
+references to <code>github-analytics</code> project since it contains more interesting pieces as far as testing
+is concerned.
+</td>
+</tr>
+</table>
+</div>
 <div class="sect4">
 <h5 id="_build">Build</h5>
 <div class="imageblock">
@@ -925,6 +948,26 @@ microservices. That way the testing setup looks like this:</p>
 <img src="img/intro/build.png" alt="build">
 </div>
 <div class="title">Figure 5. Build and upload artifacts</div>
+</div>
+<div class="paragraph">
+<p>In this step we&#8217;re generating a version of the pipeline and then we&#8217;re publishing
+2 artifacts to Artifactory / Nexus:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>a fat jar of the application</p>
+</li>
+<li>
+<p>a Spring Cloud Contract jar containing stubs of the application</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>During this phase we&#8217;re executing a <code>Maven</code> build using Maven Wrapper, with unit and integration tests.
+We&#8217;re also <strong>tagging</strong> the repository with <code>dev/${version}</code> format. That way in each
+subsequent step of the pipeline we&#8217;re able to retrieve the tagged version. Also we know
+exactly which version of the pipeline corresponds to which Git hash.</p>
 </div>
 </div>
 <div class="sect4">
@@ -935,6 +978,66 @@ microservices. That way the testing setup looks like this:</p>
 </div>
 <div class="title">Figure 6. Smoke test and rollback test on test environment</div>
 </div>
+<div class="paragraph">
+<p>Here we&#8217;re</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>starting a RabbitMQ service in Cloud Foundry</p>
+</li>
+<li>
+<p>deploying <code>Eureka</code> infrastructure application to Cloud Foundry</p>
+</li>
+<li>
+<p>downloading the fat jar from Nexus and we&#8217;re uploading it to Cloud Foundry. We want the application
+to run in isolation (be surrounded by stubs). Currently due to port constraints in Cloud Foundry
+we cannot run multiple stubbed HTTP services in the cloud so to fix this issue we&#8217;re running
+the application with <code>smoke</code> Spring profile on which you can stub out all HTTP calls to return
+a mocked response</p>
+</li>
+<li>
+<p>if the application is using a database then it gets upgraded at this point via Flyway, Liquibase
+or any other tool once the application gets started</p>
+</li>
+<li>
+<p>from the project&#8217;s Maven build we&#8217;re extracting <code>stubrunner.ids</code> property that contains
+all the <code>groupId:artifactId:version:classifier</code> notation of dependant projects for which
+the stubs should be downloaded.</p>
+</li>
+<li>
+<p>then we&#8217;re uploading <code>Stub Runner Boot</code> and pass the extracted <code>stubrunner.ids</code> to it. That way
+we&#8217;ll have a running application in Cloud Foundry that will download all the necessary stubs
+of our application</p>
+</li>
+<li>
+<p>from the checked out code we&#8217;re running the tests available under the <code>smoke</code> profile. In the
+case of <a href="https://github.com/spring-cloud-samples/github-analytics/">GitHub Analytics</a> application
+we&#8217;re triggering a message from the <a href="https://github.com/spring-cloud-samples/github-webhook">GitHub Webhook</a>
+application&#8217;s stub, that is sent via RabbitMQ to GitHub Analytics. Then we&#8217;re checking if
+message count has increased. You can check those tests <a href="https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/smoke/IntegrationTests.java">here</a>.</p>
+</li>
+<li>
+<p>once the tests pass we&#8217;re searching for the last production release. Once the application
+is deployed to production we&#8217;re tagging it with <code>prod/${version}</code> tag. If there is no such tag
+(there was no production release) there will be no rollback tests executed. If there was
+a production release the tests will get executed.</p>
+</li>
+<li>
+<p>assuming that there was a production release we&#8217;re checking out the code corresponding to that
+release (we&#8217;re checking out the tag), we&#8217;re downloading the appropriate fat jar and we&#8217;re uploading
+it to Cloud Foundry. <strong>IMPORTANT</strong> the <em>old</em> jar is running against the <strong>NEW</strong> version of the database.</p>
+</li>
+<li>
+<p>we&#8217;re running the <em>old</em> <code>smoke</code> tests against the freshly deployed application surrounded by stubs.
+If those tests pass then we have a high probability that the application is backwards compatible</p>
+</li>
+<li>
+<p>the default behaviour is that after all of those steps the user can manually click to deploy the
+application to a stage environment</p>
+</li>
+</ul>
+</div>
 </div>
 <div class="sect4">
 <h5 id="_stage">Stage</h5>
@@ -944,6 +1047,40 @@ microservices. That way the testing setup looks like this:</p>
 </div>
 <div class="title">Figure 7. End to end tests on stage environment</div>
 </div>
+<div class="paragraph">
+<p>Here we&#8217;re</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>starting a RabbitMQ service in Cloud Foundry</p>
+</li>
+<li>
+<p>deploying <code>Eureka</code> infrastructure application to Cloud Foundry</p>
+</li>
+<li>
+<p>downloading the fat jar from Nexus and we&#8217;re uploading it to Cloud Foundry.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Next we have a manual step in which:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>from the checked out code we&#8217;re running the tests available under the <code>e2e</code> profile. In the
+case of <a href="https://github.com/spring-cloud-samples/github-analytics/">GitHub Analytics</a> application
+we&#8217;re sending a HTTP message to GitHub Analytic&#8217;s endpoint. Then we&#8217;re checking if
+the received message count has increased. You can check those tests <a href="https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/e2e/E2eTests.java">here</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The step is manual by default due to the fact that stage environment is often shared between
+teams and some preparations on databases / infrastructure have to take place before running the tests.
+Ideally these step should be fully automatic.</p>
+</div>
 </div>
 <div class="sect4">
 <h5 id="_prod">Prod</h5>
@@ -952,6 +1089,35 @@ microservices. That way the testing setup looks like this:</p>
 <img src="img/intro/prod.png" alt="prod">
 </div>
 <div class="title">Figure 8. Deployment to production</div>
+</div>
+<div class="paragraph">
+<p>The step to deploy to production is manual but ideally it should be automatic.</p>
+</div>
+<div class="paragraph">
+<p>Here we&#8217;re</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>starting a RabbitMQ service in Cloud Foundry (only for the demo to pass - you should provision
+the prod environment in a different way)</p>
+</li>
+<li>
+<p>deploying <code>Eureka</code> infrastructure application to Cloud Foundry (only for the demo to pass - you should provision
+the prod environment in a different way)</p>
+</li>
+<li>
+<p>downloading the fat jar from Nexus and we&#8217;re uploading it to Cloud Foundry</p>
+</li>
+<li>
+<p>tagging the Git repo with <code>prod/${version}</code> tag</p>
+</li>
+<li>
+<p>in the <code>Complete switch over</code> we&#8217;re currently not doing anything but you could perform some
+tests on production or when doing blue / green deployment you could switch of one of the instances.
+This step is manual.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>

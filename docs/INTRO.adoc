@@ -145,18 +145,106 @@ Obviously the pipeline could have been split to more steps but it seems that all
 
 ==== Opinionated implementation
 
+For the demo purposes we're providing Docker Compose setup with Artifactory and Concourse / Jenkins tools.
+Regardless of the picked CD application for the pipeline to pass one needs a Cloud Foundry instance (for example
+https://run.pivotal.io/[Pivotal Web Services] or https://pivotal.io/pcf-dev[PCF Dev]) and the
+infrastructure applications deployed to the JAR hosting application (for the demo we're providing Artifactory).
+The infrastructure applications are `Eureka` for Service Discovery and `Stub Runner Boot` for running
+Spring Cloud Contract stubs.
+
+TIP: In the demos we're showing you how to first build the `github-webhook` project. That's because
+the `github-analytics` needs the stubs of `github-webhook` to pass the tests. Below you'll find
+references to `github-analytics` project since it contains more interesting pieces as far as testing
+is concerned.
+
 ===== Build
 
 image::{intro-root-docs}/build.png[title="Build and upload artifacts"]
+
+In this step we're generating a version of the pipeline and then we're publishing
+2 artifacts to Artifactory / Nexus:
+
+- a fat jar of the application
+- a Spring Cloud Contract jar containing stubs of the application
+
+During this phase we're executing a `Maven` build using Maven Wrapper, with unit and integration tests.
+We're also *tagging* the repository with `dev/${version}` format. That way in each
+subsequent step of the pipeline we're able to retrieve the tagged version. Also we know
+exactly which version of the pipeline corresponds to which Git hash.
 
 ===== Test
 
 image::{intro-root-docs}/test.png[title="Smoke test and rollback test on test environment"]
 
+Here we're
+
+- starting a RabbitMQ service in Cloud Foundry
+- deploying `Eureka` infrastructure application to Cloud Foundry
+- downloading the fat jar from Nexus and we're uploading it to Cloud Foundry. We want the application
+to run in isolation (be surrounded by stubs). Currently due to port constraints in Cloud Foundry
+we cannot run multiple stubbed HTTP services in the cloud so to fix this issue we're running
+the application with `smoke` Spring profile on which you can stub out all HTTP calls to return
+a mocked response
+- if the application is using a database then it gets upgraded at this point via Flyway, Liquibase
+or any other tool once the application gets started
+- from the project's Maven build we're extracting `stubrunner.ids` property that contains
+ all the `groupId:artifactId:version:classifier` notation of dependant projects for which
+ the stubs should be downloaded.
+- then we're uploading `Stub Runner Boot` and pass the extracted `stubrunner.ids` to it. That way
+we'll have a running application in Cloud Foundry that will download all the necessary stubs
+of our application
+- from the checked out code we're running the tests available under the `smoke` profile. In the
+case of https://github.com/spring-cloud-samples/github-analytics/[GitHub Analytics] application
+we're triggering a message from the https://github.com/spring-cloud-samples/github-webhook[GitHub Webhook]
+application's stub, that is sent via RabbitMQ to GitHub Analytics. Then we're checking if
+message count has increased. You can check those tests https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/smoke/IntegrationTests.java[here].
+- once the tests pass we're searching for the last production release. Once the application
+is deployed to production we're tagging it with `prod/${version}` tag. If there is no such tag
+(there was no production release) there will be no rollback tests executed. If there was
+a production release the tests will get executed.
+- assuming that there was a production release we're checking out the code corresponding to that
+release (we're checking out the tag), we're downloading the appropriate fat jar and we're uploading
+it to Cloud Foundry. *IMPORTANT* the _old_ jar is running against the *NEW* version of the database.
+- we're running the _old_ `smoke` tests against the freshly deployed application surrounded by stubs.
+If those tests pass then we have a high probability that the application is backwards compatible
+- the default behaviour is that after all of those steps the user can manually click to deploy the
+application to a stage environment
+
 ===== Stage
 
 image::{intro-root-docs}/stage.png[title="End to end tests on stage environment"]
 
+Here we're
+
+- starting a RabbitMQ service in Cloud Foundry
+- deploying `Eureka` infrastructure application to Cloud Foundry
+- downloading the fat jar from Nexus and we're uploading it to Cloud Foundry.
+
+Next we have a manual step in which:
+
+- from the checked out code we're running the tests available under the `e2e` profile. In the
+case of https://github.com/spring-cloud-samples/github-analytics/[GitHub Analytics] application
+we're sending a HTTP message to GitHub Analytic's endpoint. Then we're checking if
+the received message count has increased. You can check those tests https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/e2e/E2eTests.java[here].
+
+The step is manual by default due to the fact that stage environment is often shared between
+teams and some preparations on databases / infrastructure have to take place before running the tests.
+Ideally these step should be fully automatic.
+
 ===== Prod
 
 image::{intro-root-docs}/prod.png[title="Deployment to production"]
+
+The step to deploy to production is manual but ideally it should be automatic.
+
+Here we're
+
+- starting a RabbitMQ service in Cloud Foundry (only for the demo to pass - you should provision
+the prod environment in a different way)
+- deploying `Eureka` infrastructure application to Cloud Foundry (only for the demo to pass - you should provision
+the prod environment in a different way)
+- downloading the fat jar from Nexus and we're uploading it to Cloud Foundry
+- tagging the Git repo with `prod/${version}` tag
+- in the `Complete switch over` we're currently not doing anything but you could perform some
+tests on production or when doing blue / green deployment you could switch of one of the instances.
+This step is manual.
