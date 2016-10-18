@@ -1345,6 +1345,7 @@ and uploaded to Artifactory.</p>
 </td>
 <td class="content">
 You can skip this step if you have CF installed and don&#8217;t want to use PCF Dev
+The only thing you have to do is to set up spaces.
 </td>
 </tr>
 </table>
@@ -1387,6 +1388,9 @@ cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
 cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>You can also execute the <code>./setup_spaces.sh</code> script to do this.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1767,6 +1771,9 @@ yes | cf delete-route local.pcfdev.io -n github-webhook-prod
 yes | cf delete-route local.pcfdev.io -n github-eureka-prod</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>You can also execute the <code>./remove_routes.sh</code> script</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_i_m_unauthorized_to_deploy_infrastructure_jars">I&#8217;m unauthorized to deploy infrastructure jars</h4>
@@ -1965,6 +1972,7 @@ and uploaded to Artifactory.</p>
 </td>
 <td class="content">
 You can skip this step if you have CF installed and don&#8217;t want to use PCF Dev
+The only thing you have to do is to set up spaces.
 </td>
 </tr>
 </table>
@@ -2007,6 +2015,9 @@ cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
 cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>You can also execute the <code>./setup_spaces.sh</code> script to do this.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2923,10 +2934,17 @@ The route github-webhook-test.local.pcfdev.io is already in use.</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">cf delete-route local.pcfdev.io -n github-webhook-test
-cf delete-route local.pcfdev.io -n github-eureka-test
-cf delete-route local.pcfdev.io -n stubrunner-test</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">yes | cf delete-route local.pcfdev.io -n github-webhook-test
+yes | cf delete-route local.pcfdev.io -n github-eureka-test
+yes | cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n github-webhook-stage
+yes | cf delete-route local.pcfdev.io -n github-eureka-stage
+yes | cf delete-route local.pcfdev.io -n github-webhook-prod
+yes | cf delete-route local.pcfdev.io -n github-eureka-prod</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>You can also execute the <code>./remove_routes.sh</code> script</p>
 </div>
 </div>
 <div class="sect3">

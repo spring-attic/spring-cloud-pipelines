@@ -106,6 +106,7 @@ and uploaded to Artifactory.
 ==== Start PCF Dev[[pcfdev]]
 
 TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
+The only thing you have to do is to set up spaces.
 
 You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
 
@@ -141,6 +142,8 @@ cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
 cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 ----
+
+You can also execute the `./setup_spaces.sh` script to do this.
 
 ==== Run the seed job[[seed]]
 
@@ -631,10 +634,16 @@ Just delete the routes
 
 [source,bash]
 ----
-cf delete-route local.pcfdev.io -n github-webhook-test
-cf delete-route local.pcfdev.io -n github-eureka-test
-cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n github-webhook-test
+yes | cf delete-route local.pcfdev.io -n github-eureka-test
+yes | cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n github-webhook-stage
+yes | cf delete-route local.pcfdev.io -n github-eureka-stage
+yes | cf delete-route local.pcfdev.io -n github-webhook-prod
+yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
+
+You can also execute the `./remove_routes.sh` script
 
 ==== I'm unauthorized to deploy infrastructure jars
 
