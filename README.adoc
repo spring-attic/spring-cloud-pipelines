@@ -178,7 +178,34 @@ Like every solution it has its benefits and drawbacks. The opinionated pipeline
 
 ==== General view
 
-TODO
+The general view behind this deployment pipeline is to:
+
+- test the application in isolation
+- test the backwards compatibility of the application in order to roll it back if necessary
+- allow testing of the packaged app in a deployed environment
+- allow user acceptance tests / performance tests in a deployed environment
+- allow deployment to production
+
+Obviously the pipeline could have been split to more steps but it seems that all of the aforementioned
+ actions comprise nicely in our opinionated proposal.
+
+==== Opinionated implementation
+
+===== Build
+
+image::{intro-root-docs}/build.png[title="Build and upload artifacts"]
+
+===== Test
+
+image::{intro-root-docs}/test.png[title="Smoke test and rollback test on test environment"]
+
+===== Stage
+
+image::{intro-root-docs}/stage.png[title="End to end tests on stage environment"]
+
+===== Prod
+
+image::{intro-root-docs}/prod.png[title="Deployment to production"]
 
 == Concourse Pipeline [[concourse]]
 
