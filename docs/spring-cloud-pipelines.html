@@ -483,7 +483,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#jenkins">Jenkins DSL Pipeline</a>
+<li><a href="#_jenkins_dsl_pipeline">Jenkins DSL Pipeline</a>
 <ul class="sectlevel2">
 <li><a href="#_step_by_step_2">Step by step</a>
 <ul class="sectlevel3">
@@ -524,7 +524,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_faq_2">FAQ</a>
 <ul class="sectlevel3">
-<li><a href="#faq">Pipeline version contains ${PIPELINE_VERSION}</a></li>
+<li><a href="#jenkins_faq">Pipeline version contains ${PIPELINE_VERSION}</a></li>
 <li><a href="#_the_build_times_out_with_code_pipeline_sh_code_info">The build times out with <code>pipeline.sh</code> info</a></li>
 <li><a href="#_can_i_use_the_pipeline_for_some_other_repos">Can I use the pipeline for some other repos?</a></li>
 <li><a href="#_will_this_work_for_any_project_out_of_the_box_2">Will this work for ANY project out of the box?</a></li>
@@ -1835,10 +1835,10 @@ setup. Check out <a href="#settings">this section of the docs and update your <c
 </div>
 </div>
 <div class="sect1">
-<h2 id="jenkins">Jenkins DSL Pipeline</h2>
+<h2 id="_jenkins_dsl_pipeline">Jenkins DSL Pipeline</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The repository contains job definitions and the opinionated setup pipeline using <a href="https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin">Jenkins Job Dsl plugin</a>. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.</p>
+<p><a id="jenkins"></a> The repository contains job definitions and the opinionated setup pipeline using <a href="https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin">Jenkins Job Dsl plugin</a>. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.</p>
 </div>
 <div class="paragraph">
 <p>All in all there are the following projects taking part in the whole <code>microservice setup</code> for this demo.</p>
@@ -1867,22 +1867,22 @@ setup. Check out <a href="#settings">this section of the docs and update your <c
 <div class="ulist">
 <ul>
 <li>
-<p><a href="#fork">Fork repos</a></p>
+<p><a href="#jenkins_fork">Fork repos</a></p>
 </li>
 <li>
-<p><a href="#start">Start Jenkins and Artifactory</a></p>
+<p><a href="#jenkins_start">Start Jenkins and Artifactory</a></p>
 </li>
 <li>
-<p><a href="#deploy">Deploy infra to Artifactory</a></p>
+<p><a href="#jenkins_deploy">Deploy infra to Artifactory</a></p>
 </li>
 <li>
-<p><a href="#pcfdev">Start PCF Dev (if you don&#8217;t want to use an existing one)</a></p>
+<p><a href="#jenkins_pcfdev">Start PCF Dev (if you don&#8217;t want to use an existing one)</a></p>
 </li>
 <li>
-<p><a href="#seed">Run the seed job</a></p>
+<p><a href="#jenkins_seed">Run the seed job</a></p>
 </li>
 <li>
-<p><a href="#pipeline">Run the <code>github-webhook</code> pipeline</a></p>
+<p><a href="#jenkins_pipeline">Run the <code>github-webhook</code> pipeline</a></p>
 </li>
 </ul>
 </div>
@@ -1896,20 +1896,20 @@ setup. Check out <a href="#settings">this section of the docs and update your <c
 just check out the section on how to update the URL to Artifactory)</a></p>
 </li>
 <li>
-<p><a href="#settings">Add <code>settings.xml</code> for Jenkins' master (you can skip this if you want to use our defaults)</a></p>
+<p><a href="#jenkins_settings">Add <code>settings.xml</code> for Jenkins' master (you can skip this if you want to use our defaults)</a></p>
 </li>
 <li>
-<p><a href="#misc">Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)</a></p>
+<p><a href="#jenkins_misc">Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)</a></p>
 </li>
 <li>
-<p><a href="#credentials">Setup Jenkins credentials</a></p>
+<p><a href="#jenkins_credentials">Setup Jenkins credentials</a></p>
 </li>
 </ul>
 </div>
 <div class="sect3">
 <h4 id="_fork_repos_2">Fork repos</h4>
 <div class="paragraph">
-<p><a id="fork"></a> There are 4 apps that are composing the pipeline</p>
+<p><a id="jenkins_fork"></a> There are 4 apps that are composing the pipeline</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1976,7 +1976,7 @@ just check out the section on how to update the URL to Artifactory)</a></p>
 <div class="sect3">
 <h4 id="_start_jenkins_and_artifactory_2">Start Jenkins and Artifactory</h4>
 <div class="paragraph">
-<p><a id="start"></a> Jenkins + Artifactory can be ran locally. To do that just execute the
+<p><a id="jenkins_start"></a> Jenkins + Artifactory can be ran locally. To do that just execute the
 <code>start.sh</code> script from this repo.</p>
 </div>
 <div class="listingblock">
@@ -1996,7 +1996,7 @@ contain your GitHub org in which you have the forked repos.</p>
 <div class="sect4">
 <h5 id="_deploy_the_infra_jars_to_artifactory_2">Deploy the infra JARs to Artifactory</h5>
 <div class="paragraph">
-<p><a id="deploy"></a> When Artifactory is running, just execute the <code>deploy_infra.sh</code> script from this repo.</p>
+<p><a id="jenkins_deploy"></a> When Artifactory is running, just execute the <code>deploy_infra.sh</code> script from this repo.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2040,7 +2040,7 @@ Don&#8217;t worry! Keep calm and <a href="#resources">clear some apps from PCF D
 </table>
 </div>
 <div class="paragraph">
-<p><a id="pcfdev"></a> You have to download and start PCF Dev. <a href="https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev">A link how to do it is available here.</a></p>
+<p><a id="jenkins_pcfdev"></a> You have to download and start PCF Dev. <a href="https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev">A link how to do it is available here.</a></p>
 </div>
 <div class="paragraph">
 <p>The default credentials when using PCF Dev are:</p>
@@ -2085,7 +2085,7 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
 <div class="sect3">
 <h4 id="_run_the_seed_job">Run the seed job</h4>
 <div class="paragraph">
-<p><a id="seed"></a> We already create the seed job for you but you&#8217;ll have to run it. When you do
+<p><a id="jenkins_seed"></a> We already create the seed job for you but you&#8217;ll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -2139,7 +2139,7 @@ seed.</p>
 <div class="sect3">
 <h4 id="_run_the_code_github_webhook_code_pipeline_2">Run the <code>github-webhook</code> pipeline</h4>
 <div class="paragraph">
-<p><a id="pipeline"></a> We already create the seed job for you but you&#8217;ll have to run it. When you do
+<p><a id="jenkins_pipeline"></a> We already create the seed job for you but you&#8217;ll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -2258,7 +2258,7 @@ environment it&#8217;s good to kill all apps on test. <a href="#faq">Check out t
 <div class="sect2">
 <h3 id="_optional_steps">Optional steps</h3>
 <div class="paragraph">
-<p><a id="optional"></a> All the steps below are not necessary to run the demo. They are needed only
+<p><a id="jenkins_optional"></a> All the steps below are not necessary to run the demo. They are needed only
 when you want to do some custom changes.</p>
 </div>
 <div class="sect3">
@@ -2304,7 +2304,7 @@ of Artifactory you can skip this step
 </table>
 </div>
 <div class="paragraph">
-<p><a id="settings"></a> So that <code>./mvnw deploy</code> works with Artifactory from Docker we&#8217;re
+<p><a id="jenkins_settings"></a> So that <code>./mvnw deploy</code> works with Artifactory from Docker we&#8217;re
 already copying the missing <code>settings.xml</code> file for you. It looks like this:</p>
 </div>
 <div class="listingblock">
@@ -2324,7 +2324,7 @@ the file (it&#8217;s in <code>seed/settings.xml</code>).</p>
 <div class="sect3">
 <h4 id="_setup_jenkins_env_vars">Setup Jenkins env vars</h4>
 <div class="paragraph">
-<p><a id="env"></a> If you want to only play around with the demo that we&#8217;ve prepared you have to set <strong>ONE</strong> variable which is the <code>REPOS</code> variable.
+<p><a id="jenkins_env"></a> If you want to only play around with the demo that we&#8217;ve prepared you have to set <strong>ONE</strong> variable which is the <code>REPOS</code> variable.
 That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.</p>
 </div>
 <div class="paragraph">
@@ -2614,7 +2614,7 @@ you can use it by passing the value of the property <code>GIT_CREDENTIAL_ID</cod
 <div class="sect4">
 <h5 id="_add_jenkins_credentials_for_github">Add Jenkins credentials for GitHub</h5>
 <div class="paragraph">
-<p><a id="credentials"></a> The scripts will need to access the credential in order to tag the repo.</p>
+<p><a id="jenkins_credentials"></a> The scripts will need to access the credential in order to tag the repo.</p>
 </div>
 <div class="paragraph">
 <p>You have to set credentials with id: <code>git</code>.</p>
@@ -2709,7 +2709,7 @@ remember to provide the one with id <code>git</code>).</p>
 <div class="sect2">
 <h3 id="_faq_2">FAQ</h3>
 <div class="sect3">
-<h4 id="faq">Pipeline version contains ${PIPELINE_VERSION}</h4>
+<h4 id="jenkins_faq">Pipeline version contains ${PIPELINE_VERSION}</h4>
 <div class="paragraph">
 <p>You can check the Jenkins logs and you&#8217;ll see</p>
 </div>
@@ -2810,7 +2810,7 @@ scripts without changing the whole pipeline.</p>
 <div class="sect3">
 <h4 id="_i_ran_out_of_resources_2">I ran out of resources!!</h4>
 <div class="paragraph">
-<p>[resources]] When deploying the app to stage or prod you can get an exception <code>Insufficient resources</code>. The way to
+<p>[jenkins_resources]] When deploying the app to stage or prod you can get an exception <code>Insufficient resources</code>. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call</p>
 </div>
 <div class="listingblock">
@@ -2825,7 +2825,7 @@ cf stop stubrunner</code></pre>
 <div class="sect3">
 <h4 id="_the_rollback_step_fails_due_to_missing_jar_2">The rollback step fails due to missing JAR ?!</h4>
 <div class="paragraph">
-<p><a id="tags"></a> You must have pushed some tags and have removed the Artifactory volume that
+<p><a id="jenkins_tags"></a> You must have pushed some tags and have removed the Artifactory volume that
 contained them. To fix this, just remove the tags</p>
 </div>
 <div class="listingblock">
@@ -2954,7 +2954,7 @@ You can go to <code>Global Tools</code> and create a JDK with <code>jdk8</code> 
 </div>
 </div>
 <div class="paragraph">
-<p>most likely you&#8217;ve passed a wrong password. Check the <a href="#credentials">credentials</a> section
+<p>most likely you&#8217;ve passed a wrong password. Check the <a href="#jenkins_credentials">credentials</a> section
 on how to update your credentials.</p>
 </div>
 </div>
@@ -2975,7 +2975,7 @@ on how to update your credentials.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>It means that you&#8217;ve forgotten to <a href="#pcfdev">create the spaces</a> in your PCF Dev installation.</p>
+<p>It means that you&#8217;ve forgotten to <a href="#jenkins_pcfdev">create the spaces</a> in your PCF Dev installation.</p>
 </div>
 </div>
 <div class="sect3">
@@ -3013,7 +3013,7 @@ yes | cf delete-route local.pcfdev.io -n github-eureka-prod</code></pre>
 <h4 id="_i_m_unauthorized_to_deploy_infrastructure_jars_2">I&#8217;m unauthorized to deploy infrastructure jars</h4>
 <div class="paragraph">
 <p>Most likely you&#8217;ve forgotten to update your local <code>settings.xml</code> with the Artifactory&#8217;s
-setup. Check out <a href="#settings">this section of the docs and update your <code>settings.xml</code></a>.</p>
+setup. Check out <a href="#jenkins_settings">this section of the docs and update your <code>settings.xml</code></a>.</p>
 </div>
 </div>
 </div>
