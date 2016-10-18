@@ -64,6 +64,12 @@ Spring Cloud Pipelines comes with the following features
 
 * empty template of a pipeline for Jenkins using `Jenkinsfiles`
 
+The opinionated pipelines look like this:
+
+![Flow in Concourse](http://cloud.spring.io/spring-cloud-pipelines/img/intro/flow_concourse.png)
+
+![Flow in Jenkins](http://cloud.spring.io/spring-cloud-pipelines/img/intro/flow.png)
+
 <span id="quick-start"></span>
 
 ## Quick Start
@@ -75,7 +81,7 @@ Spring Cloud Pipelines comes with the following features
 You can easily start by running the default demo setup to run the whole system locally using
 Docker and PCF Dev.
 
-We are providing a demo pipeline that will build and deploy - https://github.com/spring-cloud-samples/github-webhook[Github Webhook] application.
+We are providing a demo pipeline that will build and deploy - [Github Webhook](https://github.com/spring-cloud-samples/github-webhook) application.
 
 All in all there are the following projects taking part in the whole `microservice setup`.
 
@@ -119,8 +125,10 @@ are your Github credentials required by the pipeline to tag the forked repo that
 
 ### Adjusting the pipelines to your needs
 
-Since all of the pipeline generating projects should be versioned, what you can do is to
-download the project as ZIP, then init a Git project there and modify it as you wish.
+This repository can be treated as a template for your pipeline. We provide some opinionated
+implementation that you can alter to suit your needs. The best approach to use it
+to build your production projects would be to download the Spring Cloud Pipelines repository as ZIP, then
+init a Git project there and modify it as you wish.
 
 Example for using the code from `master` branch.
 
@@ -135,6 +143,10 @@ git commit -m "Initial commit"
 git remote add origin ${YOUR_REPOSITORY_URL}
 git push origin master
 ```
+
+Why aren't you simply cloning the repo? This is meant to be a seed
+for building new, versioned pipelines for you. You don't want to have all of our
+history dragged along with you, don't you?
 
 {% endcapture %}
 
