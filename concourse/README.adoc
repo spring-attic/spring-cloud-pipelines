@@ -34,9 +34,9 @@ just check out the section on how to update the URL to Artifactory)>>
 - <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
 - <<credentials,Setup Jenkins credentials>>
 
-==== Fork repos [[fork]]
+==== Fork repos
 
-There are 4 apps that are composing the pipeline
+[[fork]] There are 4 apps that are composing the pipeline
 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
@@ -77,9 +77,9 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 </settings>
 ----
 
-==== Start Jenkins and Artifactory [[start]]
+==== Start Jenkins and Artifactory
 
-Concourse + Artifactory can be ran locally. To do that just execute the
+[[start]] Concourse + Artifactory can be ran locally. To do that just execute the
 `start.sh` script from this repo.
 
 [source,bash]
@@ -98,9 +98,9 @@ The `192.168.99.100` param is an example of an external URL of Concourse
 
 Then Concourse will be running on port `8080` and Artifactory `8081`.
 
-===== Deploy the infra JARs to Artifactory [[deploy]]
+===== Deploy the infra JARs to Artifactory
 
-When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
+[[deploy]] When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
 
 [source,bash]
 ----
@@ -112,9 +112,9 @@ cd spring-cloud-pipelines/concourse
 As a result both `eureka` and `stub runner` repos will be cloned, built
 and uploaded to Artifactory.
 
-==== Start PCF Dev [[pcfdev]]
+==== Start PCF Dev
 
-TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
+[[pcfdev]] TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 The only thing you have to do is to set up spaces.
 
 WARNING: It's more than likely that you'll run out of resources when you reach stage step.
@@ -157,9 +157,9 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 
 You can also execute the `./setup_spaces.sh` script to do this.
 
-==== Setup the `fly` CLI [[fly]]
+==== Setup the `fly` CLI
 
-If you go to Concourse website you should see sth like this:
+[[fly]] If you go to Concourse website you should see sth like this:
 
 {nbsp}
 {nbsp}
@@ -178,9 +178,9 @@ fly --version
 
 If `fly` is properly installed then it should print out the version.
 
-==== Setup your `credentials.yml` [[creds]]
+==== Setup your `credentials.yml`
 
-The repo comes with `credentials-sample.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo jus setup:
+[[creds]] The repo comes with `credentials-sample.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo jus setup:
 
   - `app-url` - url pointing to your forked `github-webhook` repo
   - `github-private-key` - your private key to clone / tag GitHub repos
@@ -279,7 +279,9 @@ image::{concourse-root-docs}/job_running.png[caption="Step 9: ", title="Job is p
 
 image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Job is running in the main screen"]
 
-=== FAQ [[faq]]
+=== FAQ
+
+[[faq]]
 
 ==== Can I use the pipeline for some other repos?
 
@@ -305,9 +307,9 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
 whole pipeline. https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash[You can check out the scripts here.]
 
-==== I ran out of resources!! [[resources]]
+==== I ran out of resources!!
 
-When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
+[[resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
 
 [source,bash]

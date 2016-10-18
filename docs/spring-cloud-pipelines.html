@@ -451,29 +451,29 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_step_by_step">Step by step</a>
 <ul class="sectlevel3">
-<li><a href="#fork">Fork repos</a>
+<li><a href="#_fork_repos">Fork repos</a>
 <ul class="sectlevel4">
 <li><a href="#_set_up_your_local_maven_to_work_with_artifactory">Set up your local Maven to work with Artifactory</a></li>
 </ul>
 </li>
-<li><a href="#start">Start Jenkins and Artifactory</a>
+<li><a href="#_start_jenkins_and_artifactory">Start Jenkins and Artifactory</a>
 <ul class="sectlevel4">
-<li><a href="#deploy">Deploy the infra JARs to Artifactory</a></li>
+<li><a href="#_deploy_the_infra_jars_to_artifactory">Deploy the infra JARs to Artifactory</a></li>
 </ul>
 </li>
-<li><a href="#pcfdev">Start PCF Dev</a></li>
-<li><a href="#fly">Setup the <code>fly</code> CLI</a></li>
-<li><a href="#creds">Setup your <code>credentials.yml</code></a></li>
+<li><a href="#_start_pcf_dev">Start PCF Dev</a></li>
+<li><a href="#_setup_the_code_fly_code_cli">Setup the <code>fly</code> CLI</a></li>
+<li><a href="#_setup_your_code_credentials_yml_code">Setup your <code>credentials.yml</code></a></li>
 <li><a href="#_build_the_pipeline">Build the pipeline</a></li>
 <li><a href="#_run_the_code_github_webhook_code_pipeline">Run the <code>github-webhook</code> pipeline</a></li>
 </ul>
 </li>
-<li><a href="#faq">FAQ</a>
+<li><a href="#_faq">FAQ</a>
 <ul class="sectlevel3">
-<li><a href="#_can_i_use_the_pipeline_for_some_other_repos">Can I use the pipeline for some other repos?</a></li>
+<li><a href="#faq">Can I use the pipeline for some other repos?</a></li>
 <li><a href="#_will_this_work_for_any_project_out_of_the_box">Will this work for ANY project out of the box?</a></li>
 <li><a href="#_can_i_modify_this_to_reuse_in_my_project">Can I modify this to reuse in my project?</a></li>
-<li><a href="#resources">I ran out of resources!!</a></li>
+<li><a href="#_i_ran_out_of_resources">I ran out of resources!!</a></li>
 <li><a href="#_the_rollback_step_fails_due_to_missing_jar">The rollback step fails due to missing JAR ?!</a></li>
 <li><a href="#_can_i_see_the_output_of_a_job_from_the_terminal">Can I see the output of a job from the terminal?</a></li>
 <li><a href="#_i_clicked_the_job_and_it_s_constantly_pending">I clicked the job and it&#8217;s constantly pending&#8230;&#8203;</a></li>
@@ -487,26 +487,26 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_step_by_step_2">Step by step</a>
 <ul class="sectlevel3">
-<li><a href="#_fork_repos_a_id_fork_a">Fork repos<a id="fork"></a></a>
+<li><a href="#_fork_repos_2">Fork repos</a>
 <ul class="sectlevel4">
 <li><a href="#_set_up_your_local_maven_to_work_with_artifactory_2">Set up your local Maven to work with Artifactory</a></li>
 </ul>
 </li>
-<li><a href="#_start_jenkins_and_artifactory_a_id_start_a">Start Jenkins and Artifactory<a id="start"></a></a>
+<li><a href="#_start_jenkins_and_artifactory_2">Start Jenkins and Artifactory</a>
 <ul class="sectlevel4">
-<li><a href="#_deploy_the_infra_jars_to_artifactory_a_id_deploy_a">Deploy the infra JARs to Artifactory<a id="deploy"></a></a></li>
+<li><a href="#_deploy_the_infra_jars_to_artifactory_2">Deploy the infra JARs to Artifactory</a></li>
 </ul>
 </li>
-<li><a href="#_start_pcf_dev_a_id_pcfdev_a">Start PCF Dev<a id="pcfdev"></a></a></li>
-<li><a href="#_run_the_seed_job_a_id_seed_a">Run the seed job<a id="seed"></a></a></li>
-<li><a href="#pipeline">Run the <code>github-webhook</code> pipeline</a></li>
+<li><a href="#_start_pcf_dev_2">Start PCF Dev</a></li>
+<li><a href="#_run_the_seed_job">Run the seed job</a></li>
+<li><a href="#_run_the_code_github_webhook_code_pipeline_2">Run the <code>github-webhook</code> pipeline</a></li>
 </ul>
 </li>
-<li><a href="#optional">Optional steps</a>
+<li><a href="#_optional_steps">Optional steps</a>
 <ul class="sectlevel3">
 <li><a href="#_deploying_infra_jars_to_a_different_location">Deploying infra jars to a different location</a></li>
-<li><a href="#settings">Setup settings.xml for Maven deployment</a></li>
-<li><a href="#env">Setup Jenkins env vars</a>
+<li><a href="#_setup_settings_xml_for_maven_deployment">Setup settings.xml for Maven deployment</a></li>
+<li><a href="#_setup_jenkins_env_vars">Setup Jenkins env vars</a>
 <ul class="sectlevel4">
 <li><a href="#_seed_properties">Seed properties</a></li>
 <li><a href="#_global_envs">Global envs</a></li>
@@ -516,21 +516,21 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_set_git_email_user">Set Git email / user</a></li>
 <li><a href="#_jenkins_credentials">Jenkins Credentials</a>
 <ul class="sectlevel4">
-<li><a href="#credentials">Add Jenkins credentials for GitHub</a></li>
+<li><a href="#_add_jenkins_credentials_for_github">Add Jenkins credentials for GitHub</a></li>
 </ul>
 </li>
 <li><a href="#_enable_groovy_token_macro_processing">Enable Groovy Token Macro Processing</a></li>
 </ul>
 </li>
-<li><a href="#faq">FAQ</a>
+<li><a href="#_faq_2">FAQ</a>
 <ul class="sectlevel3">
-<li><a href="#_pipeline_version_contains_pipeline_version">Pipeline version contains ${PIPELINE_VERSION}</a></li>
+<li><a href="#faq">Pipeline version contains ${PIPELINE_VERSION}</a></li>
 <li><a href="#_the_build_times_out_with_code_pipeline_sh_code_info">The build times out with <code>pipeline.sh</code> info</a></li>
-<li><a href="#_can_i_use_the_pipeline_for_some_other_repos_2">Can I use the pipeline for some other repos?</a></li>
+<li><a href="#_can_i_use_the_pipeline_for_some_other_repos">Can I use the pipeline for some other repos?</a></li>
 <li><a href="#_will_this_work_for_any_project_out_of_the_box_2">Will this work for ANY project out of the box?</a></li>
 <li><a href="#_can_i_modify_this_to_reuse_in_my_project_2">Can I modify this to reuse in my project?</a></li>
-<li><a href="#resources">I ran out of resources!!</a></li>
-<li><a href="#tags">The rollback step fails due to missing JAR ?!</a></li>
+<li><a href="#_i_ran_out_of_resources_2">I ran out of resources!!</a></li>
+<li><a href="#_the_rollback_step_fails_due_to_missing_jar_2">The rollback step fails due to missing JAR ?!</a></li>
 <li><a href="#_i_want_to_provide_a_different_jdk_version">I want to provide a different JDK version</a>
 <ul class="sectlevel4">
 <li><a href="#_i_want_deployment_to_stage_and_prod_be_automatic">I want deployment to stage and prod be automatic</a></li>
@@ -1271,9 +1271,9 @@ just check out the section on how to update the URL to Artifactory)</a></p>
 </ul>
 </div>
 <div class="sect3">
-<h4 id="fork">Fork repos</h4>
+<h4 id="_fork_repos">Fork repos</h4>
 <div class="paragraph">
-<p>There are 4 apps that are composing the pipeline</p>
+<p><a id="fork"></a> There are 4 apps that are composing the pipeline</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1338,9 +1338,9 @@ just check out the section on how to update the URL to Artifactory)</a></p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="start">Start Jenkins and Artifactory</h4>
+<h4 id="_start_jenkins_and_artifactory">Start Jenkins and Artifactory</h4>
 <div class="paragraph">
-<p>Concourse + Artifactory can be ran locally. To do that just execute the
+<p><a id="start"></a> Concourse + Artifactory can be ran locally. To do that just execute the
 <code>start.sh</code> script from this repo.</p>
 </div>
 <div class="listingblock">
@@ -1363,9 +1363,9 @@ generation of keys.</p>
 <p>Then Concourse will be running on port <code>8080</code> and Artifactory <code>8081</code>.</p>
 </div>
 <div class="sect4">
-<h5 id="deploy">Deploy the infra JARs to Artifactory</h5>
+<h5 id="_deploy_the_infra_jars_to_artifactory">Deploy the infra JARs to Artifactory</h5>
 <div class="paragraph">
-<p>When Artifactory is running, just execute the <code>deploy_infra.sh</code> script from this repo.</p>
+<p><a id="deploy"></a> When Artifactory is running, just execute the <code>deploy_infra.sh</code> script from this repo.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1381,19 +1381,10 @@ and uploaded to Artifactory.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="pcfdev">Start PCF Dev</h4>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Tip</div>
-</td>
-<td class="content">
-You can skip this step if you have CF installed and don&#8217;t want to use PCF Dev
-The only thing you have to do is to set up spaces.
-</td>
-</tr>
-</table>
+<h4 id="_start_pcf_dev">Start PCF Dev</h4>
+<div class="paragraph">
+<p><a id="pcfdev"></a> TIP: You can skip this step if you have CF installed and don&#8217;t want to use PCF Dev
+The only thing you have to do is to set up spaces.</p>
 </div>
 <div class="admonitionblock warning">
 <table>
@@ -1452,9 +1443,9 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="fly">Setup the <code>fly</code> CLI</h4>
+<h4 id="_setup_the_code_fly_code_cli">Setup the <code>fly</code> CLI</h4>
 <div class="paragraph">
-<p>If you go to Concourse website you should see sth like this:</p>
+<p><a id="fly"></a> If you go to Concourse website you should see sth like this:</p>
 </div>
 <div class="paragraph">
 <p>&#160;
@@ -1482,9 +1473,9 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="creds">Setup your <code>credentials.yml</code></h4>
+<h4 id="_setup_your_code_credentials_yml_code">Setup your <code>credentials.yml</code></h4>
 <div class="paragraph">
-<p>The repo comes with <code>credentials-sample.yml</code> which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file <code>credentials.yml</code> (the file is added to .gitignore so don&#8217;t worry that you&#8217;ll push it with your passwords) and edit it as you wish. For our demo jus setup:</p>
+<p><a id="creds"></a> The repo comes with <code>credentials-sample.yml</code> which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file <code>credentials.yml</code> (the file is added to .gitignore so don&#8217;t worry that you&#8217;ll push it with your passwords) and edit it as you wish. For our demo jus setup:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1709,9 +1700,9 @@ You can override these values in exactly that order (e.g. <code>./set-pipeline.s
 </div>
 </div>
 <div class="sect2">
-<h3 id="faq">FAQ</h3>
+<h3 id="_faq">FAQ</h3>
 <div class="sect3">
-<h4 id="_can_i_use_the_pipeline_for_some_other_repos">Can I use the pipeline for some other repos?</h4>
+<h4 id="faq">Can I use the pipeline for some other repos?</h4>
 <div class="paragraph">
 <p>Sure! Just change the <code>app-url</code> in <code>credentials.yml</code>!</p>
 </div>
@@ -1757,9 +1748,9 @@ whole pipeline. <a href="https://github.com/spring-cloud/spring-cloud-pipelines/
 </div>
 </div>
 <div class="sect3">
-<h4 id="resources">I ran out of resources!!</h4>
+<h4 id="_i_ran_out_of_resources">I ran out of resources!!</h4>
 <div class="paragraph">
-<p>When deploying the app to stage or prod you can get an exception <code>Insufficient resources</code>. The way to
+<p><a id="resources"></a> When deploying the app to stage or prod you can get an exception <code>Insufficient resources</code>. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call</p>
 </div>
 <div class="listingblock">
@@ -1916,9 +1907,9 @@ just check out the section on how to update the URL to Artifactory)</a></p>
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_fork_repos_a_id_fork_a">Fork repos<a id="fork"></a></h4>
+<h4 id="_fork_repos_2">Fork repos</h4>
 <div class="paragraph">
-<p>There are 4 apps that are composing the pipeline</p>
+<p><a id="fork"></a> There are 4 apps that are composing the pipeline</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1983,9 +1974,9 @@ just check out the section on how to update the URL to Artifactory)</a></p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_start_jenkins_and_artifactory_a_id_start_a">Start Jenkins and Artifactory<a id="start"></a></h4>
+<h4 id="_start_jenkins_and_artifactory_2">Start Jenkins and Artifactory</h4>
 <div class="paragraph">
-<p>Jenkins + Artifactory can be ran locally. To do that just execute the
+<p><a id="start"></a> Jenkins + Artifactory can be ran locally. To do that just execute the
 <code>start.sh</code> script from this repo.</p>
 </div>
 <div class="listingblock">
@@ -2003,9 +1994,9 @@ any manual work on the Jenkins side. Also the <code>REPOS</code> env variable wi
 contain your GitHub org in which you have the forked repos.</p>
 </div>
 <div class="sect4">
-<h5 id="_deploy_the_infra_jars_to_artifactory_a_id_deploy_a">Deploy the infra JARs to Artifactory<a id="deploy"></a></h5>
+<h5 id="_deploy_the_infra_jars_to_artifactory_2">Deploy the infra JARs to Artifactory</h5>
 <div class="paragraph">
-<p>When Artifactory is running, just execute the <code>deploy_infra.sh</code> script from this repo.</p>
+<p><a id="deploy"></a> When Artifactory is running, just execute the <code>deploy_infra.sh</code> script from this repo.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2021,7 +2012,7 @@ and uploaded to Artifactory.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_start_pcf_dev_a_id_pcfdev_a">Start PCF Dev<a id="pcfdev"></a></h4>
+<h4 id="_start_pcf_dev_2">Start PCF Dev</h4>
 <div class="admonitionblock tip">
 <table>
 <tr>
@@ -2049,7 +2040,7 @@ Don&#8217;t worry! Keep calm and <a href="#resources">clear some apps from PCF D
 </table>
 </div>
 <div class="paragraph">
-<p>You have to download and start PCF Dev. <a href="https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev">A link how to do it is available here.</a></p>
+<p><a id="pcfdev"></a> You have to download and start PCF Dev. <a href="https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev">A link how to do it is available here.</a></p>
 </div>
 <div class="paragraph">
 <p>The default credentials when using PCF Dev are:</p>
@@ -2092,9 +2083,9 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_run_the_seed_job_a_id_seed_a">Run the seed job<a id="seed"></a></h4>
+<h4 id="_run_the_seed_job">Run the seed job</h4>
 <div class="paragraph">
-<p>We already create the seed job for you but you&#8217;ll have to run it. When you do
+<p><a id="seed"></a> We already create the seed job for you but you&#8217;ll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -2146,9 +2137,9 @@ seed.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="pipeline">Run the <code>github-webhook</code> pipeline</h4>
+<h4 id="_run_the_code_github_webhook_code_pipeline_2">Run the <code>github-webhook</code> pipeline</h4>
 <div class="paragraph">
-<p>We already create the seed job for you but you&#8217;ll have to run it. When you do
+<p><a id="pipeline"></a> We already create the seed job for you but you&#8217;ll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -2265,9 +2256,9 @@ environment it&#8217;s good to kill all apps on test. <a href="#faq">Check out t
 </div>
 </div>
 <div class="sect2">
-<h3 id="optional">Optional steps</h3>
+<h3 id="_optional_steps">Optional steps</h3>
 <div class="paragraph">
-<p>All the steps below are not necessary to run the demo. They are needed only
+<p><a id="optional"></a> All the steps below are not necessary to run the demo. They are needed only
 when you want to do some custom changes.</p>
 </div>
 <div class="sect3">
@@ -2298,7 +2289,7 @@ cd github-analytics-stub-runner-boot
 </div>
 </div>
 <div class="sect3">
-<h4 id="settings">Setup settings.xml for Maven deployment</h4>
+<h4 id="_setup_settings_xml_for_maven_deployment">Setup settings.xml for Maven deployment</h4>
 <div class="admonitionblock tip">
 <table>
 <tr>
@@ -2313,7 +2304,7 @@ of Artifactory you can skip this step
 </table>
 </div>
 <div class="paragraph">
-<p>So that <code>./mvnw deploy</code> works with Artifactory from Docker we&#8217;re
+<p><a id="settings"></a> So that <code>./mvnw deploy</code> works with Artifactory from Docker we&#8217;re
 already copying the missing <code>settings.xml</code> file for you. It looks like this:</p>
 </div>
 <div class="listingblock">
@@ -2331,9 +2322,9 @@ the file (it&#8217;s in <code>seed/settings.xml</code>).</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="env">Setup Jenkins env vars</h4>
+<h4 id="_setup_jenkins_env_vars">Setup Jenkins env vars</h4>
 <div class="paragraph">
-<p>If you want to only play around with the demo that we&#8217;ve prepared you have to set <strong>ONE</strong> variable which is the <code>REPOS</code> variable.
+<p><a id="env"></a> If you want to only play around with the demo that we&#8217;ve prepared you have to set <strong>ONE</strong> variable which is the <code>REPOS</code> variable.
 That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.</p>
 </div>
 <div class="paragraph">
@@ -2621,9 +2612,9 @@ This section is presented only for informational purposes - for the sake of demo
 you can use it by passing the value of the property <code>GIT_CREDENTIAL_ID</code></p>
 </div>
 <div class="sect4">
-<h5 id="credentials">Add Jenkins credentials for GitHub</h5>
+<h5 id="_add_jenkins_credentials_for_github">Add Jenkins credentials for GitHub</h5>
 <div class="paragraph">
-<p>The scripts will need to access the credential in order to tag the repo.</p>
+<p><a id="credentials"></a> The scripts will need to access the credential in order to tag the repo.</p>
 </div>
 <div class="paragraph">
 <p>You have to set credentials with id: <code>git</code>.</p>
@@ -2716,9 +2707,9 @@ remember to provide the one with id <code>git</code>).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="faq">FAQ</h3>
+<h3 id="_faq_2">FAQ</h3>
 <div class="sect3">
-<h4 id="_pipeline_version_contains_pipeline_version">Pipeline version contains ${PIPELINE_VERSION}</h4>
+<h4 id="faq">Pipeline version contains ${PIPELINE_VERSION}</h4>
 <div class="paragraph">
 <p>You can check the Jenkins logs and you&#8217;ll see</p>
 </div>
@@ -2750,7 +2741,7 @@ it will pass for any subsequent build.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_can_i_use_the_pipeline_for_some_other_repos_2">Can I use the pipeline for some other repos?</h4>
+<h4 id="_can_i_use_the_pipeline_for_some_other_repos">Can I use the pipeline for some other repos?</h4>
 <div class="paragraph">
 <p>Sure! you can pass <code>REPOS</code> variable with comma separated list of
 <code>project_name$project_url</code> format. If you don&#8217;t provide the PROJECT_NAME the
@@ -2817,9 +2808,9 @@ scripts without changing the whole pipeline.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="resources">I ran out of resources!!</h4>
+<h4 id="_i_ran_out_of_resources_2">I ran out of resources!!</h4>
 <div class="paragraph">
-<p>When deploying the app to stage or prod you can get an exception <code>Insufficient resources</code>. The way to
+<p>[resources]] When deploying the app to stage or prod you can get an exception <code>Insufficient resources</code>. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call</p>
 </div>
 <div class="listingblock">
@@ -2832,9 +2823,9 @@ cf stop stubrunner</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="tags">The rollback step fails due to missing JAR ?!</h4>
+<h4 id="_the_rollback_step_fails_due_to_missing_jar_2">The rollback step fails due to missing JAR ?!</h4>
 <div class="paragraph">
-<p>You must have pushed some tags and have removed the Artifactory volume that
+<p><a id="tags"></a> You must have pushed some tags and have removed the Artifactory volume that
 contained them. To fix this, just remove the tags</p>
 </div>
 <div class="listingblock">

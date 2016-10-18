@@ -378,9 +378,9 @@ just check out the section on how to update the URL to Artifactory)>>
 - <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
 - <<credentials,Setup Jenkins credentials>>
 
-==== Fork repos [[fork]]
+==== Fork repos
 
-There are 4 apps that are composing the pipeline
+[[fork]] There are 4 apps that are composing the pipeline
 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
@@ -421,9 +421,9 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 </settings>
 ----
 
-==== Start Jenkins and Artifactory [[start]]
+==== Start Jenkins and Artifactory
 
-Concourse + Artifactory can be ran locally. To do that just execute the
+[[start]] Concourse + Artifactory can be ran locally. To do that just execute the
 `start.sh` script from this repo.
 
 [source,bash]
@@ -442,9 +442,9 @@ The `192.168.99.100` param is an example of an external URL of Concourse
 
 Then Concourse will be running on port `8080` and Artifactory `8081`.
 
-===== Deploy the infra JARs to Artifactory [[deploy]]
+===== Deploy the infra JARs to Artifactory
 
-When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
+[[deploy]] When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
 
 [source,bash]
 ----
@@ -456,9 +456,9 @@ cd spring-cloud-pipelines/concourse
 As a result both `eureka` and `stub runner` repos will be cloned, built
 and uploaded to Artifactory.
 
-==== Start PCF Dev [[pcfdev]]
+==== Start PCF Dev
 
-TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
+[[pcfdev]] TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 The only thing you have to do is to set up spaces.
 
 WARNING: It's more than likely that you'll run out of resources when you reach stage step.
@@ -501,9 +501,9 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 
 You can also execute the `./setup_spaces.sh` script to do this.
 
-==== Setup the `fly` CLI [[fly]]
+==== Setup the `fly` CLI
 
-If you go to Concourse website you should see sth like this:
+[[fly]] If you go to Concourse website you should see sth like this:
 
 {nbsp}
 {nbsp}
@@ -522,9 +522,9 @@ fly --version
 
 If `fly` is properly installed then it should print out the version.
 
-==== Setup your `credentials.yml` [[creds]]
+==== Setup your `credentials.yml`
 
-The repo comes with `credentials-sample.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo jus setup:
+[[creds]] The repo comes with `credentials-sample.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo jus setup:
 
   - `app-url` - url pointing to your forked `github-webhook` repo
   - `github-private-key` - your private key to clone / tag GitHub repos
@@ -623,7 +623,9 @@ image::{concourse-root-docs}/job_running.png[caption="Step 9: ", title="Job is p
 
 image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Job is running in the main screen"]
 
-=== FAQ [[faq]]
+=== FAQ
+
+[[faq]]
 
 ==== Can I use the pipeline for some other repos?
 
@@ -649,9 +651,9 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
 whole pipeline. https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash[You can check out the scripts here.]
 
-==== I ran out of resources!! [[resources]]
+==== I ran out of resources!!
 
-When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
+[[resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
 
 [source,bash]
@@ -749,9 +751,9 @@ just check out the section on how to update the URL to Artifactory)>>
 - <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
 - <<credentials,Setup Jenkins credentials>>
 
-==== Fork repos[[fork]]
+==== Fork repos
 
-There are 4 apps that are composing the pipeline
+[[fork]] There are 4 apps that are composing the pipeline
 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
@@ -792,9 +794,9 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 </settings>
 ----
 
-==== Start Jenkins and Artifactory[[start]]
+==== Start Jenkins and Artifactory
 
-Jenkins + Artifactory can be ran locally. To do that just execute the
+[[start]] Jenkins + Artifactory can be ran locally. To do that just execute the
 `start.sh` script from this repo.
 
 [source,bash]
@@ -810,9 +812,9 @@ and credentials will be set in your set. That way you don't have to do
 any manual work on the Jenkins side. Also the `REPOS` env variable will
 contain your GitHub org in which you have the forked repos.
 
-===== Deploy the infra JARs to Artifactory[[deploy]]
+===== Deploy the infra JARs to Artifactory
 
-When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
+[[deploy]] When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
 
 [source,bash]
 ----
@@ -824,7 +826,7 @@ cd spring-cloud-pipelines/jenkins
 As a result both `eureka` and `stub runner` repos will be cloned, built
 and uploaded to Artifactory.
 
-==== Start PCF Dev[[pcfdev]]
+==== Start PCF Dev
 
 TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 The only thing you have to do is to set up spaces.
@@ -832,7 +834,7 @@ The only thing you have to do is to set up spaces.
 WARNING: It's more than likely that you'll run out of resources when you reach stage step.
 Don't worry! Keep calm and <<resources,clear some apps from PCF Dev and continue>>.
 
-You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
+[[pcfdev]] You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
 
 The default credentials when using PCF Dev are:
 
@@ -869,9 +871,9 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 
 You can also execute the `./setup_spaces.sh` script to do this.
 
-==== Run the seed job[[seed]]
+==== Run the seed job
 
-We already create the seed job for you but you'll have to run it. When you do
+[[seed]] We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -900,9 +902,9 @@ image::{jenkins-root-docs}/seed.png[caption="Step 3: ", title="Provide the `REPO
 
 image::{jenkins-root-docs}/seed_built.png[caption="Step 4: ", title="This is how the results of seed should look like"]
 
-==== Run the `github-webhook` pipeline [[pipeline]]
+==== Run the `github-webhook` pipeline
 
-We already create the seed job for you but you'll have to run it. When you do
+[[pipeline]] We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -957,9 +959,9 @@ image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 5: ", title="The 
 {nbsp}
 {nbsp}
 
-=== Optional steps [[optional]]
+=== Optional steps
 
-All the steps below are not necessary to run the demo. They are needed only
+[[optional]] All the steps below are not necessary to run the demo. They are needed only
 when you want to do some custom changes.
 
 ==== Deploying infra jars to a different location
@@ -985,12 +987,12 @@ cd github-analytics-stub-runner-boot
 ./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
 ----
 
-==== Setup settings.xml for Maven deployment [[settings]]
+==== Setup settings.xml for Maven deployment
 
 TIP: If you want to use the default connection to the Docker version
 of Artifactory you can skip this step
 
-So that `./mvnw deploy` works with Artifactory from Docker we're
+[[settings]] So that `./mvnw deploy` works with Artifactory from Docker we're
 already copying the missing `settings.xml` file for you. It looks like this:
 
 [source,xml]
@@ -1005,9 +1007,9 @@ already copying the missing `settings.xml` file for you. It looks like this:
 If you want to use your own version of Artifactory / Nexus you have to update
 the file (it's in `seed/settings.xml`).
 
-==== Setup Jenkins env vars [[env]]
+==== Setup Jenkins env vars
 
-If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
+[[env]] If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
 That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.
 
 You can do it in the following ways:
@@ -1114,9 +1116,9 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 If you already have in your system a credential to for example tag a repo
 you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
 
-===== Add Jenkins credentials for GitHub [[credentials]]
+===== Add Jenkins credentials for GitHub
 
-The scripts will need to access the credential in order to tag the repo.
+[[credentials]] The scripts will need to access the credential in order to tag the repo.
 
 You have to set credentials with id: `git`.
 
@@ -1165,7 +1167,9 @@ image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click
 
 image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
-=== FAQ [[faq]]
+=== FAQ
+
+[[faq]]
 
 ==== Pipeline version contains ${PIPELINE_VERSION}
 
@@ -1231,9 +1235,9 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 in Bash scripts. That way, in the majority of cases, you could change only the bash
 scripts without changing the whole pipeline.
 
-==== I ran out of resources!! [[resources]]
+==== I ran out of resources!!
 
-When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
+[resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
 
 [source,bash]
@@ -1244,9 +1248,9 @@ cf stop github-eureka
 cf stop stubrunner
 ----
 
-==== The rollback step fails due to missing JAR ?! [[tags]]
+==== The rollback step fails due to missing JAR ?!
 
-You must have pushed some tags and have removed the Artifactory volume that
+[[tags]] You must have pushed some tags and have removed the Artifactory volume that
 contained them. To fix this, just remove the tags
 
 [source,bash]
