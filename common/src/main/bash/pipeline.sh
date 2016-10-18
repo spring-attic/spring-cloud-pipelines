@@ -144,21 +144,17 @@ function deployStubRunnerBoot() {
     local redeploy="${1}"
     local jarName="${2}"
     local env="${3:-test}"
-    local eurekaService="${4:-github-eureka}"
-    local rabbitmqService="${5:-github-rabbitmq}"
-    local stubRunnerName="${6:-stubrunner}"
+    local stubRunnerName="${4:-stubrunner}"
     local fileExists="true"
     local fileName="`pwd`/target/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
-    echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}], eureka [${eurekaService}], rabbitmq [${rabbitmqService}]"
+    echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}]"
     if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
         deployAppWithName "${stubRunnerName}" "${jarName}" "${env}"
         local mavenProp="$( extractMavenProperty "stubrunner.ids" )"
         setEnvVar "${stubRunnerName}" "stubrunner.ids" "${mavenProp}"
-        bindService "${eurekaService}" "${stubRunnerName}"
-        bindService "${rabbitmqService}" "${stubRunnerName}"
         restartApp "${stubRunnerName}"
         createServiceWithName "${stubRunnerName}"
     else
