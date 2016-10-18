@@ -179,7 +179,7 @@ image::{jenkins-root-docs}/seed.png[caption="Step 3: ", title="Provide the `REPO
 
 image::{jenkins-root-docs}/seed_built.png[caption="Step 4: ", title="This is how the results of seed should look like"]
 
-==== Run the `github-webhook` pipeline[[pipeline]]
+==== Run the `github-webhook` pipeline [[pipeline]]
 
 We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
@@ -264,7 +264,7 @@ cd github-analytics-stub-runner-boot
 ./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
 ----
 
-==== Setup settings.xml for Maven deployment[[settings]]
+==== Setup settings.xml for Maven deployment [[settings]]
 
 TIP: If you want to use the default connection to the Docker version
 of Artifactory you can skip this step
@@ -284,7 +284,7 @@ already copying the missing `settings.xml` file for you. It looks like this:
 If you want to use your own version of Artifactory / Nexus you have to update
 the file (it's in `seed/settings.xml`).
 
-==== Setup Jenkins env vars[[env]]
+==== Setup Jenkins env vars [[env]]
 
 If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
 That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.
@@ -393,7 +393,7 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 If you already have in your system a credential to for example tag a repo
 you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
 
-===== Add Jenkins credentials for GitHub[[credentials]]
+===== Add Jenkins credentials for GitHub [[credentials]]
 
 The scripts will need to access the credential in order to tag the repo.
 
@@ -444,7 +444,7 @@ image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click
 
 image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
-=== FAQ[[faq]]
+=== FAQ [[faq]]
 
 ==== Pipeline version contains ${PIPELINE_VERSION}
 
@@ -510,7 +510,7 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 in Bash scripts. That way, in the majority of cases, you could change only the bash
 scripts without changing the whole pipeline.
 
-==== I ran out of resources!![[resources]]
+==== I ran out of resources!! [[resources]]
 
 When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call

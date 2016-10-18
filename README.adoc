@@ -357,7 +357,7 @@ just check out the section on how to update the URL to Artifactory)>>
 - <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
 - <<credentials,Setup Jenkins credentials>>
 
-==== Fork repos[[fork]]
+==== Fork repos [[fork]]
 
 There are 4 apps that are composing the pipeline
 
@@ -400,7 +400,7 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 </settings>
 ----
 
-==== Start Jenkins and Artifactory[[start]]
+==== Start Jenkins and Artifactory [[start]]
 
 Concourse + Artifactory can be ran locally. To do that just execute the
 `start.sh` script from this repo.
@@ -421,7 +421,7 @@ The `192.168.99.100` param is an example of an external URL of Concourse
 
 Then Concourse will be running on port `8080` and Artifactory `8081`.
 
-===== Deploy the infra JARs to Artifactory[[deploy]]
+===== Deploy the infra JARs to Artifactory [[deploy]]
 
 When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
 
@@ -435,7 +435,7 @@ cd spring-cloud-pipelines/concourse
 As a result both `eureka` and `stub runner` repos will be cloned, built
 and uploaded to Artifactory.
 
-==== Start PCF Dev[[pcfdev]]
+==== Start PCF Dev [[pcfdev]]
 
 TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 The only thing you have to do is to set up spaces.
@@ -480,7 +480,7 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 
 You can also execute the `./setup_spaces.sh` script to do this.
 
-==== Setup the `fly` CLI[[fly]]
+==== Setup the `fly` CLI [[fly]]
 
 If you go to Concourse website you should see sth like this:
 
@@ -602,7 +602,7 @@ image::{concourse-root-docs}/job_running.png[caption="Step 9: ", title="Job is p
 
 image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Job is running in the main screen"]
 
-=== FAQ
+=== FAQ [[faq]]
 
 ==== Can I use the pipeline for some other repos?
 
@@ -628,7 +628,7 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
 whole pipeline. https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash[You can check out the scripts here.]
 
-==== I ran out of resources!![[resources]]
+==== I ran out of resources!! [[resources]]
 
 When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
@@ -879,7 +879,7 @@ image::{jenkins-root-docs}/seed.png[caption="Step 3: ", title="Provide the `REPO
 
 image::{jenkins-root-docs}/seed_built.png[caption="Step 4: ", title="This is how the results of seed should look like"]
 
-==== Run the `github-webhook` pipeline[[pipeline]]
+==== Run the `github-webhook` pipeline [[pipeline]]
 
 We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
@@ -964,7 +964,7 @@ cd github-analytics-stub-runner-boot
 ./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
 ----
 
-==== Setup settings.xml for Maven deployment[[settings]]
+==== Setup settings.xml for Maven deployment [[settings]]
 
 TIP: If you want to use the default connection to the Docker version
 of Artifactory you can skip this step
@@ -984,7 +984,7 @@ already copying the missing `settings.xml` file for you. It looks like this:
 If you want to use your own version of Artifactory / Nexus you have to update
 the file (it's in `seed/settings.xml`).
 
-==== Setup Jenkins env vars[[env]]
+==== Setup Jenkins env vars [[env]]
 
 If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
 That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.
@@ -1093,7 +1093,7 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 If you already have in your system a credential to for example tag a repo
 you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
 
-===== Add Jenkins credentials for GitHub[[credentials]]
+===== Add Jenkins credentials for GitHub [[credentials]]
 
 The scripts will need to access the credential in order to tag the repo.
 
@@ -1144,7 +1144,7 @@ image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click
 
 image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
-=== FAQ[[faq]]
+=== FAQ [[faq]]
 
 ==== Pipeline version contains ${PIPELINE_VERSION}
 
@@ -1210,7 +1210,7 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 in Bash scripts. That way, in the majority of cases, you could change only the bash
 scripts without changing the whole pipeline.
 
-==== I ran out of resources!![[resources]]
+==== I ran out of resources!! [[resources]]
 
 When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
