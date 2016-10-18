@@ -1,6 +1,6 @@
-== Jenkins DSL Pipeline [[jenkins]]
+== Jenkins DSL Pipeline
 
-The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+[[jenkins]] The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
@@ -13,24 +13,24 @@ All in all there are the following projects taking part in the whole `microservi
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
-- <<fork,Fork repos>>
-- <<start,Start Jenkins and Artifactory>>
-- <<deploy,Deploy infra to Artifactory>>
-- <<pcfdev,Start PCF Dev (if you don't want to use an existing one)>>
-- <<seed,Run the seed job>>
-- <<pipeline,Run the `github-webhook` pipeline>>
+- <<jenkins_fork,Fork repos>>
+- <<jenkins_start,Start Jenkins and Artifactory>>
+- <<jenkins_deploy,Deploy infra to Artifactory>>
+- <<jenkins_pcfdev,Start PCF Dev (if you don't want to use an existing one)>>
+- <<jenkins_seed,Run the seed job>>
+- <<jenkins_pipeline,Run the `github-webhook` pipeline>>
 
 Below you can find <<optional,optional>> steps needed to be taken when you want to customize the pipeline
 
 - <<env,Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
 just check out the section on how to update the URL to Artifactory)>>
-- <<settings,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
-- <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
-- <<credentials,Setup Jenkins credentials>>
+- <<jenkins_settings,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
+- <<jenkins_misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
+- <<jenkins_credentials,Setup Jenkins credentials>>
 
 ==== Fork repos
 
-[[fork]] There are 4 apps that are composing the pipeline
+[[jenkins_fork]] There are 4 apps that are composing the pipeline
 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
@@ -73,7 +73,7 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 
 ==== Start Jenkins and Artifactory
 
-[[start]] Jenkins + Artifactory can be ran locally. To do that just execute the
+[[jenkins_start]] Jenkins + Artifactory can be ran locally. To do that just execute the
 `start.sh` script from this repo.
 
 [source,bash]
@@ -91,7 +91,7 @@ contain your GitHub org in which you have the forked repos.
 
 ===== Deploy the infra JARs to Artifactory
 
-[[deploy]] When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
+[[jenkins_deploy]] When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
 
 [source,bash]
 ----
@@ -111,7 +111,7 @@ The only thing you have to do is to set up spaces.
 WARNING: It's more than likely that you'll run out of resources when you reach stage step.
 Don't worry! Keep calm and <<resources,clear some apps from PCF Dev and continue>>.
 
-[[pcfdev]] You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
+[[jenkins_pcfdev]] You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
 
 The default credentials when using PCF Dev are:
 
@@ -150,7 +150,7 @@ You can also execute the `./setup_spaces.sh` script to do this.
 
 ==== Run the seed job
 
-[[seed]] We already create the seed job for you but you'll have to run it. When you do
+[[jenkins_seed]] We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -181,7 +181,7 @@ image::{jenkins-root-docs}/seed_built.png[caption="Step 4: ", title="This is how
 
 ==== Run the `github-webhook` pipeline
 
-[[pipeline]] We already create the seed job for you but you'll have to run it. When you do
+[[jenkins_pipeline]] We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -238,7 +238,7 @@ image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 5: ", title="The 
 
 === Optional steps
 
-[[optional]] All the steps below are not necessary to run the demo. They are needed only
+[[jenkins_optional]] All the steps below are not necessary to run the demo. They are needed only
 when you want to do some custom changes.
 
 ==== Deploying infra jars to a different location
@@ -269,7 +269,7 @@ cd github-analytics-stub-runner-boot
 TIP: If you want to use the default connection to the Docker version
 of Artifactory you can skip this step
 
-[[settings]] So that `./mvnw deploy` works with Artifactory from Docker we're
+[[jenkins_settings]] So that `./mvnw deploy` works with Artifactory from Docker we're
 already copying the missing `settings.xml` file for you. It looks like this:
 
 [source,xml]
@@ -286,7 +286,7 @@ the file (it's in `seed/settings.xml`).
 
 ==== Setup Jenkins env vars
 
-[[env]] If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
+[[jenkins_env]] If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
 That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.
 
 You can do it in the following ways:
@@ -395,7 +395,7 @@ you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
 
 ===== Add Jenkins credentials for GitHub
 
-[[credentials]] The scripts will need to access the credential in order to tag the repo.
+[[jenkins_credentials]] The scripts will need to access the credential in order to tag the repo.
 
 You have to set credentials with id: `git`.
 
@@ -446,7 +446,7 @@ image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Al
 
 === FAQ
 
-[[faq]]
+[[jenkins_faq]]
 
 ==== Pipeline version contains ${PIPELINE_VERSION}
 
@@ -514,7 +514,7 @@ scripts without changing the whole pipeline.
 
 ==== I ran out of resources!!
 
-[resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
+[jenkins_resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
 
 [source,bash]
@@ -527,7 +527,7 @@ cf stop stubrunner
 
 ==== The rollback step fails due to missing JAR ?!
 
-[[tags]] You must have pushed some tags and have removed the Artifactory volume that
+[[jenkins_tags]] You must have pushed some tags and have removed the Artifactory volume that
 contained them. To fix this, just remove the tags
 
 [source,bash]
@@ -603,7 +603,7 @@ When you get sth like this:
 19:01:44 	at hudson.model.Executor.run(Executor.java:404)
 ----
 
-most likely you've passed a wrong password. Check the <<credentials,credentials>> section
+most likely you've passed a wrong password. Check the <<jenkins_credentials,credentials>> section
 on how to update your credentials.
 
 ==== Deploying to test / stage / prod fails - error finding space
@@ -621,7 +621,7 @@ If you receive a similar exception:
 20:26:18 Space pcfdev-test not found
 ----
 
-It means that you've forgotten to <<pcfdev,create the spaces>> in your PCF Dev installation.
+It means that you've forgotten to <<jenkins_pcfdev,create the spaces>> in your PCF Dev installation.
 
 ==== The route is already in use
 
@@ -653,7 +653,7 @@ You can also execute the `./remove_routes.sh` script
 ==== I'm unauthorized to deploy infrastructure jars
 
 Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
-setup. Check out <<settings,this section of the docs and update your `settings.xml`>>.
+setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml`>>.
 
 === How to build it
 
