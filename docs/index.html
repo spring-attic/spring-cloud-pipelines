@@ -70,7 +70,7 @@ Spring Cloud Pipelines comes with the following features
 
 <script type="text/javascript">{% include custom.js %}</script>
 
-## Running the demo
+### Running the demo
 
 You can easily start by running the default demo setup to run the whole system locally using
 Docker and PCF Dev.
@@ -87,7 +87,7 @@ tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructur
 
 For the detailed information please check out the [docs](http://cloud.spring.io/spring-cloud/spring-cloud-pipelines.html).
 
-### Concourse
+#### Concourse
 
 * Fork the [Github Webhook](https://github.com/spring-cloud-samples/github-webhook) and [Github-Analytics](https://github.com/spring-cloud-samples/github-analytics) repository
 * Start [PCF Dev](https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/introduction)
@@ -105,7 +105,7 @@ if you're using `localhost` you don't have to provide that value)
 * Unpause and run the pipeline in Concourse!
 * Once the pipeline passes you can setup a new pipeline for `github-analytics`
 
-### Jenkins
+#### Jenkins
 
 * Fork the [Github Webhook](https://github.com/spring-cloud-samples/github-webhook) and [Github-Analytics](https://github.com/spring-cloud-samples/github-analytics) repository
 * Start [PCF Dev](https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/introduction)
@@ -117,7 +117,7 @@ are your Github credentials required by the pipeline to tag the forked repo that
 * Go to Jenkins and click the `jenkins-pipeline-seed` in order to generate the pipeline jobs
 * Go to the `github-webhook` pipeline view and click the `play` button to run the pipeline
 
-## Adjusting the pipelines to your needs
+### Adjusting the pipelines to your needs
 
 Since all of the pipeline generating projects should be versioned, what you can do is to
 download the project as ZIP, then init a Git project there and modify it as you wish.
