@@ -666,10 +666,19 @@ Just delete the routes
 
 [source,bash]
 ----
-cf delete-route local.pcfdev.io -n github-webhook-test
-cf delete-route local.pcfdev.io -n github-eureka-test
-cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n github-webhook-test
+yes | cf delete-route local.pcfdev.io -n github-eureka-test
+yes | cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n github-webhook-stage
+yes | cf delete-route local.pcfdev.io -n github-eureka-stage
+yes | cf delete-route local.pcfdev.io -n github-webhook-prod
+yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
+
+==== I'm unauthorized to deploy infrastructure jars
+
+Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
+setup. Check out <<settings,this section of the docs and update your `settings.xml`>>.
 
 == Jenkins DSL Pipeline [[jenkins]]
 
@@ -1308,6 +1317,11 @@ cf delete-route local.pcfdev.io -n github-webhook-test
 cf delete-route local.pcfdev.io -n github-eureka-test
 cf delete-route local.pcfdev.io -n stubrunner-test
 ----
+
+==== I'm unauthorized to deploy infrastructure jars
+
+Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
+setup. Check out <<settings,this section of the docs and update your `settings.xml`>>.
 
 === How to build it
 

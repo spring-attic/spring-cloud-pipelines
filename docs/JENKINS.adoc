@@ -636,6 +636,11 @@ cf delete-route local.pcfdev.io -n github-eureka-test
 cf delete-route local.pcfdev.io -n stubrunner-test
 ----
 
+==== I'm unauthorized to deploy infrastructure jars
+
+Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
+setup. Check out <<settings,this section of the docs and update your `settings.xml`>>.
+
 === How to build it
 
 `./gradlew clean build`
