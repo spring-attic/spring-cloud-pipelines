@@ -87,7 +87,7 @@ curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.
 unzip master.zip
 cd spring-cloud-pipelines-master
 git init
-# do all the changes
+# modify the pipelines to suit your needs
 git add .
 git commit -m "Initial commit"
 git remote add origin ${YOUR_REPOSITORY_URL}
