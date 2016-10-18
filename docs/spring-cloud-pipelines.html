@@ -427,6 +427,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_the_opinionated_pipeline">The opinionated pipeline</a></li>
 <li><a href="#_introduction">Introduction</a>
 <ul class="sectlevel2">
+<li><a href="#_how_to_use_it">How to use it?</a></li>
 <li><a href="#_environments">Environments</a></li>
 <li><a href="#_tests">Tests</a></li>
 <li><a href="#_the_flow">The flow</a>
@@ -641,6 +642,29 @@ deployment logic is done in a form of bash scripts.</p>
 <p>In the following section we will describe in more depth the rationale
 behind the presented opinionated pipeline. We will go through each deployment
 step and describe it in details.</p>
+</div>
+<div class="sect2">
+<h3 id="_how_to_use_it">How to use it?</h3>
+<div class="paragraph">
+<p>Since all of the pipeline generating projects should be versioned, what you can do is to
+download the project as ZIP, then init a Git project there and modify it as you wish.</p>
+</div>
+<div class="paragraph">
+<p>Example for using the code from <code>master</code> branch.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.zip
+unzip master.zip
+cd spring-cloud-pipelines-master
+git init
+# do all the changes
+git add .
+git commit -m "Initial commit"
+git remote add origin ${YOUR_REPOSITORY_URL}
+git push origin master</code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_environments">Environments</h3>
