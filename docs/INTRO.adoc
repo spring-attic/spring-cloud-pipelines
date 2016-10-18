@@ -53,13 +53,13 @@ for our customers.
 
 === Tests
 
-*Unit tests* - tests that are executed on the built application during the build phase.
+*Unit tests* - tests that are executed on the application during the build phase.
 No integrations with databases / HTTP server stubs etc. take place. Generally speaking your application should
- have plenty of these.
+ have plenty of these to have fast feedback if your features are working fine.
 
 *Integration tests* - tests that are executed on the built application during the build phase.
-Integrations with in memory databases / HTTP server stubs take place. In most cases you should
-have not too many of these kind of tests.
+Integrations with in memory databases / HTTP server stubs take place. According to the test
+pyramid, in most cases you should have not too many of these kind of tests.
 
 *Smoke tests* - tests that are executed on a deployed application. The concept of these tests
 is to check the crucial parts of your application are working properly. If you have 100 features

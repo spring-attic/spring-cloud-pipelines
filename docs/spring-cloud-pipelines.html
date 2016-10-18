@@ -578,8 +578,8 @@ time of creating new business features. It&#8217;s common knowledge however that
 </ul>
 </div>
 <div class="paragraph">
-<p>A common way of running, configuring and deploying applications equals lower costs required
-to support it and lower time needed by new developers to blend in when they change projects.</p>
+<p>A common way of running, configuring and deploying applications lowers support costs
+and time needed by new developers to blend in when they change projects.</p>
 </div>
 </div>
 </div>
@@ -587,7 +587,7 @@ to support it and lower time needed by new developers to blend in when they chan
 <h2 id="_the_opinionated_pipeline">The opinionated pipeline</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This repo contains an <code>opinionated pipeline</code> to deploy a Spring Cloud based microservice.
+<p>This repo contains an <strong>opinionated pipeline</strong> to deploy a Spring Cloud based microservice.
 We&#8217;ve taken the following opinionated decisions:</p>
 </div>
 <div class="ulist">
@@ -614,10 +614,10 @@ We&#8217;ve taken the following opinionated decisions:</p>
 </div>
 <div class="paragraph">
 <p>This is the initial approach that can be easily changed since all the core
-deployment logic is done in a form of bash scripts.</p>
+deployment logic is done in a form of Bash scripts.</p>
 </div>
 <div class="paragraph">
-<p>You can go through the setup for</p>
+<p>You can go through the setup of the demo environment for</p>
 </div>
 <div class="ulist">
 <ul>
@@ -713,14 +713,14 @@ for our customers.</p>
 <div class="sect2">
 <h3 id="_tests">Tests</h3>
 <div class="paragraph">
-<p><strong>Unit tests</strong> - tests that are executed on the built application during the build phase.
+<p><strong>Unit tests</strong> - tests that are executed on the application during the build phase.
 No integrations with databases / HTTP server stubs etc. take place. Generally speaking your application should
- have plenty of these.</p>
+ have plenty of these to have fast feedback if your features are working fine.</p>
 </div>
 <div class="paragraph">
 <p><strong>Integration tests</strong> - tests that are executed on the built application during the build phase.
-Integrations with in memory databases / HTTP server stubs take place. In most cases you should
-have not too many of these kind of tests.</p>
+Integrations with in memory databases / HTTP server stubs take place. According to the test
+pyramid, in most cases you should have not too many of these kind of tests.</p>
 </div>
 <div class="paragraph">
 <p><strong>Smoke tests</strong> - tests that are executed on a deployed application. The concept of these tests

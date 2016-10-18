@@ -18,12 +18,12 @@ This project tries to solve the following problems:
 - Propagation of good testing & deployment practices
 - Speed up the time required to deploy a feature to production
 
-A common way of running, configuring and deploying applications equals lower costs required
-to support it and lower time needed by new developers to blend in when they change projects.
+A common way of running, configuring and deploying applications lowers support costs
+and time needed by new developers to blend in when they change projects.
 
 == The opinionated pipeline
 
-This repo contains an `opinionated pipeline` to deploy a Spring Cloud based microservice.
+This repo contains an *opinionated pipeline* to deploy a Spring Cloud based microservice.
 We've taken the following opinionated decisions:
 
 - usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
@@ -34,9 +34,9 @@ We've taken the following opinionated decisions:
 - running e2e tests on a deployed app via the `e2e` Maven profile
 
 This is the initial approach that can be easily changed since all the core
-deployment logic is done in a form of bash scripts.
+deployment logic is done in a form of Bash scripts.
 
-You can go through the setup for
+You can go through the setup of the demo environment for
 
 - <<concourse, Concourse>>
 - <<jenkins, Jenkins using Jenkins Job DSL plugin>>
@@ -99,13 +99,13 @@ for our customers.
 
 === Tests
 
-*Unit tests* - tests that are executed on the built application during the build phase.
+*Unit tests* - tests that are executed on the application during the build phase.
 No integrations with databases / HTTP server stubs etc. take place. Generally speaking your application should
- have plenty of these.
+ have plenty of these to have fast feedback if your features are working fine.
 
 *Integration tests* - tests that are executed on the built application during the build phase.
-Integrations with in memory databases / HTTP server stubs take place. In most cases you should
-have not too many of these kind of tests.
+Integrations with in memory databases / HTTP server stubs take place. According to the test
+pyramid, in most cases you should have not too many of these kind of tests.
 
 *Smoke tests* - tests that are executed on a deployed application. The concept of these tests
 is to check the crucial parts of your application are working properly. If you have 100 features
