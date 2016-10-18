@@ -1,4 +1,4 @@
-= Spring Cloud Microservice Java Pipeline
+= Spring Cloud Pipeline
 
 Spring, Spring Boot and Spring Cloud are tools that allow developers speed up the
 time of creating new business features. It's common knowledge however that the
