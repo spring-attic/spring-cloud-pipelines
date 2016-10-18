@@ -462,6 +462,16 @@ parsedRepos.each {
 					branch('dev/${PIPELINE_VERSION}')
 					credentials(gitCredentials)
 				}
+				extensions {
+					wipeOutWorkspace()
+				}
+			}
+		}
+		configure { def project ->
+			// Adding user email and name here instead of global settings
+			project / 'scm' / 'extensions' << 'hudson.plugins.git.extensions.impl.UserIdentity' {
+				'email'(gitEmail)
+				'name'(gitName)
 			}
 		}
 		steps {
