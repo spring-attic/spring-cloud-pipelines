@@ -4,7 +4,7 @@ _Documentation Authors: Marcin Grzejszczak_
 
 Spring, Spring Boot and Spring Cloud are tools that allow developers speed up the
 time of creating new business features. It's common knowledge however that the
- feature is only valuable if it's on production. That's why companies
+ feature is only valuable if it's in production. That's why companies
  spend a lot of time and resources on building their own deployment pipelines.
 
 This project tries to solve the following problems:
