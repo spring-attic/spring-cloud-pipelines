@@ -140,6 +140,9 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 				}
+				extensions {
+					wipeOutWorkspace()
+				}
 			}
 		}
 		steps {
@@ -184,6 +187,9 @@ parsedRepos.each {
 				remote {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
+				}
+				extensions {
+					wipeOutWorkspace()
 				}
 			}
 		}
@@ -244,6 +250,9 @@ parsedRepos.each {
 						url(fullGitRepo)
 						branch('dev/${PIPELINE_VERSION}')
 					}
+					extensions {
+						wipeOutWorkspace()
+					}
 				}
 			}
 			steps {
@@ -290,6 +299,9 @@ parsedRepos.each {
 					remote {
 						url(fullGitRepo)
 						branch('${LATEST_PROD_TAG}')
+					}
+					extensions {
+						wipeOutWorkspace()
 					}
 				}
 			}
@@ -350,6 +362,9 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 				}
+				extensions {
+					wipeOutWorkspace()
+				}
 			}
 		}
 		steps {
@@ -403,6 +418,9 @@ parsedRepos.each {
 				remote {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
+				}
+				extensions {
+					wipeOutWorkspace()
 				}
 			}
 		}
