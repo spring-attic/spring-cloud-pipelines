@@ -133,7 +133,9 @@ to check if your system can handle big load of input. In case of our opinionated
 
 Let's take a look at the flow of the opinionated pipeline
 
-image::{intro-root-docs}/flow.png[]
+image::{intro-root-docs}/flow_concourse.png[title="Flow in Concourse"]
+
+image::{intro-root-docs}/flow.png[title="Flow in Jenkins"]
 
 We'll first describe the overall concept behind the flow and then
 we'll split it into pieces and describe every piece independently.

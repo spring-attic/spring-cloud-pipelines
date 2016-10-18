@@ -757,8 +757,15 @@ to check if your system can handle big load of input. In case of our opinionated
 </div>
 <div class="imageblock">
 <div class="content">
+<img src="img/intro/flow_concourse.png" alt="flow concourse">
+</div>
+<div class="title">Figure 1. Flow in Concourse</div>
+</div>
+<div class="imageblock">
+<div class="content">
 <img src="img/intro/flow.png" alt="flow">
 </div>
+<div class="title">Figure 2. Flow in Jenkins</div>
 </div>
 <div class="paragraph">
 <p>We&#8217;ll first describe the overall concept behind the flow and then
@@ -773,7 +780,7 @@ we&#8217;ll split it into pieces and describe every piece independently.</p>
 <div class="content">
 <img src="img/intro/monolith.png" alt="monolith">
 </div>
-<div class="title">Figure 1. Two monolithic applications deployed for end to end testing</div>
+<div class="title">Figure 3. Two monolithic applications deployed for end to end testing</div>
 </div>
 <div class="paragraph">
 <p>When having only a handful of applications, performing end to end testing is beneficial.
@@ -788,7 +795,7 @@ for a feature.</p>
 <div class="content">
 <img src="img/intro/many_microservices.png" alt="many microservices">
 </div>
-<div class="title">Figure 2. Many microservices deployed in different versions</div>
+<div class="title">Figure 4. Many microservices deployed in different versions</div>
 </div>
 <div class="paragraph">
 <p>The questions arise:</p>
@@ -846,7 +853,7 @@ anytime before deployment to production.</p>
 <div class="content">
 <img src="img/intro/stubbed_dependencies.png" alt="stubbed dependencies">
 </div>
-<div class="title">Figure 3. Execute tests on a deployed microservice on stubbed dependencies</div>
+<div class="title">Figure 5. Execute tests on a deployed microservice on stubbed dependencies</div>
 </div>
 <div class="paragraph">
 <p>If we stub out all the dependencies of our application then most of the problems presented above
@@ -857,7 +864,7 @@ microservices. That way the testing setup looks like this:</p>
 <div class="content">
 <img src="img/intro/stubbed_dependencies.png" alt="stubbed dependencies">
 </div>
-<div class="title">Figure 4. We&#8217;re testing microservices in isolation</div>
+<div class="title">Figure 6. We&#8217;re testing microservices in isolation</div>
 </div>
 <div class="paragraph">
 <p>Such an approach to testing and deployment gives the following benefits
@@ -963,7 +970,7 @@ is concerned.
 <div class="content">
 <img src="img/intro/build.png" alt="build">
 </div>
-<div class="title">Figure 5. Build and upload artifacts</div>
+<div class="title">Figure 7. Build and upload artifacts</div>
 </div>
 <div class="paragraph">
 <p>In this step we&#8217;re generating a version of the pipeline and then we&#8217;re publishing
@@ -992,7 +999,7 @@ exactly which version of the pipeline corresponds to which Git hash.</p>
 <div class="content">
 <img src="img/intro/test.png" alt="test">
 </div>
-<div class="title">Figure 6. Smoke test and rollback test on test environment</div>
+<div class="title">Figure 8. Smoke test and rollback test on test environment</div>
 </div>
 <div class="paragraph">
 <p>Here we&#8217;re</p>
@@ -1061,7 +1068,7 @@ application to a stage environment</p>
 <div class="content">
 <img src="img/intro/stage.png" alt="stage">
 </div>
-<div class="title">Figure 7. End to end tests on stage environment</div>
+<div class="title">Figure 9. End to end tests on stage environment</div>
 </div>
 <div class="paragraph">
 <p>Here we&#8217;re</p>
@@ -1104,7 +1111,7 @@ Ideally these step should be fully automatic.</p>
 <div class="content">
 <img src="img/intro/prod.png" alt="prod">
 </div>
-<div class="title">Figure 8. Deployment to production</div>
+<div class="title">Figure 10. Deployment to production</div>
 </div>
 <div class="paragraph">
 <p>The step to deploy to production is manual but ideally it should be automatic.</p>
