@@ -4,8 +4,6 @@ set -e
 
 # It takes ages on Docker to run the app without this
 export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
-export PROJECT_TYPE=$( project_type )
-export OUTPUT_FOLDER=$( outputFolder )
 
 function logInToCf() {
     local redownloadInfra="${1}"
@@ -371,8 +369,22 @@ function outputFolder() {
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
         echo "target"
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        echo "build"
+        echo "build/libs"
     else
         echo "target"
     fi
 }
+
+function testResultsFolder() {
+    if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
+        echo "**/surefire-reports/*.xml"
+    elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        echo "**/test-results/**/*.xml"
+    else
+        echo "**/surefire-reports/*.xml"
+    fi
+}
+
+export PROJECT_TYPE=$( projectType )
+export OUTPUT_FOLDER=$( outputFolder )
+export TEST_REPORTS_FOLDER=$( testResultsFolder )

@@ -56,7 +56,10 @@ parsedRepos.each {
 		}
 		wrappers {
 			deliveryPipelineVersion(pipelineVersion, true)
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			parameters(PipelineDefaults.defaultParams())
 			timestamps()
 			colorizeOutput()
@@ -121,7 +124,10 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters(PipelineDefaults.defaultParams())
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			credentialsBinding {
 				usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
 			}
@@ -157,8 +163,7 @@ parsedRepos.each {
 			downstreamParameterized {
 				trigger("${projectName}-test-env-test") {
 					parameters {
-						propertiesFile('build/test.properties', false)
-						propertiesFile('target/test.properties', false)
+						propertiesFile('${OUTPUT_FOLDER}/test.properties', true)
 						currentBuild()
 					}
 					triggerWithNoParameters()
@@ -173,7 +178,10 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters(PipelineDefaults.defaultParams())
 			parameters PipelineDefaults.smokeTestParams()
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -232,7 +240,10 @@ parsedRepos.each {
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 				parameters(PipelineDefaults.defaultParams())
-				environmentVariables(defaults.defaultEnvVars)
+				environmentVariables {
+					environmentVariables(defaults.defaultEnvVars)
+					groovy(PipelineDefaults.groovyEnvScript)
+				}
 				credentialsBinding {
 					usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
 				}
@@ -269,8 +280,7 @@ parsedRepos.each {
 					trigger("${projectName}-test-env-rollback-test") {
 						triggerWithNoParameters()
 						parameters {
-							propertiesFile('build/test.properties', false)
-							propertiesFile('target/test.properties', false)
+							propertiesFile('${OUTPUT_FOLDER}/test.properties', false)
 							currentBuild()
 						}
 					}
@@ -284,6 +294,10 @@ parsedRepos.each {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 				parameters(PipelineDefaults.defaultParams())
 				parameters PipelineDefaults.smokeTestParams()
+				environmentVariables {
+					environmentVariables(defaults.defaultEnvVars)
+					groovy(PipelineDefaults.groovyEnvScript)
+				}
 				parameters {
 					stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
 				}
@@ -345,7 +359,10 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
 			parameters(PipelineDefaults.defaultParams())
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			credentialsBinding {
 				usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
 			}
@@ -384,8 +401,7 @@ parsedRepos.each {
 						triggerWithNoParameters()
 						parameters {
 							currentBuild()
-							propertiesFile('build/test.properties', false)
-							propertiesFile('target/test.properties', false)
+							propertiesFile('${OUTPUT_FOLDER}/test.properties', true)
 						}
 					}
 				}
@@ -393,8 +409,7 @@ parsedRepos.each {
 				buildPipelineTrigger("${projectName}-stage-env-test") {
 					parameters {
 						currentBuild()
-						propertiesFile('build/test.properties', false)
-						propertiesFile('target/test.properties', false)
+						propertiesFile('${OUTPUT_FOLDER}/test.properties', true)
 					}
 				}
 			}
@@ -407,7 +422,10 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters(PipelineDefaults.defaultParams())
 			parameters PipelineDefaults.smokeTestParams()
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -463,7 +481,10 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
 			parameters(PipelineDefaults.defaultParams())
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			credentialsBinding {
 				usernamePassword('CF_PROD_USERNAME', 'CF_PROD_PASSWORD', cfProdCredentialId)
 			}
@@ -525,7 +546,10 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters(PipelineDefaults.defaultParams())
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -575,6 +599,23 @@ class PipelineDefaults {
 		envs['REPO_WITH_JARS'] = variables['REPO_WITH_JARS'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 		return envs
 	}
+
+	public static final String groovyEnvScript = '''
+					String workspace = binding.variables['WORKSPACE']
+					String mvn = "${workspace}/mvnw"
+					String gradle =  "${workspace}/gradlew"
+
+					Map envs = [:]
+					if (new File(mvn).exists()) {
+						envs['PROJECT_TYPE'] = "MAVEN"
+						envs['OUTPUT_FOLDER'] = "build/libs"
+						envs['TEST_REPORTS_FOLDER'] = "**/test-results/**/*.xml"
+					} else if (new File(gradle).exists()) {
+						envs['PROJECT_TYPE'] = "GRADLE"
+						envs['OUTPUT_FOLDER'] = "target"
+						envs['TEST_REPORTS_FOLDER'] = "**/surefire-reports/*.xml"
+					}
+					return envs'''
 
 	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
 		params.resolveStrategy = Closure.DELEGATE_FIRST
