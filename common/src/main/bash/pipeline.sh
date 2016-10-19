@@ -153,8 +153,8 @@ function deployStubRunnerBoot() {
     echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}]"
     if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
         deployAppWithName "${stubRunnerName}" "${jarName}" "${env}"
-        local mavenProp="$( extractMavenProperty "stubrunner.ids" )"
-        setEnvVar "${stubRunnerName}" "stubrunner.ids" "${mavenProp}"
+        local prop="$( retrieveStubRunnerIds )"
+        setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
         restartApp "${stubRunnerName}"
         createServiceWithName "${stubRunnerName}"
     else
@@ -264,7 +264,7 @@ function runSmokeTests() {
 function runE2eTests() {
     local applicationHost="${1}"
     local stubrunnerHost="${2}"
-    echo "Running smoke tests"
+    echo "Running e2e tests"
 
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
         if [[ ! -z ${MAVEN_ARGS} ]]; then
@@ -293,15 +293,27 @@ function extractVersionFromProdTag() {
 }
 
 function retrieveGroupId() {
-    local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/groupId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
-    result=$( echo "${result}" | tail -1 )
-    echo "${result}"
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        local result=$( ./gradlew groupId -q )
+        result=$( echo "${result}" | tail -1 )
+        echo "${result}"
+    else
+        local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/groupId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
+        result=$( echo "${result}" | tail -1 )
+        echo "${result}"
+    fi
 }
 
 function retrieveArtifactId() {
-    local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
-    result=$( echo "${result}" | tail -1 )
-    echo "${result}"
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        local result=$( ./gradlew artifactId -q )
+        result=$( echo "${result}" | tail -1 )
+        echo "${result}"
+    else
+        local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
+        result=$( echo "${result}" | tail -1 )
+        echo "${result}"
+    fi
 }
 
 # Jenkins passes these as a separate step, in Concourse we'll do it manually
@@ -313,8 +325,6 @@ function prepareForSmokeTests() {
     local space="${5}"
     local api="${6}"
     echo "Retrieving group and artifact id - it can take a while..."
-    retrieveGroupId
-    retrieveArtifactId
     projectGroupId=$( retrieveGroupId )
     projectArtifactId=$( retrieveArtifactId )
     mkdir -p "${OUTPUT_FOLDER}"
@@ -332,8 +342,6 @@ function prepareForE2eTests() {
     local space="${5}"
     local api="${6}"
     echo "Retrieving group and artifact id - it can take a while..."
-    retrieveGroupId
-    retrieveArtifactId
     projectGroupId=$( retrieveGroupId )
     projectArtifactId=$( retrieveArtifactId )
     mkdir -p "${OUTPUT_FOLDER}"
@@ -366,9 +374,7 @@ function projectType() {
 }
 
 function outputFolder() {
-    if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
-        echo "target"
-    elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         echo "build/libs"
     else
         echo "target"
@@ -376,12 +382,18 @@ function outputFolder() {
 }
 
 function testResultsFolder() {
-    if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
-        echo "**/surefire-reports/*.xml"
-    elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         echo "**/test-results/**/*.xml"
     else
         echo "**/surefire-reports/*.xml"
+    fi
+}
+
+function retrieveStubRunnerIds() {
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        echo "$( ./gradlew stubIds -q )"
+    else
+        echo "$( extractMavenProperty 'stubrunner.ids' )"
     fi
 }
 

@@ -5,9 +5,6 @@ set -e
 source pipeline.sh || echo "No pipeline.sh found"
 
 echo "Running retrieval of group and artifactid to download all dependencies. It might take a while..."
-retrieveGroupId
-retrieveArtifactId
-
 projectGroupId=$( retrieveGroupId )
 projectArtifactId=$( retrieveArtifactId )
 
