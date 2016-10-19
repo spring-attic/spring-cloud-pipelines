@@ -11,7 +11,7 @@ retrieveArtifactId
 projectGroupId=$( retrieveGroupId )
 projectArtifactId=$( retrieveArtifactId )
 
-rm -rf target/test.properties
+rm -rf ${OUTPUT_FOLDER}/test.properties
 # Find latest prod version
 LATEST_PROD_TAG=$( findLatestProdTag )
 echo "Last prod tag equals ${LATEST_PROD_TAG}"
@@ -26,5 +26,5 @@ else
     deployAndRestartAppWithNameForSmokeTests ${projectArtifactId} "${projectArtifactId}-${LATEST_PROD_VERSION}"
     propagatePropertiesForTests ${projectArtifactId}
     # Adding latest prod tag
-    echo "LATEST_PROD_TAG=${LATEST_PROD_TAG}" >> target/test.properties
+    echo "LATEST_PROD_TAG=${LATEST_PROD_TAG}" >> ${OUTPUT_FOLDER}/test.properties
 fi

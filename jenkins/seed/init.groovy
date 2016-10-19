@@ -20,6 +20,17 @@ if (m2Created) {
 	}
 }
 
+println "Creating the gradle.properties file"
+String gradleHome = '/var/jenkins_home/.gradle'
+boolean gradleCreated = new File(gradleHome).mkdirs()
+if (gradleCreated) {
+	boolean settingsCreated = new File("${gradleHome}/gradle.proprties").createNewFile()
+	if (settingsCreated) {
+		new File("${gradleHome}/gradle.proprties").text =
+				new File('/usr/share/jenkins/gradle.properties').text
+	}
+}
+
 println "Creating the seed job"
 new DslScriptLoader(jobManagement).with {
 	runScript(jobScript.text.replace('https://github.com/marcingrzejszczak',

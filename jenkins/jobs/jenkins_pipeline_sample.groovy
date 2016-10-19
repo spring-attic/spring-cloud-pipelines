@@ -157,7 +157,8 @@ parsedRepos.each {
 			downstreamParameterized {
 				trigger("${projectName}-test-env-test") {
 					parameters {
-						propertiesFile('target/test.properties', true)
+						propertiesFile('build/test.properties', false)
+						propertiesFile('target/test.properties', false)
 						currentBuild()
 					}
 					triggerWithNoParameters()
@@ -268,6 +269,7 @@ parsedRepos.each {
 					trigger("${projectName}-test-env-rollback-test") {
 						triggerWithNoParameters()
 						parameters {
+							propertiesFile('build/test.properties', false)
 							propertiesFile('target/test.properties', false)
 							currentBuild()
 						}
@@ -382,7 +384,8 @@ parsedRepos.each {
 						triggerWithNoParameters()
 						parameters {
 							currentBuild()
-							propertiesFile('target/test.properties', true)
+							propertiesFile('build/test.properties', false)
+							propertiesFile('target/test.properties', false)
 						}
 					}
 				}
@@ -390,7 +393,8 @@ parsedRepos.each {
 				buildPipelineTrigger("${projectName}-stage-env-test") {
 					parameters {
 						currentBuild()
-						propertiesFile('target/test.properties', true)
+						propertiesFile('build/test.properties', false)
+						propertiesFile('target/test.properties', false)
 					}
 				}
 			}

@@ -2,8 +2,10 @@
 
 set -e
 
-# It takes ages on Docker to build the app without this
-MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
+# It takes ages on Docker to run the app without this
+export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
+export PROJECT_TYPE=$( project_type )
+export OUTPUT_FOLDER=$( outputFolder )
 
 function logInToCf() {
     local redownloadInfra="${1}"
@@ -88,9 +90,9 @@ function deployAppWithName() {
     fi
     echo "Deploying app with name [${lowerCaseAppName}], env [${env}] with manifest [${useManifest}] and host [${hostname}]"
     if [[ ! -z "${manifestOption}" ]]; then
-        cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "target/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
+        cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
     else
-        cf push "${lowerCaseAppName}" -p "target/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+        cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
     fi
     APPLICATION_DOMAIN="$( appHost ${lowerCaseAppName} )"
     echo "Determined that application_domain for [${lowerCaseAppName}] is [${APPLICATION_DOMAIN}]"
@@ -127,7 +129,7 @@ function deployEureka() {
     local env="${4}"
     echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${appName}], env [${env}]"
     local fileExists="true"
-    local fileName="`pwd`/target/${jarName}.jar"
+    local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
@@ -146,7 +148,7 @@ function deployStubRunnerBoot() {
     local env="${3:-test}"
     local stubRunnerName="${4:-stubrunner}"
     local fileExists="true"
-    local fileName="`pwd`/target/${jarName}.jar"
+    local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
@@ -198,11 +200,11 @@ function downloadJar() {
     local groupId="${3}"
     local artifactId="${4}"
     local version="${5}"
-    local destination="`pwd`/target/${artifactId}-${version}.jar"
+    local destination="`pwd`/${OUTPUT_FOLDER}/${artifactId}-${version}.jar"
     local changedGroupId="$( echo "${groupId}" | tr . / )"
     local pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.jar"
     if [[ ! -e ${destination} || ( -e ${destination} && ${redownloadInfra} == "true" ) ]]; then
-        mkdir -p target
+        mkdir -p "${OUTPUT_FOLDER}"
         echo "Current folder is [`pwd`]; Downloading [${pathToJar}] to [${destination}]"
         curl "${pathToJar}" -o "${destination}"
     else
@@ -213,10 +215,10 @@ function downloadJar() {
 function propagatePropertiesForTests() {
     local projectArtifactId="${1}"
     local stubRunnerHost="${2:-stubrunner}"
-    local fileLocation="${3:-target/test.properties}"
+    local fileLocation="${3:-${OUTPUT_FOLDER}/test.properties}"
     # retrieve host of the app / stubrunner
     # we have to store them in a file that will be picked as properties
-    rm -rf target/test.properties
+    rm -rf "${fileLocation}"
     local host=$( appHost "${projectArtifactId}" )
     APPLICATION_URL="${host}"
     echo "APPLICATION_URL=${host}" >> ${fileLocation}
@@ -226,7 +228,7 @@ function propagatePropertiesForTests() {
 }
 
 function readTestPropertiesFromFile() {
-    local fileLocation="${1:-target/test.properties}"
+    local fileLocation="${1:-${OUTPUT_FOLDER}/test.properties}"
     if [ -f "${fileLocation}" ]
     then
       echo "${fileLocation} found."
@@ -245,10 +247,18 @@ function runSmokeTests() {
     local applicationHost="${1}"
     local stubrunnerHost="${2}"
     echo "Running smoke tests"
-    if [[ ! -z ${MAVEN_ARGS} ]]; then
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+
+    if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
+        if [[ ! -z ${MAVEN_ARGS} ]]; then
+            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+        else
+            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+        fi
+    elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
     else
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+        echo "Unsupported project build tool"
+        return 1
     fi
 }
 
@@ -257,10 +267,18 @@ function runE2eTests() {
     local applicationHost="${1}"
     local stubrunnerHost="${2}"
     echo "Running smoke tests"
-    if [[ ! -z ${MAVEN_ARGS} ]]; then
-        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" "${MAVEN_ARGS}"
+
+    if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
+        if [[ ! -z ${MAVEN_ARGS} ]]; then
+            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" "${MAVEN_ARGS}"
+        else
+            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}"
+        fi
+    elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
     else
-        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}"
+        echo "Unsupported project build tool"
+        return 1
     fi
 }
 
@@ -301,7 +319,7 @@ function prepareForSmokeTests() {
     retrieveArtifactId
     projectGroupId=$( retrieveGroupId )
     projectArtifactId=$( retrieveArtifactId )
-    mkdir -p target
+    mkdir -p "${OUTPUT_FOLDER}"
     logInToCf "${redownloadInfra}" "${username}" "${password}" "${org}" "${space}" "${api}"
     propagatePropertiesForTests ${projectArtifactId}
     readTestPropertiesFromFile
@@ -320,8 +338,41 @@ function prepareForE2eTests() {
     retrieveArtifactId
     projectGroupId=$( retrieveGroupId )
     projectArtifactId=$( retrieveArtifactId )
-    mkdir -p target
+    mkdir -p "${OUTPUT_FOLDER}"
     logInToCf "${redownloadInfra}" "${username}" "${password}" "${org}" "${space}" "${api}"
     propagatePropertiesForTests ${projectArtifactId}
     readTestPropertiesFromFile
+}
+
+function isMavenProject() {
+    if [ -f "mvnw" ];
+    then
+       return 0
+    else
+       return 1
+    fi
+}
+
+function isGradleProject() {
+    if [ -f "gradlew" ];
+    then
+       return 0
+    else
+       return 1
+    fi
+}
+
+function projectType() {
+    (isMavenProject && PROJECT_TYPE="MAVEN") || (isGradleProject && PROJECT_TYPE="GRADLE") || PROJECT_TYPE="UNKNOWN"
+    echo "${PROJECT_TYPE}"
+}
+
+function outputFolder() {
+    if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
+        echo "target"
+    elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        echo "build"
+    else
+        echo "target"
+    fi
 }

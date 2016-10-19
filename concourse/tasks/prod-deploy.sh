@@ -19,6 +19,6 @@ cd ${ROOT_FOLDER}/${REPO_RESOURCE}
 . ${SCRIPTS_OUTPUT_FOLDER}/prod_deploy.sh
 
 echo "Tagging the project with prod tag"
-mkdir -p ${ROOT_FOLDER}/${REPO_RESOURCE}/target/
-echo "prod/${PIPELINE_VERSION}" > ${ROOT_FOLDER}/${REPO_RESOURCE}/target/tag
+mkdir -p ${ROOT_FOLDER}/${REPO_RESOURCE}/${OUTPUT_FOLDER}/
+echo "prod/${PIPELINE_VERSION}" > ${ROOT_FOLDER}/${REPO_RESOURCE}/${OUTPUT_FOLDER}/tag
 cp -r ${ROOT_FOLDER}/${REPO_RESOURCE}/. ${ROOT_FOLDER}/${OUTPUT_RESOURCE}/
