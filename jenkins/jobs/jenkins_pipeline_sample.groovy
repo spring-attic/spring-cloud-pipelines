@@ -14,26 +14,26 @@ DslFactory dsl = this
 PipelineDefaults defaults = new PipelineDefaults(binding.variables)
 
 // Example of a version with date and time in the name
-String pipelineVersion = binding.variables['PIPIELINE_VERSION'] ?: '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
+String pipelineVersion = binding.variables["PIPIELINE_VERSION"] ?: '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
-String testReports = '**/surefire-reports/*.xml'
-String gitCredentials = binding.variables['GIT_CREDENTIAL_ID'] ?: 'git'
-String jdkVersion = binding.variables['JDK_VERSION'] ?: 'jdk8'
-String cfTestCredentialId = binding.variables['CF_TEST_CREDENTIAL_ID'] ?: 'cf-test'
-String cfStageCredentialId = binding.variables['CF_STAGE_CREDENTIAL_ID'] ?: 'cf-stage'
-String cfProdCredentialId = binding.variables['CF_PROD_CREDENTIAL_ID'] ?: 'cf-prod'
-String gitEmail = binding.variables['GIT_EMAIL'] ?: 'pivo@tal.com'
-String gitName = binding.variables['GIT_NAME'] ?: 'Pivo Tal'
-boolean autoStage = binding.variables['AUTO_DEPLOY_TO_STAGE'] == null ? false : Boolean.parseBoolean(binding.variables['AUTO_DEPLOY_TO_STAGE'])
-boolean autoProd = binding.variables['AUTO_DEPLOY_TO_PROD'] == null ? false : Boolean.parseBoolean(binding.variables['AUTO_DEPLOY_TO_PROD'])
-boolean rollbackStep = binding.variables['ROLLBACK_STEP_REQUIRED'] == null ? false : Boolean.parseBoolean(binding.variables['ROLLBACK_STEP_REQUIRED'])
-String scriptsDir = binding.variables['SCRIPTS_DIR'] ?: "${WORKSPACE}/common/src/main/bash"
+String testReports = ["**/surefire-reports/*.xml", "**/surefire-reports/*.xml"].join(",")
+String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
+String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
+String cfTestCredentialId = binding.variables["CF_TEST_CREDENTIAL_ID"] ?: "cf-test"
+String cfStageCredentialId = binding.variables["CF_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
+String cfProdCredentialId = binding.variables["CF_PROD_CREDENTIAL_ID"] ?: "cf-prod"
+String gitEmail = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
+String gitName = binding.variables["GIT_NAME"] ?: "Pivo Tal"
+boolean autoStage = binding.variables["AUTO_DEPLOY_TO_STAGE"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_STAGE"])
+boolean autoProd = binding.variables["AUTO_DEPLOY_TO_PROD"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_PROD"])
+boolean rollbackStep = binding.variables["ROLLBACK_STEP_REQUIRED"] == null ? false : Boolean.parseBoolean(binding.variables["ROLLBACK_STEP_REQUIRED"])
+String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src/main/bash"
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
-String repos = binding.variables['REPOS'] ?:
-		['https://github.com/marcingrzejszczak/github-analytics',
-		 'https://github.com/marcingrzejszczak/github-webhook'].join(',')
-List<String> parsedRepos = repos.split(',')
+String repos = binding.variables["REPOS"] ?:
+		["https://github.com/marcingrzejszczak/github-analytics",
+		 "https://github.com/marcingrzejszczak/github-webhook"].join(",")
+List<String> parsedRepos = repos.split(",")
 parsedRepos.each {
 	List<String> parsedEntry = it.split('\\$')
 	String gitRepoName
@@ -609,11 +609,9 @@ Map envs = [:]
 if (new File(mvn).exists()) {
 	envs['PROJECT_TYPE'] = "MAVEN"
 	envs['OUTPUT_FOLDER'] = "build/libs"
-	envs['TEST_REPORTS_FOLDER'] = "**/test-results/**/*.xml"
 } else if (new File(gradle).exists()) {
 	envs['PROJECT_TYPE'] = "GRADLE"
 	envs['OUTPUT_FOLDER'] = "target"
-	envs['TEST_REPORTS_FOLDER'] = "**/surefire-reports/*.xml"
 }
 return envs'''
 
