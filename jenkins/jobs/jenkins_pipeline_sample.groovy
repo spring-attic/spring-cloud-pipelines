@@ -16,7 +16,7 @@ PipelineDefaults defaults = new PipelineDefaults(binding.variables)
 // Example of a version with date and time in the name
 String pipelineVersion = binding.variables["PIPIELINE_VERSION"] ?: '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
-String testReports = ["**/surefire-reports/*.xml", "**/surefire-reports/*.xml"].join(",")
+String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].join(",")
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
 String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
 String cfTestCredentialId = binding.variables["CF_TEST_CREDENTIAL_ID"] ?: "cf-test"
