@@ -32,7 +32,7 @@ String scriptsDir = binding.variables['SCRIPTS_DIR'] ?: "${WORKSPACE}/common/src
 // we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables['REPOS'] ?:
 		['https://github.com/marcingrzejszczak/github-analytics',
-		 'github-webhook$https://github.com/marcingrzejszczak/atom-feed'].join(',')
+		 'https://github.com/marcingrzejszczak/github-webhook'].join(',')
 List<String> parsedRepos = repos.split(',')
 parsedRepos.each {
 	List<String> parsedEntry = it.split('\\$')
@@ -601,21 +601,21 @@ class PipelineDefaults {
 	}
 
 	public static final String groovyEnvScript = '''
-					String workspace = binding.variables['WORKSPACE']
-					String mvn = "${workspace}/mvnw"
-					String gradle =  "${workspace}/gradlew"
+String workspace = binding.variables['WORKSPACE']
+String mvn = "${workspace}/mvnw"
+String gradle =  "${workspace}/gradlew"
 
-					Map envs = [:]
-					if (new File(mvn).exists()) {
-						envs['PROJECT_TYPE'] = "MAVEN"
-						envs['OUTPUT_FOLDER'] = "build/libs"
-						envs['TEST_REPORTS_FOLDER'] = "**/test-results/**/*.xml"
-					} else if (new File(gradle).exists()) {
-						envs['PROJECT_TYPE'] = "GRADLE"
-						envs['OUTPUT_FOLDER'] = "target"
-						envs['TEST_REPORTS_FOLDER'] = "**/surefire-reports/*.xml"
-					}
-					return envs'''
+Map envs = [:]
+if (new File(mvn).exists()) {
+	envs['PROJECT_TYPE'] = "MAVEN"
+	envs['OUTPUT_FOLDER'] = "build/libs"
+	envs['TEST_REPORTS_FOLDER'] = "**/test-results/**/*.xml"
+} else if (new File(gradle).exists()) {
+	envs['PROJECT_TYPE'] = "GRADLE"
+	envs['OUTPUT_FOLDER'] = "target"
+	envs['TEST_REPORTS_FOLDER'] = "**/surefire-reports/*.xml"
+}
+return envs'''
 
 	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
 		params.resolveStrategy = Closure.DELEGATE_FIRST
