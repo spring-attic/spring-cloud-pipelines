@@ -13,6 +13,8 @@ COPY seed/init.groovy /usr/share/jenkins/ref/init.groovy
 COPY seed/jenkins_pipeline.groovy /usr/share/jenkins/jenkins_pipeline.groovy
 COPY seed/settings.xml /usr/share/jenkins/settings.xml
 
+USER root
+
 # Generated via start.sh
 # If you don't want to provide it just put empty files there
 RUN printf "%s" "${gituser}" > /usr/share/jenkins/gituser
