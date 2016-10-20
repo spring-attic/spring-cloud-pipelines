@@ -320,6 +320,9 @@ cf stop github-eureka
 cf stop stubrunner
 ----
 
+You can also execute `kill_all_pcfdev_apps.sh` that will remove all demo-related apps
+deployed to PCF dev.
+
 ==== The rollback step fails due to missing JAR ?!
 
 You must have pushed some tags and have removed the Artifactory volume that

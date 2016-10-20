@@ -485,6 +485,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_jenkins_dsl_pipeline">Jenkins DSL Pipeline</a>
 <ul class="sectlevel2">
+<li><a href="#_project_setup_2">Project setup</a></li>
 <li><a href="#_step_by_step_2">Step by step</a>
 <ul class="sectlevel3">
 <li><a href="#_fork_repos_2">Fork repos</a>
@@ -1761,6 +1762,10 @@ cf stop github-eureka
 cf stop stubrunner</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>You can also execute <code>kill_all_pcfdev_apps.sh</code> that will remove all demo-related apps
+deployed to PCF dev.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_the_rollback_step_fails_due_to_missing_jar">The rollback step fails due to missing JAR ?!</h4>
@@ -1858,6 +1863,56 @@ setup. Check out <a href="#settings">this section of the docs and update your <c
 <p><a href="https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot">Github Analytics Stub Runner Boot</a> - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.</p>
 </li>
 </ul>
+</div>
+<div class="sect2">
+<h3 id="_project_setup_2">Project setup</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">.
+├── jobs
+│   ├── jenkins_pipeline_empty.groovy
+│   ├── jenkins_pipeline_jenkinsfile_empty.groovy
+│   ├── jenkins_pipeline_sample.groovy
+│   └── jenkins_pipeline_sample_view.groovy
+├── seed
+│   ├── gradle.properties
+│   ├── init.groovy
+│   ├── jenkins_pipeline.groovy
+│   └── settings.xml
+└── src
+    ├── main
+    └── test</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the <code>jobs</code> folder you have all the seed jobs that will generate pipelines.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>jenkins_pipeline_empty.groovy</code> - is a template of a pipeline with empty steps using the Jenkins Job DSL plugin</p>
+</li>
+<li>
+<p><code>jenkins_pipeline_jenkinsfile_empty.groovy</code> - is a template of a pipeline with empty steps using the Pipeline plugin</p>
+</li>
+<li>
+<p><code>jenkins_pipeline_sample.groovy</code> - is an opinionated implementation using the Jenkins Job DSL plugin</p>
+</li>
+<li>
+<p><code>jenkins_pipeline_sample_view.groovy</code> - builds the views for the pipelines</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the <code>seed</code> folder you have the <code>init.groovy</code> file which is executed when Jenkins starts.
+That way we can configure most of Jenkins options for you (adding credentials, JDK etc.).
+<code>jenkins_pipeline.groovy</code> contains logic to build a seed job (that way you don&#8217;t have to even click that
+job - we generate it for you).</p>
+</div>
+<div class="paragraph">
+<p>In the <code>src</code> folder you have production and test classes needed for you to build your own pipeline.
+Currently we have tests only cause the whole logic resides in the <code>jenkins_pipeline_sample</code> file.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_step_by_step_2">Step by step</h3>
@@ -2820,6 +2875,10 @@ cf stop github-webhook
 cf stop github-eureka
 cf stop stubrunner</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>You can also execute <code>kill_all_pcfdev_apps.sh</code> that will remove all demo-related apps
+deployed to PCF dev.</p>
 </div>
 </div>
 <div class="sect3">
