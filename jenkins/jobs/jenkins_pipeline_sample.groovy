@@ -608,10 +608,10 @@ String gradle =  "${workspace}/gradlew"
 Map envs = [:]
 if (new File(mvn).exists()) {
 	envs['PROJECT_TYPE'] = "MAVEN"
-	envs['OUTPUT_FOLDER'] = "build/libs"
+	envs['OUTPUT_FOLDER'] = "target"
 } else if (new File(gradle).exists()) {
 	envs['PROJECT_TYPE'] = "GRADLE"
-	envs['OUTPUT_FOLDER'] = "target"
+	envs['OUTPUT_FOLDER'] = "build/libs"
 }
 return envs'''
 

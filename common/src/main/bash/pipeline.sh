@@ -214,6 +214,7 @@ function propagatePropertiesForTests() {
     local projectArtifactId="${1}"
     local stubRunnerHost="${2:-stubrunner}"
     local fileLocation="${3:-${OUTPUT_FOLDER}/test.properties}"
+    echo "Propagating properties for tests. Project [${projectArtifactId}] host [${stubRunnerHost}] properties location [${fileLocation}]"
     # retrieve host of the app / stubrunner
     # we have to store them in a file that will be picked as properties
     rm -rf "${fileLocation}"
