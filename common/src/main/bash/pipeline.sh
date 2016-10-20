@@ -154,6 +154,7 @@ function deployStubRunnerBoot() {
     if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
         deployAppWithName "${stubRunnerName}" "${jarName}" "${env}"
         local prop="$( retrieveStubRunnerIds )"
+        echo "Found following stub runner ids [${prop}]"
         setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
         restartApp "${stubRunnerName}"
         createServiceWithName "${stubRunnerName}"
