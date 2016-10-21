@@ -65,7 +65,7 @@ parsedRepos.each {
 			colorizeOutput()
 			maskPasswords()
 			timeout {
-				noActivity(1200)
+				noActivity(300)
 				failBuild()
 				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 			}
@@ -146,9 +146,6 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 				}
-				extensions {
-					wipeOutWorkspace()
-				}
 			}
 		}
 		steps {
@@ -196,9 +193,6 @@ parsedRepos.each {
 				remote {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
-				}
-				extensions {
-					wipeOutWorkspace()
 				}
 			}
 		}
@@ -262,9 +256,6 @@ parsedRepos.each {
 						url(fullGitRepo)
 						branch('dev/${PIPELINE_VERSION}')
 					}
-					extensions {
-						wipeOutWorkspace()
-					}
 				}
 			}
 			steps {
@@ -315,9 +306,6 @@ parsedRepos.each {
 					remote {
 						url(fullGitRepo)
 						branch('${LATEST_PROD_TAG}')
-					}
-					extensions {
-						wipeOutWorkspace()
 					}
 				}
 			}
@@ -381,9 +369,6 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 				}
-				extensions {
-					wipeOutWorkspace()
-				}
 			}
 		}
 		steps {
@@ -440,9 +425,6 @@ parsedRepos.each {
 				remote {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
-				}
-				extensions {
-					wipeOutWorkspace()
 				}
 			}
 		}
@@ -504,9 +486,6 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 					credentials(gitCredentials)
-				}
-				extensions {
-					wipeOutWorkspace()
 				}
 			}
 		}
