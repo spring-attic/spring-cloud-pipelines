@@ -1797,6 +1797,12 @@ contained them. To fix this, just remove the tags</p>
 unpause the pipeline. Click to the top left, expand the list of pipelines and click
 the <code>play</code> button next to <code>github-webhook</code>.</p>
 </div>
+<div class="paragraph">
+<p>Another problem that might occur is that you need to have the <code>version</code> branch.
+Concourse will wait for the <code>version</code> branch to appear in your repo. So in order for
+the pipeline to start ensure that when doing some git operations you haven&#8217;t
+forgotten to create / copy the <code>version</code> branch too.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_the_route_is_already_in_use">The route is already in use</h4>

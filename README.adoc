@@ -692,6 +692,11 @@ Don't worry... most likely you've just forgotten to click the `play` button to
 unpause the pipeline. Click to the top left, expand the list of pipelines and click
 the `play` button next to `github-webhook`.
 
+Another problem that might occur is that you need to have the `version` branch.
+Concourse will wait for the `version` branch to appear in your repo. So in order for
+the pipeline to start ensure that when doing some git operations you haven't
+forgotten to create / copy the `version` branch too.
+
 ==== The route is already in use
 
 If you play around with Jenkins / Concourse you might end up with the routes occupied
