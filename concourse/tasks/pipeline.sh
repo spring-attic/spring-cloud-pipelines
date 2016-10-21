@@ -20,9 +20,7 @@ export MAVEN_ARGS="-Dmaven.repo.local=${M2_LOCAL}"
 echo "Sourcing file with pipeline functions"
 source ${SCRIPTS_OUTPUT_FOLDER}/pipeline.sh
 
-TEMP_GRADLE_HOME=${ROOT_FOLDER}/${REPO_RESOURCE}/build/gradle_home
-echo "Setting GRADLE_USER_HOME to [${TEMP_GRADLE_HOME}]"
-mkdir -p ${TEMP_GRADLE_HOME}
-export GRADLE_USER_HOME=${TEMP_GRADLE_HOME}
+export TERM=dumb
+export GRADLE_OPTS=-Dorg.gradle.native=false
 
 cd ${ROOT_FOLDER}
