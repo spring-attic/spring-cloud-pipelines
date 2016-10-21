@@ -373,8 +373,13 @@ function isGradleProject() {
 }
 
 function projectType() {
-    (isMavenProject && PROJECT_TYPE="MAVEN") || (isGradleProject && PROJECT_TYPE="GRADLE") || PROJECT_TYPE="UNKNOWN"
-    echo "${PROJECT_TYPE}"
+    if [ $( isMavenProject ) ]; then
+        echo "MAVEN"
+    elif [ $( isGradleProject ) ]; then
+        echo "GRADLE"
+    else
+        echo "UNKNOWN"
+    fi
 }
 
 function outputFolder() {
