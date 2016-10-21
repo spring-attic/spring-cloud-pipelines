@@ -369,6 +369,7 @@ function isMavenProject() {
 function isGradleProject() {
     if [ -f "gradlew" ];
     then
+        echo "GRADLE"
        return 0
     else
        return 1
