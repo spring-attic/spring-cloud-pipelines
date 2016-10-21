@@ -355,27 +355,17 @@ function prepareForE2eTests() {
 }
 
 function isMavenProject() {
-    if [ -f "mvnw" ];
-    then
-       return 0
-    else
-       return 1
-    fi
+    [ -f "mvnw" ]
 }
 
 function isGradleProject() {
-    if [ -f "gradlew" ];
-    then
-       return 0
-    else
-       return 1
-    fi
+    [ -f "gradlew" ]
 }
 
 function projectType() {
-    if [ $( isMavenProject ) ]; then
+    if isMavenProject; then
         echo "MAVEN"
-    elif [ $( isGradleProject ) ]; then
+    elif isGradleProject; then
         echo "GRADLE"
     else
         echo "UNKNOWN"
