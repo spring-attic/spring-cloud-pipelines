@@ -404,3 +404,7 @@ function retrieveStubRunnerIds() {
 export PROJECT_TYPE=$( projectType )
 export OUTPUT_FOLDER=$( outputFolder )
 export TEST_REPORTS_FOLDER=$( testResultsFolder )
+
+echo "Project type [${PROJECT_TYPE}]"
+echo "Output folder [${OUTPUT_FOLDER}]"
+echo "Test reports folder [${TEST_REPORTS_FOLDER}]"
