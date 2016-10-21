@@ -4,7 +4,7 @@ resources:
    type: git
    source:
     uri: {{app-url}}
-    branch: master
+    branch: {{app-branch}}
     private_key: {{github-private-key}}
  - name: version
    type: git
@@ -16,7 +16,7 @@ resources:
    type: git
    source:
     uri: {{tools-scripts-url}}
-    branch: master
+    branch: {{tools-branch}}
  - name: m2
    type: docker-image
    source:
