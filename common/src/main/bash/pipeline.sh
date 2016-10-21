@@ -359,6 +359,7 @@ function isMavenProject() {
     ls -al
     if [ -f "mvnw" ];
     then
+        echo "MAVEN"
        return 0
     else
        return 1
