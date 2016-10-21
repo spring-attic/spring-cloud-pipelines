@@ -355,11 +355,8 @@ function prepareForE2eTests() {
 }
 
 function isMavenProject() {
-    echo `pwd`
-    ls -al
     if [ -f "mvnw" ];
     then
-        echo "MAVEN"
        return 0
     else
        return 1
@@ -369,7 +366,6 @@ function isMavenProject() {
 function isGradleProject() {
     if [ -f "gradlew" ];
     then
-        echo "GRADLE"
        return 0
     else
        return 1
