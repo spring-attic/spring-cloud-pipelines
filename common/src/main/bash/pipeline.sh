@@ -355,6 +355,8 @@ function prepareForE2eTests() {
 }
 
 function isMavenProject() {
+    echo `pwd`
+    ls -al
     if [ -f "mvnw" ];
     then
        return 0
