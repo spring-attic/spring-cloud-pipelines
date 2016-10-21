@@ -20,4 +20,7 @@ export MAVEN_ARGS="-Dmaven.repo.local=${M2_LOCAL}"
 echo "Sourcing file with pipeline functions"
 source ${SCRIPTS_OUTPUT_FOLDER}/pipeline.sh
 
+echo "Setting GRADLE_USER_HOME to tmp"
+export GRADLE_USER_HOME=/tmp
+
 cd ${ROOT_FOLDER}
