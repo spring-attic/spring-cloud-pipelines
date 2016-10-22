@@ -21,5 +21,6 @@ echo "Sourcing file with pipeline functions"
 source ${SCRIPTS_OUTPUT_FOLDER}/pipeline.sh
 
 export TERM=dumb
+echo "REPO_WITH_JARS [${REPO_WITH_JARS}]"
 
 cd ${ROOT_FOLDER}
