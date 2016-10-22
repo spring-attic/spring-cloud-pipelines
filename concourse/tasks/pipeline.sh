@@ -26,11 +26,11 @@ cd ${ROOT_FOLDER}
 
 
 # TODO: Move to image
-RUN apt-get -y update
-RUN apt-get -y install software-properties-common
+apt-get -y update
+apt-get -y install software-properties-common
 
-RUN apt-get -y update
-RUN apt-get -y install \
+apt-get -y update
+apt-get -y install \
   git \
   build-essential \
   curl \
