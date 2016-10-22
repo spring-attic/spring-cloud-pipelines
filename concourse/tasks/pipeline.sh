@@ -17,10 +17,11 @@ M2_LOCAL=${ROOT_FOLDER}/${M2_REPO}
 echo "Changing the maven local to [${M2_LOCAL}]"
 export MAVEN_ARGS="-Dmaven.repo.local=${M2_LOCAL}"
 
+export CI="CONCOURSE"
+
 echo "Sourcing file with pipeline functions"
 source ${SCRIPTS_OUTPUT_FOLDER}/pipeline.sh
 
 export TERM=dumb
-echo "REPO_WITH_JARS [${REPO_WITH_JARS}]"
 
 cd ${ROOT_FOLDER}
