@@ -23,35 +23,3 @@ source ${SCRIPTS_OUTPUT_FOLDER}/pipeline.sh
 export TERM=dumb
 
 cd ${ROOT_FOLDER}
-
-
-# TODO: Move to image
-sudo apt-get -y update
-sudo apt-get -y install software-properties-common
-
-sudo apt-get -y update
-sudo apt-get -y install \
-  git \
-  build-essential \
-  curl \
-  wget \
-  libssl-dev \
-  libxml2-dev \
-  libsqlite3-dev \
-  libxslt1-dev \
-  libpq-dev \
-  libmysqlclient-dev \
-  bsdtar \
-  zip \
-  unzip \
-  python \
-  gem \
-  xvfb \
-  x11-xkb-utils \
-  xfonts-100dpi \
-  xfonts-75dpi \
-  xfonts-scalable \
-  xfonts-cyrillic \
-  x11-apps \
-  libqtwebkit-dev \
-  qt4-qmake
