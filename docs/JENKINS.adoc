@@ -118,8 +118,6 @@ cd spring-cloud-pipelines/jenkins
 ./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg
 ----
 
-where
-
 Then Jenkins will be running on port `8080` and Artifactory `8081`.
 The provided parameters will be passed as env variables to Jenkins VM
 and credentials will be set in your set. That way you don't have to do
