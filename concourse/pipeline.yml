@@ -71,7 +71,7 @@ jobs:
       - put: repo
         params:
           repository: out
-          tag: out/target/tag
+          tag: out/tag
           only_tag: true
 
   - name: test-deploy
