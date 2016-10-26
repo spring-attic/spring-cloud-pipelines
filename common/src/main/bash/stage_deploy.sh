@@ -4,6 +4,7 @@ set -e
 
 source pipeline.sh || echo "No pipeline.sh found"
 
+echo "Retrieving group and artifact id"
 projectGroupId=$( retrieveGroupId )
 projectArtifactId=$( retrieveArtifactId )
 
