@@ -251,13 +251,25 @@ function runSmokeTests() {
     echo "Running smoke tests"
 
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
-        if [[ ! -z ${MAVEN_ARGS} ]]; then
-            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+        if [[ "${CI}" == "CONCOURSE" ]]; then
+            if [[ ! -z ${MAVEN_ARGS} ]]; then
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}" || ( $( printTestResults ) && return 1)
+            else
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+            fi
         else
-            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+            if [[ ! -z ${MAVEN_ARGS} ]]; then
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+            else
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+            fi
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+        if [[ "${CI}" == "CONCOURSE" ]]; then
+            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+        else
+            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+        fi
     else
         echo "Unsupported project build tool"
         return 1
@@ -270,14 +282,28 @@ function runE2eTests() {
     local stubrunnerHost="${2}"
     echo "Running e2e tests"
 
+
+
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
-        if [[ ! -z ${MAVEN_ARGS} ]]; then
-            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" "${MAVEN_ARGS}"
+        if [[ "${CI}" == "CONCOURSE" ]]; then
+            if [[ ! -z ${MAVEN_ARGS} ]]; then
+                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}" || ( $( printTestResults ) && return 1)
+            else
+                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+            fi
         else
-            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}"
+            if [[ ! -z ${MAVEN_ARGS} ]]; then
+                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+            else
+                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+            fi
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+        if [[ "${CI}" == "CONCOURSE" ]]; then
+            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+        else
+            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+        fi
     else
         echo "Unsupported project build tool"
         return 1
@@ -382,10 +408,14 @@ function outputFolder() {
 
 function testResultsFolder() {
     if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        echo "**/test-results/**/*.xml"
+        echo "**/test-results/**/"
     else
-        echo "**/surefire-reports/*.xml"
+        echo "**/surefire-reports/"
     fi
+}
+
+function printTestResults() {
+    echo -e "\n\nBuild failed!!! - will print all test results to the console (it's the easiest way to debug anything later)\n\n" && tail -n +1 "$( testResultsFolder )/*"
 }
 
 function retrieveStubRunnerIds() {
