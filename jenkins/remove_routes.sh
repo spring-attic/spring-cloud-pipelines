@@ -10,3 +10,5 @@ yes | cf delete-route local.pcfdev.io -n github-eureka-stage
 yes | cf delete-route local.pcfdev.io -n github-webhook-prod
 yes | cf delete-route local.pcfdev.io -n github-analytics-prod
 yes | cf delete-route local.pcfdev.io -n github-eureka-prod
+yes | cf delete-route local.pcfdev.io -n github-analytics
+yes | cf delete-route local.pcfdev.io -n github-webhook
