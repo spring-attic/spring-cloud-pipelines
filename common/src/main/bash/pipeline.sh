@@ -191,7 +191,12 @@ function extractMavenProperty() {
                     org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
     # In some spring cloud projects there is info about deactivating some stuff
     MAVEN_PROPERTY=$( echo "${MAVEN_PROPERTY}" | tail -1 )
-    echo "${MAVEN_PROPERTY}"
+    # In Maven if there is no property it prints out ${propname}
+    if [[ "${MAVEN_PROPERTY}" == "\${${prop}}" ]]; then
+        echo ""
+    else
+        echo "${MAVEN_PROPERTY}"
+    fi
 }
 
 # The values of group / artifact ids can be later retrieved from Maven
@@ -283,8 +288,6 @@ function runE2eTests() {
     local applicationHost="${1}"
     local stubrunnerHost="${2}"
     echo "Running e2e tests"
-
-
 
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
