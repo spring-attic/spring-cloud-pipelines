@@ -216,8 +216,8 @@ In this step we're generating a version of the pipeline and then we're publishin
 - a fat jar of the application
 - a Spring Cloud Contract jar containing stubs of the application
 
-During this phase we're executing a `Maven` build using Maven Wrapper, with unit and integration tests.
-We're also *tagging* the repository with `dev/${version}` format. That way in each
+During this phase we're executing a `Maven` build using Maven Wrapper or a `Gradle` build using Gradle Wrapper
+, with unit and integration tests. We're also *tagging* the repository with `dev/${version}` format. That way in each
 subsequent step of the pipeline we're able to retrieve the tagged version. Also we know
 exactly which version of the pipeline corresponds to which Git hash.
 
@@ -236,7 +236,7 @@ the application with `smoke` Spring profile on which you can stub out all HTTP c
 a mocked response
 - if the application is using a database then it gets upgraded at this point via Flyway, Liquibase
 or any other tool once the application gets started
-- from the project's Maven build we're extracting `stubrunner.ids` property that contains
+- from the project's Maven or Gradle build we're extracting `stubrunner.ids` property that contains
  all the `groupId:artifactId:version:classifier` notation of dependant projects for which
  the stubs should be downloaded.
 - then we're uploading `Stub Runner Boot` and pass the extracted `stubrunner.ids` to it. That way

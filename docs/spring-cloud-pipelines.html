@@ -1073,8 +1073,8 @@ is concerned.
 </ul>
 </div>
 <div class="paragraph">
-<p>During this phase we&#8217;re executing a <code>Maven</code> build using Maven Wrapper, with unit and integration tests.
-We&#8217;re also <strong>tagging</strong> the repository with <code>dev/${version}</code> format. That way in each
+<p>During this phase we&#8217;re executing a <code>Maven</code> build using Maven Wrapper or a <code>Gradle</code> build using Gradle Wrapper
+, with unit and integration tests. We&#8217;re also <strong>tagging</strong> the repository with <code>dev/${version}</code> format. That way in each
 subsequent step of the pipeline we&#8217;re able to retrieve the tagged version. Also we know
 exactly which version of the pipeline corresponds to which Git hash.</p>
 </div>
@@ -1110,7 +1110,7 @@ a mocked response</p>
 or any other tool once the application gets started</p>
 </li>
 <li>
-<p>from the project&#8217;s Maven build we&#8217;re extracting <code>stubrunner.ids</code> property that contains
+<p>from the project&#8217;s Maven or Gradle build we&#8217;re extracting <code>stubrunner.ids</code> property that contains
 all the <code>groupId:artifactId:version:classifier</code> notation of dependant projects for which
 the stubs should be downloaded.</p>
 </li>
