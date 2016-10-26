@@ -420,7 +420,7 @@ function printTestResults() {
 
 function retrieveStubRunnerIds() {
     if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        echo "$( ./gradlew stubIds -q )"
+        echo "$( ./gradlew stubIds -q | tail -1 )"
     else
         echo "$( extractMavenProperty 'stubrunner.ids' )"
     fi
