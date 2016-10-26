@@ -17,13 +17,33 @@ if (m2Created) {
 	if (settingsCreated) {
 		new File("${m2Home}/settings.xml").text =
 				new File('/usr/share/jenkins/settings.xml').text
+	} else {
+		println "Failed to create settings.xml!"
 	}
+} else {
+	println "Failed to create .m2 folder!"
+}
+
+println "Creating the gradle.properties file"
+String gradleHome = '/var/jenkins_home/.gradle'
+boolean gradleCreated = new File(gradleHome).mkdirs()
+if (gradleCreated) {
+	boolean settingsCreated = new File("${gradleHome}/gradle.properties").createNewFile()
+	if (settingsCreated) {
+		new File("${gradleHome}/gradle.proprties").text =
+				new File('/usr/share/jenkins/gradle.properties').text
+	}  else {
+		println "Failed to create gradle.properties!"
+	}
+}  else {
+	println "Failed to create .gradle folder!"
 }
 
 println "Creating the seed job"
 new DslScriptLoader(jobManagement).with {
-	runScript(jobScript.text.replace('https://github.com/marcingrzejszczak',
-			"https://github.com/${System.getenv('FORKED_ORG')}"))
+	runScript(jobScript.text
+			.replace('https://github.com/marcingrzejszczak', "https://github.com/${System.getenv('FORKED_ORG')}")
+			.replace('http://artifactory', "http://${System.getenv('EXTERNAL_IP') ?: "localhost"}"))
 }
 
 println "Creating the credentials"
@@ -32,6 +52,7 @@ println "Creating the credentials"
 		it.getDescriptor().getId() == id
 	}.empty
 	if (credsMissing) {
+		println "Credential [${id}] is missing - will create it"
 		SystemCredentialsProvider.getInstance().getCredentials().add(
 				new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, id,
 						"CF credential [$id]", "user", "pass"))
@@ -47,6 +68,7 @@ boolean gitCredsMissing = SystemCredentialsProvider.getInstance().getCredentials
 }.empty
 
 if (gitCredsMissing) {
+	println "Credential [git] is missing - will create it"
 	SystemCredentialsProvider.getInstance().getCredentials().add(
 			new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'git',
 					"GIT credential", gitUser, gitPass))

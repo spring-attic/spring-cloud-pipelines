@@ -14,26 +14,26 @@ DslFactory dsl = this
 PipelineDefaults defaults = new PipelineDefaults(binding.variables)
 
 // Example of a version with date and time in the name
-String pipelineVersion = binding.variables['PIPIELINE_VERSION'] ?: '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
+String pipelineVersion = binding.variables["PIPIELINE_VERSION"] ?: '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
-String testReports = '**/surefire-reports/*.xml'
-String gitCredentials = binding.variables['GIT_CREDENTIAL_ID'] ?: 'git'
-String jdkVersion = binding.variables['JDK_VERSION'] ?: 'jdk8'
-String cfTestCredentialId = binding.variables['CF_TEST_CREDENTIAL_ID'] ?: 'cf-test'
-String cfStageCredentialId = binding.variables['CF_STAGE_CREDENTIAL_ID'] ?: 'cf-stage'
-String cfProdCredentialId = binding.variables['CF_PROD_CREDENTIAL_ID'] ?: 'cf-prod'
-String gitEmail = binding.variables['GIT_EMAIL'] ?: 'pivo@tal.com'
-String gitName = binding.variables['GIT_NAME'] ?: 'Pivo Tal'
-boolean autoStage = binding.variables['AUTO_DEPLOY_TO_STAGE'] == null ? false : Boolean.parseBoolean(binding.variables['AUTO_DEPLOY_TO_STAGE'])
-boolean autoProd = binding.variables['AUTO_DEPLOY_TO_PROD'] == null ? false : Boolean.parseBoolean(binding.variables['AUTO_DEPLOY_TO_PROD'])
-boolean rollbackStep = binding.variables['ROLLBACK_STEP_REQUIRED'] == null ? false : Boolean.parseBoolean(binding.variables['ROLLBACK_STEP_REQUIRED'])
-String scriptsDir = binding.variables['SCRIPTS_DIR'] ?: "${WORKSPACE}/common/src/main/bash"
+String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].join(",")
+String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
+String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
+String cfTestCredentialId = binding.variables["CF_TEST_CREDENTIAL_ID"] ?: "cf-test"
+String cfStageCredentialId = binding.variables["CF_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
+String cfProdCredentialId = binding.variables["CF_PROD_CREDENTIAL_ID"] ?: "cf-prod"
+String gitEmail = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
+String gitName = binding.variables["GIT_NAME"] ?: "Pivo Tal"
+boolean autoStage = binding.variables["AUTO_DEPLOY_TO_STAGE"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_STAGE"])
+boolean autoProd = binding.variables["AUTO_DEPLOY_TO_PROD"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_PROD"])
+boolean rollbackStep = binding.variables["ROLLBACK_STEP_REQUIRED"] == null ? false : Boolean.parseBoolean(binding.variables["ROLLBACK_STEP_REQUIRED"])
+String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src/main/bash"
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
-String repos = binding.variables['REPOS'] ?:
-		['https://github.com/marcingrzejszczak/github-analytics',
-		 'github-webhook$https://github.com/marcingrzejszczak/atom-feed'].join(',')
-List<String> parsedRepos = repos.split(',')
+String repos = binding.variables["REPOS"] ?:
+		["https://github.com/marcingrzejszczak/github-analytics",
+		 "https://github.com/marcingrzejszczak/github-webhook"].join(",")
+List<String> parsedRepos = repos.split(",")
 parsedRepos.each {
 	List<String> parsedEntry = it.split('\\$')
 	String gitRepoName
@@ -56,13 +56,16 @@ parsedRepos.each {
 		}
 		wrappers {
 			deliveryPipelineVersion(pipelineVersion, true)
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			parameters(PipelineDefaults.defaultParams())
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
 			timeout {
-				noActivity(1200)
+				noActivity(300)
 				failBuild()
 				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 			}
@@ -121,7 +124,10 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters(PipelineDefaults.defaultParams())
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			credentialsBinding {
 				usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
 			}
@@ -140,9 +146,6 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 				}
-				extensions {
-					wipeOutWorkspace()
-				}
 			}
 		}
 		steps {
@@ -157,7 +160,7 @@ parsedRepos.each {
 			downstreamParameterized {
 				trigger("${projectName}-test-env-test") {
 					parameters {
-						propertiesFile('target/test.properties', true)
+						propertiesFile('${OUTPUT_FOLDER}/test.properties', true)
 						currentBuild()
 					}
 					triggerWithNoParameters()
@@ -172,7 +175,10 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters(PipelineDefaults.defaultParams())
 			parameters PipelineDefaults.smokeTestParams()
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -187,9 +193,6 @@ parsedRepos.each {
 				remote {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
-				}
-				extensions {
-					wipeOutWorkspace()
 				}
 			}
 		}
@@ -231,7 +234,10 @@ parsedRepos.each {
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 				parameters(PipelineDefaults.defaultParams())
-				environmentVariables(defaults.defaultEnvVars)
+				environmentVariables {
+					environmentVariables(defaults.defaultEnvVars)
+					groovy(PipelineDefaults.groovyEnvScript)
+				}
 				credentialsBinding {
 					usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
 				}
@@ -250,9 +256,6 @@ parsedRepos.each {
 						url(fullGitRepo)
 						branch('dev/${PIPELINE_VERSION}')
 					}
-					extensions {
-						wipeOutWorkspace()
-					}
 				}
 			}
 			steps {
@@ -268,7 +271,7 @@ parsedRepos.each {
 					trigger("${projectName}-test-env-rollback-test") {
 						triggerWithNoParameters()
 						parameters {
-							propertiesFile('target/test.properties', false)
+							propertiesFile('${OUTPUT_FOLDER}/test.properties', false)
 							currentBuild()
 						}
 					}
@@ -282,6 +285,10 @@ parsedRepos.each {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 				parameters(PipelineDefaults.defaultParams())
 				parameters PipelineDefaults.smokeTestParams()
+				environmentVariables {
+					environmentVariables(defaults.defaultEnvVars)
+					groovy(PipelineDefaults.groovyEnvScript)
+				}
 				parameters {
 					stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
 				}
@@ -299,9 +306,6 @@ parsedRepos.each {
 					remote {
 						url(fullGitRepo)
 						branch('${LATEST_PROD_TAG}')
-					}
-					extensions {
-						wipeOutWorkspace()
 					}
 				}
 			}
@@ -343,7 +347,10 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
 			parameters(PipelineDefaults.defaultParams())
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			credentialsBinding {
 				usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
 			}
@@ -362,9 +369,6 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 				}
-				extensions {
-					wipeOutWorkspace()
-				}
 			}
 		}
 		steps {
@@ -382,7 +386,7 @@ parsedRepos.each {
 						triggerWithNoParameters()
 						parameters {
 							currentBuild()
-							propertiesFile('target/test.properties', true)
+							propertiesFile('${OUTPUT_FOLDER}/test.properties', true)
 						}
 					}
 				}
@@ -390,7 +394,7 @@ parsedRepos.each {
 				buildPipelineTrigger("${projectName}-stage-env-test") {
 					parameters {
 						currentBuild()
-						propertiesFile('target/test.properties', true)
+						propertiesFile('${OUTPUT_FOLDER}/test.properties', true)
 					}
 				}
 			}
@@ -403,7 +407,10 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters(PipelineDefaults.defaultParams())
 			parameters PipelineDefaults.smokeTestParams()
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -418,9 +425,6 @@ parsedRepos.each {
 				remote {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
-				}
-				extensions {
-					wipeOutWorkspace()
 				}
 			}
 		}
@@ -459,7 +463,10 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
 			parameters(PipelineDefaults.defaultParams())
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			credentialsBinding {
 				usernamePassword('CF_PROD_USERNAME', 'CF_PROD_PASSWORD', cfProdCredentialId)
 			}
@@ -479,9 +486,6 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 					credentials(gitCredentials)
-				}
-				extensions {
-					wipeOutWorkspace()
 				}
 			}
 		}
@@ -521,7 +525,10 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			parameters(PipelineDefaults.defaultParams())
-			environmentVariables(defaults.defaultEnvVars)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -571,6 +578,21 @@ class PipelineDefaults {
 		envs['REPO_WITH_JARS'] = variables['REPO_WITH_JARS'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 		return envs
 	}
+
+	public static final String groovyEnvScript = '''
+String workspace = binding.variables['WORKSPACE']
+String mvn = "${workspace}/mvnw"
+String gradle =  "${workspace}/gradlew"
+
+Map envs = [:]
+if (new File(mvn).exists()) {
+	envs['PROJECT_TYPE'] = "MAVEN"
+	envs['OUTPUT_FOLDER'] = "target"
+} else if (new File(gradle).exists()) {
+	envs['PROJECT_TYPE'] = "GRADLE"
+	envs['OUTPUT_FOLDER'] = "build/libs"
+}
+return envs'''
 
 	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
 		params.resolveStrategy = Closure.DELEGATE_FIRST

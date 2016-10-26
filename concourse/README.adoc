@@ -293,11 +293,22 @@ Not really. This is an `opinionated pipeline` that's why we took some
 opinionated decisions like:
 
 - usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
-- usage of Maven Wrapper
-- artifacts deployment by `./mvnw clean deploy`
 - application deployment to Cloud Foundry
-- running smoke tests on a deployed app via the `smoke` Maven profile
-- running e2e tests on a deployed app via the `e2e` Maven profile
+- For Maven:
+    * usage of Maven Wrapper
+    * artifacts deployment by `./mvnw clean deploy`
+    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * running smoke tests on a deployed app via the `smoke` Maven profile
+    * running end to end tests on a deployed app via the `e2e` Maven profile
+- For Gradle (in the `github-analytics` application check the `gradle/pipeline.gradle` file):
+    * usage of Gradlew Wrapper
+    * `deploy` task for artifacts deployment
+    * running smoke tests on a deployed app via the `smoke` task
+    * running end to end tests on a deployed app via the `e2e` task
+    * `groupId` task to retrieve group id
+    * `artifactId` task to retrieve artifact id
+    * `currentVersion` task to retrieve the current version
+    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
 
 This is the initial approach that can be easily changed in the future.
 
@@ -319,6 +330,9 @@ cf stop github-webhook
 cf stop github-eureka
 cf stop stubrunner
 ----
+
+You can also execute `kill_all_pcfdev_apps.sh` that will remove all demo-related apps
+deployed to PCF dev.
 
 ==== The rollback step fails due to missing JAR ?!
 
@@ -344,6 +358,11 @@ fly watch --job github-webhook/build-and-upload -t docker
 Don't worry... most likely you've just forgotten to click the `play` button to
 unpause the pipeline. Click to the top left, expand the list of pipelines and click
 the `play` button next to `github-webhook`.
+
+Another problem that might occur is that you need to have the `version` branch.
+Concourse will wait for the `version` branch to appear in your repo. So in order for
+the pipeline to start ensure that when doing some git operations you haven't
+forgotten to create / copy the `version` branch too.
 
 ==== The route is already in use
 

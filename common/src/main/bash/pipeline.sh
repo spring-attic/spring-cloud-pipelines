@@ -2,8 +2,8 @@
 
 set -e
 
-# It takes ages on Docker to build the app without this
-MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
+# It takes ages on Docker to run the app without this
+export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
 
 function logInToCf() {
     local redownloadInfra="${1}"
@@ -88,9 +88,9 @@ function deployAppWithName() {
     fi
     echo "Deploying app with name [${lowerCaseAppName}], env [${env}] with manifest [${useManifest}] and host [${hostname}]"
     if [[ ! -z "${manifestOption}" ]]; then
-        cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "target/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
+        cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
     else
-        cf push "${lowerCaseAppName}" -p "target/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+        cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
     fi
     APPLICATION_DOMAIN="$( appHost ${lowerCaseAppName} )"
     echo "Determined that application_domain for [${lowerCaseAppName}] is [${APPLICATION_DOMAIN}]"
@@ -127,7 +127,7 @@ function deployEureka() {
     local env="${4}"
     echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${appName}], env [${env}]"
     local fileExists="true"
-    local fileName="`pwd`/target/${jarName}.jar"
+    local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
@@ -143,18 +143,21 @@ function deployEureka() {
 function deployStubRunnerBoot() {
     local redeploy="${1}"
     local jarName="${2}"
-    local env="${3:-test}"
-    local stubRunnerName="${4:-stubrunner}"
+    local repoWithJars="${3}"
+    local env="${4:-test}"
+    local stubRunnerName="${5:-stubrunner}"
     local fileExists="true"
-    local fileName="`pwd`/target/${jarName}.jar"
+    local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
     echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}]"
     if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
-        deployAppWithName "${stubRunnerName}" "${jarName}" "${env}"
-        local mavenProp="$( extractMavenProperty "stubrunner.ids" )"
-        setEnvVar "${stubRunnerName}" "stubrunner.ids" "${mavenProp}"
+        deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "true"
+        local prop="$( retrieveStubRunnerIds )"
+        echo "Found following stub runner ids [${prop}]"
+        setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
+        setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
         restartApp "${stubRunnerName}"
         createServiceWithName "${stubRunnerName}"
     else
@@ -188,7 +191,12 @@ function extractMavenProperty() {
                     org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
     # In some spring cloud projects there is info about deactivating some stuff
     MAVEN_PROPERTY=$( echo "${MAVEN_PROPERTY}" | tail -1 )
-    echo "${MAVEN_PROPERTY}"
+    # In Maven if there is no property it prints out ${propname}
+    if [[ "${MAVEN_PROPERTY}" == "\${${prop}}" ]]; then
+        echo ""
+    else
+        echo "${MAVEN_PROPERTY}"
+    fi
 }
 
 # The values of group / artifact ids can be later retrieved from Maven
@@ -198,11 +206,11 @@ function downloadJar() {
     local groupId="${3}"
     local artifactId="${4}"
     local version="${5}"
-    local destination="`pwd`/target/${artifactId}-${version}.jar"
+    local destination="`pwd`/${OUTPUT_FOLDER}/${artifactId}-${version}.jar"
     local changedGroupId="$( echo "${groupId}" | tr . / )"
     local pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.jar"
     if [[ ! -e ${destination} || ( -e ${destination} && ${redownloadInfra} == "true" ) ]]; then
-        mkdir -p target
+        mkdir -p "${OUTPUT_FOLDER}"
         echo "Current folder is [`pwd`]; Downloading [${pathToJar}] to [${destination}]"
         curl "${pathToJar}" -o "${destination}"
     else
@@ -213,20 +221,23 @@ function downloadJar() {
 function propagatePropertiesForTests() {
     local projectArtifactId="${1}"
     local stubRunnerHost="${2:-stubrunner}"
-    local fileLocation="${3:-target/test.properties}"
+    local fileLocation="${3:-${OUTPUT_FOLDER}/test.properties}"
+    echo "Propagating properties for tests. Project [${projectArtifactId}] stub runner host [${stubRunnerHost}] properties location [${fileLocation}]"
     # retrieve host of the app / stubrunner
     # we have to store them in a file that will be picked as properties
-    rm -rf target/test.properties
+    rm -rf "${fileLocation}"
     local host=$( appHost "${projectArtifactId}" )
     APPLICATION_URL="${host}"
     echo "APPLICATION_URL=${host}" >> ${fileLocation}
     host=$( appHost "${stubRunnerHost}" )
     STUBRUNNER_URL="${host}"
     echo "STUBRUNNER_URL=${host}" >> ${fileLocation}
+    echo "Resolved properties"
+    cat ${fileLocation}
 }
 
 function readTestPropertiesFromFile() {
-    local fileLocation="${1:-target/test.properties}"
+    local fileLocation="${1:-${OUTPUT_FOLDER}/test.properties}"
     if [ -f "${fileLocation}" ]
     then
       echo "${fileLocation} found."
@@ -245,10 +256,30 @@ function runSmokeTests() {
     local applicationHost="${1}"
     local stubrunnerHost="${2}"
     echo "Running smoke tests"
-    if [[ ! -z ${MAVEN_ARGS} ]]; then
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+
+    if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
+        if [[ "${CI}" == "CONCOURSE" ]]; then
+            if [[ ! -z ${MAVEN_ARGS} ]]; then
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}" || ( $( printTestResults ) && return 1)
+            else
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+            fi
+        else
+            if [[ ! -z ${MAVEN_ARGS} ]]; then
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+            else
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+            fi
+        fi
+    elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        if [[ "${CI}" == "CONCOURSE" ]]; then
+            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+        else
+            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+        fi
     else
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+        echo "Unsupported project build tool"
+        return 1
     fi
 }
 
@@ -256,11 +287,31 @@ function runSmokeTests() {
 function runE2eTests() {
     local applicationHost="${1}"
     local stubrunnerHost="${2}"
-    echo "Running smoke tests"
-    if [[ ! -z ${MAVEN_ARGS} ]]; then
-        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" "${MAVEN_ARGS}"
+    echo "Running e2e tests"
+
+    if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
+        if [[ "${CI}" == "CONCOURSE" ]]; then
+            if [[ ! -z ${MAVEN_ARGS} ]]; then
+                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}" || ( $( printTestResults ) && return 1)
+            else
+                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+            fi
+        else
+            if [[ ! -z ${MAVEN_ARGS} ]]; then
+                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
+            else
+                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+            fi
+        fi
+    elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        if [[ "${CI}" == "CONCOURSE" ]]; then
+            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+        else
+            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+        fi
     else
-        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}"
+        echo "Unsupported project build tool"
+        return 1
     fi
 }
 
@@ -277,15 +328,27 @@ function extractVersionFromProdTag() {
 }
 
 function retrieveGroupId() {
-    local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/groupId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
-    result=$( echo "${result}" | tail -1 )
-    echo "${result}"
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        local result=$( ./gradlew groupId -q )
+        result=$( echo "${result}" | tail -1 )
+        echo "${result}"
+    else
+        local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/groupId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
+        result=$( echo "${result}" | tail -1 )
+        echo "${result}"
+    fi
 }
 
 function retrieveArtifactId() {
-    local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
-    result=$( echo "${result}" | tail -1 )
-    echo "${result}"
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        local result=$( ./gradlew artifactId -q )
+        result=$( echo "${result}" | tail -1 )
+        echo "${result}"
+    else
+        local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
+        result=$( echo "${result}" | tail -1 )
+        echo "${result}"
+    fi
 }
 
 # Jenkins passes these as a separate step, in Concourse we'll do it manually
@@ -297,11 +360,9 @@ function prepareForSmokeTests() {
     local space="${5}"
     local api="${6}"
     echo "Retrieving group and artifact id - it can take a while..."
-    retrieveGroupId
-    retrieveArtifactId
     projectGroupId=$( retrieveGroupId )
     projectArtifactId=$( retrieveArtifactId )
-    mkdir -p target
+    mkdir -p "${OUTPUT_FOLDER}"
     logInToCf "${redownloadInfra}" "${username}" "${password}" "${org}" "${space}" "${api}"
     propagatePropertiesForTests ${projectArtifactId}
     readTestPropertiesFromFile
@@ -316,12 +377,64 @@ function prepareForE2eTests() {
     local space="${5}"
     local api="${6}"
     echo "Retrieving group and artifact id - it can take a while..."
-    retrieveGroupId
-    retrieveArtifactId
     projectGroupId=$( retrieveGroupId )
     projectArtifactId=$( retrieveArtifactId )
-    mkdir -p target
+    mkdir -p "${OUTPUT_FOLDER}"
     logInToCf "${redownloadInfra}" "${username}" "${password}" "${org}" "${space}" "${api}"
     propagatePropertiesForTests ${projectArtifactId}
     readTestPropertiesFromFile
 }
+
+function isMavenProject() {
+    [ -f "mvnw" ]
+}
+
+function isGradleProject() {
+    [ -f "gradlew" ]
+}
+
+function projectType() {
+    if isMavenProject; then
+        echo "MAVEN"
+    elif isGradleProject; then
+        echo "GRADLE"
+    else
+        echo "UNKNOWN"
+    fi
+}
+
+function outputFolder() {
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        echo "build/libs"
+    else
+        echo "target"
+    fi
+}
+
+function testResultsFolder() {
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        echo "**/test-results/**/"
+    else
+        echo "**/surefire-reports/"
+    fi
+}
+
+function printTestResults() {
+    echo -e "\n\nBuild failed!!! - will print all test results to the console (it's the easiest way to debug anything later)\n\n" && tail -n +1 "$( testResultsFolder )/*"
+}
+
+function retrieveStubRunnerIds() {
+    if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
+        echo "$( ./gradlew stubIds -q | tail -1 )"
+    else
+        echo "$( extractMavenProperty 'stubrunner.ids' )"
+    fi
+}
+
+export PROJECT_TYPE=$( projectType )
+export OUTPUT_FOLDER=$( outputFolder )
+export TEST_REPORTS_FOLDER=$( testResultsFolder )
+
+echo "Project type [${PROJECT_TYPE}]"
+echo "Output folder [${OUTPUT_FOLDER}]"
+echo "Test reports folder [${TEST_REPORTS_FOLDER}]"

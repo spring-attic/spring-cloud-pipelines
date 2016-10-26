@@ -22,10 +22,9 @@ cd ${ROOT_FOLDER}/${REPO_RESOURCE}
 . ${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh
 
 echo "Tagging the project with dev tag"
-mkdir -p ${ROOT_FOLDER}/${REPO_RESOURCE}/target/
-echo "dev/${PIPELINE_VERSION}" > ${ROOT_FOLDER}/${REPO_RESOURCE}/target/tag
+echo "dev/${PIPELINE_VERSION}" > ${ROOT_FOLDER}/${REPO_RESOURCE}/tag
 cp -r ${ROOT_FOLDER}/${REPO_RESOURCE}/. ${ROOT_FOLDER}/${OUTPUT_RESOURCE}/
 
 # WE CAN USE OUTPUT TO ARCHIVE THE RESULTS?
 #mkdir -p ${OUTPUT_RESOURCE}/junit
-#find . -type f -regex ".*/target/.*-reports/.*" -exec cp {} ${OUTPUT_RESOURCE}/junit/ \;
+#find . -type f -regex ".*/${OUTPUT_FOLDER}/.*-reports/.*" -exec cp {} ${OUTPUT_RESOURCE}/junit/ \;

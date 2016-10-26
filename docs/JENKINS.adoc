@@ -9,6 +9,41 @@ All in all there are the following projects taking part in the whole `microservi
 - https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
 - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
 
+=== Project setup
+
+[source,bash]
+----
+.
+├── jobs
+│   ├── jenkins_pipeline_empty.groovy
+│   ├── jenkins_pipeline_jenkinsfile_empty.groovy
+│   ├── jenkins_pipeline_sample.groovy
+│   └── jenkins_pipeline_sample_view.groovy
+├── seed
+│   ├── gradle.properties
+│   ├── init.groovy
+│   ├── jenkins_pipeline.groovy
+│   └── settings.xml
+└── src
+    ├── main
+    └── test
+----
+
+In the `jobs` folder you have all the seed jobs that will generate pipelines.
+
+- `jenkins_pipeline_empty.groovy` - is a template of a pipeline with empty steps using the Jenkins Job DSL plugin
+- `jenkins_pipeline_jenkinsfile_empty.groovy` - is a template of a pipeline with empty steps using the Pipeline plugin
+- `jenkins_pipeline_sample.groovy` - is an opinionated implementation using the Jenkins Job DSL plugin
+- `jenkins_pipeline_sample_view.groovy` - builds the views for the pipelines
+
+In the `seed` folder you have the `init.groovy` file which is executed when Jenkins starts.
+That way we can configure most of Jenkins options for you (adding credentials, JDK etc.).
+`jenkins_pipeline.groovy` contains logic to build a seed job (that way you don't have to even click that
+job - we generate it for you).
+
+In the `src` folder you have production and test classes needed for you to build your own pipeline.
+Currently we have tests only cause the whole logic resides in the `jenkins_pipeline_sample` file.
+
 === Step by step
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
@@ -498,11 +533,22 @@ Not really. This is an `opinionated pipeline` that's why we took some
 opinionated decisions like:
 
 - usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
-- usage of Maven Wrapper
-- artifacts deployment by `./mvnw clean deploy`
 - application deployment to Cloud Foundry
-- running smoke tests on a deployed app via the `smoke` Maven profile
-- running e2e tests on a deployed app via the `e2e` Maven profile
+- For Maven:
+    * usage of Maven Wrapper
+    * artifacts deployment by `./mvnw clean deploy`
+    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * running smoke tests on a deployed app via the `smoke` Maven profile
+    * running end to end tests on a deployed app via the `e2e` Maven profile
+- For Gradle (in the `github-analytics` application check the `gradle/pipeline.gradle` file):
+    * usage of Gradlew Wrapper
+    * `deploy` task for artifacts deployment
+    * running smoke tests on a deployed app via the `smoke` task
+    * running end to end tests on a deployed app via the `e2e` task
+    * `groupId` task to retrieve group id
+    * `artifactId` task to retrieve artifact id
+    * `currentVersion` task to retrieve the current version
+    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
 
 This is the initial approach that can be easily changed in the future.
 
@@ -524,6 +570,9 @@ cf stop github-webhook
 cf stop github-eureka
 cf stop stubrunner
 ----
+
+You can also execute `kill_all_pcfdev_apps.sh` that will remove all demo-related apps
+deployed to PCF dev.
 
 ==== The rollback step fails due to missing JAR ?!
 
