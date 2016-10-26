@@ -41,8 +41,9 @@ if (gradleCreated) {
 
 println "Creating the seed job"
 new DslScriptLoader(jobManagement).with {
-	runScript(jobScript.text.replace('https://github.com/marcingrzejszczak',
-			"https://github.com/${System.getenv('FORKED_ORG')}"))
+	runScript(jobScript.text
+			.replace('https://github.com/marcingrzejszczak', "https://github.com/${System.getenv('FORKED_ORG')}")
+			.replace('http://artifactory', "http://${System.getenv('EXTERNAL_IP') ?: "localhost"}"))
 }
 
 println "Creating the credentials"
