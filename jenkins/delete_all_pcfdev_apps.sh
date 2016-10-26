@@ -10,10 +10,10 @@ yes | cf delete  stubrunner
 
 cf target -o pcfdev-org -s pcfdev-stage
 yes | cf delete github-webhook
-yes | cf delete  github-analytics
+yes | cf delete github-analytics
 yes | cf delete github-eureka
 
 cf target -o pcfdev-org -s pcfdev-prod
 yes | cf delete github-webhook
-yes | cf delete  github-analytics
+yes | cf delete github-analytics
 yes | cf delete github-eureka

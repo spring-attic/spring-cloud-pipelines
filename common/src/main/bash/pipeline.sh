@@ -143,8 +143,9 @@ function deployEureka() {
 function deployStubRunnerBoot() {
     local redeploy="${1}"
     local jarName="${2}"
-    local env="${3:-test}"
-    local stubRunnerName="${4:-stubrunner}"
+    local repoWithJars="${3}"
+    local env="${4:-test}"
+    local stubRunnerName="${5:-stubrunner}"
     local fileExists="true"
     local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
@@ -156,6 +157,7 @@ function deployStubRunnerBoot() {
         local prop="$( retrieveStubRunnerIds )"
         echo "Found following stub runner ids [${prop}]"
         setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
+        setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
         restartApp "${stubRunnerName}"
         createServiceWithName "${stubRunnerName}"
     else
