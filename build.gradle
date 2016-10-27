@@ -1,3 +1,38 @@
-task generateReadme(type:Exec) {
-	commandLine './create_readme.sh'
+buildscript {
+	repositories { jcenter() }
+
+	dependencies {
+		classpath 'com.github.jruby-gradle:jruby-gradle-plugin:1.3.3'
+	}
+}
+
+apply plugin: "com.github.jruby-gradle.base"
+
+import com.github.jrubygradle.JRubyExec
+
+dependencies {
+	jrubyExec "rubygems:asciidoctor:1.5.4"
+}
+
+task generateMainReadme(type: JRubyExec) {
+	script "${projectDir}/coalesce_readme.rb"
+	scriptArgs "-idocs/README.adoc",  "-oREADME.adoc"
+}
+
+task generateJenkinsReadme(type: JRubyExec) {
+	script "${projectDir}/coalesce_readme.rb"
+	scriptArgs "-idocs/JENKINS.adoc",  "-ojenkins/README.adoc"
+}
+
+task generateConcourseReadme(type: JRubyExec) {
+	script "${projectDir}/coalesce_readme.rb"
+	scriptArgs "-idocs/CONCOURSE.adoc",  "-oconcourse/README.adoc"
+}
+
+task generateIndex(type: JRubyExec, dependsOn: ["generateMainReadme", "generateJenkinsReadme", "generateConcourseReadme"]) {
+	script "${projectDir}/generate_index.rb"
+}
+
+task generateReadme(dependsOn: ["generateIndex"]) {
+	description = "Creates documentation for the project"
 }
