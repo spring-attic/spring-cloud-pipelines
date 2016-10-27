@@ -18,7 +18,7 @@ All in all there are the following projects taking part in the whole `microservi
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
 - <<fork,Fork repos>>
-- <<start,Start Concourse and Artifactory>>
+- <<start,Start Jenkins and Artifactory>>
 - <<deploy,Deploy infra to Artifactory>>
 - <<pcfdev,Start PCF Dev (if you don't want to use an existing one)>>
 - <<fly,Setup the `fly` CLI>>
@@ -77,7 +77,7 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 </settings>
 ----
 
-==== Start Concourse and Artifactory
+==== Start Jenkins and Artifactory
 
 [[start]] Concourse + Artifactory can be ran locally. To do that just execute the
 `start.sh` script from this repo.
