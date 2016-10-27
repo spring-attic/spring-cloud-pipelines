@@ -1,4 +1,4 @@
-= Spring Cloud Pipeline
+= Spring Cloud Pipelines
 
 _Documentation Authors: Marcin Grzejszczak_
 
