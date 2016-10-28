@@ -23,6 +23,8 @@ RUN printf "%s" "${gitpass}" > /usr/share/jenkins/gitpass
 
 USER root
 
+ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false -Djava.awt.headless=true -Dhudson.model.ParametersAction.keepUndefinedParameters=true
+
 RUN apt-get update && apt-get install -y \
   ruby \
   curl
