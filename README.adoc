@@ -1249,6 +1249,25 @@ WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pip
 	to whitelist specific parameter names, even though it represents a security breach
 ----
 
+To fix it you have to do exactly what the warning suggests... Also ensure that the `Groovy token macro processing`
+checkbox is set.
+
+==== Pipeline version is not passed to the build
+
+You can see that the Jenkins version is properly set but in the build version is still snapshot and
+the `echo "${PIPELINE_VERSION}"` doesn't print anything.
+
+You can check the Jenkins logs and you'll see
+
+[source,bash]
+----
+WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
+	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
+	to be injected as environment variables or
+	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
+	to whitelist specific parameter names, even though it represents a security breach
+----
+
 To fix it you have to do exactly what the warning suggests...
 
 ==== The build times out with `pipeline.sh` info

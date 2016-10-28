@@ -525,6 +525,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_faq_2">FAQ</a>
 <ul class="sectlevel3">
 <li><a href="#jenkins_faq">Pipeline version contains ${PIPELINE_VERSION}</a></li>
+<li><a href="#_pipeline_version_is_not_passed_to_the_build">Pipeline version is not passed to the build</a></li>
 <li><a href="#_the_build_times_out_with_code_pipeline_sh_code_info">The build times out with <code>pipeline.sh</code> info</a></li>
 <li><a href="#_can_i_use_the_pipeline_for_some_other_repos">Can I use the pipeline for some other repos?</a></li>
 <li><a href="#_will_this_work_for_any_project_out_of_the_box_2">Will this work for ANY project out of the box?</a></li>
@@ -2852,6 +2853,29 @@ remember to provide the one with id <code>git</code>).</p>
 <h3 id="_faq_2">FAQ</h3>
 <div class="sect3">
 <h4 id="jenkins_faq">Pipeline version contains ${PIPELINE_VERSION}</h4>
+<div class="paragraph">
+<p>You can check the Jenkins logs and you&#8217;ll see</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
+	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
+	to be injected as environment variables or
+	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
+	to whitelist specific parameter names, even though it represents a security breach</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To fix it you have to do exactly what the warning suggests&#8230;&#8203; Also ensure that the <code>Groovy token macro processing</code>
+checkbox is set.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_pipeline_version_is_not_passed_to_the_build">Pipeline version is not passed to the build</h4>
+<div class="paragraph">
+<p>You can see that the Jenkins version is properly set but in the build version is still snapshot and
+the <code>echo "${PIPELINE_VERSION}"</code> doesn&#8217;t print anything.</p>
+</div>
 <div class="paragraph">
 <p>You can check the Jenkins logs and you&#8217;ll see</p>
 </div>
