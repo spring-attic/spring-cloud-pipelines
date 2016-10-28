@@ -7,7 +7,6 @@ services:
         gituser: "${PIPELINE_GIT_USERNAME}"
         gitpass: "${PIPELINE_GIT_PASSWORD}"
     environment:
-      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Djava.awt.headless=true -Dhudson.model.ParametersAction.keepUndefinedParameters=true"
       FORKED_ORG: "${FORKED_ORG}"
       EXTERNAL_IP: "${EXTERNAL_IP}"
     ports:
