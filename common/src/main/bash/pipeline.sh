@@ -17,7 +17,7 @@ function logInToCf() {
     echo "CF Installed? [${CF_INSTALLED}], CF Downloaded? [${CF_DOWNLOADED}]"
     if [[ ${CF_INSTALLED} == "false" && (${CF_DOWNLOADED} == "false" || ${CF_DOWNLOADED} == "true" && ${redownloadInfra} == "true") ]]; then
         echo "Downloading Cloud Foundry"
-        curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" | tar -zx
+        curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
         CF_DOWNLOADED="true"
     else
         echo "CF is already installed or was already downloaded but the flag to redownload was disabled"
@@ -212,7 +212,7 @@ function downloadJar() {
     if [[ ! -e ${destination} || ( -e ${destination} && ${redownloadInfra} == "true" ) ]]; then
         mkdir -p "${OUTPUT_FOLDER}"
         echo "Current folder is [`pwd`]; Downloading [${pathToJar}] to [${destination}]"
-        curl "${pathToJar}" -o "${destination}"
+        (curl "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
     else
         echo "File [${destination}] exists and redownload flag was set to false. Will not download it again"
     fi
