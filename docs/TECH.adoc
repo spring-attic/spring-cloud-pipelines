@@ -19,3 +19,18 @@ To generate readme just run
 ----
 ./gradlew generateReadme
 ----
+
+== Releasing
+
+=== Publishing A Docker Image
+
+When doing a release you also need to push a Docker image to Dockerhub.
+From the project root, run the following commands replacing `<version>` with the
+version of the release.
+
+[source,bash]
+----
+docker login
+docker build -t springcloud/spring-cloud-pipeline-jenkins:<version> ./jenkins
+docker push springcloud/spring-cloud-pipeline-jenkins:<version>
+----

@@ -224,7 +224,7 @@ seed.
 
 Anyways, to run the demo just provide in the `REPOS` var the comma separated
  list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics`.
- 
+
 {nbsp}
 {nbsp}
 
@@ -478,6 +478,12 @@ image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click
 {nbsp}
 
 image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
+
+=== Docker Image
+If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
+have an image you can pull and use on https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/[DockerHub].
+The `latest` tag corresponds to the latest snapshot build.  You can also find tags
+corresponding to stable releases that you can use as well. 
 
 === FAQ
 
@@ -736,4 +742,3 @@ Provide the link to this repository in your Jenkins installation.
 
 WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
  for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).
-
