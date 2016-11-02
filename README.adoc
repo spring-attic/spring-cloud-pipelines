@@ -1232,6 +1232,12 @@ image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click
 
 image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
+=== Docker Image
+If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
+have an image you can pull and use on https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/[DockerHub].
+The `latest` tag corresponds to the latest snapshot build.  You can also find tags
+corresponding to stable releases that you can use as well.
+
 === FAQ
 
 [[jenkins_faq]]
@@ -1490,7 +1496,6 @@ Provide the link to this repository in your Jenkins installation.
 WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
  for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).
 
-
 == How to build it
 
 === Build and test
@@ -1511,4 +1516,19 @@ To generate readme just run
 [source,bash]
 ----
 ./gradlew generateReadme
+----
+
+== Releasing
+
+=== Publishing A Docker Image
+
+When doing a release you also need to push a Docker image to Dockerhub.
+From the project root, run the following commands replacing `<version>` with the
+version of the release.
+
+[source,bash]
+----
+docker login
+docker build -t springcloud/spring-cloud-pipeline-jenkins:<version> ./jenkins
+docker push springcloud/spring-cloud-pipeline-jenkins:<version>
 ----

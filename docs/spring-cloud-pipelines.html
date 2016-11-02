@@ -522,6 +522,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_enable_groovy_token_macro_processing">Enable Groovy Token Macro Processing</a></li>
 </ul>
 </li>
+<li><a href="#_docker_image">Docker Image</a></li>
 <li><a href="#_faq_2">FAQ</a>
 <ul class="sectlevel3">
 <li><a href="#jenkins_faq">Pipeline version contains ${PIPELINE_VERSION}</a></li>
@@ -551,6 +552,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_build_and_test">Build and test</a></li>
 <li><a href="#_generate_readme">Generate readme</a></li>
+</ul>
+</li>
+<li><a href="#_releasing">Releasing</a>
+<ul class="sectlevel2">
+<li><a href="#_publishing_a_docker_image">Publishing A Docker Image</a></li>
 </ul>
 </li>
 </ul>
@@ -2850,6 +2856,15 @@ remember to provide the one with id <code>git</code>).</p>
 </div>
 </div>
 <div class="sect2">
+<h3 id="_docker_image">Docker Image</h3>
+<div class="paragraph">
+<p>If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
+have an image you can pull and use on <a href="https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/">DockerHub</a>.
+The <code>latest</code> tag corresponds to the latest snapshot build.  You can also find tags
+corresponding to stable releases that you can use as well.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_faq_2">FAQ</h3>
 <div class="sect3">
 <h4 id="jenkins_faq">Pipeline version contains ${PIPELINE_VERSION}</h4>
@@ -3293,6 +3308,26 @@ Remember that views can be overridden that&#8217;s why the suggestion is to cont
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">./gradlew generateReadme</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_releasing">Releasing</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_publishing_a_docker_image">Publishing A Docker Image</h3>
+<div class="paragraph">
+<p>When doing a release you also need to push a Docker image to Dockerhub.
+From the project root, run the following commands replacing <code>&lt;version&gt;</code> with the
+version of the release.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">docker login
+docker build -t springcloud/spring-cloud-pipeline-jenkins:&lt;version&gt; ./jenkins
+docker push springcloud/spring-cloud-pipeline-jenkins:&lt;version&gt;</code></pre>
 </div>
 </div>
 </div>
