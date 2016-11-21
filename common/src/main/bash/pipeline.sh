@@ -52,18 +52,20 @@ function deployAndRestartAppWithName() {
     local appName="${1}"
     local jarName="${2}"
     local env="${3}"
+    local domain="${4}"
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
-    deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
+    meployAppWithName "${appName}" "${jarName}" "${env}" 'true' "${domain}"
     restartApp "${appName}"
 }
 
 function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
     local jarName="${2}"
-    local env="${3:-test}"
+    local env="${3}"
+    local domain="${4}"
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
-    deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
+    deployAppWithName "${appName}" "${jarName}" "${env}" 'true' "${domain}"
     setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "cloud,smoke"
     restartApp "${appName}"
 }
@@ -79,8 +81,10 @@ function deployAppWithName() {
     local appName="${1}"
     local jarName="${2}"
     local env="${3}"
-    local useManifest="${4:-false}"
+    local useManifest="${4}"
     local manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo "--no-manifest"; else echo "" ; fi )
+    local domain="${5}"
+    local domainOption=$( if [[ "${domain}" != "" ]] ; then echo "-d ${domain}"; else echo "" ; fi )
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
     local hostname="${lowerCaseAppName}"
     if [[ ${env} != "prod" ]]; then
@@ -88,9 +92,9 @@ function deployAppWithName() {
     fi
     echo "Deploying app with name [${lowerCaseAppName}], env [${env}] with manifest [${useManifest}] and host [${hostname}]"
     if [[ ! -z "${manifestOption}" ]]; then
-        cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
+        cf push "${lowerCaseAppName}" -m 1024m -i 1 -p "${OUTPUT_FOLDER}/${jarName}.jar" ${domainOption} -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
     else
-        cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+        cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${jarName}.jar" ${domainOption} -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
     fi
     APPLICATION_DOMAIN="$( appHost ${lowerCaseAppName} )"
     echo "Determined that application_domain for [${lowerCaseAppName}] is [${APPLICATION_DOMAIN}]"
@@ -125,6 +129,7 @@ function deployEureka() {
     local jarName="${2}"
     local appName="${3}"
     local env="${4}"
+    local domain="${5}"
     echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${appName}], env [${env}]"
     local fileExists="true"
     local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
@@ -132,7 +137,7 @@ function deployEureka() {
         fileExists="false"
     fi
     if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
-        deployAppWithName "${appName}" "${jarName}" "${env}"
+        deployAppWithName "${appName}" "${jarName}" "${env}" 'false' "${domain}"
         restartApp "${appName}"
         createServiceWithName "${appName}"
     else
@@ -146,6 +151,7 @@ function deployStubRunnerBoot() {
     local repoWithJars="${3}"
     local env="${4:-test}"
     local stubRunnerName="${5:-stubrunner}"
+    local domain="${6}"
     local fileExists="true"
     local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
@@ -153,6 +159,9 @@ function deployStubRunnerBoot() {
     fi
     echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}]"
     if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
+        deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" 'false' "${domain}"
+        local mavenProp="$( extractMavenProperty "stubrunner.ids" )"
+        setEnvVar "${stubRunnerName}" "stubrunner.ids" "${mavenProp}"
         deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "true"
         local prop="$( retrieveStubRunnerIds )"
         echo "Found following stub runner ids [${prop}]"

@@ -8,7 +8,7 @@ factory.job('jenkins-pipeline-seed') {
     scm {
         git {
             remote {
-                github('spring-cloud/spring-cloud-pipelines')
+                github('devopsly/spring-cloud-pipelines')
             }
             branch('master')
         }
@@ -32,6 +32,7 @@ factory.job('jenkins-pipeline-seed') {
             stringParam('CF_STAGE_SPACE', 'pcfdev-stage', 'Name of the CF space for stage env')
             stringParam('CF_PROD_ORG', 'pcfdev-org', 'Name of the CF organization for prod env')
             stringParam('CF_PROD_SPACE', 'pcfdev-prod', 'Name of the CF space for prod env')
+            stringParam('DOMAIN', '', 'Custom domain for apps for all environments')
             stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
             stringParam('REPO_WITH_JARS', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs")
             stringParam('GIT_EMAIL', 'email@example.com', "Email used to tag the repo")
