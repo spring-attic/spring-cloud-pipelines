@@ -107,6 +107,7 @@ jobs:
           - CF_TEST_ORG: {{cf-test-org}}
           - CF_TEST_SPACE: {{cf-test-space}}
           - CF_TEST_API_URL: {{cf-test-api-url}}
+          - CF_HOSTNAME_UUID: {{cf-hostname-uuid}}
 
   - name: test-smoke
     serial: true
@@ -243,6 +244,7 @@ jobs:
           - CF_STAGE_ORG: {{cf-stage-org}}
           - CF_STAGE_SPACE: {{cf-stage-space}}
           - CF_STAGE_API_URL: {{cf-stage-api-url}}
+          - CF_HOSTNAME_UUID: {{cf-hostname-uuid}}
 
   - name: stage-e2e
     serial: true
@@ -311,6 +313,7 @@ jobs:
           - CF_PROD_ORG: {{cf-prod-org}}
           - CF_PROD_SPACE: {{cf-prod-space}}
           - CF_PROD_API_URL: {{cf-prod-api-url}}
+          - CF_HOSTNAME_UUID: {{cf-hostname-uuid}}
       - put: repo
         params:
           repository: out

@@ -83,6 +83,9 @@ function deployAppWithName() {
     local manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo "--no-manifest"; else echo "" ; fi )
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
     local hostname="${lowerCaseAppName}"
+    if [[ ${CF_HOSTNAME_UUID} != "" ]]; then
+        hostname="${hostname}-${CF_HOSTNAME_UUID}"
+    fi
     if [[ ${env} != "prod" ]]; then
         hostname="${hostname}-${env}"
     fi
