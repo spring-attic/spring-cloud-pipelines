@@ -3,7 +3,12 @@
 mkdir -p ${HOME}/.m2/
 mkdir -p ${HOME}/.gradle/
 
+NEW_LOCAL_REPO="${ROOT_FOLDER}/${M2_REPO}/root/.m2/repository/"
+
 echo "Writing settings xml to [${HOME}/.m2/settings.xml]"
+echo "New local repository location ${NEW_LOCAL_REPO}"
+
+ls -al ${NEW_LOCAL_REPO}
 
 set +x
 cat > ${HOME}/.m2/settings.xml <<EOF
@@ -19,7 +24,7 @@ cat > ${HOME}/.m2/settings.xml <<EOF
           <password>${M2_SETTINGS_REPO_PASSWORD}</password>
         </server>
       </servers>
-      <localRepository>${ROOT_FOLDER}/${M2_REPO}/repository/</localRepository>
+      <localRepository>${NEW_LOCAL_REPO}</localRepository>
 </settings>
 
 EOF
@@ -27,10 +32,12 @@ set -x
 
 echo "Settings xml written"
 
-echo "Writing gradle.properties to [${HOME}/.gradle/gradle.properties]"
+export GRADLE_USER_HOME="${ROOT_FOLDER}/${M2_REPO}/root/.gradle/"
+
+echo "Writing gradle.properties to [${GRADLE_USER_HOME}/gradle.properties]"
 
 set +x
-cat > ${HOME}/.gradle/gradle.properties <<EOF
+cat > ${GRADLE_USER_HOME}/gradle.properties <<EOF
 
 repoUsername=${M2_SETTINGS_REPO_USERNAME}
 repoPassword=${M2_SETTINGS_REPO_PASSWORD}
@@ -39,3 +46,5 @@ EOF
 set -x
 
 echo "gradle.properties written"
+
+ls -al "${GRADLE_USER_HOME}"
