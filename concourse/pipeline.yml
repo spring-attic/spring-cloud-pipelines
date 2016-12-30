@@ -100,6 +100,9 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+          - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+          - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - CF_TEST_USERNAME: {{cf-test-username}}
@@ -135,6 +138,9 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+          - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+          - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - CF_TEST_USERNAME: {{cf-test-username}}
@@ -169,6 +175,9 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+          - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+          - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - CF_TEST_USERNAME: {{cf-test-username}}
@@ -203,6 +212,9 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+          - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+          - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - CF_TEST_USERNAME: {{cf-test-username}}
@@ -237,6 +249,9 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+          - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+          - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - CF_STAGE_USERNAME: {{cf-stage-username}}
@@ -272,6 +287,9 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+          - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+          - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - CF_STAGE_USERNAME: {{cf-stage-username}}
@@ -306,6 +324,9 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+          - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+          - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - CF_PROD_USERNAME: {{cf-prod-username}}
@@ -346,6 +367,9 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+          - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+          - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - CF_PROD_USERNAME: {{cf-prod-username}}

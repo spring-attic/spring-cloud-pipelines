@@ -263,9 +263,9 @@ function runSmokeTests() {
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
             if [[ ! -z ${MAVEN_ARGS} ]]; then
-                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}" || ( $( printTestResults ) && return 1)
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}" || ( echo "$( printTestResults )" && return 1)
             else
-                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( echo "$( printTestResults )" && return 1)
             fi
         else
             if [[ ! -z ${MAVEN_ARGS} ]]; then
@@ -276,7 +276,7 @@ function runSmokeTests() {
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( echo "$( printTestResults )" && return 1)
         else
             ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
         fi

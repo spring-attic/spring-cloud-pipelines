@@ -202,11 +202,12 @@ Below you can see what environment variables are required by the scripts. To the
 |CF_PROD_SPACE | Name of the space for the prod env | pcfdev-space
 |REPO_WITH_JARS | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
+|CF_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
 |======================
 
 ==== Build the pipeline
 
-Log in (e.g. for Concourse running at `192.168.99.100` - if you don't provide any value then `localhos` is assumed). If you execute this script  (it assumes that either `fly` is on your `PATH` or it's in the same folder as the script is):
+Log in (e.g. for Concourse running at `192.168.99.100` - if you don't provide any value then `localhost` is assumed). If you execute this script  (it assumes that either `fly` is on your `PATH` or it's in the same folder as the script is):
 
 [source,bash]
 ----

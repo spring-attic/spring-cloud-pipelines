@@ -1562,9 +1562,9 @@ Docker Machine IP.</p>
 </thead>
 <tfoot>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">M2_SETTINGS_REPO_ID</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The id of server from Maven settings.xml</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">artifactory-local</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CF_HOSTNAME_UUID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Additional suffix for the route. In a shared environment the default routes can be already taken</p></td>
+<td class="tableblock halign-left valign-top"></td>
 </tr>
 </tfoot>
 <tbody>
@@ -1618,13 +1618,18 @@ Docker Machine IP.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL to repo with the deployed jars</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="http://192.168.99.100:8081/artifactory/libs-release-local" class="bare">http://192.168.99.100:8081/artifactory/libs-release-local</a></p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">M2_SETTINGS_REPO_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The id of server from Maven settings.xml</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">artifactory-local</p></td>
+</tr>
 </tbody>
 </table>
 </div>
 <div class="sect3">
 <h4 id="_build_the_pipeline">Build the pipeline</h4>
 <div class="paragraph">
-<p>Log in (e.g. for Concourse running at <code>192.168.99.100</code> - if you don&#8217;t provide any value then <code>localhos</code> is assumed). If you execute this script  (it assumes that either <code>fly</code> is on your <code>PATH</code> or it&#8217;s in the same folder as the script is):</p>
+<p>Log in (e.g. for Concourse running at <code>192.168.99.100</code> - if you don&#8217;t provide any value then <code>localhost</code> is assumed). If you execute this script  (it assumes that either <code>fly</code> is on your <code>PATH</code> or it&#8217;s in the same folder as the script is):</p>
 </div>
 <div class="listingblock">
 <div class="content">
