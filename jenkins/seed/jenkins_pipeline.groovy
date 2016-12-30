@@ -36,6 +36,7 @@ factory.job('jenkins-pipeline-seed') {
             stringParam('REPO_WITH_JARS', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs")
             stringParam('GIT_EMAIL', 'email@example.com', "Email used to tag the repo")
             stringParam('GIT_NAME', 'Pivo Tal', "Name used to tag the repo")
+            stringParam('CF_HOSTNAME_UUID', '', "Additional suffix for the route. In a shared environment the default routes can be already taken")
             booleanParam('AUTO_DEPLOY_TO_STAGE', false, 'Should deployment to stage be automatic')
             booleanParam('AUTO_DEPLOY_TO_PROD', false, 'Should deployment to prod be automatic')
             booleanParam('ROLLBACK_STEP_REQUIRED', true, 'Should rollback step be present')
