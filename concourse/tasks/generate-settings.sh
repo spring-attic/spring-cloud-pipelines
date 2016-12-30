@@ -10,7 +10,7 @@ echo "Maven home is [${M2_HOME}]"
 echo "Writing settings xml to [${M2_HOME}/settings.xml]"
 echo "New local repository location [${NEW_LOCAL_REPO}]"
 
-cat > ${M2_HOME}/settings.xml <<EOF
+cat > ${HOME}/.m2/settings.xml <<EOF
 
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
