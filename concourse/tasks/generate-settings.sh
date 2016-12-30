@@ -1,4 +1,5 @@
 #!/bin/bash
+set +x
 ROOT_IN_M2_RESOURCE="${ROOT_FOLDER}/${M2_REPO}/root"
 export M2_HOME="${ROOT_IN_M2_RESOURCE}/.m2"
 NEW_LOCAL_REPO="${M2_HOME}/repository/"
@@ -9,7 +10,6 @@ echo "Maven home is [${M2_HOME}]"
 echo "Writing settings xml to [${M2_HOME}/settings.xml]"
 echo "New local repository location [${NEW_LOCAL_REPO}]"
 
-set +x
 cat > ${M2_HOME}/settings.xml <<EOF
 
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"

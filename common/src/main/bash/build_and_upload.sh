@@ -4,6 +4,8 @@ set -e
 
 source pipeline.sh || echo "No pipeline.sh found"
 
+echo "Additional Maven Args [${MAVEN_ARGS}]"
+
 if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
     ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${MAVEN_ARGS}
     if [[ "${CI}" == "CONCOURSE" ]]; then
