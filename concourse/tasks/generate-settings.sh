@@ -8,7 +8,6 @@ NEW_LOCAL_REPO="${ROOT_IN_M2_RESOURCE}/.m2/repository/"
 
 echo "Writing settings xml to [${HOME}/.m2/settings.xml]"
 echo "New local repository location ${NEW_LOCAL_REPO}"
-ls -al "${NEW_LOCAL_REPO}"
 
 set +x
 cat > ${HOME}/.m2/settings.xml <<EOF
@@ -46,5 +45,3 @@ EOF
 set -x
 
 echo "gradle.properties written"
-
-ls -al "${GRADLE_USER_HOME}"

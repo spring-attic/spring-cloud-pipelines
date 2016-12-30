@@ -416,14 +416,14 @@ function outputFolder() {
 
 function testResultsFolder() {
     if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        echo "**/test-results/*.xml"
+        find . -name \TEST*.xml -print -exec cat {} \;
     else
-        echo "**/surefire-reports/*"
+        tail -n +1 "**/surefire-reports/*"
     fi
 }
 
 function printTestResults() {
-    echo -e "\n\nBuild failed!!! - will print all test results to the console (it's the easiest way to debug anything later)\n\n" && tail -n +1 "$( testResultsFolder )"
+    echo -e "\n\nBuild failed!!! - will print all test results to the console (it's the easiest way to debug anything later)\n\n" && $( testResultsFolder )
 }
 
 function retrieveStubRunnerIds() {
