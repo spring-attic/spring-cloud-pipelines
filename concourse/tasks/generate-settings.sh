@@ -6,7 +6,7 @@ mkdir -p ${HOME}/.gradle
 
 ROOT_IN_M2_RESOURCE="${ROOT_FOLDER}/${M2_REPO}/root"
 export M2_HOME="${ROOT_IN_M2_RESOURCE}/.m2"
-NEW_LOCAL_REPO="${M2_HOME}/repository/"
+export NEW_LOCAL_REPO="${M2_HOME}/repository/"
 
 cat > ${HOME}/.m2/settings.xml <<EOF
 
@@ -45,3 +45,5 @@ echo "gradle.properties written"
 
 echo "Moving .m2 and .gradle to [${HOME}] folder"
 mv ${NEW_LOCAL_REPO} ${HOME}/.m2/repository
+
+ls -al ${HOME}/.m2/repository
