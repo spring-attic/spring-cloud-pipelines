@@ -45,5 +45,3 @@ echo "gradle.properties written"
 
 echo "Moving .m2 and .gradle to [${HOME}] folder"
 mv ${NEW_LOCAL_REPO} ${HOME}/.m2/repository
-
-ls -al ${HOME}/.m2/repository
