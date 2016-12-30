@@ -576,6 +576,7 @@ class PipelineDefaults {
 		envs['CF_PROD_SPACE'] = variables['CF_PROD_SPACE'] ?: 'pfcdev-prod'
 		envs['CF_HOSTNAME_UUID'] = variables['CF_HOSTNAME_UUID'] ?: ''
 		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
+		envs['DOMAIN'] = variables['DOMAIN'] ?: ''
 		envs['REPO_WITH_JARS'] = variables['REPO_WITH_JARS'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 		return envs
 	}
@@ -615,6 +616,7 @@ return envs'''
 			stringParam('STUBRUNNER_GROUP_ID', 'com.example.github', "Group Id for Stub Runner used by tests")
 			stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
 			stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
+			stringParam('DOMAIN', 'devops-experimentation.cfapps.io', "Custom domain name for you app")
 		}
 	}
 
