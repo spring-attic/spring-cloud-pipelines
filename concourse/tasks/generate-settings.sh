@@ -1,17 +1,14 @@
 #!/bin/bash
-
-mkdir -p ${HOME}/.m2/
-mkdir -p ${HOME}/.gradle/
-
 ROOT_IN_M2_RESOURCE="${ROOT_FOLDER}/${M2_REPO}/root"
 export M2_HOME="${ROOT_IN_M2_RESOURCE}/.m2"
 NEW_LOCAL_REPO="${M2_HOME}/repository/"
 
-echo "Writing settings xml to [${HOME}/.m2/settings.xml]"
+echo "Maven home is ${M2_HOME}"
+echo "Writing settings xml to [${M2_HOME}/settings.xml]"
 echo "New local repository location ${NEW_LOCAL_REPO}"
 
 set +x
-cat > ${HOME}/.m2/settings.xml <<EOF
+cat > ${M2_HOME}/settings.xml <<EOF
 
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
