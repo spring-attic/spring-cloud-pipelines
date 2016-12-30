@@ -19,6 +19,7 @@ cat > ${HOME}/.m2/settings.xml <<EOF
           <password>${M2_SETTINGS_REPO_PASSWORD}</password>
         </server>
       </servers>
+      <localRepository>${ROOT_FOLDER}/${M2_REPO}/repository</localRepository>
 </settings>
 
 EOF
