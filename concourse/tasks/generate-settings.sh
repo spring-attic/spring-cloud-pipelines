@@ -43,5 +43,5 @@ set -x
 
 echo "gradle.properties written"
 
-echo "Moving .m2 and .gradle to [${HOME}] folder"
+echo "Moving [${${NEW_LOCAL_REPO}] [${HOME}] folder"
 mv ${NEW_LOCAL_REPO} ${HOME}/.m2/repository
