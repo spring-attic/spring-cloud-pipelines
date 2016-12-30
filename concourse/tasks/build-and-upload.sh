@@ -21,7 +21,3 @@ cd ${ROOT_FOLDER}/${REPO_RESOURCE}
 echo "Tagging the project with dev tag"
 echo "dev/${PIPELINE_VERSION}" > ${ROOT_FOLDER}/${REPO_RESOURCE}/tag
 cp -r ${ROOT_FOLDER}/${REPO_RESOURCE}/. ${ROOT_FOLDER}/${OUTPUT_RESOURCE}/
-
-# WE CAN USE OUTPUT TO ARCHIVE THE RESULTS?
-#mkdir -p ${OUTPUT_RESOURCE}/junit
-#find . -type f -regex ".*/${OUTPUT_FOLDER}/.*-reports/.*" -exec cp {} ${OUTPUT_RESOURCE}/junit/ \;

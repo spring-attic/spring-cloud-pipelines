@@ -3,7 +3,9 @@
 mkdir -p ${HOME}/.m2/
 mkdir -p ${HOME}/.gradle/
 
-NEW_LOCAL_REPO="${ROOT_FOLDER}/${M2_REPO}/root/.m2/repository/"
+export M2_RESOURCE=m2
+
+NEW_LOCAL_REPO="${ROOT_FOLDER}/${M2_RESOURCE}/root/.m2/repository/"
 
 echo "Writing settings xml to [${HOME}/.m2/settings.xml]"
 echo "New local repository location ${NEW_LOCAL_REPO}"
@@ -32,7 +34,7 @@ set -x
 
 echo "Settings xml written"
 
-export GRADLE_USER_HOME="${ROOT_FOLDER}/${M2_REPO}/root/.gradle/"
+export GRADLE_USER_HOME="${ROOT_FOLDER}/${M2_RESOURCE}/root/.gradle/"
 
 echo "Writing gradle.properties to [${GRADLE_USER_HOME}/gradle.properties]"
 
