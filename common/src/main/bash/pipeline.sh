@@ -276,9 +276,9 @@ function runSmokeTests() {
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
         else
-            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
         fi
     else
         echo "Unsupported project build tool"
@@ -308,9 +308,9 @@ function runE2eTests() {
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
         else
-            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL="${M2_LOCAL}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
         fi
     else
         echo "Unsupported project build tool"
@@ -416,14 +416,14 @@ function outputFolder() {
 
 function testResultsFolder() {
     if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        echo "**/test-results/**/"
+        echo "**/test-results/*.xml"
     else
-        echo "**/surefire-reports/"
+        echo "**/surefire-reports/*"
     fi
 }
 
 function printTestResults() {
-    echo -e "\n\nBuild failed!!! - will print all test results to the console (it's the easiest way to debug anything later)\n\n" && tail -n +1 "$( testResultsFolder )/*"
+    echo -e "\n\nBuild failed!!! - will print all test results to the console (it's the easiest way to debug anything later)\n\n" && tail -n +1 "$( testResultsFolder )"
 }
 
 function retrieveStubRunnerIds() {

@@ -13,7 +13,7 @@ echo "Version resource folder is [${VERSION_RESOURCE}]"
 
 source ${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh
 
-M2_LOCAL=${ROOT_FOLDER}/${M2_REPO}
+M2_LOCAL=${ROOT_FOLDER}/${M2_REPO}/repository
 echo "Changing the maven local to [${M2_LOCAL}]"
 export MAVEN_ARGS="-Dmaven.repo.local=${M2_LOCAL}"
 

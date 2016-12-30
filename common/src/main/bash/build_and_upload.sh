@@ -4,6 +4,8 @@ set -e
 
 source pipeline.sh || echo "No pipeline.sh found"
 
+echo "Additional Maven Args [${MAVEN_ARGS}]"
+
 if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
     ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${MAVEN_ARGS}
     if [[ "${CI}" == "CONCOURSE" ]]; then
@@ -13,9 +15,9 @@ if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
     fi
 elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./gradlew clean build deploy -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL=${M2_LOCAL} -DREPO_WITH_JARS=${REPO_WITH_JARS} --stacktrace  || ( $( printTestResults ) && return 1)
+        ./gradlew clean build deploy -PnewVersion=${PIPELINE_VERSION} -DREPO_WITH_JARS=${REPO_WITH_JARS} --stacktrace  || ( $( printTestResults ) && return 1)
     else
-        ./gradlew clean build deploy -PnewVersion=${PIPELINE_VERSION} -DM2_LOCAL=${M2_LOCAL} -DREPO_WITH_JARS=${REPO_WITH_JARS} --stacktrace
+        ./gradlew clean build deploy -PnewVersion=${PIPELINE_VERSION} -DREPO_WITH_JARS=${REPO_WITH_JARS} --stacktrace
     fi
 else
     echo "Unsupported project build tool"
