@@ -8,9 +8,7 @@ NEW_LOCAL_REPO="${ROOT_IN_M2_RESOURCE}/.m2/repository/"
 
 echo "Writing settings xml to [${HOME}/.m2/settings.xml]"
 echo "New local repository location ${NEW_LOCAL_REPO}"
-
-ls -al "${ROOT_FOLDER}/${M2_REPO}"
-ls -al "${ROOT_IN_M2_RESOURCE}"
+ls -al "${NEW_LOCAL_REPO}"
 
 set +x
 cat > ${HOME}/.m2/settings.xml <<EOF
