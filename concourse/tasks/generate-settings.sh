@@ -2,10 +2,11 @@
 ROOT_IN_M2_RESOURCE="${ROOT_FOLDER}/${M2_REPO}/root"
 export M2_HOME="${ROOT_IN_M2_RESOURCE}/.m2"
 NEW_LOCAL_REPO="${M2_HOME}/repository/"
+export MAVEN_OPTS="-Dmaven.home=${M2_HOME} -Dmaven.repo.local=${NEW_LOCAL_REPO}"
 
-echo "Maven home is ${M2_HOME}"
+echo "Maven home is [${M2_HOME}]"
 echo "Writing settings xml to [${M2_HOME}/settings.xml]"
-echo "New local repository location ${NEW_LOCAL_REPO}"
+echo "New local repository location [${NEW_LOCAL_REPO}]"
 
 set +x
 cat > ${M2_HOME}/settings.xml <<EOF
