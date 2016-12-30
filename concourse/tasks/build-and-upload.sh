@@ -13,9 +13,6 @@ echo "Version resource folder is [${VERSION_RESOURCE}]"
 
 source ${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh
 
-echo "Generating settings.xml for Maven in local m2"
-. ${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/generate-settings.sh
-
 echo "Building and uploading the projects artifacts"
 cd ${ROOT_FOLDER}/${REPO_RESOURCE}
 

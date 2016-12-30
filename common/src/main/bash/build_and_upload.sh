@@ -13,7 +13,7 @@ if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
     fi
 elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./gradlew clean build deploy -PnewVersion=${PIPELINE_VERSION} -DREPO_WITH_JARS=${REPO_WITH_JARS} --stacktrace  || ( $( printTestResults ) && return 1)
+        ./gradlew clean build deploy -PnewVersion=${PIPELINE_VERSION} -DREPO_WITH_JARS=${REPO_WITH_JARS} --stacktrace --debug  || ( $( printTestResults ) && return 1)
     else
         ./gradlew clean build deploy -PnewVersion=${PIPELINE_VERSION} -DREPO_WITH_JARS=${REPO_WITH_JARS} --stacktrace
     fi

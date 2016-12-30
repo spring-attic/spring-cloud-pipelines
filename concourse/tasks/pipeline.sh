@@ -18,6 +18,9 @@ export CI="CONCOURSE"
 echo "Sourcing file with pipeline functions"
 source ${SCRIPTS_OUTPUT_FOLDER}/pipeline.sh
 
+echo "Generating settings.xml / gradle properties for Maven in local m2"
+. ${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/generate-settings.sh
+
 export TERM=dumb
 
 cd ${ROOT_FOLDER}
