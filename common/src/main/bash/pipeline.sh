@@ -70,7 +70,7 @@ function appHost() {
     local appName="${1}"
     local lowerCase="$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )"
     APP_HOST=`cf apps | grep ${lowerCase} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
-    echo "${APP_HOST}"
+    echo "${APP_HOST}" | tail -1
 }
 
 function deployAppWithName() {
@@ -220,7 +220,7 @@ function downloadJar() {
 
 function propagatePropertiesForTests() {
     local projectArtifactId="${1}"
-    local stubRunnerHost="${2:-stubrunner}"
+    local stubRunnerHost="${2:-stubrunner-${projectArtifactId}}"
     local fileLocation="${3:-${OUTPUT_FOLDER}/test.properties}"
     echo "Propagating properties for tests. Project [${projectArtifactId}] stub runner host [${stubRunnerHost}] properties location [${fileLocation}]"
     # retrieve host of the app / stubrunner
@@ -381,7 +381,6 @@ function prepareForE2eTests() {
     projectArtifactId=$( retrieveArtifactId )
     mkdir -p "${OUTPUT_FOLDER}"
     logInToCf "${redownloadInfra}" "${username}" "${password}" "${org}" "${space}" "${api}"
-    propagatePropertiesForTests ${projectArtifactId}
     readTestPropertiesFromFile
 }
 

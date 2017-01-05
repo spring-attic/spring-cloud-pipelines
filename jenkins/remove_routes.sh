@@ -4,6 +4,8 @@ yes | cf delete-route local.pcfdev.io -n github-webhook-test
 yes | cf delete-route local.pcfdev.io -n github-analytics-test
 yes | cf delete-route local.pcfdev.io -n github-eureka-test
 yes | cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n stubrunner-github-webhook-test
+yes | cf delete-route local.pcfdev.io -n stubrunner-github-analytics-test
 yes | cf delete-route local.pcfdev.io -n github-webhook-stage
 yes | cf delete-route local.pcfdev.io -n github-analytics-stage
 yes | cf delete-route local.pcfdev.io -n github-eureka-stage

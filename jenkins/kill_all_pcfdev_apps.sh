@@ -7,6 +7,8 @@ yes | cf stop github-webhook
 yes | cf stop github-analytics
 yes | cf stop github-eureka
 yes | cf stop stubrunner
+yes | cf stop stubrunner-github-webhook
+yes | cf stop stubrunner-github-analytics
 
 cf target -o pcfdev-org -s pcfdev-stage
 yes | cf stop github-webhook
