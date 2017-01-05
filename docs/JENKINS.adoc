@@ -255,7 +255,7 @@ you've removed the Artifactory volume with deployed JAR whereas a tag in the rep
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 4: ", title="Click the manual step to go to stage (remember about killing the apps on test env)"]
+image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 4: ", title="Click the manual step to go to stage (remember about killing the apps on test env). To do this click the *ARROW* next to the job name"]
 
 {nbsp}
 {nbsp}
