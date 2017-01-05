@@ -160,7 +160,6 @@ function deployStubRunnerBoot() {
         setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
         setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
         restartApp "${stubRunnerName}"
-        createServiceWithName "${stubRunnerName}"
     else
         echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]; redeploy flag was set [${redeploy}]. Skipping deployment"
     fi
