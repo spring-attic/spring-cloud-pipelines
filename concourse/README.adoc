@@ -77,7 +77,7 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 </settings>
 ----
 
-==== Start Jenkins and Artifactory
+==== Start Concourse and Artifactory
 
 [[start]] Concourse + Artifactory can be ran locally. To do that just execute the
 `start.sh` script from this repo.
