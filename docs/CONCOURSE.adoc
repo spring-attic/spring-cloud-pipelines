@@ -14,7 +14,7 @@ All in all there are the following projects taking part in the whole `microservi
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
 - <<fork,Fork repos>>
-- <<start,Start Jenkins and Artifactory>>
+- <<start,Start Concourse and Artifactory>>
 - <<deploy,Deploy infra to Artifactory>>
 - <<pcfdev,Start PCF Dev (if you don't want to use an existing one)>>
 - <<fly,Setup the `fly` CLI>>
@@ -75,18 +75,18 @@ If you don't have this file just copy the one under `seed/settings.xml` or copy 
 
 ==== Start Concourse and Artifactory
 
-[[start]] Concourse + Artifactory can be ran locally. To do that just execute the
+[[start]] Concourse + Artifactory can be run locally. To do that just execute the
 `start.sh` script from this repo.
 
 [source,bash]
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/concourse
-./setup-docker-compose.sh
+./setup_docker_compose.sh
 ./start.sh 192.168.99.100
 ----
 
-The `setup-docker-compose.sh` script should be executed once only to allow
+The `setup_docker_compose.sh` script should be executed once only to allow
 generation of keys.
 
 The `192.168.99.100` param is an example of an external URL of Concourse
@@ -218,7 +218,7 @@ Next run the command to create the pipeline.
 
 [source,bash]
 ----
-./set-pipeline.sh
+./set_pipeline.sh
 ----
 
 Then you'll create a `github-webhook` pipeline under the `docker` alias, using the provided `credentials.yml` file.
