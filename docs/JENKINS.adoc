@@ -117,11 +117,11 @@ git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/jenkins
 ./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg
 ----
-
 Then Jenkins will be running on port `8080` and Artifactory `8081`.
 The provided parameters will be passed as env variables to Jenkins VM
 and credentials will be set in your set. That way you don't have to do
-any manual work on the Jenkins side. Also the `REPOS` env variable will
+any manual work on the Jenkins side. In the above parameters, the third parameter
+could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
 contain your GitHub org in which you have the forked repos.
 
 ===== Deploy the infra JARs to Artifactory
