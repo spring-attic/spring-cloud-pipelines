@@ -33,6 +33,6 @@ concourse-worker:
     CONCOURSE_TSA_HOST: concourse-web
 
 artifactory:
-  image: jfrog-docker-registry.bintray.io/artifactory/artifactory-oss:latest
+  image: docker.bintray.io/jfrog/artifactory-oss:latest
   ports:
     - "8081:8081"
