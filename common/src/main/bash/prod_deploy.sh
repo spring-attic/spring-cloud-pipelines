@@ -19,4 +19,5 @@ downloadJar ${REDEPLOY_INFRA} ${REPO_WITH_JARS} ${EUREKA_GROUP_ID} ${EUREKA_ARTI
 deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}" "prod"
 
 # deploy app
-deployAndRestartAppWithName ${projectArtifactId} "${projectArtifactId}-${PIPELINE_VERSION}" "prod"
+renameTheOldApplicationIfPresent "${projectArtifactId}"
+deployAndRestartAppWithName "${projectArtifactId}" "${projectArtifactId}-${PIPELINE_VERSION}" "prod"

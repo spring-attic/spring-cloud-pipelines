@@ -524,10 +524,14 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Prod', 'Complete switch over')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+			maskPasswords()
 			parameters(PipelineDefaults.defaultParams())
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 				groovy(PipelineDefaults.groovyEnvScript)
+			}
+			credentialsBinding {
+				usernamePassword('CF_PROD_USERNAME', 'CF_PROD_PASSWORD', cfProdCredentialId)
 			}
 			timestamps()
 			colorizeOutput()
@@ -536,6 +540,16 @@ parsedRepos.each {
 				noActivity(300)
 				failBuild()
 				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
+		}
+		scm {
+			git {
+				remote {
+					name('origin')
+					url(fullGitRepo)
+					branch('dev/${PIPELINE_VERSION}')
+					credentials(gitCredentials)
+				}
 			}
 		}
 		steps {

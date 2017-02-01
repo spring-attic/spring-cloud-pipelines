@@ -17,5 +17,7 @@ yes | cf stop github-eureka
 
 cf target -o pcfdev-org -s pcfdev-prod
 yes | cf stop github-webhook
+yes | cf stop github-webhook-venerable
 yes | cf stop github-analytics
+yes | cf stop github-analytics-venerable
 yes | cf stop github-eureka

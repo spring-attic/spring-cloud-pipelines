@@ -379,8 +379,11 @@ function prepareForE2eTests() {
     echo "Retrieving group and artifact id - it can take a while..."
     projectGroupId=$( retrieveGroupId )
     projectArtifactId=$( retrieveArtifactId )
+    echo "Project groupId is ${projectGroupId}"
+    echo "Project artifactId is ${projectArtifactId}"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToCf "${redownloadInfra}" "${username}" "${password}" "${org}" "${space}" "${api}"
+    propagatePropertiesForTests ${projectArtifactId}
     readTestPropertiesFromFile
 }
 
@@ -427,6 +430,31 @@ function retrieveStubRunnerIds() {
         echo "$( ./gradlew stubIds -q | tail -1 )"
     else
         echo "$( extractMavenProperty 'stubrunner.ids' )"
+    fi
+}
+
+function renameTheOldApplicationIfPresent() {
+    local appName="${1}"
+    local newName="${appName}-venerable"
+    echo "Renaming the app from [${appName}] -> [${newName}]"
+    local appPresent="no"
+    cf app "${appName}" && appPresent="yes"
+    if [[ "${appPresent}" == "yes" ]]; then
+        cf rename "${appName}" "${newName}"
+    else
+        echo "Will not rename the application cause it's not there"
+    fi
+}
+
+function deleteTheOldApplicationIfPresent() {
+    local appName="${1}"
+    local oldName="${appName}-venerable"
+    echo "Deleting the app [${oldName}]"
+    cf app "${oldName}" && appPresent="yes"
+    if [[ "${appPresent}" == "yes" ]]; then
+        cf delete "${oldName}" -r -f
+    else
+        echo "Will not remove the old application cause it's not there"
     fi
 }
 

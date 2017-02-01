@@ -1,5 +1,5 @@
 #!/bin/bash
-ROOT_ADDRESS=${1:-localhost}
+ROOT_ADDRESS=${1:-`./whats_my_ip.sh`}
 
 echo "Provided external address is [${ROOT_ADDRESS}]"
 

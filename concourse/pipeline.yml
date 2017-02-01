@@ -352,7 +352,7 @@ jobs:
         - get: version
           resource: version
           passed: [ prod-deploy ]
-          trigger: true
+          trigger: false
       - task: prod-complete
         file: tools/concourse/tasks/prod-complete.yml
         params:
@@ -377,57 +377,3 @@ jobs:
           - CF_PROD_ORG: {{cf-prod-org}}
           - CF_PROD_SPACE: {{cf-prod-space}}
           - CF_PROD_API_URL: {{cf-prod-api-url}}
-
-  - name: init-m2
-    plan:
-      - aggregate:
-        - get: repo
-        - get: tools
-      - task: build-m2
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: spring-cloud/pipeline-base
-          inputs:
-            - name: repo
-            - name: tools
-          outputs:
-            - name: to-push
-          run:
-            path: sh
-            args:
-            - tools/concourse/tasks/cache-m2.sh
-            - init
-      - put: m2
-        params:
-          import_file: to-push/rootfs.tar
-
-  - name: update-m2
-    plan:
-      - aggregate:
-        - get: repo
-          trigger: true
-        - get: tools
-        - get: m2
-      - task: build-m2
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: springcloud/pipeline-base
-          inputs:
-            - name: repo
-            - name: tools
-            - name: m2
-          outputs:
-            - name: to-push
-          run:
-            path: sh
-            args:
-            - tools/concourse/tasks/cache-m2.sh
-      - put: m2
-        params:
-          import_file: to-push/rootfs.tar

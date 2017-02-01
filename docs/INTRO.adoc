@@ -293,8 +293,12 @@ Here we're
 the prod environment in a different way)
 - deploying `Eureka` infrastructure application to Cloud Foundry (only for the demo to pass - you should provision
 the prod environment in a different way)
-- downloading the fat jar from Nexus and we're uploading it to Cloud Foundry
 - tagging the Git repo with `prod/${version}` tag
-- in the `Complete switch over` we're currently not doing anything but you could perform some
-tests on production or when doing blue / green deployment you could switch of one of the instances.
-This step is manual.
+- downloading the fat jar from Nexus
+- we're doing Blue Green deployment on Cloud Foundry
+     - we're renaming the current instance of the app e.g. `fooService` to `fooService-venerable`
+     - we're deploying the new instance of the app under the `fooService` name
+     - now two instances of the same application are running on production
+- in the `Complete switch over` which is a manual step
+    - we're deleting the old instance
+    - remember to run this step only after you have confirmed that both instances are working fine!
