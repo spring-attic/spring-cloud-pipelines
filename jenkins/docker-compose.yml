@@ -17,6 +17,6 @@ services:
     links:
       - artifactory
   artifactory:
-    image: docker.bintray.io/jfrog/artifactory-oss:latest
+    image: jfrog-docker-registry.bintray.io/artifactory/artifactory-oss:latest
     ports:
       - "8081:8081"
