@@ -15,22 +15,23 @@ dependencies {
 }
 
 task generateMainReadme(type: JRubyExec) {
-	script "${projectDir}/coalesce_readme.rb"
-	scriptArgs "-idocs/README.adoc",  "-oREADME.adoc"
+	script "${projectDir}/tools/coalesce-readme.rb"
+	scriptArgs "-i ${projectDir}/docs/README.adoc", "-o ${projectDir}/README.adoc"
 }
 
 task generateJenkinsReadme(type: JRubyExec) {
-	script "${projectDir}/coalesce_readme.rb"
-	scriptArgs "-idocs/JENKINS.adoc",  "-ojenkins/README.adoc"
+	script "${projectDir}/tools/coalesce-readme.rb"
+	scriptArgs "-i ${projectDir}/docs/JENKINS.adoc", "-o ${projectDir}/jenkins/README.adoc"
 }
 
 task generateConcourseReadme(type: JRubyExec) {
-	script "${projectDir}/coalesce_readme.rb"
-	scriptArgs "-idocs/CONCOURSE.adoc",  "-oconcourse/README.adoc"
+	script "${projectDir}/tools/coalesce-readme.rb"
+	scriptArgs "-i ${projectDir}/docs/CONCOURSE.adoc", "-o ${projectDir}/concourse/README.adoc"
 }
 
 task generateIndex(type: JRubyExec, dependsOn: ["generateMainReadme", "generateJenkinsReadme", "generateConcourseReadme"]) {
-	script "${projectDir}/generate_index.rb"
+	script "${projectDir}/tools/generate-index.rb"
+	scriptArgs "${projectDir}/docs/spring-cloud-pipelines.adoc"
 }
 
 task generateReadme(dependsOn: ["generateIndex"]) {
