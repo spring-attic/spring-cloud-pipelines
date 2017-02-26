@@ -450,11 +450,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_step_by_step">Step by step</a>
 <ul class="sectlevel3">
-<li><a href="#_fork_repos">Fork repos</a>
-<ul class="sectlevel4">
-<li><a href="#_set_up_your_local_maven_to_work_with_artifactory">Set up your local Maven to work with Artifactory</a></li>
-</ul>
-</li>
+<li><a href="#_fork_repos">Fork repos</a></li>
 <li><a href="#_start_concourse_and_artifactory">Start Concourse and Artifactory</a>
 <ul class="sectlevel4">
 <li><a href="#_deploy_the_infra_jars_to_artifactory">Deploy the infra JARs to Artifactory</a></li>
@@ -487,11 +483,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_project_setup_2">Project setup</a></li>
 <li><a href="#_step_by_step_2">Step by step</a>
 <ul class="sectlevel3">
-<li><a href="#_fork_repos_2">Fork repos</a>
-<ul class="sectlevel4">
-<li><a href="#_set_up_your_local_maven_to_work_with_artifactory_2">Set up your local Maven to work with Artifactory</a></li>
-</ul>
-</li>
+<li><a href="#_fork_repos_2">Fork repos</a></li>
 <li><a href="#_start_jenkins_and_artifactory">Start Jenkins and Artifactory</a>
 <ul class="sectlevel4">
 <li><a href="#_deploy_the_infra_jars_to_artifactory_2">Deploy the infra JARs to Artifactory</a></li>
@@ -1369,38 +1361,6 @@ just check out the section on how to update the URL to Artifactory)</a></p>
 </li>
 </ul>
 </div>
-<div class="sect4">
-<h5 id="_set_up_your_local_maven_to_work_with_artifactory">Set up your local Maven to work with Artifactory</h5>
-<div class="paragraph">
-<p>First, you have to ensure that this section is present under your <code>~/.m2/settings.xml</code></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-xml" data-lang="xml">&lt;server&gt;
-  &lt;id&gt;artifactory-local&lt;/id&gt;
-  &lt;username&gt;admin&lt;/username&gt;
-  &lt;password&gt;password&lt;/password&gt;
-&lt;/server&gt;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>If you don&#8217;t have this file just copy the one under <code>seed/settings.xml</code> or copy paste it from below</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-xml" data-lang="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;settings&gt;
-	&lt;servers&gt;
-		&lt;server&gt;
-			&lt;id&gt;artifactory-local&lt;/id&gt;
-			&lt;username&gt;admin&lt;/username&gt;
-			&lt;password&gt;password&lt;/password&gt;
-		&lt;/server&gt;
-	&lt;/servers&gt;
-&lt;/settings&gt;</code></pre>
-</div>
-</div>
-</div>
 </div>
 <div class="sect3">
 <h4 id="_start_concourse_and_artifactory">Start Concourse and Artifactory</h4>
@@ -1430,13 +1390,13 @@ generation of keys.</p>
 <div class="sect4">
 <h5 id="_deploy_the_infra_jars_to_artifactory">Deploy the infra JARs to Artifactory</h5>
 <div class="paragraph">
-<p><a id="deploy"></a> When Artifactory is running, just execute the <code>deploy_infra.sh</code> script from this repo.</p>
+<p><a id="deploy"></a> When Artifactory is running, just execute the <code>tools/deploy-infra.sh</code> script from this repo.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud/spring-cloud-pipelines
-cd spring-cloud-pipelines/concourse
-./deploy_infra.sh</code></pre>
+cd spring-cloud-pipelines/
+./tools/deploy-infra.sh</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2111,38 +2071,6 @@ just check out the section on how to update the URL to Artifactory)</a></p>
 </li>
 </ul>
 </div>
-<div class="sect4">
-<h5 id="_set_up_your_local_maven_to_work_with_artifactory_2">Set up your local Maven to work with Artifactory</h5>
-<div class="paragraph">
-<p>First, you have to ensure that this section is present under your <code>~/.m2/settings.xml</code></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-xml" data-lang="xml">&lt;server&gt;
-  &lt;id&gt;artifactory-local&lt;/id&gt;
-  &lt;username&gt;admin&lt;/username&gt;
-  &lt;password&gt;password&lt;/password&gt;
-&lt;/server&gt;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>If you don&#8217;t have this file just copy the one under <code>seed/settings.xml</code> or copy paste it from below</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-xml" data-lang="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;settings&gt;
-	&lt;servers&gt;
-		&lt;server&gt;
-			&lt;id&gt;artifactory-local&lt;/id&gt;
-			&lt;username&gt;admin&lt;/username&gt;
-			&lt;password&gt;password&lt;/password&gt;
-		&lt;/server&gt;
-	&lt;/servers&gt;
-&lt;/settings&gt;</code></pre>
-</div>
-</div>
-</div>
 </div>
 <div class="sect3">
 <h4 id="_start_jenkins_and_artifactory">Start Jenkins and Artifactory</h4>
@@ -2168,13 +2096,13 @@ contain your GitHub org in which you have the forked repos.</p>
 <div class="sect4">
 <h5 id="_deploy_the_infra_jars_to_artifactory_2">Deploy the infra JARs to Artifactory</h5>
 <div class="paragraph">
-<p><a id="jenkins_deploy"></a> When Artifactory is running, just execute the <code>deploy_infra.sh</code> script from this repo.</p>
+<p><a id="jenkins_deploy"></a> When Artifactory is running, just execute the <code>tools/deploy-infra.sh</code> script from this repo.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud/spring-cloud-pipelines
-cd spring-cloud-pipelines/jenkins
-./deploy_infra.sh</code></pre>
+cd spring-cloud-pipelines/
+./tools/deploy-infra.sh</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2436,27 +2364,14 @@ when you want to do some custom changes.</p>
 <div class="sect3">
 <h4 id="_deploying_infra_jars_to_a_different_location">Deploying infra jars to a different location</h4>
 <div class="paragraph">
-<p>It&#8217;s enough to provide the <code>distribution.management.release.url</code> system prop to Maven.
-Example for deploying to Artifactory at IP <code>192.168.99.100</code></p>
-</div>
-<div class="paragraph">
-<p>Github Eureka:</p>
+<p>It&#8217;s enough to set the <code>ARTIFACTORY_URL</code> environmental variable before
+executing <code>tools/deploy-infra.sh</code>. Example for deploying to Artifactory at IP <code>192.168.99.100</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud-samples/github-eureka
-cd github-eureka
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Github Stub Runner:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot
-cd github-analytics-stub-runner-boot
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh</code></pre>
 </div>
 </div>
 </div>
