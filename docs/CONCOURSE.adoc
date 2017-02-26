@@ -44,35 +44,6 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
-===== Set up your local Maven to work with Artifactory
-
-First, you have to ensure that this section is present under your `~/.m2/settings.xml`
-
-[source,xml]
-----
-<server>
-  <id>artifactory-local</id>
-  <username>admin</username>
-  <password>password</password>
-</server>
-----
-
-If you don't have this file just copy the one under `seed/settings.xml` or copy paste it from below
-
-[source,xml]
-----
-<?xml version="1.0" encoding="UTF-8"?>
-<settings>
-	<servers>
-		<server>
-			<id>artifactory-local</id>
-			<username>admin</username>
-			<password>password</password>
-		</server>
-	</servers>
-</settings>
-----
-
 ==== Start Concourse and Artifactory
 
 [[start]] Concourse + Artifactory can be run locally. To do that just execute the
@@ -96,13 +67,13 @@ Then Concourse will be running on port `8080` and Artifactory `8081`.
 
 ===== Deploy the infra JARs to Artifactory
 
-[[deploy]] When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
+[[deploy]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
 
 [source,bash]
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
-cd spring-cloud-pipelines/concourse
-./deploy_infra.sh
+cd spring-cloud-pipelines/
+./tools/deploy-infra.sh
 ----
 
 As a result both `eureka` and `stub runner` repos will be cloned, built

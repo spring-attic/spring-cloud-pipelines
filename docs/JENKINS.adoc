@@ -77,35 +77,6 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
-===== Set up your local Maven to work with Artifactory
-
-First, you have to ensure that this section is present under your `~/.m2/settings.xml`
-
-[source,xml]
-----
-<server>
-  <id>artifactory-local</id>
-  <username>admin</username>
-  <password>password</password>
-</server>
-----
-
-If you don't have this file just copy the one under `seed/settings.xml` or copy paste it from below
-
-[source,xml]
-----
-<?xml version="1.0" encoding="UTF-8"?>
-<settings>
-	<servers>
-		<server>
-			<id>artifactory-local</id>
-			<username>admin</username>
-			<password>password</password>
-		</server>
-	</servers>
-</settings>
-----
-
 ==== Start Jenkins and Artifactory
 
 [[jenkins_start]] Jenkins + Artifactory can be ran locally. To do that just execute the
@@ -126,13 +97,13 @@ contain your GitHub org in which you have the forked repos.
 
 ===== Deploy the infra JARs to Artifactory
 
-[[jenkins_deploy]] When Artifactory is running, just execute the `deploy_infra.sh` script from this repo.
+[[jenkins_deploy]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
 
 [source,bash]
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
-cd spring-cloud-pipelines/jenkins
-./deploy_infra.sh
+cd spring-cloud-pipelines/
+./tools/deploy-infra.sh
 ----
 
 As a result both `eureka` and `stub runner` repos will be cloned, built
@@ -278,25 +249,14 @@ when you want to do some custom changes.
 
 ==== Deploying infra jars to a different location
 
-It's enough to provide the `distribution.management.release.url` system prop to Maven.
-Example for deploying to Artifactory at IP `192.168.99.100`
-
-Github Eureka:
+It's enough to set the `ARTIFACTORY_URL` environmental variable before
+executing `tools/deploy-infra.sh`. Example for deploying to Artifactory at IP `192.168.99.100`
 
 [source,bash]
 ----
-git clone https://github.com/spring-cloud-samples/github-eureka
-cd github-eureka
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
-----
-
-Github Stub Runner:
-
-[source,bash]
-----
-git clone https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot
-cd github-analytics-stub-runner-boot
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
 ----
 
 ==== Setup settings.xml for Maven deployment
