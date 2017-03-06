@@ -30,7 +30,7 @@ boolean gradleCreated = new File(gradleHome).mkdirs()
 if (gradleCreated) {
 	boolean settingsCreated = new File("${gradleHome}/gradle.properties").createNewFile()
 	if (settingsCreated) {
-		new File("${gradleHome}/gradle.proprties").text =
+		new File("${gradleHome}/gradle.properties").text =
 				new File('/usr/share/jenkins/gradle.properties').text
 	}  else {
 		println "Failed to create gradle.properties!"
