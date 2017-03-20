@@ -1,0 +1,162 @@
+pipeline {
+	agent any
+	tools {
+		jdk 'jdk8'
+	}
+	stages {
+		stage("Build and Upload") {
+			steps {
+				checkout([
+					$class: 'GitSCM',
+					branches: [
+						[name: '*/master']
+					],
+					extensions: [
+						[$class: 'WipeWorkspace'],
+					],
+					userRemoteConfigs: [
+						[credentialsId: env.GIT_CREDENTIAL_ID, url: env.GIT_REPOSIOTRY]
+					]
+				])
+
+				checkout([
+					$class: 'GitSCM',
+					branches: [
+						[name: env.TOOLS_BRANCH]
+					],
+					extensions: [
+						[$class: 'WipeWorkspace'],
+						[$class: 'RelativeTargetDirectory', relativeTargetDir: "${env.WORKSPACE}@tools"]
+					],
+					userRemoteConfigs: [
+						[credentialsId: env.GIT_CREDENTIAL_ID, url: env.TOOLS_REPOSITORY]
+					]
+				])
+
+				script {
+					env.PIPELINE_VERSION = VersionNumber(
+						versionNumberString: '${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}',
+						versionPrefix: '1.0.0.M1-'
+					)
+
+					withCredentials([usernamePassword(credentialsId: env.CF_TEST_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+						env.CF_TEST_USERNAME = USER
+						env.CF_TEST_PASSWORD = PASS
+					}
+
+					withCredentials([usernamePassword(credentialsId: env.CF_STAGE_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+						env.CF_STAGE_USERNAME = USER
+						env.CF_STAGE_PASSWORD = PASS
+					}
+
+					withCredentials([usernamePassword(credentialsId: env.CF_PROD_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+						env.CF_PROD_USERNAME = USER
+						env.CF_PROD_PASSWORD = PASS
+					}
+
+					withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+						env.GIT_USERNAME = USER
+						env.GIT_PASSWORD = PASS
+					}
+
+					env.DEPLOY_TO_PROD = input message: '', parameters: [
+						choice(
+							name: 'Deploy to prod?',
+							choices: 'no\nyes',
+							description: 'Choose "yes" if you want to deploy this build to production'
+						)
+					]
+				}
+
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/build_and_upload.sh
+				'''
+			}
+		}
+
+		stage("Deploy to test") {
+			steps {
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/test_deploy.sh
+				'''
+			}
+		}
+
+		stage("Tests on test") {
+			steps {
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/test_smoke.sh
+				'''
+			}
+		}
+
+		stage("Deploy to test latest prod version") {
+			steps {
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/test_rollback_deploy.sh
+				'''
+			}
+		}
+
+		stage("Tests on test latest prod version") {
+			steps {
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/test_rollback_smoke.sh
+				'''
+			}
+		}
+
+		stage("Deploy to stage") {
+			steps {
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/stage_deploy.sh
+				'''
+			}
+		}
+
+		stage("End to end tests on stage") {
+			steps {
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/stage_e2e.sh
+				'''
+			}
+		}
+
+		stage("Deploy to prod") {
+			when {
+				environment name: 'DEPLOY_TO_PROD',
+				value: 'yes'
+			}
+			steps {
+				sh """
+				# https://issues.jenkins-ci.org/browse/JENKINS-28335
+				git config --local credential.helper cache
+				echo 'protocol=https\nhost=github.com\nusername=${GIT_USERNAME}\npassword=${GIT_PASSWORD}\n\n' | git credential approve
+				git tag prod/\${PIPELINE_VERSION}
+				git push --tags
+				"""
+
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/prod_deploy.sh
+				'''
+			}
+		}
+
+		stage("Complete switch over") {
+			when {
+				environment name: 'DEPLOY_TO_PROD',
+				value: 'yes'
+			}
+			steps {
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/prod_complete.sh
+				'''
+			}
+		}
+	}
+	post {
+		always {
+			junit '**/surefire-reports/*.xml,**/test-results/**/*.xml'
+		}
+	}
+}

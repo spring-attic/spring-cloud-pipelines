@@ -17,6 +17,7 @@ class JobScriptsSpec extends Specification {
 		given:
 
 		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.availableFiles['foo/Jenkinsfile-sample'] = JobScriptsSpec.getResource('/Jenkinsfile-sample').text
 		jm.availableFiles['foo/pipeline.sh'] = JobScriptsSpec.getResource('/pipeline.sh').text
 		jm.availableFiles['foo/build_and_upload.sh'] = JobScriptsSpec.getResource('/build_and_upload.sh').text
 		jm.availableFiles['foo/test_deploy.sh'] = JobScriptsSpec.getResource('/test_deploy.sh').text
@@ -28,7 +29,8 @@ class JobScriptsSpec extends Specification {
 		jm.availableFiles['foo/prod_deploy.sh'] = JobScriptsSpec.getResource('/prod_deploy.sh').text
 		jm.availableFiles['foo/prod_complete.sh'] = JobScriptsSpec.getResource('/prod_complete.sh').text
 		jm.parameters << [
-				SCRIPTS_DIR: 'foo'
+				SCRIPTS_DIR: 'foo',
+				JENKINSFILE_DIR: 'foo'
 		]
 		DslScriptLoader loader = new DslScriptLoader(jm)
 

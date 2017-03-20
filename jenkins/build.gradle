@@ -6,7 +6,7 @@ sourceSets {
             srcDirs 'jobs', 'src/main/groovy'
         }
         resources {
-            srcDirs 'src/main/resources'
+            srcDirs 'declarative-pipeline', 'src/main/resources'
         }
     }
 }
