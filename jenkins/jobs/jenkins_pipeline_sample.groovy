@@ -26,7 +26,8 @@ String gitEmail = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
 String gitName = binding.variables["GIT_NAME"] ?: "Pivo Tal"
 boolean autoStage = binding.variables["AUTO_DEPLOY_TO_STAGE"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_STAGE"])
 boolean autoProd = binding.variables["AUTO_DEPLOY_TO_PROD"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_PROD"])
-boolean rollbackStep = binding.variables["ROLLBACK_STEP_REQUIRED"] == null ? false : Boolean.parseBoolean(binding.variables["ROLLBACK_STEP_REQUIRED"])
+boolean rollbackStep = binding.variables["ROLLBACK_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["ROLLBACK_STEP_REQUIRED"])
+boolean stageStep = binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"])
 String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src/main/bash"
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
@@ -219,8 +220,9 @@ parsedRepos.each {
 					}
 				}
 			} else {
+				String stepName = stageStep ? "stage" : "prod"
 				downstreamParameterized {
-					trigger("${projectName}-stage-env-deploy") {
+					trigger("${projectName}-${stepName}-env-deploy") {
 						parameters {
 							currentBuild()
 						}
@@ -327,7 +329,8 @@ parsedRepos.each {
 				archiveJunit(testReports) {
 					allowEmptyResults()
 				}
-				String nextJob = "${projectName}-stage-env-deploy"
+				String stepName = stageStep ? "stage" : "prod"
+				String nextJob = "${projectName}-${stepName}-env-deploy"
 				if (autoStage) {
 					downstreamParameterized {
 						trigger(nextJob) {
@@ -347,119 +350,121 @@ parsedRepos.each {
 		}
 	}
 
-	dsl.job("${projectName}-stage-env-deploy") {
-		deliveryPipelineConfiguration('Stage', 'Deploy to stage')
-		wrappers {
-			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			maskPasswords()
-			parameters(PipelineDefaults.defaultParams())
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-				groovy(PipelineDefaults.groovyEnvScript)
-			}
-			credentialsBinding {
-				usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
-			}
-			timestamps()
-			colorizeOutput()
-			maskPasswords()
-			timeout {
-				noActivity(300)
-				failBuild()
-				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
-			}
-		}
-		scm {
-			git {
-				remote {
-					url(fullGitRepo)
-					branch('dev/${PIPELINE_VERSION}')
+	if (stageStep) {
+		dsl.job("${projectName}-stage-env-deploy") {
+			deliveryPipelineConfiguration('Stage', 'Deploy to stage')
+			wrappers {
+				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+				maskPasswords()
+				parameters(PipelineDefaults.defaultParams())
+				environmentVariables {
+					environmentVariables(defaults.defaultEnvVars)
+					groovy(PipelineDefaults.groovyEnvScript)
+				}
+				credentialsBinding {
+					usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
+				}
+				timestamps()
+				colorizeOutput()
+				maskPasswords()
+				timeout {
+					noActivity(300)
+					failBuild()
+					writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 				}
 			}
-		}
-		steps {
-			shell("""#!/bin/bash
-		set -e
+			scm {
+				git {
+					remote {
+						url(fullGitRepo)
+						branch('dev/${PIPELINE_VERSION}')
+					}
+				}
+			}
+			steps {
+				shell("""#!/bin/bash
+			set -e
 
-		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-		${dsl.readFileFromWorkspace(scriptsDir + '/stage_deploy.sh')}
-		""")
-		}
-		publishers {
-			if (autoStage) {
-				downstreamParameterized {
-					trigger("${projectName}-stage-env-test") {
-						triggerWithNoParameters()
+			${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
+			${dsl.readFileFromWorkspace(scriptsDir + '/stage_deploy.sh')}
+			""")
+			}
+			publishers {
+				if (autoStage) {
+					downstreamParameterized {
+						trigger("${projectName}-stage-env-test") {
+							triggerWithNoParameters()
+							parameters {
+								currentBuild()
+								propertiesFile('${OUTPUT_FOLDER}/test.properties', true)
+							}
+						}
+					}
+				} else {
+					buildPipelineTrigger("${projectName}-stage-env-test") {
 						parameters {
 							currentBuild()
 							propertiesFile('${OUTPUT_FOLDER}/test.properties', true)
 						}
 					}
 				}
-			} else {
-				buildPipelineTrigger("${projectName}-stage-env-test") {
-					parameters {
-						currentBuild()
-						propertiesFile('${OUTPUT_FOLDER}/test.properties', true)
+			}
+		}
+
+		dsl.job("${projectName}-stage-env-test") {
+			deliveryPipelineConfiguration('Stage', 'End to end tests on stage')
+			wrappers {
+				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+				parameters(PipelineDefaults.defaultParams())
+				parameters PipelineDefaults.smokeTestParams()
+				environmentVariables {
+					environmentVariables(defaults.defaultEnvVars)
+					groovy(PipelineDefaults.groovyEnvScript)
+				}
+				credentialsBinding {
+					usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
+				}
+				timestamps()
+				colorizeOutput()
+				maskPasswords()
+				timeout {
+					noActivity(300)
+					failBuild()
+					writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+				}
+			}
+			scm {
+				git {
+					remote {
+						url(fullGitRepo)
+						branch('dev/${PIPELINE_VERSION}')
 					}
 				}
 			}
-		}
-	}
+			steps {
+				shell("""#!/bin/bash
+			set -e
 
-	dsl.job("${projectName}-stage-env-test") {
-		deliveryPipelineConfiguration('Stage', 'End to end tests on stage')
-		wrappers {
-			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters(PipelineDefaults.defaultParams())
-			parameters PipelineDefaults.smokeTestParams()
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-				groovy(PipelineDefaults.groovyEnvScript)
+			${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
+			${dsl.readFileFromWorkspace(scriptsDir + '/stage_e2e.sh')}
+			""")
 			}
-			credentialsBinding {
-				usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
-			}
-			timestamps()
-			colorizeOutput()
-			maskPasswords()
-			timeout {
-				noActivity(300)
-				failBuild()
-				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
-			}
-		}
-		scm {
-			git {
-				remote {
-					url(fullGitRepo)
-					branch('dev/${PIPELINE_VERSION}')
-				}
-			}
-		}
-		steps {
-			shell("""#!/bin/bash
-		set -e
-
-		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-		${dsl.readFileFromWorkspace(scriptsDir + '/stage_e2e.sh')}
-		""")
-		}
-		publishers {
-			archiveJunit(testReports)
-			String nextJob = "${projectName}-prod-env-deploy"
-			if (autoProd) {
-				downstreamParameterized {
-					trigger(nextJob) {
+			publishers {
+				archiveJunit(testReports)
+				String nextJob = "${projectName}-prod-env-deploy"
+				if (autoProd) {
+					downstreamParameterized {
+						trigger(nextJob) {
+							parameters {
+								currentBuild()
+							}
+						}
+					}
+				} else {
+					buildPipelineTrigger(nextJob) {
 						parameters {
 							currentBuild()
 						}
-					}
-				}
-			} else {
-				buildPipelineTrigger(nextJob) {
-					parameters {
-						currentBuild()
 					}
 				}
 			}

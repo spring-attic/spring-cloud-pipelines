@@ -40,6 +40,7 @@ factory.job('jenkins-pipeline-seed') {
             booleanParam('AUTO_DEPLOY_TO_STAGE', false, 'Should deployment to stage be automatic')
             booleanParam('AUTO_DEPLOY_TO_PROD', false, 'Should deployment to prod be automatic')
             booleanParam('ROLLBACK_STEP_REQUIRED', true, 'Should rollback step be present')
+            booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
         }
     }
     steps {
