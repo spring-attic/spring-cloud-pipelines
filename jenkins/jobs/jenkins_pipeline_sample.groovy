@@ -179,6 +179,9 @@ parsedRepos.each {
 				environmentVariables(defaults.defaultEnvVars)
 				groovy(PipelineDefaults.groovyEnvScript)
 			}
+			credentialsBinding {
+				usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
+			}
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -288,6 +291,9 @@ parsedRepos.each {
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
 					groovy(PipelineDefaults.groovyEnvScript)
+				}
+				credentialsBinding {
+					usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
 				}
 				parameters {
 					stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
@@ -410,6 +416,9 @@ parsedRepos.each {
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 				groovy(PipelineDefaults.groovyEnvScript)
+			}
+			credentialsBinding {
+				usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
 			}
 			timestamps()
 			colorizeOutput()
