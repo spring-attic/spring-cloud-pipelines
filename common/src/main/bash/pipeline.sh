@@ -37,13 +37,21 @@ function logInToCf() {
 }
 
 function deployRabbitMqToCf() {
-    local rabbitMqAppName="${1:-github-rabbitmq}"
+    local serviceName="${1:-github-rabbitmq}"
     echo "Waiting for RabbitMQ to start"
-    # create RabbitMQ
-    APP_NAME="${rabbitMqAppName}"
+    APP_NAME="${serviceName}"
     (cf s | grep "${APP_NAME}" && echo "found ${APP_NAME}") ||
         (cf cs cloudamqp lemur "${APP_NAME}" && echo "Started RabbitMQ") ||
         (cf cs p-rabbitmq standard "${APP_NAME}" && echo "Started RabbitMQ for PCF Dev")
+}
+
+function deployMySqlToCf() {
+    local serviceName="${1:-github-mysql}"
+    echo "Waiting for MySQL to start"
+    APP_NAME="${serviceName}"
+    (cf s | grep "${APP_NAME}" && echo "found ${APP_NAME}") ||
+        (cf cs p-mysql 100mb "${APP_NAME}" && echo "Started MySQL") ||
+        (cf cs p-mysql 512mb "${APP_NAME}" && echo "Started MySQL for PCF Dev")
 }
 
 function deployAndRestartAppWithName() {
@@ -58,12 +66,21 @@ function deployAndRestartAppWithName() {
 function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
     local jarName="${2}"
-    local env="${3:-test}"
+    local profiles="${3:-cloud,smoke,reset}"
+    local env="${4:-test}"
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
     deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
-    setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "cloud,smoke"
+    setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
     restartApp "${appName}"
+}
+
+function deployAndRestartAppWithNameForRollbackSmokeTests() {
+    local appName="${1}"
+    local jarName="${2}"
+    local profiles="${3:-cloud,smoke}"
+    local env="${4:-test}"
+    deployAndRestartAppWithNameForSmokeTests ${appName} ${jarName} ${profiles} ${env}
 }
 
 function appHost() {
