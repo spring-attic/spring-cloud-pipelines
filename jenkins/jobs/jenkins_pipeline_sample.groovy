@@ -329,22 +329,40 @@ parsedRepos.each {
 				archiveJunit(testReports) {
 					allowEmptyResults()
 				}
-				String stepName = stageStep ? "stage" : "prod"
-				String nextJob = "${projectName}-${stepName}-env-deploy"
-				if (autoStage) {
-					downstreamParameterized {
-						trigger(nextJob) {
+				if(stageStep) {
+					String nextJob = "${projectName}-stage-env-deploy"
+					if (autoStage) {
+						downstreamParameterized {
+							trigger(nextJob) {
+								parameters {
+									currentBuild()
+								}
+							}
+						}
+					} else {
+						buildPipelineTrigger(nextJob) {
 							parameters {
 								currentBuild()
 							}
 						}
 					}
 				} else {
-					buildPipelineTrigger(nextJob) {
-						parameters {
-							currentBuild()
+						String nextJob = "${projectName}-prod-env-deploy"
+						if (autoProd) {
+							downstreamParameterized {
+								trigger(nextJob) {
+									parameters {
+										currentBuild()
+									}
+								}
+							}
+						} else {
+							buildPipelineTrigger(nextJob) {
+								parameters {
+									currentBuild()
+								}
+							}
 						}
-					}
 				}
 			}
 		}
