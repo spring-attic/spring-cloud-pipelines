@@ -86,7 +86,7 @@ function deployAndRestartAppWithNameForRollbackSmokeTests() {
 function appHost() {
     local appName="${1}"
     local lowerCase="$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )"
-    APP_HOST=`cf apps | grep ${lowerCase} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
+    APP_HOST=`cf apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
     echo "${APP_HOST}" | tail -1
 }
 

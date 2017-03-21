@@ -48,7 +48,8 @@ case $1 in
 		cf delete -f github-webhook
 		cf delete -f github-analytics
 		cf delete -f github-eureka
-		cf delete -f stubrunner
+		cf delete -f stubrunner-github-webhook
+		cf delete -f stubrunner-github-analytics
 
 		cf target -o pcfdev-org -s pcfdev-stage
 		cf delete -f github-webhook
@@ -95,4 +96,3 @@ case $1 in
 		usage
 		;;
 esac
-
