@@ -24,7 +24,9 @@ logInToCf "${REDOWNLOAD_INFRA}" "${CF_TEST_USERNAME}" "${CF_TEST_PASSWORD}" "${C
 deployRabbitMqToCf
 deleteMySql
 deployMySqlToCf
+deleteApp "${EUREKA_ARTIFACT_ID}"
 deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}" "test"
+deleteApp "stubrunner-${projectArtifactId}"
 deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_JARS}" "test" "stubrunner-${projectArtifactId}"
 # deploy app
 deployAndRestartAppWithNameForSmokeTests ${projectArtifactId} "${projectArtifactId}-${PIPELINE_VERSION}"

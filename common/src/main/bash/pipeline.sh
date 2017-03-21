@@ -75,6 +75,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local profiles="${3:-cloud,smoke}"
     local env="${4:-test}"
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
+    deleteApp "${appName}"
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
     deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
     setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
@@ -112,6 +113,13 @@ function deployAppWithName() {
     echo "Determined that application_domain for [${lowerCaseAppName}] is [${APPLICATION_DOMAIN}]"
     setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"
     setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
+}
+
+function deleteApp() {
+    local serviceName="${1}"
+    APP_NAME="${serviceName}"
+    echo "Deleting application [${APP_NAME}]"
+    cf delete -f ${APP_NAME} || echo "Failed to delete the app. Continuing with the script"
 }
 
 function setEnvVarIfMissing() {
