@@ -15,8 +15,8 @@ downloadJar 'true' ${REPO_WITH_JARS} ${projectGroupId} ${projectArtifactId} ${PI
 # Log in to CF to start deployment
 logInToCf "${REDOWNLOAD_INFRA}" "${CF_PROD_USERNAME}" "${CF_PROD_PASSWORD}" "${CF_PROD_ORG}" "${CF_PROD_SPACE}" "${CF_PROD_API_URL}"
 
-# deploying rabbitmq
-# TODO: most likely rabbitmq and eureka would be there on production; this remains for demo purposes
+# deploying infra
+# TODO: most likely rabbitmq / eureka / db would be there on production; this remains for demo purposes
 deployRabbitMqToCf
 deployMySqlToCf
 downloadJar ${REDEPLOY_INFRA} ${REPO_WITH_JARS} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}

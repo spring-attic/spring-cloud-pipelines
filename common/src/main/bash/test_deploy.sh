@@ -20,8 +20,9 @@ downloadJar ${REDEPLOY_INFRA} ${REPO_WITH_JARS} ${EUREKA_GROUP_ID} ${EUREKA_ARTI
 downloadJar 'true' ${REPO_WITH_JARS} ${STUBRUNNER_GROUP_ID} ${STUBRUNNER_ARTIFACT_ID} ${STUBRUNNER_VERSION}
 # Log in to CF to start deployment
 logInToCf "${REDOWNLOAD_INFRA}" "${CF_TEST_USERNAME}" "${CF_TEST_PASSWORD}" "${CF_TEST_ORG}" "${CF_TEST_SPACE}" "${CF_TEST_API_URL}"
-# setup infra
+# setup infra (remember to change the names of services if you want to have unique ones)
 deployRabbitMqToCf
+deleteMySql
 deployMySqlToCf
 deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}" "test"
 deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_JARS}" "test" "stubrunner-${projectArtifactId}"

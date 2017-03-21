@@ -45,6 +45,12 @@ function deployRabbitMqToCf() {
         (cf cs p-rabbitmq standard "${APP_NAME}" && echo "Started RabbitMQ for PCF Dev")
 }
 
+function deleteMySql() {
+    local serviceName="${1:-github-mysql}"
+    APP_NAME="${serviceName}"
+    cf delete-service -f ${APP_NAME}
+}
+
 function deployMySqlToCf() {
     local serviceName="${1:-github-mysql}"
     echo "Waiting for MySQL to start"
@@ -66,21 +72,13 @@ function deployAndRestartAppWithName() {
 function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
     local jarName="${2}"
-    local profiles="${3:-cloud,smoke,reset}"
+    local profiles="${3:-cloud,smoke}"
     local env="${4:-test}"
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
     deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
     setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
     restartApp "${appName}"
-}
-
-function deployAndRestartAppWithNameForRollbackSmokeTests() {
-    local appName="${1}"
-    local jarName="${2}"
-    local profiles="${3:-cloud,smoke}"
-    local env="${4:-test}"
-    deployAndRestartAppWithNameForSmokeTests ${appName} ${jarName} ${profiles} ${env}
 }
 
 function appHost() {
