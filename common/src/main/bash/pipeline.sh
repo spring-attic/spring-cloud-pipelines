@@ -117,7 +117,8 @@ function deployAppWithName() {
 
 function deleteApp() {
     local serviceName="${1}"
-    APP_NAME="${serviceName}"
+    local lowerCaseAppName=$( echo "${serviceName}" | tr '[:upper:]' '[:lower:]' )
+    APP_NAME="${lowerCaseAppName}"
     echo "Deleting application [${APP_NAME}]"
     cf delete -f ${APP_NAME} || echo "Failed to delete the app. Continuing with the script"
 }
