@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function usage {
-	echo "usage: $0: <kill-all-apps|delete-all-apps|delete-routes|setup-spaces>"
+	echo "usage: $0: <kill-all-apps|delete-all-apps|delete-all-test-apps|delete-all-stage-apps|delete-routes|setup-spaces>"
 	exit 1
 }
 
@@ -61,6 +61,26 @@ case $1 in
 		cf delete -f github-webhook-venerable
 		cf delete -f github-analytics
 		cf delete -f github-analytics-venerable
+		cf delete -f github-eureka
+		;;
+
+	delete-all-test-apps)
+		pcfdev_login
+
+		cf target -o pcfdev-org -s pcfdev-test
+		cf delete -f github-webhook
+		cf delete -f github-analytics
+		cf delete -f github-eureka
+		cf delete -f stubrunner-github-webhook
+		cf delete -f stubrunner-github-analytics
+		;;
+
+	delete-all-stage-apps)
+		pcfdev_login
+
+		cf target -o pcfdev-org -s pcfdev-stage
+		cf delete -f github-webhook
+		cf delete -f github-analytics
 		cf delete -f github-eureka
 		;;
 
