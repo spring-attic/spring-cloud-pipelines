@@ -39,9 +39,14 @@ function logInToCf() {
 function deployRabbitMqToCf() {
     local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
-    (cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'  && echo "found ${serviceName}") ||
+    local foundApp=`cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'`
+    if [[ "${foundApp}" == "" ]]; then
+        hostname="${hostname}-${CF_HOSTNAME_UUID}"
         (cf cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
         (cf cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
+    else
+        echo "Service [${foundName}] already started"
+    fi
 }
 
 function deleteMySql() {
@@ -52,9 +57,14 @@ function deleteMySql() {
 function deployMySqlToCf() {
     local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
-    (cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'  && echo "found ${serviceName}") ||
+    local foundApp=`cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'`
+    if [[ "${foundApp}" == "" ]]; then
+        hostname="${hostname}-${CF_HOSTNAME_UUID}"
         (cf cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
         (cf cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev")
+    else
+        echo "Service [${foundName}] already started"
+    fi
 }
 
 function deployAndRestartAppWithName() {

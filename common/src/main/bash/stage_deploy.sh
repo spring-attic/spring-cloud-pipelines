@@ -20,7 +20,7 @@ logInToCf "${REDOWNLOAD_INFRA}" "${CF_STAGE_USERNAME}" "${CF_STAGE_PASSWORD}" "$
 # deploying infra
 # TODO: most likely rabbitmq / eureka / db would be there on production; this remains for demo purposes
 deployRabbitMqToCf
-deployMySqlToCf "${projectArtifactId}"
+deployMySqlToCf
 deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}" "stage"
 # deploy app
 deployAndRestartAppWithName ${projectArtifactId} "${projectArtifactId}-${PIPELINE_VERSION}" "stage"
