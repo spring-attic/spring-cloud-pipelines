@@ -28,7 +28,7 @@ ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://admin:password@${POTENTIAL_DOCKER_HOS
 function deploy_project {
 	local project_repo="$1"
 	local project_name
-	
+
 	project_name="$( basename "${project_repo}" )"
 
 	echo "Deploying ${project_name} to Artifactory"
@@ -46,5 +46,6 @@ echo "Destination directory to clone the apps is [${DEST_DIR}]"
 
 deploy_project "https://github.com/spring-cloud-samples/github-eureka"
 deploy_project "https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot"
+deploy_project "https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-no-eureka"
 
 echo "DONE!"
