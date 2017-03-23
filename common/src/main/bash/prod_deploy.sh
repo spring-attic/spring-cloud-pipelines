@@ -17,10 +17,10 @@ logInToCf "${REDOWNLOAD_INFRA}" "${CF_PROD_USERNAME}" "${CF_PROD_PASSWORD}" "${C
 
 # deploying infra
 # TODO: most likely rabbitmq / eureka / db would be there on production; this remains for demo purposes
-deployRabbitMqToCf
-deployMySqlToCf
+deployRabbitMqToCf "${projectArtifactId}"
+deployMySqlToCf "${projectArtifactId}"
 downloadJar ${REDEPLOY_INFRA} ${REPO_WITH_JARS} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
-deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}" "prod"
+deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "eureka-${projectArtifactId}" "prod"
 
 # deploy app
 renameTheOldApplicationIfPresent "${projectArtifactId}"

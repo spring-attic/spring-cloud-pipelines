@@ -37,7 +37,8 @@ function logInToCf() {
 }
 
 function deployRabbitMqToCf() {
-    local serviceName="${1:-github-rabbitmq}"
+    local projectArtifactId="${1}"
+    local serviceName="rabbitmq-${projectArtifactId}"
     echo "Waiting for RabbitMQ to start"
     APP_NAME="${serviceName}"
     (cf s | grep "${APP_NAME}" && echo "found ${APP_NAME}") ||
@@ -46,13 +47,15 @@ function deployRabbitMqToCf() {
 }
 
 function deleteMySql() {
-    local serviceName="${1:-github-mysql}"
+    local projectArtifactId="${1}"
+    local serviceName="mysql-${projectArtifactId}"
     APP_NAME="${serviceName}"
     cf delete-service -f ${APP_NAME}
 }
 
 function deployMySqlToCf() {
-    local serviceName="${1:-github-mysql}"
+    local projectArtifactId="${1}"
+    local serviceName="mysql-${projectArtifactId}"
     echo "Waiting for MySQL to start"
     APP_NAME="${serviceName}"
     (cf s | grep "${APP_NAME}" && echo "found ${APP_NAME}") ||
