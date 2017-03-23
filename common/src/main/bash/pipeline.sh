@@ -37,8 +37,7 @@ function logInToCf() {
 }
 
 function deployRabbitMqToCf() {
-    local projectArtifactId="${1}"
-    local serviceName="rabbitmq-${projectArtifactId}"
+    local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
     APP_NAME="${serviceName}"
     (cf s | grep "${APP_NAME}" && echo "found ${APP_NAME}") ||
@@ -47,15 +46,13 @@ function deployRabbitMqToCf() {
 }
 
 function deleteMySql() {
-    local projectArtifactId="${1}"
-    local serviceName="mysql-${projectArtifactId}"
+    local serviceName="${1:-mysql-github}"
     APP_NAME="${serviceName}"
     cf delete-service -f ${APP_NAME}
 }
 
 function deployMySqlToCf() {
-    local projectArtifactId="${1}"
-    local serviceName="mysql-${projectArtifactId}"
+    local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
     APP_NAME="${serviceName}"
     (cf s | grep "${APP_NAME}" && echo "found ${APP_NAME}") ||
@@ -75,12 +72,20 @@ function deployAndRestartAppWithName() {
 function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
     local jarName="${2}"
-    local profiles="${3:-cloud,smoke}"
-    local env="${4:-test}"
+    local rabbitName="${3}"
+    local eurekaName="${4}"
+    local mysqlName="${5}"
+    local profiles="${6:-cloud,smoke}"
+    local env="${7:-test}"
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
     deleteApp "${appName}"
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
-    deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
+    deployAppWithName "${appName}" "${jarName}" "${env}" 'false'
+    bindService "${rabbitName}" "${appName}"
+    if [[ "${eurekaName}" != "" ]]; then
+        bindService "${eurekaName}" "${appName}"
+    fi
+    bindService "${mysqlName}" "${appName}"
     setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
     restartApp "${appName}"
 }
