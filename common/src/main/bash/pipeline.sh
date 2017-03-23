@@ -39,25 +39,22 @@ function logInToCf() {
 function deployRabbitMqToCf() {
     local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
-    APP_NAME="${serviceName}"
-    (cf s | awk -v "app=${APP_NAME}" '$1 == app {print($0)}'  && echo "found ${APP_NAME}") ||
-        (cf cs cloudamqp lemur "${APP_NAME}" && echo "Started RabbitMQ") ||
-        (cf cs p-rabbitmq standard "${APP_NAME}" && echo "Started RabbitMQ for PCF Dev")
+    (cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'  && echo "found ${serviceName}") ||
+        (cf cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
+        (cf cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
 }
 
 function deleteMySql() {
     local serviceName="${1:-mysql-github}"
-    APP_NAME="${serviceName}"
-    cf delete-service -f ${APP_NAME}
+    cf delete-service -f ${serviceName}
 }
 
 function deployMySqlToCf() {
     local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
-    APP_NAME="${serviceName}"
-    (cf s | awk -v "app=${APP_NAME}" '$1 == app {print($0)}'  && echo "found ${APP_NAME}") ||
-        (cf cs p-mysql 100mb "${APP_NAME}" && echo "Started MySQL") ||
-        (cf cs p-mysql 512mb "${APP_NAME}" && echo "Started MySQL for PCF Dev")
+    (cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'  && echo "found ${serviceName}") ||
+        (cf cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
+        (cf cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev")
 }
 
 function deployAndRestartAppWithName() {
@@ -93,7 +90,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
 function appHost() {
     local appName="${1}"
     local lowerCase="$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )"
-    APP_HOST=`cf apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
+    local APP_HOST=`cf apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
     echo "${APP_HOST}" | tail -1
 }
 
@@ -126,7 +123,7 @@ function deployAppWithName() {
 function deleteApp() {
     local serviceName="${1}"
     local lowerCaseAppName=$( echo "${serviceName}" | tr '[:upper:]' '[:lower:]' )
-    APP_NAME="${lowerCaseAppName}"
+    local APP_NAME="${lowerCaseAppName}"
     echo "Deleting application [${APP_NAME}]"
     cf delete -f ${APP_NAME} || echo "Failed to delete the app. Continuing with the script"
 }
