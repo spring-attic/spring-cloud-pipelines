@@ -40,7 +40,7 @@ function deployRabbitMqToCf() {
     local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
     APP_NAME="${serviceName}"
-    (cf s | grep "${APP_NAME}" && echo "found ${APP_NAME}") ||
+    (cf s | awk -v "app=${APP_NAME}" '$1 == app {print($0)}'  && echo "found ${APP_NAME}") ||
         (cf cs cloudamqp lemur "${APP_NAME}" && echo "Started RabbitMQ") ||
         (cf cs p-rabbitmq standard "${APP_NAME}" && echo "Started RabbitMQ for PCF Dev")
 }
@@ -55,7 +55,7 @@ function deployMySqlToCf() {
     local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
     APP_NAME="${serviceName}"
-    (cf s | grep "${APP_NAME}" && echo "found ${APP_NAME}") ||
+    (cf s | awk -v "app=${APP_NAME}" '$1 == app {print($0)}'  && echo "found ${APP_NAME}") ||
         (cf cs p-mysql 100mb "${APP_NAME}" && echo "Started MySQL") ||
         (cf cs p-mysql 512mb "${APP_NAME}" && echo "Started MySQL for PCF Dev")
 }
