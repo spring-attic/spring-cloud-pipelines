@@ -23,7 +23,8 @@ case $1 in
 		cf target -o pcfdev-org -s pcfdev-test
 		yes | cf stop github-webhook
 		yes | cf stop github-analytics
-		yes | cf stop github-eureka
+		yes | cf stop eureka-github-webhook
+		yes | cf stop eureka-github-analytics
 		yes | cf stop stubrunner
 		yes | cf stop stubrunner-github-webhook
 		yes | cf stop stubrunner-github-analytics
@@ -31,14 +32,16 @@ case $1 in
 		cf target -o pcfdev-org -s pcfdev-stage
 		yes | cf stop github-webhook
 		yes | cf stop github-analytics
-		yes | cf stop github-eureka
+		yes | cf stop eureka-github-webhook
+		yes | cf stop eureka-github-analytics
 
 		cf target -o pcfdev-org -s pcfdev-prod
 		yes | cf stop github-webhook
 		yes | cf stop github-webhook-venerable
 		yes | cf stop github-analytics
 		yes | cf stop github-analytics-venerable
-		yes | cf stop github-eureka
+		yes | cf stop eureka-github-webhook
+		yes | cf stop eureka-github-analytics
 		;;
 
 	delete-all-apps)
@@ -47,21 +50,24 @@ case $1 in
 		cf target -o pcfdev-org -s pcfdev-test
 		cf delete -f github-webhook
 		cf delete -f github-analytics
-		cf delete -f github-eureka
+		cf delete -f eureka-github-analytics
+		cf delete -f eureka-github-webhook
 		cf delete -f stubrunner-github-webhook
 		cf delete -f stubrunner-github-analytics
 
 		cf target -o pcfdev-org -s pcfdev-stage
 		cf delete -f github-webhook
 		cf delete -f github-analytics
-		cf delete -f github-eureka
+		cf delete -f eureka-github-analytics
+		cf delete -f eureka-github-webhook
 
 		cf target -o pcfdev-org -s pcfdev-prod
 		cf delete -f github-webhook
 		cf delete -f github-webhook-venerable
 		cf delete -f github-analytics
 		cf delete -f github-analytics-venerable
-		cf delete -f github-eureka
+		cf delete -f eureka-github-analytics
+		cf delete -f eureka-github-webhook
 		;;
 
 	delete-all-test-apps)
@@ -70,7 +76,8 @@ case $1 in
 		cf target -o pcfdev-org -s pcfdev-test
 		cf delete -f github-webhook
 		cf delete -f github-analytics
-		cf delete -f github-eureka
+		cf delete -f eureka-github-webhook
+		cf delete -f eureka-github-analytics
 		cf delete -f stubrunner-github-webhook
 		cf delete -f stubrunner-github-analytics
 		;;
@@ -81,22 +88,26 @@ case $1 in
 		cf target -o pcfdev-org -s pcfdev-stage
 		cf delete -f github-webhook
 		cf delete -f github-analytics
-		cf delete -f github-eureka
+		cf delete -f eureka-github-webhook
+		cf delete -f eureka-github-analytics
 		;;
 
 	delete-routes)
 		cf delete-route -f local.pcfdev.io -n github-webhook-test
 		cf delete-route -f local.pcfdev.io -n github-analytics-test
-		cf delete-route -f local.pcfdev.io -n github-eureka-test
+		cf delete-route -f local.pcfdev.io -n eureka-github-webhook-test
+		cf delete-route -f local.pcfdev.io -n eureka-github-analytics-test
 		cf delete-route -f local.pcfdev.io -n stubrunner-test
 		cf delete-route -f local.pcfdev.io -n stubrunner-github-webhook-test
 		cf delete-route -f local.pcfdev.io -n stubrunner-github-analytics-test
 		cf delete-route -f local.pcfdev.io -n github-webhook-stage
 		cf delete-route -f local.pcfdev.io -n github-analytics-stage
-		cf delete-route -f local.pcfdev.io -n github-eureka-stage
+		cf delete-route -f local.pcfdev.io -n eureka-github-webhook-stage
+		cf delete-route -f local.pcfdev.io -n eureka-github-analytics-stage
 		cf delete-route -f local.pcfdev.io -n github-analytics
 		cf delete-route -f local.pcfdev.io -n github-webhook
-		cf delete-route -f local.pcfdev.io -n github-eureka
+		cf delete-route -f local.pcfdev.io -n eureka-github-webhook
+		cf delete-route -f local.pcfdev.io -n eureka-github-analytics
 		;;
 
 	setup-spaces)
