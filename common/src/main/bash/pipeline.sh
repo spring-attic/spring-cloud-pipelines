@@ -177,8 +177,10 @@ function deployStubRunnerBoot() {
     local redeploy="${1}"
     local jarName="${2}"
     local repoWithJars="${3}"
-    local env="${4:-test}"
-    local stubRunnerName="${5:-stubrunner}"
+    local rabbitName="${4}"
+    local eurekaName="${5}"
+    local env="${6:-test}"
+    local stubRunnerName="${7:-stubrunner}"
     local fileExists="true"
     local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
@@ -186,11 +188,15 @@ function deployStubRunnerBoot() {
     fi
     echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}]"
     if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
-        deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "true"
+        deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "false"
         local prop="$( retrieveStubRunnerIds )"
         echo "Found following stub runner ids [${prop}]"
         setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
         setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
+        bindService "${rabbitName}" "${stubRunnerName}"
+        if [[ "${eurekaName}" != "" ]]; then
+            bindService "${eurekaName}" "${stubRunnerName}"
+        fi
         restartApp "${stubRunnerName}"
     else
         echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]; redeploy flag was set [${redeploy}]. Skipping deployment"

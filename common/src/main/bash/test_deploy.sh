@@ -32,7 +32,7 @@ deleteApp "${projectArtifactId}"
 deleteMySql "${UNIQUE_MYSQL_NAME}"
 deployMySqlToCf "${UNIQUE_MYSQL_NAME}"
 deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${UNIQUE_EUREKA_NAME}" "test"
-deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_JARS}" "test" "${UNIQUE_STUBRUNNER_NAME}"
+deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_JARS}" "test" "${UNIQUE_STUBRUNNER_NAME}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}"
 # deploy app
 deployAndRestartAppWithNameForSmokeTests ${projectArtifactId} "${projectArtifactId}-${PIPELINE_VERSION}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
 propagatePropertiesForTests ${projectArtifactId}
