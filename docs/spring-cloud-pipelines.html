@@ -494,6 +494,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_run_the_code_github_webhook_code_pipeline_2">Run the <code>github-webhook</code> pipeline</a></li>
 </ul>
 </li>
+<li><a href="#_declarative_pipeline_blue_ocean">Declarative pipeline &amp; Blue Ocean</a></li>
 <li><a href="#_optional_steps">Optional steps</a>
 <ul class="sectlevel3">
 <li><a href="#_deploying_infra_jars_to_a_different_location">Deploying infra jars to a different location</a></li>
@@ -1945,6 +1946,8 @@ setup. Check out <a href="#settings">this section of the docs and update your <c
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">.
+├── declarative-pipeline
+│   └── Jenkinsfile-sample.groovy
 ├── jobs
 │   ├── jenkins_pipeline_empty.groovy
 │   ├── jenkins_pipeline_jenkinsfile_empty.groovy
@@ -1959,6 +1962,10 @@ setup. Check out <a href="#settings">this section of the docs and update your <c
     ├── main
     └── test</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>In the <code>declarative-pipeline</code> you can find a definition of a <code>Jenkinsfile-sample.groovy</code> declarative
+pipeline. It&#8217;s used together with the Blueocean UI.</p>
 </div>
 <div class="paragraph">
 <p>In the <code>jobs</code> folder you have all the seed jobs that will generate pipelines.</p>
@@ -1992,6 +1999,9 @@ Currently we have tests only cause the whole logic resides in the <code>jenkins_
 </div>
 <div class="sect2">
 <h3 id="_step_by_step_2">Step by step</h3>
+<div class="paragraph">
+<p>This is a guide for Jenkins JOB Dsl based pipeline.</p>
+</div>
 <div class="paragraph">
 <p>If you want to just run the demo as far as possible using PCF Dev and Docker Compose</p>
 </div>
@@ -2356,6 +2366,91 @@ environment it&#8217;s good to kill all apps on test. <a href="#faq">Check out t
 </div>
 </div>
 <div class="sect2">
+<h3 id="_declarative_pipeline_blue_ocean">Declarative pipeline &amp; Blue Ocean</h3>
+<div class="paragraph">
+<p>You can also use the <a href="https://jenkins.io/doc/book/pipeline/syntax/">declarative pipeline</a> approach with the
+<a href="https://jenkins.io/projects/blueocean/">Blue Ocean UI</a>. Here is a step by step guide to run a pipeline via
+this approach.</p>
+</div>
+<div class="paragraph">
+<p>The Blue Ocean UI is available under the <code>blue/</code> URL. E.g. for Docker Machine based setup <code><a href="http://192.168.99.100:8080/blue" class="bare">http://192.168.99.100:8080/blue</a></code>.</p>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_1.png" alt="blue 1">
+</div>
+<div class="title">Step 1: Open Blue Ocean UI and click on <code>github-webhook-declarative-pipeline</code></div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_2.png" alt="blue 2">
+</div>
+<div class="title">Step 2: Your first run will look like this. Click <code>Run</code> button</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_3.png" alt="blue 3">
+</div>
+<div class="title">Step 3: Enter parameters required for the build and click <code>run</code></div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_4.png" alt="blue 4">
+</div>
+<div class="title">Step 4: A list of pipelines will be shown. Click your first run.</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_5.png" alt="blue 5">
+</div>
+<div class="title">Step 5: State if you want to go to production or not and click <code>Proceed</code></div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_6.png" alt="blue 6">
+</div>
+<div class="title">Step 6: The build is in progress&#8230;&#8203;</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_6.png" alt="blue 6">
+</div>
+<div class="title">Step 7: The pipeline is done!</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_optional_steps">Optional steps</h3>
 <div class="paragraph">
 <p><a id="jenkins_optional"></a> All the steps below are not necessary to run the demo. They are needed only
@@ -2525,9 +2620,9 @@ This section is presented only for informational purposes - for the sake of demo
 </thead>
 <tfoot>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GIT_NAME</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The name used by Git to tag repo</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Pivo Tal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DEPLOY_TO_STAGE_STEP_REQUIRED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Should deploy to stage step be present</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 </tr>
 </tfoot>
 <tbody>
@@ -2600,6 +2695,31 @@ This section is presented only for informational purposes - for the sake of demo
 <td class="tableblock halign-left valign-top"><p class="tableblock">GIT_EMAIL</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The email used by Git to tag repo</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="mailto:email@example.com">email@example.com</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GIT_NAME</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The name used by Git to tag repo</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pivo Tal</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CF_HOSTNAME_UUID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Additional suffix for the route. In a shared environment the default routes can be already taken</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AUTO_DEPLOY_TO_STAGE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Should deployment to stage be automatic</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AUTO_DEPLOY_TO_PROD</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Should deployment to prod be automatic</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROLLBACK_STEP_REQUIRED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Should rollback step be present</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 </tr>
 </tbody>
 </table>

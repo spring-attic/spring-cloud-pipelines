@@ -14,6 +14,8 @@ All in all there are the following projects taking part in the whole `microservi
 [source,bash]
 ----
 .
+├── declarative-pipeline
+│   └── Jenkinsfile-sample.groovy
 ├── jobs
 │   ├── jenkins_pipeline_empty.groovy
 │   ├── jenkins_pipeline_jenkinsfile_empty.groovy
@@ -28,6 +30,9 @@ All in all there are the following projects taking part in the whole `microservi
     ├── main
     └── test
 ----
+
+In the `declarative-pipeline` you can find a definition of a `Jenkinsfile-sample.groovy` declarative
+pipeline. It's used together with the Blueocean UI.
 
 In the `jobs` folder you have all the seed jobs that will generate pipelines.
 
@@ -45,6 +50,8 @@ In the `src` folder you have production and test classes needed for you to build
 Currently we have tests only cause the whole logic resides in the `jenkins_pipeline_sample` file.
 
 === Step by step
+
+This is a guide for Jenkins JOB Dsl based pipeline.
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
@@ -242,6 +249,53 @@ image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 5: ", title="The 
 {nbsp}
 {nbsp}
 
+=== Declarative pipeline & Blue Ocean
+
+You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
+https://jenkins.io/projects/blueocean/[Blue Ocean UI]. Here is a step by step guide to run a pipeline via
+this approach.
+
+The Blue Ocean UI is available under the `blue/` URL. E.g. for Docker Machine based setup `http://192.168.99.100:8080/blue`.
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_1.png[caption="Step 1: ", title="Open Blue Ocean UI and click on `github-webhook-declarative-pipeline`"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_2.png[caption="Step 2: ", title="Your first run will look like this. Click `Run` button"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_3.png[caption="Step 3: ", title="Enter parameters required for the build and click `run`"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_4.png[caption="Step 4: ", title="A list of pipelines will be shown. Click your first run."]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_5.png[caption="Step 5: ", title="State if you want to go to production or not and click `Proceed`"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_6.png[caption="Step 6: ", title="The build is in progress..."]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_6.png[caption="Step 7: ", title="The pipeline is done!"]
+
+{nbsp}
+{nbsp}
+
+
 === Optional steps
 
 [[jenkins_optional]] All the steps below are not necessary to run the demo. They are needed only
@@ -343,6 +397,11 @@ The env vars that are used in all of the jobs are as follows:
 |PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
 |GIT_EMAIL | The email used by Git to tag repo | email@example.com
 |GIT_NAME | The name used by Git to tag repo | Pivo Tal
+|CF_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
+|AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
+|AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
+|ROLLBACK_STEP_REQUIRED | Should rollback step be present | true
+|DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
 |======================
 
 ==== Set Git email / user
@@ -440,10 +499,11 @@ image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click
 image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
 === Docker Image
+
 If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
 have an image you can pull and use on https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/[DockerHub].
 The `latest` tag corresponds to the latest snapshot build.  You can also find tags
-corresponding to stable releases that you can use as well. 
+corresponding to stable releases that you can use as well.
 
 === FAQ
 

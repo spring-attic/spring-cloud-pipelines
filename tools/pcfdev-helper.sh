@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function usage {
-	echo "usage: $0: <kill-all-apps|delete-all-apps|delete-all-test-apps|delete-all-stage-apps|delete-routes|setup-spaces>"
+	echo "usage: $0: <kill-all-apps|delete-all-apps|delete-all-test-apps|delete-all-stage-apps|delete-routes|delete-all-services|setup-spaces>"
 	exit 1
 }
 
@@ -32,16 +32,14 @@ case $1 in
 		cf target -o pcfdev-org -s pcfdev-stage
 		yes | cf stop github-webhook
 		yes | cf stop github-analytics
-		yes | cf stop eureka-github-webhook
-		yes | cf stop eureka-github-analytics
+		yes | cf stop github-eureka
 
 		cf target -o pcfdev-org -s pcfdev-prod
 		yes | cf stop github-webhook
 		yes | cf stop github-webhook-venerable
 		yes | cf stop github-analytics
 		yes | cf stop github-analytics-venerable
-		yes | cf stop eureka-github-webhook
-		yes | cf stop eureka-github-analytics
+		yes | cf stop github-eureka
 		;;
 
 	delete-all-apps)
@@ -58,16 +56,14 @@ case $1 in
 		cf target -o pcfdev-org -s pcfdev-stage
 		cf delete -f github-webhook
 		cf delete -f github-analytics
-		cf delete -f eureka-github-analytics
-		cf delete -f eureka-github-webhook
+		cf delete -f github-eureka
 
 		cf target -o pcfdev-org -s pcfdev-prod
 		cf delete -f github-webhook
 		cf delete -f github-webhook-venerable
 		cf delete -f github-analytics
 		cf delete -f github-analytics-venerable
-		cf delete -f eureka-github-analytics
-		cf delete -f eureka-github-webhook
+		cf delete -f github-eureka
 		;;
 
 	delete-all-test-apps)
@@ -88,8 +84,7 @@ case $1 in
 		cf target -o pcfdev-org -s pcfdev-stage
 		cf delete -f github-webhook
 		cf delete -f github-analytics
-		cf delete -f eureka-github-webhook
-		cf delete -f eureka-github-analytics
+		cf delete -f github-eureka
 		;;
 
 	delete-routes)
@@ -121,6 +116,32 @@ case $1 in
 
 		cf create-space pcfdev-prod
 		cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
+		;;
+
+	delete-all-services)
+		pcfdev_login
+
+		cf target -o pcfdev-org -s pcfdev-test
+		yes | cf delete-service -f mysql-github-webhook
+		yes | cf delete-service -f mysql-github-analytics
+		yes | cf delete-service -f rabbitmq-github-webhook
+		yes | cf delete-service -f rabbitmq-github-analytics
+		yes | cf delete-service -f eureka-github-webhook
+		yes | cf delete-service -f eureka-github-analytics
+
+		cf target -o pcfdev-org -s pcfdev-stage
+		yes | cf delete-service -f mysql-github-webhook
+		yes | cf delete-service -f mysql-github-analytics
+		yes | cf delete-service -f rabbitmq-github
+		yes | cf delete-service -f mysql-github
+		yes | cf delete-service -f github-eureka
+
+		cf target -o pcfdev-org -s pcfdev-prod
+		yes | cf delete-service -f mysql-github-webhook
+		yes | cf delete-service -f mysql-github-analytics
+		yes | cf delete-service -f rabbitmq-github
+		yes | cf delete-service -f mysql-github
+		yes | cf delete-service -f github-eureka
 		;;
 
 	*)
