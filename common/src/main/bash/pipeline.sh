@@ -497,7 +497,7 @@ function deleteTheOldApplicationIfPresent() {
     echo "Deleting the app [${oldName}]"
     cf app "${oldName}" && appPresent="yes"
     if [[ "${appPresent}" == "yes" ]]; then
-        cf delete "${oldName}" -r -f
+        cf delete "${oldName}" -f
     else
         echo "Will not remove the old application cause it's not there"
     fi
