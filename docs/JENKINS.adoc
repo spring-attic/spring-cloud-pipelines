@@ -290,11 +290,20 @@ image::{jenkins-root-docs}/blue_6.png[caption="Step 6: ", title="The build is in
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/blue_6.png[caption="Step 7: ", title="The pipeline is done!"]
+image::{jenkins-root-docs}/blue_7.png[caption="Step 7: ", title="The pipeline is done!"]
 
 {nbsp}
 {nbsp}
 
+
+IMPORTANT: There is no possibility of restarting pipeline from specific stage, after failure. Please
+check out this https://issues.jenkins-ci.org/browse/JENKINS-33846[issue] for more information
+
+WARNING: Currently there is no way to introduce manual steps in a performant way. Jenkins is
+blocking an executor when manual step is required. That means that you'll run out of executors
+pretty fast. You can check out this https://issues.jenkins-ci.org/browse/JENKINS-36235[issue] for
+and this http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
+for more information.
 
 === Optional steps
 

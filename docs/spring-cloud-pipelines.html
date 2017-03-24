@@ -2441,13 +2441,42 @@ this approach.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="img/jenkins/blue_6.png" alt="blue 6">
+<img src="img/jenkins/blue_7.png" alt="blue 7">
 </div>
 <div class="title">Step 7: The pipeline is done!</div>
 </div>
 <div class="paragraph">
 <p>&#160;
 &#160;</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+There is no possibility of restarting pipeline from specific stage, after failure. Please
+check out this <a href="https://issues.jenkins-ci.org/browse/JENKINS-33846">issue</a> for more information
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+Currently there is no way to introduce manual steps in a performant way. Jenkins is
+blocking an executor when manual step is required. That means that you&#8217;ll run out of executors
+pretty fast. You can check out this <a href="https://issues.jenkins-ci.org/browse/JENKINS-36235">issue</a> for
+and this <a href="http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei">StackOverflow question</a>
+for more information.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
