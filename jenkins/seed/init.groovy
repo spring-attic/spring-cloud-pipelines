@@ -60,6 +60,36 @@ println "Creating the credentials"
 	}
 }
 
+
+println "Importing GPG Keys"
+def privateKey = new File('/usr/share/jenkins/private.key')
+def publicKey = new File('/usr/share/jenkins/public.key')
+
+void importGpgKey(String path) {
+	def sout = new StringBuilder(), serr = new StringBuilder()
+	String command = "gpg --import " + path
+	def proc = command.execute()
+	proc.consumeProcessOutput(sout, serr)
+	proc.waitForOrKill(1000)
+	println "out> $sout err> $serr"
+}
+
+if (privateKey.exists()) {
+	println "Importing private key from " + privateKey.getPath()
+	importGpgKey(privateKey.getPath())
+	privateKey.delete()
+} else {
+	println "Private key file does not exist in " + privateKey.getPath()
+}
+
+if (publicKey.exists()) {
+	println "Importing public key from " + publicKey.getPath()
+	importGpgKey(publicKey.getPath())
+	publicKey.delete()
+} else {
+	println "Public key file does not exist in " + publicKey.getPath()
+}
+
 String gitUser = new File('/usr/share/jenkins/gituser')?.text ?: "changeme"
 String gitPass = new File('/usr/share/jenkins/gitpass')?.text ?: "changeme"
 
