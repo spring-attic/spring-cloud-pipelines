@@ -198,6 +198,9 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 				}
+				extensions {
+					wipeOutWorkspace()
+				}
 			}
 		}
 		steps {
@@ -246,9 +249,6 @@ parsedRepos.each {
 				credentialsBinding {
 					usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
 				}
-				timestamps()
-				colorizeOutput()
-				maskPasswords()
 				timeout {
 					noActivity(300)
 					failBuild()
@@ -260,6 +260,9 @@ parsedRepos.each {
 					remote {
 						url(fullGitRepo)
 						branch('dev/${PIPELINE_VERSION}')
+					}
+					extensions {
+						wipeOutWorkspace()
 					}
 				}
 			}
@@ -314,6 +317,9 @@ parsedRepos.each {
 					remote {
 						url(fullGitRepo)
 						branch('${LATEST_PROD_TAG}')
+					}
+					extensions {
+						wipeOutWorkspace()
 					}
 				}
 			}
@@ -456,6 +462,9 @@ parsedRepos.each {
 					remote {
 						url(fullGitRepo)
 						branch('dev/${PIPELINE_VERSION}')
+					}
+					extensions {
+						wipeOutWorkspace()
 					}
 				}
 			}
