@@ -111,8 +111,8 @@ parsedRepos.each {
 				}
 			}
 			git {
+				pushOnlyIfSuccess()
 				tag('origin', "dev/\${PIPELINE_VERSION}") {
-					pushOnlyIfSuccess()
 					create()
 					update()
 				}
@@ -543,8 +543,9 @@ parsedRepos.each {
 				}
 			}
 			git {
+				forcePush(true)
+				pushOnlyIfSuccess()
 				tag('origin', "prod/\${PIPELINE_VERSION}") {
-					pushOnlyIfSuccess()
 					create()
 					update()
 				}
