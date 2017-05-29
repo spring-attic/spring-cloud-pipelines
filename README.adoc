@@ -1488,6 +1488,15 @@ You can also execute the `./tools/pcfdev-helper.sh delete-routes`
 Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
 setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml`>>.
 
+==== Signing Artifacts
+
+In some cases it may be required that when performing a release that the artifacts be signed
+before pushing them to the repository.
+To do this you will need to import your GPG keys into the Docker image running Jenkins.
+This can be done by placing a file called `public.key` containing your public key
+and a file called `private.key` containing your private key in the `seed` directory.
+These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
+
 === How to build it
 
 `./gradlew clean build`

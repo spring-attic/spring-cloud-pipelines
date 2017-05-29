@@ -535,6 +535,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_deploying_to_test_stage_prod_fails_error_finding_space">Deploying to test / stage / prod fails - error finding space</a></li>
 <li><a href="#_the_route_is_already_in_use_2">The route is already in use</a></li>
 <li><a href="#_i_m_unauthorized_to_deploy_infrastructure_jars_2">I&#8217;m unauthorized to deploy infrastructure jars</a></li>
+<li><a href="#_signing_artifacts">Signing Artifacts</a></li>
 </ul>
 </li>
 <li><a href="#_how_to_build_it">How to build it</a></li>
@@ -3327,6 +3328,17 @@ yes | cf delete-route local.pcfdev.io -n github-eureka-prod</code></pre>
 <div class="paragraph">
 <p>Most likely you&#8217;ve forgotten to update your local <code>settings.xml</code> with the Artifactory&#8217;s
 setup. Check out <a href="#jenkins_settings">this section of the docs and update your <code>settings.xml</code></a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_signing_artifacts">Signing Artifacts</h4>
+<div class="paragraph">
+<p>In some cases it may be required that when performing a release that the artifacts be signed
+before pushing them to the repository.
+To do this you will need to import your GPG keys into the Docker image running Jenkins.
+This can be done by placing a file called <code>public.key</code> containing your public key
+and a file called <code>private.key</code> containing your private key in the <code>seed</code> directory.
+These keys will be imported by the <code>init.groovy</code> script that is run when Jenkins starts.</p>
 </div>
 </div>
 </div>
