@@ -199,6 +199,9 @@ parsedRepos.each {
 					branch('dev/${PIPELINE_VERSION}')
 				}
 			}
+			extensions {
+				wipeOutWorkspace()
+			}
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -262,6 +265,9 @@ parsedRepos.each {
 						branch('dev/${PIPELINE_VERSION}')
 					}
 				}
+				extensions {
+					wipeOutWorkspace()
+				}
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -315,6 +321,9 @@ parsedRepos.each {
 						url(fullGitRepo)
 						branch('${LATEST_PROD_TAG}')
 					}
+				}
+				extensions {
+					wipeOutWorkspace()
 				}
 			}
 			steps {
@@ -457,6 +466,9 @@ parsedRepos.each {
 						url(fullGitRepo)
 						branch('dev/${PIPELINE_VERSION}')
 					}
+				}
+				extensions {
+					wipeOutWorkspace()
 				}
 			}
 			steps {
