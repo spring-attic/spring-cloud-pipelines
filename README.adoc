@@ -900,7 +900,7 @@ set the properties as global env variables you have to remove them from the
 seed.
 
 Anyways, to run the demo just provide in the `REPOS` var the comma separated
- list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics`.
+ list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics'.
 
 {nbsp}
 {nbsp}
@@ -963,13 +963,13 @@ you've removed the Artifactory volume with deployed JAR whereas a tag in the rep
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 4: ", title="Click the manual step to go to stage. To do this click the *ARROW* next to the job name. Remember about <<jenkins_resources,killing>> the apps on test env before."]
+image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 4: ", title="Click the manual step to go to stage (remember about killing the apps on test env). To do this click the *ARROW* next to the job name"]
 
 {nbsp}
 {nbsp}
 
 IMPORTANT: Most likely you will run out of memory so when reaching the stage
-environment it's good to kill all apps on test. <<jenkins_resources,Check out the FAQ section for more details>>!
+environment it's good to kill all apps on test. <<faq,Check out the FAQ section for more details>>!
 
 {nbsp}
 {nbsp}
@@ -1344,7 +1344,7 @@ scripts without changing the whole pipeline.
 
 ==== I ran out of resources!!
 
-[[jenkins_resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
+[jenkins_resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
 
 [source,bash]
