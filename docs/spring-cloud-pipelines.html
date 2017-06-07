@@ -724,21 +724,17 @@ implementation that you can alter to suit your needs. The best approach to use i
 to build your production projects would be to download the Spring Cloud Pipelines repository as ZIP, then
 init a Git project there and modify it as you wish.</p>
 </div>
-<div class="paragraph">
-<p>Example for using the code from <code>master</code> branch. You can use a tag for example <code>1.0.0.M2</code>. Then your URL will look like this
-<code><a href="https://github.com/spring-cloud/spring-cloud-pipelines/archive/1.0.0.M2.zip" class="bare">https://github.com/spring-cloud/spring-cloud-pipelines/archive/1.0.0.M2.zip</a></code> .</p>
-</div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.zip
-unzip master.zip
-cd spring-cloud-pipelines-master
-git init
-# modify the pipelines to suit your needs
-git add .
-git commit -m "Initial commit"
-git remote add origin ${YOUR_REPOSITORY_URL}
-git push origin master</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/v1.0.0.M4.zip
+$ unzip v1.0.0.M4.zip
+$ cd spring-cloud-pipelines-v1.0.0.M4
+$ git init
+$ # modify the pipelines to suit your needs
+$ git add .
+$ git commit -m "Initial commit"
+$ git remote add origin ${YOUR_REPOSITORY_URL}
+$ git push origin master</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -1061,7 +1057,8 @@ is concerned.
 <div class="title">Figure 7. Build and upload artifacts</div>
 </div>
 <div class="paragraph">
-<p>In this step we&#8217;re generating a version of the pipeline and then we&#8217;re publishing
+<p>In this step we&#8217;re generating a version of the pipeline, next we&#8217;re
+ running unit, integration and contract tests. Finally we&#8217;re publishing
 2 artifacts to Artifactory / Nexus:</p>
 </div>
 <div class="ulist">
@@ -1079,6 +1076,24 @@ is concerned.
 , with unit and integration tests. We&#8217;re also <strong>tagging</strong> the repository with <code>dev/${version}</code> format. That way in each
 subsequent step of the pipeline we&#8217;re able to retrieve the tagged version. Also we know
 exactly which version of the pipeline corresponds to which Git hash.</p>
+</div>
+<div class="paragraph">
+<p>Once the artifact got built we&#8217;re running API compatibility check.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>we&#8217;re searching for the latest production deployment</p>
+</li>
+<li>
+<p>we&#8217;re retrieving the contracts that were used by that deployment</p>
+</li>
+<li>
+<p>from the contracts we&#8217;re generating API tests to see if the current implementation
+is fulfilling the HTTP / messaging contracts that the current production deployment
+has defined (we&#8217;re checking backward compatibility of the API)</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect4">
