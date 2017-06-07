@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function usage {
-	echo "usage: $0: <kill-all-apps|delete-all-apps|delete-all-test-apps|delete-all-stage-apps|delete-routes|delete-all-services|setup-spaces>"
+	echo "usage: $0: <kill-all-apps|kill-all-prod-apps|delete-all-apps|delete-all-test-apps|delete-all-stage-apps|delete-routes|delete-all-services|setup-spaces>"
 	exit 1
 }
 
@@ -33,6 +33,17 @@ case $1 in
 		yes | cf stop github-webhook
 		yes | cf stop github-analytics
 		yes | cf stop github-eureka
+
+		cf target -o pcfdev-org -s pcfdev-prod
+		yes | cf stop github-webhook
+		yes | cf stop github-webhook-venerable
+		yes | cf stop github-analytics
+		yes | cf stop github-analytics-venerable
+		yes | cf stop github-eureka
+		;;
+
+	kill-all-prod-apps)
+		pcfdev_login
 
 		cf target -o pcfdev-org -s pcfdev-prod
 		yes | cf stop github-webhook
