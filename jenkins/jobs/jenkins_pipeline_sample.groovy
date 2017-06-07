@@ -127,7 +127,7 @@ parsedRepos.each {
 			githubPush()
 		}
 		wrappers {
-			deliveryPipelineVersion(pipelineVersion, true)
+			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 				groovy(PipelineDefaults.groovyEnvScript)
