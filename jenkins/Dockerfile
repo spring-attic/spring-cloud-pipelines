@@ -32,6 +32,13 @@ RUN apt-get update && \
     apt-get install -y ruby curl && \
     apt-get clean
 
+# Install cf-cli
+RUN apt-get -y install apt-transport-https
+RUN wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
+RUN echo "deb http://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+RUN apt-get -y update
+RUN apt-get -y install cf-cli
+
 USER jenkins
 
 # You can use Jenkins API to generate the list of plugins from a running
