@@ -14,6 +14,23 @@ dsl.job("${projectName}-build") {
 	}
 	publishers {
 		downstreamParameterized {
+			trigger("${projectName}-build-api-check") {
+				triggerWithNoParameters()
+			}
+		}
+	}
+}
+
+dsl.job("${projectName}-build-api-check") {
+	deliveryPipelineConfiguration('Build', 'API compatibility check')
+	wrappers {
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+	}
+	steps {
+		shell("echo 'Running API compatibility check'")
+	}
+	publishers {
+		downstreamParameterized {
 			trigger("${projectName}-test-env-deploy") {
 				triggerWithNoParameters()
 			}

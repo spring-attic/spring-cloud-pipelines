@@ -9,6 +9,8 @@ dsl.pipelineJob('jenkins-pipeline-jenkinsfile-empty') {
 			node {
 				stage 'Build and Upload'
 				echo 'Building and Deploying'
+				stage 'API compatibility check'
+				echo 'Running API compatibility check'
 
 				stage 'Deploy to test'
 				echo 'Deploying to test'

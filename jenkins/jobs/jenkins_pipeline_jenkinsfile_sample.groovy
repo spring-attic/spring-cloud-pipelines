@@ -1,5 +1,4 @@
 import javaposse.jobdsl.dsl.DslFactory
-import javaposse.jobdsl.dsl.helpers.BuildParametersContext
 
 DslFactory dsl = this
 
@@ -51,7 +50,7 @@ parsedRepos.each {
 	}
 	String projectName = "${gitRepoName}-declarative-pipeline"
 	
-	envs['GIT_REPOSIOTRY'] = fullGitRepo
+	envs['GIT_REPOSITORY'] = fullGitRepo
 
 	dsl.pipelineJob(projectName) {
 		wrappers {

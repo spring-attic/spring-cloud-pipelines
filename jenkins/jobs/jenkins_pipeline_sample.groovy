@@ -103,7 +103,7 @@ parsedRepos.each {
 		publishers {
 			archiveJunit(testReports)
 			downstreamParameterized {
-				trigger("${projectName}-test-env-deploy") {
+				trigger("${projectName}-build-api-check") {
 					triggerWithNoParameters()
 					parameters {
 						currentBuild()
@@ -115,6 +115,63 @@ parsedRepos.each {
 				tag('origin', "dev/\${PIPELINE_VERSION}") {
 					create()
 					update()
+				}
+			}
+		}
+	}
+
+	dsl.job("${projectName}-build-api-check") {
+		deliveryPipelineConfiguration('Build', 'API compatibility check')
+		triggers {
+			cron(cronValue)
+			githubPush()
+		}
+		wrappers {
+			deliveryPipelineVersion(pipelineVersion, true)
+			environmentVariables {
+				environmentVariables(defaults.defaultEnvVars)
+				groovy(PipelineDefaults.groovyEnvScript)
+			}
+			parameters(PipelineDefaults.defaultParams())
+			timestamps()
+			colorizeOutput()
+			maskPasswords()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
+		}
+		jdk(jdkVersion)
+		scm {
+			git {
+				remote {
+					name('origin')
+					url(fullGitRepo)
+					branch('master')
+					credentials(gitCredentials)
+				}
+				extensions {
+					wipeOutWorkspace()
+				}
+			}
+		}
+		steps {
+			shell("""#!/bin/bash
+		set -e
+
+		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
+		${dsl.readFileFromWorkspace(scriptsDir + '/build_api_compatibility_check.sh')}
+		""")
+		}
+		publishers {
+			archiveJunit(testReports)
+			downstreamParameterized {
+				trigger("${projectName}-test-env-deploy") {
+					triggerWithNoParameters()
+					parameters {
+						currentBuild()
+					}
 				}
 			}
 		}

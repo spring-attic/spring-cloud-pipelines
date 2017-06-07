@@ -74,6 +74,14 @@ pipeline {
 			}
 		}
 
+		stage("API compatibility check") {
+			steps {
+				sh '''#!/bin/bash
+				${WORKSPACE}@tools/common/src/main/bash/build_api_compatibility_check.sh
+				'''
+			}
+		}
+
 		stage("Deploy to test") {
 			steps {
 				sh '''#!/bin/bash
