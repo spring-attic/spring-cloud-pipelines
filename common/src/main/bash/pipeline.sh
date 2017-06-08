@@ -112,6 +112,7 @@ function deployAppWithName() {
     local manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo "--no-manifest"; else echo "" ; fi )
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
     local hostname="${lowerCaseAppName}"
+    local memory="${APP_MEMORY_LIMIT:-256m}"
     if [[ ${CF_HOSTNAME_UUID} != "" ]]; then
         hostname="${hostname}-${CF_HOSTNAME_UUID}"
     fi
@@ -120,7 +121,7 @@ function deployAppWithName() {
     fi
     echo "Deploying app with name [${lowerCaseAppName}], env [${env}] with manifest [${useManifest}] and host [${hostname}]"
     if [[ ! -z "${manifestOption}" ]]; then
-        cf push "${lowerCaseAppName}" -m 256m -i 1 -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
+        cf push "${lowerCaseAppName}" -m "${memory}" -i 1 -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 ${manifestOption}
     else
         cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
     fi

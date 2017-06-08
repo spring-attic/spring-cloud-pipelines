@@ -690,6 +690,7 @@ class PipelineDefaults {
 		envs['CF_HOSTNAME_UUID'] = variables['CF_HOSTNAME_UUID'] ?: ''
 		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
 		envs['REPO_WITH_JARS'] = variables['REPO_WITH_JARS'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
+		envs['APP_MEMORY_LIMIT'] = variables['APP_MEMORY_LIMIT'] ?: '256m'
 		return envs
 	}
 

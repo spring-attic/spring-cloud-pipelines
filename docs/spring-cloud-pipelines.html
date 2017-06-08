@@ -1555,9 +1555,9 @@ Docker Machine IP.</p>
 </thead>
 <tfoot>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_HOSTNAME_UUID</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Additional suffix for the route. In a shared environment the default routes can be already taken</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">APP_MEMORY_LIMIT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">How much memory should be used by the infra apps (Eureka, Stub Runner etc.)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">256m</p></td>
 </tr>
 </tfoot>
 <tbody>
@@ -1615,6 +1615,11 @@ Docker Machine IP.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">M2_SETTINGS_REPO_ID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The id of server from Maven settings.xml</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">artifactory-local</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CF_HOSTNAME_UUID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Additional suffix for the route. In a shared environment the default routes can be already taken</p></td>
+<td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
 </table>
@@ -2665,9 +2670,9 @@ This section is presented only for informational purposes - for the sake of demo
 </thead>
 <tfoot>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">DEPLOY_TO_STAGE_STEP_REQUIRED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Should deploy to stage step be present</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">APP_MEMORY_LIMIT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">How much memory should be used by the infra apps (Eureka, Stub Runner etc.)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">256m</p></td>
 </tr>
 </tfoot>
 <tbody>
@@ -2764,6 +2769,11 @@ This section is presented only for informational purposes - for the sake of demo
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROLLBACK_STEP_REQUIRED</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Should rollback step be present</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DEPLOY_TO_STAGE_STEP_REQUIRED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Should deploy to stage step be present</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 </tr>
 </tbody>

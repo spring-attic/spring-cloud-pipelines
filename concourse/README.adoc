@@ -178,6 +178,7 @@ Below you can see what environment variables are required by the scripts. To the
 |REPO_WITH_JARS | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |CF_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
+|APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
 |======================
 
 ==== Build the pipeline

@@ -411,6 +411,7 @@ The env vars that are used in all of the jobs are as follows:
 |AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
 |ROLLBACK_STEP_REQUIRED | Should rollback step be present | true
 |DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
+|APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
 |======================
 
 ==== Set Git email / user
