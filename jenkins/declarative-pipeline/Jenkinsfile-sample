@@ -15,7 +15,7 @@ pipeline {
 						[$class: 'WipeWorkspace'],
 					],
 					userRemoteConfigs: [
-						[credentialsId: env.GIT_CREDENTIAL_ID, url: env.GIT_REPOSIOTRY]
+						[credentialsId: env.GIT_CREDENTIAL_ID, url: env.GIT_REPOSITORY]
 					]
 				])
 
