@@ -37,6 +37,8 @@ factory.job('jenkins-pipeline-seed') {
             stringParam('GIT_EMAIL', 'email@example.com', "Email used to tag the repo")
             stringParam('GIT_NAME', 'Pivo Tal', "Name used to tag the repo")
             stringParam('CF_HOSTNAME_UUID', '', "Additional suffix for the route. In a shared environment the default routes can be already taken")
+            stringParam('APP_MEMORY_LIMIT', '256m', "How much memory should be used by the infra apps (Eureka, Stub Runner etc.) ")
+            stringParam('JAVA_BUILDPACK_URL', 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1', "The URL to the Java buildpack to be used by CF")
             booleanParam('AUTO_DEPLOY_TO_STAGE', false, 'Should deployment to stage be automatic')
             booleanParam('AUTO_DEPLOY_TO_PROD', false, 'Should deployment to prod be automatic')
             booleanParam('ROLLBACK_STEP_REQUIRED', true, 'Should rollback step be present')

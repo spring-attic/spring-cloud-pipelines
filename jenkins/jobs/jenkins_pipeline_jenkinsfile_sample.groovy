@@ -37,6 +37,7 @@ envs['CF_TEST_CREDENTIAL_ID'] = binding.variables["CF_TEST_CREDENTIAL_ID"] ?: "c
 envs['CF_STAGE_CREDENTIAL_ID'] = binding.variables["CF_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
 envs['CF_PROD_CREDENTIAL_ID'] = binding.variables["CF_PROD_CREDENTIAL_ID"] ?: "cf-prod"
 envs['APP_MEMORY_LIMIT'] = binding.variables["APP_MEMORY_LIMIT"] ?: "256m"
+envs['JAVA_BUILDPACK_URL'] = binding.variables["JAVA_BUILDPACK_URL"] ?: 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1'
 
 parsedRepos.each {
 	List<String> parsedEntry = it.split('\\$')
