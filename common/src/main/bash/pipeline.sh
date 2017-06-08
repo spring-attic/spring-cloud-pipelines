@@ -206,8 +206,10 @@ function deployStubRunnerBoot() {
             setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
         fi
         bindService "${rabbitName}" "${stubRunnerName}"
+        setEnvVar "${stubRunnerName}" "spring.rabbitmq.addresses" "\${vcap.services.${rabbitName}.credentials.uri}"
         if [[ "${eurekaName}" != "" ]]; then
             bindService "${eurekaName}" "${stubRunnerName}"
+            setEnvVar "${stubRunnerName}" "eureka.client.serviceUrl.defaultZone" "\${vcap.services.${eurekaName}.credentials.uri:http://127.0.0.1:8761}/eureka/"
         fi
         restartApp "${stubRunnerName}"
     else
