@@ -63,6 +63,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
@@ -101,6 +102,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
@@ -134,6 +136,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
@@ -173,6 +176,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
@@ -211,6 +215,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
@@ -249,6 +254,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
@@ -287,6 +293,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
@@ -326,6 +333,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
@@ -364,6 +372,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
@@ -408,6 +417,7 @@ jobs:
           - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
           - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
           - STUBRUNNER_VERSION: {{stubrunner-version}}
+          - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
           - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
           - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
           - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}

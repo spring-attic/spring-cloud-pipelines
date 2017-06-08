@@ -114,7 +114,7 @@ function deployAppWithName() {
     local hostname="${lowerCaseAppName}"
     local memory="${APP_MEMORY_LIMIT:-256m}"
     local buildPackUrl="${JAVA_BUILDPACK_URL:-https://github.com/cloudfoundry/java-buildpack.git#v3.8.1}"
-    if [[ ${CF_HOSTNAME_UUID} != "" ]]; then
+    if [[ "${CF_HOSTNAME_UUID}" != "" ]]; then
         hostname="${hostname}-${CF_HOSTNAME_UUID}"
     fi
     if [[ ${env} != "prod" ]]; then
@@ -192,6 +192,7 @@ function deployStubRunnerBoot() {
     local stubRunnerName="${7:-stubrunner}"
     local fileExists="true"
     local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
+    local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
@@ -201,7 +202,9 @@ function deployStubRunnerBoot() {
         local prop="$( retrieveStubRunnerIds )"
         echo "Found following stub runner ids [${prop}]"
         setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
-        setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
+        if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
+            setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
+        fi
         bindService "${rabbitName}" "${stubRunnerName}"
         if [[ "${eurekaName}" != "" ]]; then
             bindService "${eurekaName}" "${stubRunnerName}"

@@ -68,6 +68,7 @@ parsedRepos.each {
 				stringParam('STUBRUNNER_GROUP_ID', 'com.example.github', "Group Id for Stub Runner used by tests")
 				stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
 				stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
+				booleanParam('STUBRUNNER_USE_CLASSPATH', false, "Should Stub Runner use classpath instead of reaching a repo")
 			}
 		}
 		definition {
