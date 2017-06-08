@@ -165,7 +165,9 @@ parsedRepos.each {
 		""")
 		}
 		publishers {
-			archiveJunit(testReports)
+			archiveJunit(testReports) {
+				allowEmptyResults()
+			}
 			downstreamParameterized {
 				trigger("${projectName}-test-env-deploy") {
 					triggerWithNoParameters()
