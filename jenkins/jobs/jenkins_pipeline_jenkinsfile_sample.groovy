@@ -6,8 +6,8 @@ DslFactory dsl = this
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
 // we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables["REPOS"] ?: [
-		"https://github.com/spring-cloud/github-analytics",
-		"https://github.com/spring-cloud/github-webhook"
+		"https://github.com/spring-cloud-samples/github-analytics",
+		"https://github.com/spring-cloud-samples/github-webhook"
 	].join(",")
 List<String> parsedRepos = repos.split(",")
 String jenkinsfileDir = binding.variables["JENKINSFILE_DIR"] ?: "${WORKSPACE}/jenkins/declarative-pipeline"
