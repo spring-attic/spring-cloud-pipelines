@@ -311,17 +311,9 @@ function runSmokeTests() {
 
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            if [[ ! -z ${MAVEN_ARGS} ]]; then
-                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}" || ( echo "$( printTestResults )" && return 1)
-            else
-                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( echo "$( printTestResults )" && return 1)
-            fi
+            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${MAVEN_ARGS} || ( echo "$( printTestResults )" && return 1)
         else
-            if [[ ! -z ${MAVEN_ARGS} ]]; then
-                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
-            else
-                ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
-            fi
+            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${MAVEN_ARGS}
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
@@ -343,17 +335,9 @@ function runE2eTests() {
 
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            if [[ ! -z ${MAVEN_ARGS} ]]; then
-                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}" || ( $( printTestResults ) && return 1)
-            else
-                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
-            fi
+            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${MAVEN_ARGS} || ( $( printTestResults ) && return 1)
         else
-            if [[ ! -z ${MAVEN_ARGS} ]]; then
-                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" "${MAVEN_ARGS}"
-            else
-                ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
-            fi
+            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${MAVEN_ARGS}
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
