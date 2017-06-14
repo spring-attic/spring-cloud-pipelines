@@ -24,6 +24,7 @@ if [[ -z "${POTENTIAL_DOCKER_HOST}" ]]; then
 fi
 
 ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://admin:password@${POTENTIAL_DOCKER_HOST}:8081/artifactory/libs-release-local}"
+ARTIFACTORY_ID="${ARTIFACTORY_ID:-artifactory-local}"
 
 function deploy_project {
 	local project_repo="$1"
@@ -37,12 +38,13 @@ function deploy_project {
 	rm -rf "${project_name}"
 	git clone "${project_repo}" "${project_name}" && cd "${project_name}"
 	./mvnw clean deploy \
-		-Ddistribution.management.release.url="${ARTIFACTORY_URL}"
+		-Ddistribution.management.release.url="${ARTIFACTORY_URL}" -Ddistribution.management.release.id="${ARTIFACTORY_ID}"
 	popd
 }
 
 echo "Using Docker running at [${POTENTIAL_DOCKER_HOST}]"
 echo "Destination directory to clone the apps is [${DEST_DIR}]"
+echo "Artifactory ID [${ARTIFACTORY_ID}]"
 
 deploy_project "https://github.com/spring-cloud-samples/github-eureka"
 deploy_project "https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot"
