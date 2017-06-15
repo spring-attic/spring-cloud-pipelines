@@ -542,7 +542,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_how_to_work_with_jenkins_job_dsl_plugin">How to work with Jenkins Job DSL plugin</a></li>
 </ul>
 </li>
-<li><a href="#_the_demo_setup">The demo setup</a></li>
+<li><a href="#_the_demo_setup">The demo setup</a>
+<ul class="sectlevel2">
+<li><a href="#_running_prometheus_on_cf">Running Prometheus on CF</a></li>
+<li><a href="#_running_grafana_on_cf">Running Grafana on CF</a></li>
+</ul>
+</li>
 <li><a href="#_how_to_build_it_2">How to build it</a>
 <ul class="sectlevel2">
 <li><a href="#_build_and_test">Build and test</a></li>
@@ -3436,7 +3441,121 @@ Remember that views can be overridden that&#8217;s why the suggestion is to cont
 <div class="sect1">
 <h2 id="_the_demo_setup">The demo setup</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://github.com/spring-cloud-samples/github-webhook/">Github webhook code</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/spring-cloud-samples/github-analytics/">Github analytics code</a></p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/docs/demo.png" alt="demo">
+</div>
+<div class="title">The overview of the demoGithub Webhook listens to HTTP calls and sends a message to Github Analytics</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/docs/demo_metrics.png" alt="demo metrics">
+</div>
+<div class="title">Gathering metricsGithub Analytics exposes metrics that are polled by Prometheus</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/docs/demo_alerting.png" alt="demo alerting">
+</div>
+<div class="title">Alerting over metricsGrafana alerts Slack over Prometheus metrics</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="sect2">
+<h3 id="_running_prometheus_on_cf">Running Prometheus on CF</h3>
+<div class="paragraph">
+<p>Go to <a href="https://prometheus.io/download/" class="bare">https://prometheus.io/download/</a> and download linux binary. Then call:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>cf push cf-prom -b binary_buildpack -c './prometheus -web.listen-address=:8080' -m 64m</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Also <code>localhost:9090</code> in <code>prometheus.yml</code> should be <code>localhost:8080</code>.</p>
+</div>
+<div class="paragraph">
+<p>The file should look like this to work with the demo setup (change <code>github-analytics-sc-pipelines-demo.cfapps.io</code>
+to your <code>github-analytics</code> installation).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-yml" data-lang="yml"># my global config
+global:
+  scrape_interval:     15s # By default, scrape targets every 15 seconds.
+  evaluation_interval: 15s # By default, scrape targets every 15 seconds.
+  # scrape_timeout is set to the global default (10s).
 
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'my-project'
+
+# Load and evaluate rules in this file every 'evaluation_interval' seconds.
+rule_files:
+  - "alert.rules"
+  # - "first.rules"
+  # - "second.rules"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+         - targets: ['localhost:8080']
+
+  - job_name: 'demo-app'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    metrics_path: '/prometheus'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ['github-analytics-sc-pipelines-demo.cfapps.io']</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_running_grafana_on_cf">Running Grafana on CF</h3>
+<div class="paragraph">
+<p>Download tarball from <a href="https://grafana.com/grafana/download?platform=linux" class="bare">https://grafana.com/grafana/download?platform=linux</a>
+Next set <code>http_port = 8080</code> in <code>conf/default.ini</code>. Then call</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>cf push cf-grafana -b binary_buildpack -c './bin/grafana-server web' -m 64m</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The demo is using Grafana Dashboard with ID 2471</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
