@@ -1524,6 +1524,8 @@ Provide the link to this repository in your Jenkins installation.
 WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
  for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).
 
+== The demo setup
+
 == How to build it
 
 === Build and test
