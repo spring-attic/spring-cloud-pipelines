@@ -19,7 +19,10 @@ image::{demo-root-docs}/demo_alerting.png[caption="Alerting over metrics: ", tit
 {nbsp}
 {nbsp}
 
+
 === Running Prometheus on CF
+
+You can check out https://github.com/making/cf-grafana[Toshiaki Maki's code] on how to automate Grafana installation on CF.
 
 Go to https://prometheus.io/download/ and download linux binary. Then call:
 
@@ -29,7 +32,7 @@ cf push sc-pipelines-prometheus -b binary_buildpack -c './prometheus -web.listen
 
 Also `localhost:9090` in `prometheus.yml` should be `localhost:8080`.
 
-The file should look like this to work with the demo setup (change `github-analytics-sc-pipelines-demo.cfapps.io`
+The file should look like this to work with the demo setup (change `github-analytics-sc-pipelines.cfapps.io`
 to your `github-analytics` installation).
 
 ```yml
@@ -70,12 +73,14 @@ scrape_configs:
     # scheme defaults to 'http'.
 
     static_configs:
-      - targets: ['github-analytics-sc-pipelines-demo.cfapps.io']
+      - targets: ['github-analytics-sc-pipelines.cfapps.io']
 ```
 
 A deployed version for the Spring Cloud Pipelines demo is available https://sc-pipelines-prometheus.cfapps.io/[here]
 
 === Running Grafana on CF
+
+You can check out https://github.com/making/cf-grafana[Toshiaki Maki's code] on how to automate Prometheus installation on CF.
 
 Download tarball from https://grafana.com/grafana/download?platform=linux
 Next set `http_port = 8080` in `conf/default.ini`. Then call

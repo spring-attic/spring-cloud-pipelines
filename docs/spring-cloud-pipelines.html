@@ -3480,6 +3480,9 @@ Remember that views can be overridden that&#8217;s why the suggestion is to cont
 <div class="sect2">
 <h3 id="_running_prometheus_on_cf">Running Prometheus on CF</h3>
 <div class="paragraph">
+<p>You can check out <a href="https://github.com/making/cf-grafana">Toshiaki Maki&#8217;s code</a> on how to automate Grafana installation on CF.</p>
+</div>
+<div class="paragraph">
 <p>Go to <a href="https://prometheus.io/download/" class="bare">https://prometheus.io/download/</a> and download linux binary. Then call:</p>
 </div>
 <div class="listingblock">
@@ -3491,7 +3494,7 @@ Remember that views can be overridden that&#8217;s why the suggestion is to cont
 <p>Also <code>localhost:9090</code> in <code>prometheus.yml</code> should be <code>localhost:8080</code>.</p>
 </div>
 <div class="paragraph">
-<p>The file should look like this to work with the demo setup (change <code>github-analytics-sc-pipelines-demo.cfapps.io</code>
+<p>The file should look like this to work with the demo setup (change <code>github-analytics-sc-pipelines.cfapps.io</code>
 to your <code>github-analytics</code> installation).</p>
 </div>
 <div class="listingblock">
@@ -3533,7 +3536,7 @@ scrape_configs:
     # scheme defaults to 'http'.
 
     static_configs:
-      - targets: ['github-analytics-sc-pipelines-demo.cfapps.io']</code></pre>
+      - targets: ['github-analytics-sc-pipelines.cfapps.io']</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3542,6 +3545,9 @@ scrape_configs:
 </div>
 <div class="sect2">
 <h3 id="_running_grafana_on_cf">Running Grafana on CF</h3>
+<div class="paragraph">
+<p>You can check out <a href="https://github.com/making/cf-grafana">Toshiaki Maki&#8217;s code</a> on how to automate Prometheus installation on CF.</p>
+</div>
 <div class="paragraph">
 <p>Download tarball from <a href="https://grafana.com/grafana/download?platform=linux" class="bare">https://grafana.com/grafana/download?platform=linux</a>
 Next set <code>http_port = 8080</code> in <code>conf/default.ini</code>. Then call</p>
