@@ -7,7 +7,7 @@ __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [[ -f "${__DIR}/pipeline.sh" ]] && source "${__DIR}/pipeline.sh" || \
     echo "No pipeline.sh found"
 
-echo "Additional Maven Args [${BUILD_OPTIONS}]"
+echo "Additional Build Options [${BUILD_OPTIONS}]"
 
 if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
     ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${BUILD_OPTIONS}
