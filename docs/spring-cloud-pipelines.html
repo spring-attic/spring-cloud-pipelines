@@ -3484,7 +3484,7 @@ Remember that views can be overridden that&#8217;s why the suggestion is to cont
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>cf push cf-prom -b binary_buildpack -c './prometheus -web.listen-address=:8080' -m 64m</code></pre>
+<pre class="highlight"><code>cf push sc-pipelines-prometheus -b binary_buildpack -c './prometheus -web.listen-address=:8080' -m 64m</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3498,18 +3498,17 @@ to your <code>github-analytics</code> installation).</p>
 <div class="content">
 <pre class="highlight"><code class="language-yml" data-lang="yml"># my global config
 global:
-  scrape_interval:     15s # By default, scrape targets every 15 seconds.
-  evaluation_interval: 15s # By default, scrape targets every 15 seconds.
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
   # scrape_timeout is set to the global default (10s).
 
   # Attach these labels to any time series or alerts when communicating with
   # external systems (federation, remote storage, Alertmanager).
   external_labels:
-      monitor: 'my-project'
+      monitor: 'codelab-monitor'
 
-# Load and evaluate rules in this file every 'evaluation_interval' seconds.
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-  - "alert.rules"
   # - "first.rules"
   # - "second.rules"
 
@@ -3519,14 +3518,11 @@ scrape_configs:
   # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.
   - job_name: 'prometheus'
 
-    # Override the global default and scrape targets from this job every 5 seconds.
-    scrape_interval: 5s
-
     # metrics_path defaults to '/metrics'
     # scheme defaults to 'http'.
 
     static_configs:
-         - targets: ['localhost:8080']
+      - targets: ['localhost:8080']
 
   - job_name: 'demo-app'
 
@@ -3540,6 +3536,9 @@ scrape_configs:
       - targets: ['github-analytics-sc-pipelines-demo.cfapps.io']</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>A deployed version for the Spring Cloud Pipelines demo is available <a href="https://sc-pipelines-prometheus.cfapps.io/">here</a></p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_running_grafana_on_cf">Running Grafana on CF</h3>
@@ -3549,11 +3548,14 @@ Next set <code>http_port = 8080</code> in <code>conf/default.ini</code>. Then ca
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>cf push cf-grafana -b binary_buildpack -c './bin/grafana-server web' -m 64m</code></pre>
+<pre class="highlight"><code>cf push sc-pipelines-grafana -b binary_buildpack -c './bin/grafana-server web' -m 64m</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The demo is using Grafana Dashboard with ID 2471</p>
+<p>The demo is using Grafana Dashboard with ID <code>2471</code>.</p>
+</div>
+<div class="paragraph">
+<p>A deployed version for the Spring Cloud Pipelines demo is available <a href="https://sc-pipelines-grafana.cfapps.io/">here</a></p>
 </div>
 </div>
 </div>

@@ -24,7 +24,7 @@ image::{demo-root-docs}/demo_alerting.png[caption="Alerting over metrics: ", tit
 Go to https://prometheus.io/download/ and download linux binary. Then call:
 
 ```
-cf push cf-prom -b binary_buildpack -c './prometheus -web.listen-address=:8080' -m 64m
+cf push sc-pipelines-prometheus -b binary_buildpack -c './prometheus -web.listen-address=:8080' -m 64m
 ```
 
 Also `localhost:9090` in `prometheus.yml` should be `localhost:8080`.
@@ -35,18 +35,17 @@ to your `github-analytics` installation).
 ```yml
 # my global config
 global:
-  scrape_interval:     15s # By default, scrape targets every 15 seconds.
-  evaluation_interval: 15s # By default, scrape targets every 15 seconds.
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
   # scrape_timeout is set to the global default (10s).
 
   # Attach these labels to any time series or alerts when communicating with
   # external systems (federation, remote storage, Alertmanager).
   external_labels:
-      monitor: 'my-project'
+      monitor: 'codelab-monitor'
 
-# Load and evaluate rules in this file every 'evaluation_interval' seconds.
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-  - "alert.rules"
   # - "first.rules"
   # - "second.rules"
 
@@ -56,14 +55,11 @@ scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: 'prometheus'
 
-    # Override the global default and scrape targets from this job every 5 seconds.
-    scrape_interval: 5s
-
     # metrics_path defaults to '/metrics'
     # scheme defaults to 'http'.
 
     static_configs:
-         - targets: ['localhost:8080']
+      - targets: ['localhost:8080']
 
   - job_name: 'demo-app'
 
@@ -77,13 +73,17 @@ scrape_configs:
       - targets: ['github-analytics-sc-pipelines-demo.cfapps.io']
 ```
 
+A deployed version for the Spring Cloud Pipelines demo is available https://sc-pipelines-prometheus.cfapps.io/[here]
+
 === Running Grafana on CF
 
 Download tarball from https://grafana.com/grafana/download?platform=linux
 Next set `http_port = 8080` in `conf/default.ini`. Then call
 
 ```
-cf push cf-grafana -b binary_buildpack -c './bin/grafana-server web' -m 64m
+cf push sc-pipelines-grafana -b binary_buildpack -c './bin/grafana-server web' -m 64m
 ```
 
-The demo is using Grafana Dashboard with ID 2471
+The demo is using Grafana Dashboard with ID `2471`.
+
+A deployed version for the Spring Cloud Pipelines demo is available https://sc-pipelines-grafana.cfapps.io/[here]
