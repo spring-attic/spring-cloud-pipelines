@@ -1531,17 +1531,17 @@ https://github.com/spring-cloud-samples/github-webhook/[Github webhook code]
 
 https://github.com/spring-cloud-samples/github-analytics/[Github analytics code]
 
-image::{demo-root-docs}/demo.png[caption="The overview of the demo", title="Github Webhook listens to HTTP calls and sends a message to Github Analytics"]
+image::{demo-root-docs}/demo.png[caption="The overview of the demo: ", title="Github Webhook listens to HTTP calls and sends a message to Github Analytics"]
 
 {nbsp}
 {nbsp}
 
-image::{demo-root-docs}/demo_metrics.png[caption="Gathering metrics", title="Github Analytics exposes metrics that are polled by Prometheus"]
+image::{demo-root-docs}/demo_metrics.png[caption="Gathering metrics: ", title="Github Analytics exposes metrics that are polled by Prometheus"]
 
 {nbsp}
 {nbsp}
 
-image::{demo-root-docs}/demo_alerting.png[caption="Alerting over metrics", title="Grafana alerts Slack over Prometheus metrics"]
+image::{demo-root-docs}/demo_alerting.png[caption="Alerting over metrics: ", title="Grafana alerts Slack over Prometheus metrics"]
 
 {nbsp}
 {nbsp}
