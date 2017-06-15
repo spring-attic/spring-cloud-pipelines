@@ -56,4 +56,6 @@ include::CONCOURSE.adoc[]
 
 include::JENKINS.adoc[]
 
+include::DEMO.adoc[]
+
 include::TECH.adoc[]
