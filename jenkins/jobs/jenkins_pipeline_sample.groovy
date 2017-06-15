@@ -11,6 +11,7 @@ String pipelineVersion = binding.variables["PIPELINE_VERSION"] ?: '''1.0.0.M1-${
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
 String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].join(",")
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
+String repoWithJarsCredentials = binding.variables["REPO_WITH_JARS_CREDENTIALS_ID"] ?: "repo-with-jars"
 String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
 String cfTestCredentialId = binding.variables["CF_TEST_CREDENTIAL_ID"] ?: "cf-test"
 String cfStageCredentialId = binding.variables["CF_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
@@ -62,6 +63,9 @@ parsedRepos.each {
 				noActivity(300)
 				failBuild()
 				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
+			credentialsBinding {
+				usernamePassword('M2_SETTINGS_REPO_USERNAME', 'M2_SETTINGS_REPO_PASSWORD', repoWithJarsCredentials)
 			}
 		}
 		jdk(jdkVersion)

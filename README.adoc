@@ -1190,6 +1190,7 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 |======================
 |Property Name  | Property Description | Default value
 |GIT_CREDENTIAL_ID    | Credential ID used to tag a git repo | git
+|REPO_WITH_JARS_CREDENTIALS_ID    | Credential ID used for the repo with jars | repo-with-jars
 |CF_TEST_CREDENTIAL_ID  | Credential ID for CF Test env access | cf-test
 |CF_STAGE_CREDENTIAL_ID   | Credential ID for CF Stage env access | cf-stage
 |CF_PROD_CREDENTIAL_ID | Credential ID for CF Prod env access | cf-prod

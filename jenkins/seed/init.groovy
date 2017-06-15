@@ -60,6 +60,19 @@ println "Creating the credentials"
 	}
 }
 
+println "Adding credentials to deploy to the repo with jars"
+String repoWithJarsId = "repo-with-jars"
+boolean repoWithJarCredsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
+	it.getDescriptor().getId() == repoWithJarsId
+}.empty
+if (repoWithJarCredsMissing) {
+	println "Credential [${repoWithJarsId}] is missing - will create it"
+	SystemCredentialsProvider.getInstance().getCredentials().add(
+			new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, repoWithJarsId,
+					"Repo with jars credential [${repoWithJarsId}]", "admin", "password"))
+	SystemCredentialsProvider.getInstance().save()
+}
+
 
 println "Importing GPG Keys"
 def privateKey = new File('/usr/share/jenkins/private.key')

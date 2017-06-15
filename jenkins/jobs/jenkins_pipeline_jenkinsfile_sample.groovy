@@ -26,6 +26,7 @@ envs['CF_PROD_ORG'] = binding.variables['CF_PROD_ORG'] ?: 'pcfdev-org'
 envs['CF_PROD_SPACE'] = binding.variables['CF_PROD_SPACE'] ?: 'pfcdev-prod'
 envs['CF_HOSTNAME_UUID'] = binding.variables['CF_HOSTNAME_UUID'] ?: ''
 envs['M2_SETTINGS_REPO_ID'] = binding.variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
+envs['REPO_WITH_JARS_CREDENTIALS_ID'] = binding.variables['REPO_WITH_JARS_CREDENTIALS_ID'] ?: 'repo-with-jars'
 envs['REPO_WITH_JARS'] = binding.variables['REPO_WITH_JARS'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 envs['GIT_CREDENTIAL_ID'] = gitCredentials 
 envs['JDK_VERSION'] = binding.variables["JDK_VERSION"] ?: "jdk8"
