@@ -20,18 +20,18 @@ else
     # Downloading latest jar
     LATEST_PROD_VERSION=${LATEST_PROD_TAG#prod/}
     echo "Last prod version equals ${LATEST_PROD_VERSION}"
-    echo "Additional Maven Args [${MAVEN_ARGS}]"
+    echo "Additional Build Options [${BUILD_OPTIONS}]"
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./mvnw clean verify -Papicompatibility -Dlatest.production.version=${LATEST_PROD_VERSION} -Drepo.with.jars=${REPO_WITH_JARS} ${MAVEN_ARGS} || ( $( printTestResults ) && return 1)
+            ./mvnw clean verify -Papicompatibility -Dlatest.production.version=${LATEST_PROD_VERSION} -Drepo.with.jars=${REPO_WITH_JARS} ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
         else
-            ./mvnw clean verify -Papicompatibility -Dlatest.production.version=${LATEST_PROD_VERSION} -Drepo.with.jars=${REPO_WITH_JARS} ${MAVEN_ARGS}
+            ./mvnw clean verify -Papicompatibility -Dlatest.production.version=${LATEST_PROD_VERSION} -Drepo.with.jars=${REPO_WITH_JARS} ${BUILD_OPTIONS}
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./gradlew clean apiCompatibility -DlatestProductionVersion=${LATEST_PROD_VERSION} -DREPO_WITH_JARS=${REPO_WITH_JARS} --stacktrace  || ( $( printTestResults ) && return 1)
+            ./gradlew clean apiCompatibility -DlatestProductionVersion=${LATEST_PROD_VERSION} -DREPO_WITH_JARS=${REPO_WITH_JARS} ${BUILD_OPTIONS} --stacktrace  || ( $( printTestResults ) && return 1)
         else
-            ./gradlew clean apiCompatibility -DlatestProductionVersion=${LATEST_PROD_VERSION} -DREPO_WITH_JARS=${REPO_WITH_JARS} --stacktrace
+            ./gradlew clean apiCompatibility -DlatestProductionVersion=${LATEST_PROD_VERSION} -DREPO_WITH_JARS=${REPO_WITH_JARS} ${BUILD_OPTIONS} --stacktrace
         fi
     else
         echo "Unsupported project build tool"

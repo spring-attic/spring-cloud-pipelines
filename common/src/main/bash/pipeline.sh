@@ -236,7 +236,7 @@ function createServiceWithName() {
 # and change this function
 function extractMavenProperty() {
     local prop="${1}"
-    MAVEN_PROPERTY=$(./mvnw ${MAVEN_ARGS} -q \
+    MAVEN_PROPERTY=$(./mvnw ${BUILD_OPTIONS} -q \
                     -Dexec.executable="echo" \
                     -Dexec.args="\${${prop}}" \
                     --non-recursive \
@@ -311,15 +311,15 @@ function runSmokeTests() {
 
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${MAVEN_ARGS} || ( echo "$( printTestResults )" && return 1)
+            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( echo "$( printTestResults )" && return 1)
         else
-            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${MAVEN_ARGS}
+            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( echo "$( printTestResults )" && return 1)
+            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( echo "$( printTestResults )" && return 1)
         else
-            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
         fi
     else
         echo "Unsupported project build tool"
@@ -335,15 +335,15 @@ function runE2eTests() {
 
     if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${MAVEN_ARGS} || ( $( printTestResults ) && return 1)
+            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
         else
-            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${MAVEN_ARGS}
+            ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
         fi
     elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" || ( $( printTestResults ) && return 1)
+            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
         else
-            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}"
+            ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
         fi
     else
         echo "Unsupported project build tool"
@@ -365,11 +365,11 @@ function extractVersionFromProdTag() {
 
 function retrieveGroupId() {
     if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        local result=$( ./gradlew groupId -q )
+        local result=$( ./gradlew groupId ${BUILD_OPTIONS} -q )
         result=$( echo "${result}" | tail -1 )
         echo "${result}"
     else
-        local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/groupId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
+        local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/groupId"].text' pom.xml || ./mvnw ${BUILD_OPTIONS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
         result=$( echo "${result}" | tail -1 )
         echo "${result}"
     fi
@@ -377,11 +377,11 @@ function retrieveGroupId() {
 
 function retrieveArtifactId() {
     if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        local result=$( ./gradlew artifactId -q )
+        local result=$( ./gradlew artifactId ${BUILD_OPTIONS} -q )
         result=$( echo "${result}" | tail -1 )
         echo "${result}"
     else
-        local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml || ./mvnw ${MAVEN_ARGS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
+        local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml || ./mvnw ${BUILD_OPTIONS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
         result=$( echo "${result}" | tail -1 )
         echo "${result}"
     fi
@@ -463,7 +463,7 @@ function printTestResults() {
 
 function retrieveStubRunnerIds() {
     if [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        echo "$( ./gradlew stubIds -q | tail -1 )"
+        echo "$( ./gradlew stubIds ${BUILD_OPTIONS} -q | tail -1 )"
     else
         echo "$( extractMavenProperty 'stubrunner.ids' )"
     fi

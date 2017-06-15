@@ -15,14 +15,14 @@ source ${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh
 
 M2_LOCAL=${ROOT_FOLDER}/${M2_REPO}/repository
 echo "Changing the maven local to [${M2_LOCAL}]"
-export MAVEN_ARGS="-Dmaven.repo.local=${M2_LOCAL}"
+export BUILD_OPTIONS="-Dmaven.repo.local=${M2_LOCAL}"
 
 if [ "$1" == "init" ]; then
 	mkdir -p ${M2_LOCAL}
 fi
 
 cd ${REPO_RESOURCE}
-./mvnw --fail-never dependency:go-offline ${MAVEN_ARGS} || (./gradlew clean install -PM2_LOCAL=${M2_LOCAL} || echo "Sth went wrong" )
+./mvnw --fail-never dependency:go-offline ${BUILD_OPTIONS} || (./gradlew clean install -PM2_LOCAL=${M2_LOCAL} ${BUILD_OPTIONS} || echo "Sth went wrong" )
 cd ${ROOT_FOLDER}/m2
 tar -C rootfs -cf rootfs.tar .
 mv rootfs.tar ${ROOT_FOLDER}/to-push/

@@ -70,6 +70,7 @@ jobs:
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}
       - put: repo
         params:
           repository: out
@@ -109,6 +110,7 @@ jobs:
           - REPO_WITH_JARS: {{repo-with-jars}}
           - M2_REPO: {{maven-local-dir}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}
 
   - name: test-deploy
     serial: true
@@ -149,6 +151,7 @@ jobs:
           - CF_TEST_API_URL: {{cf-test-api-url}}
           - CF_HOSTNAME_UUID: {{cf-hostname-uuid}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}
 
   - name: test-smoke
     serial: true
@@ -188,6 +191,7 @@ jobs:
           - CF_TEST_SPACE: {{cf-test-space}}
           - CF_TEST_API_URL: {{cf-test-api-url}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}
 
   - name: test-rollback-deploy
     serial: true
@@ -227,6 +231,7 @@ jobs:
           - CF_TEST_SPACE: {{cf-test-space}}
           - CF_TEST_API_URL: {{cf-test-api-url}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}
 
   - name: test-rollback-smoke
     serial: true
@@ -266,6 +271,7 @@ jobs:
           - CF_TEST_SPACE: {{cf-test-space}}
           - CF_TEST_API_URL: {{cf-test-api-url}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}
 
   - name: stage-deploy
     serial: true
@@ -306,6 +312,7 @@ jobs:
           - CF_STAGE_API_URL: {{cf-stage-api-url}}
           - CF_HOSTNAME_UUID: {{cf-hostname-uuid}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}
 
   - name: stage-e2e
     serial: true
@@ -345,6 +352,7 @@ jobs:
           - CF_STAGE_SPACE: {{cf-stage-space}}
           - CF_STAGE_API_URL: {{cf-stage-api-url}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}
 
   - name: prod-deploy
     serial: true
@@ -385,6 +393,7 @@ jobs:
           - CF_PROD_API_URL: {{cf-prod-api-url}}
           - CF_HOSTNAME_UUID: {{cf-hostname-uuid}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}
       - put: repo
         params:
           repository: out
@@ -429,3 +438,4 @@ jobs:
           - CF_PROD_SPACE: {{cf-prod-space}}
           - CF_PROD_API_URL: {{cf-prod-api-url}}
           - APP_MEMORY_LIMIT: {{app-memory-limit}}
+          - BUILD_OPTIONS: {{build-options}}

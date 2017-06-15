@@ -69,6 +69,7 @@ parsedRepos.each {
 				stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
 				stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
 				booleanParam('STUBRUNNER_USE_CLASSPATH', false, "Should Stub Runner use classpath instead of reaching a repo")
+				stringParam('BUILD_OPTIONS', null, "Additional build options to be passed to the build tool")
 			}
 		}
 		definition {
