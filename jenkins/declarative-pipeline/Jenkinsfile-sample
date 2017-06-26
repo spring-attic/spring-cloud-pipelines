@@ -42,7 +42,7 @@ pipeline {
 					withCredentials([usernamePassword(credentialsId: env.REPO_WITH_JARS_CREDENTIALS_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
 						env.M2_SETTINGS_REPO_USERNAME = USER
 						env.M2_SETTINGS_REPO_PASSWORD = PASS
-
+					}
 
 					withCredentials([usernamePassword(credentialsId: env.CF_TEST_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
 						env.CF_TEST_USERNAME = USER
