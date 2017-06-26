@@ -35,7 +35,7 @@ pipeline {
 
 				script {
 					env.PIPELINE_VERSION = VersionNumber(
-						versionNumberString: '${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}',
+						versionNumberString: '${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}-VERSION',
 						versionPrefix: '1.0.0.M1-'
 					)
 
