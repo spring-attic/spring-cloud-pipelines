@@ -16,15 +16,4 @@ source ${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh
 echo "Testing the rolled back built application on test environment"
 cd ${ROOT_FOLDER}/${REPO_RESOURCE}
 
-prepareForSmokeTests
-
-echo "Resolving latest prod tag"
-LATEST_PROD_TAG=$( findLatestProdTag )
-
-echo "Retrieved application and stub runner urls"
-if [[ -z "${LATEST_PROD_TAG}" || "${LATEST_PROD_TAG}" == "master" ]]; then
-    echo "No prod release took place - skipping this step"
-else
-    git checkout "${LATEST_PROD_TAG}"
-    . ${SCRIPTS_OUTPUT_FOLDER}/test_rollback_smoke.sh
-fi
+. ${SCRIPTS_OUTPUT_FOLDER}/test_rollback_smoke.sh
