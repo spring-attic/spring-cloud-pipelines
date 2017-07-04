@@ -8,9 +8,15 @@ The logic behind the deployment pipeline is written using Bash scripts.
 ----
 .
 ├── build_and_upload.sh
+├── build_api_compatibility_check.sh
+├── pipeline-cf.sh
 ├── pipeline.sh
 ├── prod_complete.sh
 ├── prod_deploy.sh
+├── projectType
+│   ├── pipeline-gradle.sh
+│   ├── pipeline-jvm.sh
+│   └── pipeline-maven.sh
 ├── stage_deploy.sh
 ├── stage_e2e.sh
 ├── test_deploy.sh
@@ -19,18 +25,25 @@ The logic behind the deployment pipeline is written using Bash scripts.
 └── test_smoke.sh
 ----
 
-There is one script called `pipeline.sh` that contains all the functions
-reused by other scripts.
+Spring Cloud Pipelines is built on top of conventions. Here's how they look like:
 
-Every other script represents the logic required to perform a step in the
-pipeline.
+There is one script called `pipeline.sh` that contains all required functions
+necessary to be implemented by any other scripts.
 
-Currently the flow looks like this:
+=== Supported platforms
 
-*Build phase*
+In terms of platforms we support the convention looks as follows: `pipeline-${plaform}.sh`,
+for example `pipeline-cf.sh` for Cloud Foundry implementations.
 
-`build and upload -> `
+=== Supported building tools
 
-*Test phase*
+Currently we support only JVM based applications via `projectType/pipeline-jvm.sh` and
+building tools like Gradle and Maven (via `projectType/pipeline-gradle.sh` and
+`projectType/pipeline-maven.sh`).
 
-`test deploy -> test smoke -> test rollback smoke
+=== Customizations
+
+In order to add a new platform (e.g. `aaa` platform) it's enough to create a new file called
+ `pipeline-aaa.sh` and implement all functions present in the `pipeline.sh` file. Also
+ you'll need to pass the `PAAS_TYPE=aaa` env variable to the bash scripts so that
+  files get properly sourced.

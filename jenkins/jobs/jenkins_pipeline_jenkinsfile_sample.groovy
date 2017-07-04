@@ -15,30 +15,31 @@ String jenkinsfileDir = binding.variables["JENKINSFILE_DIR"] ?: "${WORKSPACE}/je
 Map<String, String> envs = [:]
 envs['PIPELINE_VERSION_FORMAT'] = binding.variables["PIPELINE_VERSION"] ?: '''${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}-VERSION'''
 envs['PIPELINE_VERSION_PREFIX'] = binding.variables["PIPELINE_VERSION"] ?: '''1.0.0.M1'''
-envs['CF_TEST_API_URL'] = binding.variables['CF_TEST_API_URL'] ?: 'api.local.pcfdev.io'
-envs['CF_STAGE_API_URL'] = binding.variables['CF_STAGE_API_URL'] ?: 'api.local.pcfdev.io'
-envs['CF_PROD_API_URL'] = binding.variables['CF_PROD_API_URL'] ?: 'api.local.pcfdev.io'
-envs['CF_TEST_ORG'] = binding.variables['CF_TEST_ORG'] ?: 'pcfdev-org'
-envs['CF_TEST_SPACE'] = binding.variables['CF_TEST_SPACE'] ?: 'pfcdev-test'
-envs['CF_STAGE_ORG'] = binding.variables['CF_STAGE_ORG'] ?: 'pcfdev-org'
-envs['CF_STAGE_SPACE'] = binding.variables['CF_STAGE_SPACE'] ?: 'pfcdev-stage'
-envs['CF_PROD_ORG'] = binding.variables['CF_PROD_ORG'] ?: 'pcfdev-org'
-envs['CF_PROD_SPACE'] = binding.variables['CF_PROD_SPACE'] ?: 'pfcdev-prod'
-envs['CF_HOSTNAME_UUID'] = binding.variables['CF_HOSTNAME_UUID'] ?: ''
+envs['PAAS_TEST_API_URL'] = binding.variables['PAAS_TEST_API_URL'] ?: 'api.local.pcfdev.io'
+envs['PAAS_STAGE_API_URL'] = binding.variables['PAAS_STAGE_API_URL'] ?: 'api.local.pcfdev.io'
+envs['PAAS_PROD_API_URL'] = binding.variables['PAAS_PROD_API_URL'] ?: 'api.local.pcfdev.io'
+envs['PAAS_TEST_ORG'] = binding.variables['PAAS_TEST_ORG'] ?: 'pcfdev-org'
+envs['PAAS_TEST_SPACE'] = binding.variables['PAAS_TEST_SPACE'] ?: 'pfcdev-test'
+envs['PAAS_STAGE_ORG'] = binding.variables['PAAS_STAGE_ORG'] ?: 'pcfdev-org'
+envs['PAAS_STAGE_SPACE'] = binding.variables['PAAS_STAGE_SPACE'] ?: 'pfcdev-stage'
+envs['PAAS_PROD_ORG'] = binding.variables['PAAS_PROD_ORG'] ?: 'pcfdev-org'
+envs['PAAS_PROD_SPACE'] = binding.variables['PAAS_PROD_SPACE'] ?: 'pfcdev-prod'
+envs['PAAS_HOSTNAME_UUID'] = binding.variables['PAAS_HOSTNAME_UUID'] ?: ''
 envs['M2_SETTINGS_REPO_ID'] = binding.variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
-envs['REPO_WITH_JARS_CREDENTIALS_ID'] = binding.variables['REPO_WITH_JARS_CREDENTIALS_ID'] ?: 'repo-with-jars'
-envs['REPO_WITH_JARS'] = binding.variables['REPO_WITH_JARS'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
+envs['REPO_WITH_BINARIES_CREDENTIALS_ID'] = binding.variables['REPO_WITH_BINARIES_CREDENTIALS_ID'] ?: 'repo-with-binaries'
+envs['REPO_WITH_BINARIES'] = binding.variables['REPO_WITH_BINARIES'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 envs['GIT_CREDENTIAL_ID'] = gitCredentials 
 envs['JDK_VERSION'] = binding.variables["JDK_VERSION"] ?: "jdk8"
 envs['GIT_EMAIL'] = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
 envs['GIT_NAME'] = binding.variables["GIT_NAME"] ?: "Pivo Tal"
 envs['TOOLS_REPOSITORY'] = binding.variables["TOOLS_REPOSITORY"] ?: 'https://github.com/spring-cloud/spring-cloud-pipelines'
-envs['TOOLS_BRANCH'] = binding.variables["TOOLS_BRANCH"] ?: '*/master'
-envs['CF_TEST_CREDENTIAL_ID'] = binding.variables["CF_TEST_CREDENTIAL_ID"] ?: "cf-test"
-envs['CF_STAGE_CREDENTIAL_ID'] = binding.variables["CF_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
-envs['CF_PROD_CREDENTIAL_ID'] = binding.variables["CF_PROD_CREDENTIAL_ID"] ?: "cf-prod"
+envs['TOOLS_BRANCH'] = binding.variables["TOOLS_BRANCH"] ?: 'master'
+envs['PAAS_TEST_CREDENTIAL_ID'] = binding.variables["PAAS_TEST_CREDENTIAL_ID"] ?: "cf-test"
+envs['PAAS_STAGE_CREDENTIAL_ID'] = binding.variables["PAAS_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
+envs['PAAS_PROD_CREDENTIAL_ID'] = binding.variables["PAAS_PROD_CREDENTIAL_ID"] ?: "cf-prod"
 envs['APP_MEMORY_LIMIT'] = binding.variables["APP_MEMORY_LIMIT"] ?: "256m"
 envs['JAVA_BUILDPACK_URL'] = binding.variables["JAVA_BUILDPACK_URL"] ?: 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1'
+envs['PAAS_TYPE'] = binding.variables["PAAS_TYPE"] ?: 'cf'
 
 parsedRepos.each {
 	List<String> parsedEntry = it.split('\\$')
@@ -70,14 +71,11 @@ parsedRepos.each {
 				stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
 				stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
 				booleanParam('STUBRUNNER_USE_CLASSPATH', false, "Should Stub Runner use classpath instead of reaching a repo")
-				stringParam('BUILD_OPTIONS', null, "Additional build options to be passed to the build tool")
 			}
 		}
 		definition {
 			cps {
-				script("""
-					${dsl.readFileFromWorkspace(jenkinsfileDir + '/Jenkinsfile-sample')}
-				""")
+				script("""${dsl.readFileFromWorkspace(jenkinsfileDir + '/Jenkinsfile-sample')}""")
 			}
 		}
 	}

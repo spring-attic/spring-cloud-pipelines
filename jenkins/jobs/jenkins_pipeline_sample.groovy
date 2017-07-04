@@ -9,13 +9,14 @@ PipelineDefaults defaults = new PipelineDefaults(binding.variables)
 // Example of a version with date and time in the name
 String pipelineVersion = binding.variables["PIPELINE_VERSION"] ?: '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
+// TODO: this doesn't scale too much
 String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].join(",")
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
-String repoWithJarsCredentials = binding.variables["REPO_WITH_JARS_CREDENTIALS_ID"] ?: "repo-with-jars"
+String repoWithBinariesCredentials = binding.variables["REPO_WITH_BINARIES_CREDENTIALS_ID"] ?: "repo-with-binaries"
 String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
-String cfTestCredentialId = binding.variables["CF_TEST_CREDENTIAL_ID"] ?: "cf-test"
-String cfStageCredentialId = binding.variables["CF_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
-String cfProdCredentialId = binding.variables["CF_PROD_CREDENTIAL_ID"] ?: "cf-prod"
+String cfTestCredentialId = binding.variables["PAAS_TEST_CREDENTIAL_ID"] ?: "cf-test"
+String cfStageCredentialId = binding.variables["PAAS_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
+String cfProdCredentialId = binding.variables["PAAS_PROD_CREDENTIAL_ID"] ?: "cf-prod"
 String gitEmail = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
 String gitName = binding.variables["GIT_NAME"] ?: "Pivo Tal"
 boolean autoStage = binding.variables["AUTO_DEPLOY_TO_STAGE"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_STAGE"])
@@ -23,6 +24,10 @@ boolean autoProd = binding.variables["AUTO_DEPLOY_TO_PROD"] == null ? false : Bo
 boolean rollbackStep = binding.variables["ROLLBACK_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["ROLLBACK_STEP_REQUIRED"])
 boolean stageStep = binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"])
 String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src/main/bash"
+// TODO: Automate customization of this value
+String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines"
+String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
+
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables["REPOS"] ?:
@@ -53,7 +58,6 @@ parsedRepos.each {
 			deliveryPipelineVersion(pipelineVersion, true)
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
-				groovy(PipelineDefaults.groovyEnvScript)
 			}
 			parameters(PipelineDefaults.defaultParams())
 			timestamps()
@@ -65,7 +69,7 @@ parsedRepos.each {
 				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 			}
 			credentialsBinding {
-				usernamePassword('M2_SETTINGS_REPO_USERNAME', 'M2_SETTINGS_REPO_PASSWORD', repoWithJarsCredentials)
+				usernamePassword('M2_SETTINGS_REPO_USERNAME', 'M2_SETTINGS_REPO_PASSWORD', repoWithBinariesCredentials)
 			}
 		}
 		jdk(jdkVersion)
@@ -91,11 +95,11 @@ parsedRepos.each {
 		}
 		steps {
 			shell("""#!/bin/bash
-		set -e
-
-		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-		${dsl.readFileFromWorkspace(scriptsDir + '/build_and_upload.sh')}
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
 		""")
+			shell('''#!/bin/bash 
+		${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
+		''')
 		}
 		publishers {
 			archiveJunit(testReports)
@@ -127,7 +131,6 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
-				groovy(PipelineDefaults.groovyEnvScript)
 			}
 			parameters(PipelineDefaults.defaultParams())
 			timestamps()
@@ -155,11 +158,11 @@ parsedRepos.each {
 		}
 		steps {
 			shell("""#!/bin/bash
-		set -e
-
-		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-		${dsl.readFileFromWorkspace(scriptsDir + '/build_api_compatibility_check.sh')}
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
 		""")
+			shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
+		''')
 		}
 		publishers {
 			archiveJunit(testReports) {
@@ -183,10 +186,9 @@ parsedRepos.each {
 			parameters(PipelineDefaults.defaultParams())
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
-				groovy(PipelineDefaults.groovyEnvScript)
 			}
 			credentialsBinding {
-				usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
+				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 			}
 			timestamps()
 			colorizeOutput()
@@ -207,17 +209,17 @@ parsedRepos.each {
 		}
 		steps {
 			shell("""#!/bin/bash
-		set -e
-
-		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-		${dsl.readFileFromWorkspace(scriptsDir + '/test_deploy.sh')}
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
 		""")
+			shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/test_deploy.sh
+		''')
 		}
 		publishers {
 			downstreamParameterized {
 				trigger("${projectName}-test-env-test") {
 					parameters {
-						propertiesFile('target/test.properties,build/libs/test.properties', false)
+						
 						currentBuild()
 					}
 					triggerWithNoParameters()
@@ -234,10 +236,9 @@ parsedRepos.each {
 			parameters PipelineDefaults.smokeTestParams()
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
-				groovy(PipelineDefaults.groovyEnvScript)
 			}
 			credentialsBinding {
-				usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
+				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 			}
 			timestamps()
 			colorizeOutput()
@@ -261,11 +262,11 @@ parsedRepos.each {
 		}
 		steps {
 			shell("""#!/bin/bash
-		set -e
-
-		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-		${dsl.readFileFromWorkspace(scriptsDir + '/test_smoke.sh')}
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
 		""")
+			shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/test_smoke.sh
+		''')
 		}
 		publishers {
 			archiveJunit(testReports)
@@ -300,10 +301,9 @@ parsedRepos.each {
 				parameters(PipelineDefaults.defaultParams())
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
-					groovy(PipelineDefaults.groovyEnvScript)
 				}
 				credentialsBinding {
-					usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
+					usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 				}
 				timeout {
 					noActivity(300)
@@ -324,18 +324,17 @@ parsedRepos.each {
 			}
 			steps {
 				shell("""#!/bin/bash
-		set -e
-
-		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-		${dsl.readFileFromWorkspace(scriptsDir + '/test_rollback_deploy.sh')}
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
 		""")
+				shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/test_rollback_deploy.sh
+		''')
 			}
 			publishers {
 				downstreamParameterized {
 					trigger("${projectName}-test-env-rollback-test") {
 						triggerWithNoParameters()
 						parameters {
-							propertiesFile('target/test.properties,build/libs/test.properties', false)
 							currentBuild()
 						}
 					}
@@ -351,10 +350,9 @@ parsedRepos.each {
 				parameters PipelineDefaults.smokeTestParams()
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
-					groovy(PipelineDefaults.groovyEnvScript)
 				}
 				credentialsBinding {
-					usernamePassword('CF_TEST_USERNAME', 'CF_TEST_PASSWORD', cfTestCredentialId)
+					usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 				}
 				parameters {
 					stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
@@ -381,11 +379,11 @@ parsedRepos.each {
 			}
 			steps {
 				shell("""#!/bin/bash
-		set -e
-
-		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-		${dsl.readFileFromWorkspace(scriptsDir + '/test_rollback_smoke.sh')}
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
 		""")
+				shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/test_rollback_smoke.sh
+		''')
 			}
 			publishers {
 				archiveJunit(testReports) {
@@ -439,10 +437,9 @@ parsedRepos.each {
 				parameters(PipelineDefaults.defaultParams())
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
-					groovy(PipelineDefaults.groovyEnvScript)
 				}
 				credentialsBinding {
-					usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
+					usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
 				}
 				timestamps()
 				colorizeOutput()
@@ -463,11 +460,11 @@ parsedRepos.each {
 			}
 			steps {
 				shell("""#!/bin/bash
-			set -e
-
-			${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-			${dsl.readFileFromWorkspace(scriptsDir + '/stage_deploy.sh')}
-			""")
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
+		""")
+				shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/stage_deploy.sh
+		''')
 			}
 			publishers {
 				if (autoStage) {
@@ -476,7 +473,6 @@ parsedRepos.each {
 							triggerWithNoParameters()
 							parameters {
 								currentBuild()
-								propertiesFile('${OUTPUT_FOLDER}/test.properties', false)
 							}
 						}
 					}
@@ -484,7 +480,6 @@ parsedRepos.each {
 					buildPipelineTrigger("${projectName}-stage-env-test") {
 						parameters {
 							currentBuild()
-							propertiesFile('target/test.properties,build/libs/test.properties', false)
 						}
 					}
 				}
@@ -499,10 +494,9 @@ parsedRepos.each {
 				parameters PipelineDefaults.smokeTestParams()
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
-					groovy(PipelineDefaults.groovyEnvScript)
 				}
 				credentialsBinding {
-					usernamePassword('CF_STAGE_USERNAME', 'CF_STAGE_PASSWORD', cfStageCredentialId)
+					usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
 				}
 				timestamps()
 				colorizeOutput()
@@ -526,11 +520,11 @@ parsedRepos.each {
 			}
 			steps {
 				shell("""#!/bin/bash
-			set -e
-
-			${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-			${dsl.readFileFromWorkspace(scriptsDir + '/stage_e2e.sh')}
-			""")
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
+		""")
+				shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/stage_e2e.sh
+		''')
 			}
 			publishers {
 				archiveJunit(testReports)
@@ -562,10 +556,9 @@ parsedRepos.each {
 			parameters(PipelineDefaults.defaultParams())
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
-				groovy(PipelineDefaults.groovyEnvScript)
 			}
 			credentialsBinding {
-				usernamePassword('CF_PROD_USERNAME', 'CF_PROD_PASSWORD', cfProdCredentialId)
+				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
 			}
 			timestamps()
 			colorizeOutput()
@@ -595,11 +588,11 @@ parsedRepos.each {
 		}
 		steps {
 			shell("""#!/bin/bash
-		set -e
-
-		${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh')}
-		${dsl.readFileFromWorkspace(scriptsDir + '/prod_deploy.sh')}
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
 		""")
+			shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/prod_deploy.sh
+		''')
 		}
 		publishers {
 			buildPipelineTrigger("${projectName}-prod-env-complete") {
@@ -626,10 +619,9 @@ parsedRepos.each {
 			parameters(PipelineDefaults.defaultParams())
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
-				groovy(PipelineDefaults.groovyEnvScript)
 			}
 			credentialsBinding {
-				usernamePassword('CF_PROD_USERNAME', 'CF_PROD_PASSWORD', cfProdCredentialId)
+				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
 			}
 			timestamps()
 			colorizeOutput()
@@ -652,11 +644,11 @@ parsedRepos.each {
 		}
 		steps {
 			shell("""#!/bin/bash
-			set - e
-
-			${dsl.readFileFromWorkspace(scriptsDir + '/pipeline.sh') }
-			${dsl.readFileFromWorkspace(scriptsDir + '/prod_complete.sh') }
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
 		""")
+			shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/prod_complete.sh
+		''')
 		}
 	}
 }
@@ -677,37 +669,23 @@ class PipelineDefaults {
 
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
 		Map<String, String> envs = [:]
-		envs['CF_TEST_API_URL'] = variables['CF_TEST_API_URL'] ?: 'api.local.pcfdev.io'
-		envs['CF_STAGE_API_URL'] = variables['CF_STAGE_API_URL'] ?: 'api.local.pcfdev.io'
-		envs['CF_PROD_API_URL'] = variables['CF_PROD_API_URL'] ?: 'api.local.pcfdev.io'
-		envs['CF_TEST_ORG'] = variables['CF_TEST_ORG'] ?: 'pcfdev-org'
-		envs['CF_TEST_SPACE'] = variables['CF_TEST_SPACE'] ?: 'pfcdev-test'
-		envs['CF_STAGE_ORG'] = variables['CF_STAGE_ORG'] ?: 'pcfdev-org'
-		envs['CF_STAGE_SPACE'] = variables['CF_STAGE_SPACE'] ?: 'pfcdev-stage'
-		envs['CF_PROD_ORG'] = variables['CF_PROD_ORG'] ?: 'pcfdev-org'
-		envs['CF_PROD_SPACE'] = variables['CF_PROD_SPACE'] ?: 'pfcdev-prod'
-		envs['CF_HOSTNAME_UUID'] = variables['CF_HOSTNAME_UUID'] ?: ''
+		envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: 'api.local.pcfdev.io'
+		envs['PAAS_STAGE_API_URL'] = variables['PAAS_STAGE_API_URL'] ?: 'api.local.pcfdev.io'
+		envs['PAAS_PROD_API_URL'] = variables['PAAS_PROD_API_URL'] ?: 'api.local.pcfdev.io'
+		envs['PAAS_TEST_ORG'] = variables['PAAS_TEST_ORG'] ?: 'pcfdev-org'
+		envs['PAAS_TEST_SPACE'] = variables['PAAS_TEST_SPACE'] ?: 'pfcdev-test'
+		envs['PAAS_STAGE_ORG'] = variables['PAAS_STAGE_ORG'] ?: 'pcfdev-org'
+		envs['PAAS_STAGE_SPACE'] = variables['PAAS_STAGE_SPACE'] ?: 'pfcdev-stage'
+		envs['PAAS_PROD_ORG'] = variables['PAAS_PROD_ORG'] ?: 'pcfdev-org'
+		envs['PAAS_PROD_SPACE'] = variables['PAAS_PROD_SPACE'] ?: 'pfcdev-prod'
+		envs['PAAS_HOSTNAME_UUID'] = variables['PAAS_HOSTNAME_UUID'] ?: ''
 		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
-		envs['REPO_WITH_JARS'] = variables['REPO_WITH_JARS'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
+		envs['REPO_WITH_BINARIES'] = variables['REPO_WITH_BINARIES'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 		envs['APP_MEMORY_LIMIT'] = variables['APP_MEMORY_LIMIT'] ?: '256m'
 		envs['JAVA_BUILDPACK_URL'] = variables['JAVA_BUILDPACK_URL'] ?: 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1'
+		envs['PAAS_TYPE'] = variables['PAAS_TYPE'] ?: 'cf'
 		return envs
 	}
-
-	public static final String groovyEnvScript = '''
-String workspace = binding.variables['WORKSPACE']
-String mvn = "${workspace}/mvnw"
-String gradle =  "${workspace}/gradlew"
-
-Map envs = [:]
-if (new File(mvn).exists()) {
-	envs['PROJECT_TYPE'] = "MAVEN"
-	envs['OUTPUT_FOLDER'] = "target"
-} else if (new File(gradle).exists()) {
-	envs['PROJECT_TYPE'] = "GRADLE"
-	envs['OUTPUT_FOLDER'] = "build/libs"
-}
-return envs'''
 
 	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
 		params.resolveStrategy = Closure.DELEGATE_FIRST
@@ -730,7 +708,6 @@ return envs'''
 			stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
 			stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
 			booleanParam('STUBRUNNER_USE_CLASSPATH', false, "Should Stub Runner use classpath instead of reaching a repo")
-			stringParam('BUILD_OPTIONS', null, "Additional build options to be passed to the build tool")
 		}
 	}
 

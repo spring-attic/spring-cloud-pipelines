@@ -61,7 +61,7 @@ println "Creating the credentials"
 }
 
 println "Adding credentials to deploy to the repo with jars"
-String repoWithJarsId = "repo-with-jars"
+String repoWithJarsId = "repo-with-binaries"
 boolean repoWithJarCredsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
 	it.getDescriptor().getId() == repoWithJarsId
 }.empty

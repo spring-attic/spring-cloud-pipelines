@@ -22,7 +22,7 @@ if [ "$1" == "init" ]; then
 fi
 
 cd ${REPO_RESOURCE}
-./mvnw --fail-never dependency:go-offline ${BUILD_OPTIONS} || (./gradlew clean install -PM2_LOCAL=${M2_LOCAL} ${BUILD_OPTIONS} || echo "Sth went wrong" )
+./mvnw --fail-never dependency:go-offline ${BUILD_OPTIONS} || (./gradlew clean install -PM2_LOCAL=${M2_LOCAL} || echo "Sth went wrong" )
 cd ${ROOT_FOLDER}/m2
 tar -C rootfs -cf rootfs.tar .
 mv rootfs.tar ${ROOT_FOLDER}/to-push/

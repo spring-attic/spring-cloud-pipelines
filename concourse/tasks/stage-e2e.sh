@@ -16,6 +16,6 @@ source ${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh
 echo "Testing the built application on stage environment"
 cd ${ROOT_FOLDER}/${REPO_RESOURCE}
 
-prepareForE2eTests "${REDOWNLOAD_INFRA}" "${CF_STAGE_USERNAME}" "${CF_STAGE_PASSWORD}" "${CF_STAGE_ORG}" "${CF_STAGE_SPACE}" "${CF_STAGE_API_URL}"
+prepareForE2eTests
 
 . ${SCRIPTS_OUTPUT_FOLDER}/stage_e2e.sh

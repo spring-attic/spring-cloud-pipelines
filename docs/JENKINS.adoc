@@ -371,7 +371,7 @@ Example screen:
 
 image::{jenkins-root-docs}/seed.png[]
 
-In the screenshot we could parametrize the `REPOS` and `REPO_WITH_JARS` params.
+In the screenshot we could parametrize the `REPOS` and `REPO_WITH_BINARIES` params.
 
 ===== Global envs
 
@@ -391,22 +391,22 @@ The env vars that are used in all of the jobs are as follows:
 [frame="topbot",options="header,footer"]
 |======================
 |Property Name  | Property Description | Default value
-|CF_TEST_API_URL | The URL to the CF Api for TEST env| api.local.pcfdev.io
-|CF_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
-|CF_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
-|CF_TEST_ORG    | Name of the org for the test env | pcfdev-org
-|CF_TEST_SPACE  | Name of the space for the test env | pcfdev-space
-|CF_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
-|CF_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
-|CF_PROD_ORG   | Name of the org for the prod env | pcfdev-org
-|CF_PROD_SPACE | Name of the space for the prod env | pcfdev-space
-|REPO_WITH_JARS | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|PAAS_TEST_API_URL | The URL to the CF Api for TEST env| api.local.pcfdev.io
+|PAAS_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
+|PAAS_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
+|PAAS_TEST_ORG    | Name of the org for the test env | pcfdev-org
+|PAAS_TEST_SPACE  | Name of the space for the test env | pcfdev-space
+|PAAS_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
+|PAAS_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
+|PAAS_PROD_ORG   | Name of the org for the prod env | pcfdev-org
+|PAAS_PROD_SPACE | Name of the space for the prod env | pcfdev-space
+|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |JDK_VERSION | The name of the JDK installation | jdk8
 |PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
 |GIT_EMAIL | The email used by Git to tag repo | email@example.com
 |GIT_NAME | The name used by Git to tag repo | Pivo Tal
-|CF_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
+|PAAS_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
 |AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
 |AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
 |ROLLBACK_STEP_REQUIRED | Should rollback step be present | true
@@ -451,10 +451,10 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 |======================
 |Property Name  | Property Description | Default value
 |GIT_CREDENTIAL_ID    | Credential ID used to tag a git repo | git
-|REPO_WITH_JARS_CREDENTIALS_ID    | Credential ID used for the repo with jars | repo-with-jars
-|CF_TEST_CREDENTIAL_ID  | Credential ID for CF Test env access | cf-test
-|CF_STAGE_CREDENTIAL_ID   | Credential ID for CF Stage env access | cf-stage
-|CF_PROD_CREDENTIAL_ID | Credential ID for CF Prod env access | cf-prod
+|REPO_WITH_BINARIES_CREDENTIALS_ID    | Credential ID used for the repo with jars | repo-with-binaries
+|PAAS_TEST_CREDENTIAL_ID  | Credential ID for CF Test env access | cf-test
+|PAAS_STAGE_CREDENTIAL_ID   | Credential ID for CF Stage env access | cf-stage
+|PAAS_PROD_CREDENTIAL_ID | Credential ID for CF Prod env access | cf-prod
 |======================
 
 If you already have in your system a credential to for example tag a repo

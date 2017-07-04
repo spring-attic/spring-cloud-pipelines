@@ -22,7 +22,7 @@ pipeline {
 				checkout([
 					$class: 'GitSCM',
 					branches: [
-						[name: env.TOOLS_BRANCH]
+						[name: "*/${env.TOOLS_BRANCH}"]
 					],
 					extensions: [
 						[$class: 'WipeWorkspace'],
@@ -39,24 +39,24 @@ pipeline {
 						versionPrefix: '1.0.0.M1-'
 					)
 
-					withCredentials([usernamePassword(credentialsId: env.REPO_WITH_JARS_CREDENTIALS_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+					withCredentials([usernamePassword(credentialsId: env.REPO_WITH_BINARIES_CREDENTIALS_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
 						env.M2_SETTINGS_REPO_USERNAME = USER
 						env.M2_SETTINGS_REPO_PASSWORD = PASS
 					}
 
-					withCredentials([usernamePassword(credentialsId: env.CF_TEST_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-						env.CF_TEST_USERNAME = USER
-						env.CF_TEST_PASSWORD = PASS
+					withCredentials([usernamePassword(credentialsId: env.PAAS_TEST_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+						env.PAAS_TEST_USERNAME = USER
+						env.PAAS_TEST_PASSWORD = PASS
 					}
 
-					withCredentials([usernamePassword(credentialsId: env.CF_STAGE_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-						env.CF_STAGE_USERNAME = USER
-						env.CF_STAGE_PASSWORD = PASS
+					withCredentials([usernamePassword(credentialsId: env.PAAS_STAGE_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+						env.PAAS_STAGE_USERNAME = USER
+						env.PAAS_STAGE_PASSWORD = PASS
 					}
 
-					withCredentials([usernamePassword(credentialsId: env.CF_PROD_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-						env.CF_PROD_USERNAME = USER
-						env.CF_PROD_PASSWORD = PASS
+					withCredentials([usernamePassword(credentialsId: env.PAAS_PROD_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+						env.PAAS_PROD_USERNAME = USER
+						env.PAAS_PROD_PASSWORD = PASS
 					}
 
 					withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {

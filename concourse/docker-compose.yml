@@ -7,7 +7,7 @@ concourse-db:
     PGDATA: /database
 
 concourse-web:
-  image: concourse/concourse
+  image: concourse/concourse:3.3.1
   links:
     - concourse-db
     - artifactory
@@ -22,7 +22,7 @@ concourse-web:
       postgres://concourse:changeme@concourse-db:5432/concourse?sslmode=disable
 
 concourse-worker:
-  image: concourse/concourse
+  image: concourse/concourse:3.3.1
   privileged: true
   links:
     - concourse-web

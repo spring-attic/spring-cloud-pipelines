@@ -1534,13 +1534,13 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
 <p><code>github-private-key</code> - your private key to clone / tag GitHub repos</p>
 </li>
 <li>
-<p><code>repo-with-jars</code> - the IP is set to the defaults for Docker Machine. You should update it to point to your setup</p>
+<p><code>repo-with-binaries</code> - the IP is set to the defaults for Docker Machine. You should update it to point to your setup</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
 <p>If you don&#8217;t have a Docker Machine just execute <code>./whats_my_ip.sh</code> script to
-get an external IP that you can pass to your <code>repo-with-jars</code> instead of the default
+get an external IP that you can pass to your <code>repo-with-binaries</code> instead of the default
 Docker Machine IP.</p>
 </div>
 <div class="paragraph">
@@ -1568,52 +1568,52 @@ Docker Machine IP.</p>
 </tfoot>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_TEST_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_API_URL</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for TEST env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_STAGE_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_API_URL</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for STAGE env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_PROD_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_API_URL</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for PROD env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_TEST_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_ORG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the test env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_TEST_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_SPACE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the test env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_STAGE_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_ORG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the stage env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_STAGE_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_SPACE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the stage env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_PROD_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_ORG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the prod env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_PROD_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_SPACE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the prod env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">REPO_WITH_JARS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REPO_WITH_BINARIES</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL to repo with the deployed jars</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="http://192.168.99.100:8081/artifactory/libs-release-local" class="bare">http://192.168.99.100:8081/artifactory/libs-release-local</a></p></td>
 </tr>
@@ -1623,7 +1623,7 @@ Docker Machine IP.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">artifactory-local</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_HOSTNAME_UUID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_HOSTNAME_UUID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Additional suffix for the route. In a shared environment the default routes can be already taken</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -2636,7 +2636,7 @@ of Java installation and the others to another one.
 </div>
 </div>
 <div class="paragraph">
-<p>In the screenshot we could parametrize the <code>REPOS</code> and <code>REPO_WITH_JARS</code> params.</p>
+<p>In the screenshot we could parametrize the <code>REPOS</code> and <code>REPO_WITH_BINARIES</code> params.</p>
 </div>
 </div>
 <div class="sect4">
@@ -2693,52 +2693,52 @@ This section is presented only for informational purposes - for the sake of demo
 </tfoot>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_TEST_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_API_URL</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for TEST env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_STAGE_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_API_URL</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for STAGE env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_PROD_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_API_URL</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for PROD env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_TEST_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_ORG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the test env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_TEST_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_SPACE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the test env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_STAGE_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_ORG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the stage env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_STAGE_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_SPACE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the stage env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_PROD_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_ORG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the prod env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_PROD_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_SPACE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the prod env</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">REPO_WITH_JARS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REPO_WITH_BINARIES</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL to repo with the deployed jars</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="http://artifactory:8081/artifactory/libs-release-local" class="bare">http://artifactory:8081/artifactory/libs-release-local</a></p></td>
 </tr>
@@ -2768,7 +2768,7 @@ This section is presented only for informational purposes - for the sake of demo
 <td class="tableblock halign-left valign-top"><p class="tableblock">Pivo Tal</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_HOSTNAME_UUID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_HOSTNAME_UUID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Additional suffix for the route. In a shared environment the default routes can be already taken</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -2872,7 +2872,7 @@ This section is presented only for informational purposes - for the sake of demo
 </thead>
 <tfoot>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_PROD_CREDENTIAL_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_CREDENTIAL_ID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Credential ID for CF Prod env access</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">cf-prod</p></td>
 </tr>
@@ -2884,17 +2884,17 @@ This section is presented only for informational purposes - for the sake of demo
 <td class="tableblock halign-left valign-top"><p class="tableblock">git</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">REPO_WITH_JARS_CREDENTIALS_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REPO_WITH_BINARIES_CREDENTIALS_ID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Credential ID used for the repo with jars</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">repo-with-jars</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">repo-with-binaries</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_TEST_CREDENTIAL_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_CREDENTIAL_ID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Credential ID for CF Test env access</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">cf-test</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CF_STAGE_CREDENTIAL_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_CREDENTIAL_ID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Credential ID for CF Stage env access</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">cf-stage</p></td>
 </tr>
