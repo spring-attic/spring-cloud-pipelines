@@ -16,7 +16,10 @@ echo "Retrieved version is [${PIPELINE_VERSION}]"
 export CI="CONCOURSE"
 
 echo "Sourcing file with pipeline functions"
-source ${SCRIPTS_OUTPUT_FOLDER}/pipeline.sh
+CURRENT_FOLDER=`pwd`
+cd ${SCRIPTS_OUTPUT_FOLDER}
+source pipeline.sh
+cd CURRENT_FOLDER
 
 echo "Generating settings.xml / gradle properties for Maven in local m2"
 source ${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/generate-settings.sh
