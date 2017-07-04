@@ -32,8 +32,8 @@ jobs:
     - task: generate-version
       file: tools/concourse/tasks/generate-version.yml
       params:
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
     - put: version
       params:
         repository: out
@@ -53,31 +53,31 @@ jobs:
     - task: build-and-upload
       file: tools/concourse/tasks/build-and-upload.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
     - put: repo
       params:
-      repository: out
-      tag: out/tag
-      only_tag: true
+        repository: out
+        tag: out/tag
+        only_tag: true
 
   - name: build-api-compatibility-check
     serial: true
@@ -94,26 +94,26 @@ jobs:
     - task: build-api-compatibility-check
       file: tools/concourse/tasks/build-api-compatibility-check.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
 
   - name: test-deploy
     serial: true
@@ -130,32 +130,32 @@ jobs:
     - task: test-deploy
       file: tools/concourse/tasks/test-deploy.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - PAAS_TEST_USERNAME: {{paas-test-username}}
-      - PAAS_TEST_PASSWORD: {{paas-test-password}}
-      - PAAS_TEST_ORG: {{paas-test-org}}
-      - PAAS_TEST_SPACE: {{paas-test-space}}
-      - PAAS_TEST_API_URL: {{paas-test-api-url}}
-      - PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        PAAS_TEST_USERNAME: {{paas-test-username}}
+        PAAS_TEST_PASSWORD: {{paas-test-password}}
+        PAAS_TEST_ORG: {{paas-test-org}}
+        PAAS_TEST_SPACE: {{paas-test-space}}
+        PAAS_TEST_API_URL: {{paas-test-api-url}}
+        PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
 
   - name: test-smoke
     serial: true
@@ -172,31 +172,31 @@ jobs:
     - task: test-smoke
       file: tools/concourse/tasks/test-smoke.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - PAAS_TEST_USERNAME: {{paas-test-username}}
-      - PAAS_TEST_PASSWORD: {{paas-test-password}}
-      - PAAS_TEST_ORG: {{paas-test-org}}
-      - PAAS_TEST_SPACE: {{paas-test-space}}
-      - PAAS_TEST_API_URL: {{paas-test-api-url}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        PAAS_TEST_USERNAME: {{paas-test-username}}
+        PAAS_TEST_PASSWORD: {{paas-test-password}}
+        PAAS_TEST_ORG: {{paas-test-org}}
+        PAAS_TEST_SPACE: {{paas-test-space}}
+        PAAS_TEST_API_URL: {{paas-test-api-url}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
 
   - name: test-rollback-deploy
     serial: true
@@ -213,31 +213,31 @@ jobs:
     - task: test-rollback-deploy
       file: tools/concourse/tasks/test-rollback-deploy.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - PAAS_TEST_USERNAME: {{paas-test-username}}
-      - PAAS_TEST_PASSWORD: {{paas-test-password}}
-      - PAAS_TEST_ORG: {{paas-test-org}}
-      - PAAS_TEST_SPACE: {{paas-test-space}}
-      - PAAS_TEST_API_URL: {{paas-test-api-url}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        PAAS_TEST_USERNAME: {{paas-test-username}}
+        PAAS_TEST_PASSWORD: {{paas-test-password}}
+        PAAS_TEST_ORG: {{paas-test-org}}
+        PAAS_TEST_SPACE: {{paas-test-space}}
+        PAAS_TEST_API_URL: {{paas-test-api-url}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
 
   - name: test-rollback-smoke
     serial: true
@@ -254,31 +254,31 @@ jobs:
     - task: test-rollback-smoke
       file: tools/concourse/tasks/test-rollback-smoke.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - PAAS_TEST_USERNAME: {{paas-test-username}}
-      - PAAS_TEST_PASSWORD: {{paas-test-password}}
-      - PAAS_TEST_ORG: {{paas-test-org}}
-      - PAAS_TEST_SPACE: {{paas-test-space}}
-      - PAAS_TEST_API_URL: {{paas-test-api-url}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        PAAS_TEST_USERNAME: {{paas-test-username}}
+        PAAS_TEST_PASSWORD: {{paas-test-password}}
+        PAAS_TEST_ORG: {{paas-test-org}}
+        PAAS_TEST_SPACE: {{paas-test-space}}
+        PAAS_TEST_API_URL: {{paas-test-api-url}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
 
   - name: stage-deploy
     serial: true
@@ -295,32 +295,32 @@ jobs:
     - task: stage-deploy
       file: tools/concourse/tasks/stage-deploy.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - PAAS_STAGE_USERNAME: {{paas-stage-username}}
-      - PAAS_STAGE_PASSWORD: {{paas-stage-password}}
-      - PAAS_STAGE_ORG: {{paas-stage-org}}
-      - PAAS_STAGE_SPACE: {{paas-stage-space}}
-      - PAAS_STAGE_API_URL: {{paas-stage-api-url}}
-      - PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        PAAS_STAGE_USERNAME: {{paas-stage-username}}
+        PAAS_STAGE_PASSWORD: {{paas-stage-password}}
+        PAAS_STAGE_ORG: {{paas-stage-org}}
+        PAAS_STAGE_SPACE: {{paas-stage-space}}
+        PAAS_STAGE_API_URL: {{paas-stage-api-url}}
+        PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
 
   - name: stage-e2e
     serial: true
@@ -337,31 +337,31 @@ jobs:
     - task: stage-smoke
       file: tools/concourse/tasks/stage-e2e.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - PAAS_STAGE_USERNAME: {{paas-stage-username}}
-      - PAAS_STAGE_PASSWORD: {{paas-stage-password}}
-      - PAAS_STAGE_ORG: {{paas-stage-org}}
-      - PAAS_STAGE_SPACE: {{paas-stage-space}}
-      - PAAS_STAGE_API_URL: {{paas-stage-api-url}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        PAAS_STAGE_USERNAME: {{paas-stage-username}}
+        PAAS_STAGE_PASSWORD: {{paas-stage-password}}
+        PAAS_STAGE_ORG: {{paas-stage-org}}
+        PAAS_STAGE_SPACE: {{paas-stage-space}}
+        PAAS_STAGE_API_URL: {{paas-stage-api-url}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
 
   - name: prod-deploy
     serial: true
@@ -378,37 +378,37 @@ jobs:
     - task: prod-deploy
       file: tools/concourse/tasks/prod-deploy.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - PAAS_PROD_USERNAME: {{paas-prod-username}}
-      - PAAS_PROD_PASSWORD: {{paas-prod-password}}
-      - PAAS_PROD_ORG: {{paas-prod-org}}
-      - PAAS_PROD_SPACE: {{paas-prod-space}}
-      - PAAS_PROD_API_URL: {{paas-prod-api-url}}
-      - PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        PAAS_PROD_USERNAME: {{paas-prod-username}}
+        PAAS_PROD_PASSWORD: {{paas-prod-password}}
+        PAAS_PROD_ORG: {{paas-prod-org}}
+        PAAS_PROD_SPACE: {{paas-prod-space}}
+        PAAS_PROD_API_URL: {{paas-prod-api-url}}
+        PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
     - put: repo
       params:
-      repository: out
-      tag: out/tag
-      only_tag: true
+        repository: out
+        tag: out/tag
+        only_tag: true
 
   - name: prod-complete
     serial: true
@@ -425,28 +425,28 @@ jobs:
     - task: prod-complete
       file: tools/concourse/tasks/prod-complete.yml
       params:
-      - _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-      - GIT_EMAIL: {{git-email}}
-      - GIT_NAME: {{git-name}}
-      - REDOWNLOAD_INFRA: {{redownload-infra}}
-      - REDEPLOY_INFRA: {{redeploy-infra}}
-      - EUREKA_GROUP_ID: {{eureka-group-id}}
-      - EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-      - EUREKA_VERSION: {{eureka-version}}
-      - STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-      - STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-      - STUBRUNNER_VERSION: {{stubrunner-version}}
-      - STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-      - M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-      - M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-      - M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-      - REPO_WITH_BINARIES: {{repo-with-binaries}}
-      - M2_REPO: {{maven-local-dir}}
-      - PAAS_PROD_USERNAME: {{paas-prod-username}}
-      - PAAS_PROD_PASSWORD: {{paas-prod-password}}
-      - PAAS_PROD_ORG: {{paas-prod-org}}
-      - PAAS_PROD_SPACE: {{paas-prod-space}}
-      - PAAS_PROD_API_URL: {{paas-prod-api-url}}
-      - APP_MEMORY_LIMIT: {{app-memory-limit}}
-      - BUILD_OPTIONS: {{build-options}}
-      - PAAS_TYPE: {{paas-type}}
+        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+        REDOWNLOAD_INFRA: {{redownload-infra}}
+        REDEPLOY_INFRA: {{redeploy-infra}}
+        EUREKA_GROUP_ID: {{eureka-group-id}}
+        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
+        EUREKA_VERSION: {{eureka-version}}
+        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
+        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
+        STUBRUNNER_VERSION: {{stubrunner-version}}
+        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
+        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
+        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
+        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
+        REPO_WITH_BINARIES: {{repo-with-binaries}}
+        M2_REPO: {{maven-local-dir}}
+        PAAS_PROD_USERNAME: {{paas-prod-username}}
+        PAAS_PROD_PASSWORD: {{paas-prod-password}}
+        PAAS_PROD_ORG: {{paas-prod-org}}
+        PAAS_PROD_SPACE: {{paas-prod-space}}
+        PAAS_PROD_API_URL: {{paas-prod-api-url}}
+        APP_MEMORY_LIMIT: {{app-memory-limit}}
+        BUILD_OPTIONS: {{build-options}}
+        PAAS_TYPE: {{paas-type}}
