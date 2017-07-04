@@ -6,7 +6,7 @@ echo "Scripts will be copied to [${SCRIPTS_OUTPUT_FOLDER}]"
 echo "Copying pipelines scripts"
 cd ${ROOT_FOLDER}/${REPO_RESOURCE}
 mkdir ${SCRIPTS_OUTPUT_FOLDER}
-cp ${ROOT_FOLDER}/${TOOLS_RESOURCE}/common/src/main/bash/* ${SCRIPTS_OUTPUT_FOLDER}/
+cp -r ${ROOT_FOLDER}/${TOOLS_RESOURCE}/common/src/main/bash/* ${SCRIPTS_OUTPUT_FOLDER}/
 
 echo "Retrieving version"
 cp ${ROOT_FOLDER}/${VERSION_RESOURCE}/version ${SCRIPTS_OUTPUT_FOLDER}/
