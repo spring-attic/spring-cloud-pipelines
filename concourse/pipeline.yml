@@ -207,9 +207,9 @@ jobs:
       - get: repo
       - get: m2
       - get: version
-      resource: version
-      passed: [ test-smoke ]
-      trigger: true
+        resource: version
+        passed: [ test-smoke ]
+        trigger: true
     - task: test-rollback-deploy
       file: tools/concourse/tasks/test-rollback-deploy.yml
       params:
@@ -289,9 +289,9 @@ jobs:
       - get: repo
       - get: m2
       - get: version
-      resource: version
-      passed: [ test-rollback-smoke ]
-      trigger: false
+        resource: version
+        passed: [ test-rollback-smoke ]
+        trigger: false
     - task: stage-deploy
       file: tools/concourse/tasks/stage-deploy.yml
       params:
@@ -331,9 +331,9 @@ jobs:
       - get: repo
       - get: m2
       - get: version
-      resource: version
-      passed: [ stage-deploy ]
-      trigger: false
+        resource: version
+        passed: [ stage-deploy ]
+        trigger: false
     - task: stage-smoke
       file: tools/concourse/tasks/stage-e2e.yml
       params:
@@ -372,9 +372,9 @@ jobs:
       - get: repo
       - get: m2
       - get: version
-      resource: version
-      passed: [ stage-e2e ]
-      trigger: false
+        resource: version
+        passed: [ stage-e2e ]
+        trigger: false
     - task: prod-deploy
       file: tools/concourse/tasks/prod-deploy.yml
       params:
