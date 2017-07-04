@@ -27,8 +27,8 @@ jobs:
     public: true
     plan:
     - aggregate:
-      - get: tools
-      - get: version
+        - get: tools
+        - get: version
       - task: generate-version
         file: tools/concourse/tasks/generate-version.yml
         params:
@@ -419,9 +419,9 @@ jobs:
       - get: repo
       - get: m2
       - get: version
-      resource: version
-      passed: [ prod-deploy ]
-      trigger: false
+        resource: version
+        passed: [ prod-deploy ]
+        trigger: false
     - task: prod-complete
       file: tools/concourse/tasks/prod-complete.yml
       params:
