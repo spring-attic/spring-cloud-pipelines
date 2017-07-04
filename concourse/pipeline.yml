@@ -29,14 +29,14 @@ jobs:
     - aggregate:
         - get: tools
         - get: version
-      - task: generate-version
-        file: tools/concourse/tasks/generate-version.yml
-        params:
-          GIT_EMAIL: {{git-email}}
-          GIT_NAME: {{git-name}}
-      - put: version
-        params:
-          repository: out
+    - task: generate-version
+      file: tools/concourse/tasks/generate-version.yml
+      params:
+        GIT_EMAIL: {{git-email}}
+        GIT_NAME: {{git-name}}
+    - put: version
+      params:
+        repository: out
 
   - name: build-and-upload
     serial: true
