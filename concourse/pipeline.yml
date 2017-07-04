@@ -235,6 +235,7 @@ jobs:
         PAAS_TEST_ORG: {{paas-test-org}}
         PAAS_TEST_SPACE: {{paas-test-space}}
         PAAS_TEST_API_URL: {{paas-test-api-url}}
+        PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
         APP_MEMORY_LIMIT: {{app-memory-limit}}
         BUILD_OPTIONS: {{build-options}}
         PAAS_TYPE: {{paas-type}}
