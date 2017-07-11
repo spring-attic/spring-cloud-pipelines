@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: eureka-{{artifactid}}-deployment
+spec:
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template: # create pods using pod definition in this template
+      metadata:
+        labels:
+            app: eureka-{{artifactid}}
+      spec:
+        containers:
+        - name: eureka-{{artifactid}}
+          image: {{eureka-img}}
+          ports:
+          - containerPort: 8080
+          env:
+          - name: PORT
+            value: "8080"

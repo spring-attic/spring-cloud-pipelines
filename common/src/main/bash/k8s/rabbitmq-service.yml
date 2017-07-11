@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: rabbitmq-{{artifactid}}
+  name: rabbitmq-{{artifactid}}-service
+spec:
+  ports:
+  - port: 5672
+  selector:
+    app: taskQueue
+    component: rabbitmq-{{artifactid}}

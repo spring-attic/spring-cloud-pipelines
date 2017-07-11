@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql-{{artifactid}}
+  labels:
+    name: mysql-{{artifactid}}
+    visualize: "true"
+spec:
+  containers:
+    - resources:
+        limits :
+          cpu: 0.5
+      image: mysql:5.6
+      name: mysql-{{artifactid}}
+      env:
+      # kubectl create secret generic test-secret --from-literal=username='my-app',password='39528$vdg7Jb
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-{{artifactid}}-secret
+              key: password
+        - name: MYSQL_DATABASE
+          value: {{mysql_database}}
+      ports:
+        - containerPort: 3306
+          name: mysql
+      volumeMounts:
+          # name must match the volume name below
+        - name: mysql-{{artifactid}}-persistent-storage
+          # mount path within the container
+          mountPath: /var/lib/mysql
+  volumes:
+    - name: mysql-{{artifactid}}-persistent-storage
+      persistentVolumeClaim:
+        claimName: mysql-{{artifactid}}-claim
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mysql-{{artifactid}}-claim
+spec:
+  selector:
+    matchLabels:
+      dir: mysql-{{artifactid}}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
