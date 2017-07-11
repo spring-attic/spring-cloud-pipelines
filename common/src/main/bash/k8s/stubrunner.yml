@@ -3,8 +3,8 @@ kind: Deployment
 metadata:
   name: stubrunner-{{artifactid}}-deployment
 spec:
-  replicas: 1 # tells deployment to run 2 pods matching the template
-  template: # create pods using pod definition in this template
+  replicas: 1
+  template:
       metadata:
         labels:
             app: stubrunner-{{artifactid}}
@@ -17,3 +17,7 @@ spec:
           env:
           - name: PORT
             value: "8080"
+          - name: SPRING_RABBITMQ_ADDRESSES
+            value: "rabbitmq-{{artifactid}}-service"
+          - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+            value: "eureka-{{artifactid}}-service:8080/eureka/"
