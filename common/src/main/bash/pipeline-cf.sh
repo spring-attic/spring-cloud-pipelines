@@ -477,6 +477,16 @@ function propagatePropertiesForTests() {
     cat ${fileLocation}
 }
 
+# TODO: Make this removeable
+# We have the same application example for both CF & Kubernetes. In CF we don't need
+# docker so we're disabling those tasks. However normally the `deploy` should already do
+# all that's necessary to deploy a binary (whatever that binary is)
+if [[ ! -z "${BUILD_OPTIONS}" ]]; then
+    export BUILD_OPTIONS="${BUILD_OPTIONS} -DskipDocker"
+else
+    export BUILD_OPTIONS="-DskipDocker"
+fi
+
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX

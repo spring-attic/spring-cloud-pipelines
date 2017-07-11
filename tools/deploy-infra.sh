@@ -38,7 +38,7 @@ function deploy_project {
 	rm -rf "${project_name}"
 	git clone "${project_repo}" "${project_name}" && cd "${project_name}"
 	./mvnw clean deploy \
-		-Ddistribution.management.release.url="${ARTIFACTORY_URL}" -Ddistribution.management.release.id="${ARTIFACTORY_ID}"
+		-Ddistribution.management.release.url="${ARTIFACTORY_URL}" -Ddistribution.management.release.id="${ARTIFACTORY_ID}" -DskipDocker
 	popd
 }
 
