@@ -14,7 +14,7 @@ COPY seed/jenkins_pipeline.groovy /usr/share/jenkins/jenkins_pipeline.groovy
 COPY seed/settings.xml /usr/share/jenkins/settings.xml
 COPY seed/gradle.properties /usr/share/jenkins/gradle.properties
 COPY plugins.txt /usr/share/jenkins/plugins.txt
-COPY seed/* /usr/share/jenkins/cert/
+COPY seed/k8s/* /usr/share/jenkins/cert/
 
 USER root
 
@@ -39,6 +39,41 @@ RUN wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.k
 RUN echo "deb http://packages.cloudfoundry.org/debian stable main" | tee /etc/apt/sources.list.d/cloudfoundry-cli.list
 RUN apt-get -y update
 RUN apt-get -y install cf-cli
+
+# Install kubectl
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+RUN chmod +x ./kubectl
+RUN mv ./kubectl /usr/local/bin/kubectl
+
+RUN apt-get update
+RUN apt-get install -y apt-transport-https ca-certificates curl tar \
+                    gnupg2 software-properties-common python-software-properties \
+                    btrfs-progs e2fsprogs iptables
+
+# Installing Docker for Kubernetes builds
+# https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-using-the-repository
+
+# https://github.com/docker/docker/blob/master/project/PACKAGERS.md#runtime-dependencies
+# TODO aufs-tools
+
+# set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+RUN set -x \
+	&& addgroup --system dockremap \
+	&& adduser --system --ingroup dockremap dockremap \
+	&& echo 'dockremap:165536:65536' >> /etc/subuid \
+	&& echo 'dockremap:165536:65536' >> /etc/subgid
+
+ENV DIND_COMMIT 3b5fac462d21ca164b3778647420016315289034
+
+RUN set -ex; \
+	wget -O /usr/local/bin/dind "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind"; \
+	chmod +x /usr/local/bin/dind; \
+
+COPY dockerd-entrypoint.sh /usr/local/bin/
+RUN /usr/local/bin/dockerd-entrypoint.sh
+
+VOLUME /var/lib/docker
+EXPOSE 2375
 
 USER jenkins
 

@@ -5,12 +5,14 @@ import com.cloudbees.plugins.credentials.impl.*
 import hudson.model.*
 import jenkins.model.*
 import hudson.plugins.groovy.*
+import java.nio.file.*
 
 def jobScript = new File('/usr/share/jenkins/jenkins_pipeline.groovy')
 def jobManagement = new JenkinsJobManagement(System.out, [:], new File('.'))
+String jenkinsHome = '/var/jenkins_home'
 
 println "Creating the settings.xml file"
-String m2Home = '/var/jenkins_home/.m2'
+String m2Home = jenkinsHome + '/.m2'
 boolean m2Created = new File(m2Home).mkdirs()
 if (m2Created) {
 	boolean settingsCreated = new File("${m2Home}/settings.xml").createNewFile()
@@ -25,7 +27,7 @@ if (m2Created) {
 }
 
 println "Creating the gradle.properties file"
-String gradleHome = '/var/jenkins_home/.gradle'
+String gradleHome = jenkinsHome + '/.gradle'
 boolean gradleCreated = new File(gradleHome).mkdirs()
 if (gradleCreated) {
 	boolean settingsCreated = new File("${gradleHome}/gradle.properties").createNewFile()
@@ -118,30 +120,15 @@ if (gitCredsMissing) {
 }
 
 //  TODO: Remove when not using Kubernetes
-println "Importing Minikube"
 def certificateAuthority = new File('/usr/share/jenkins/cert/ca.crt')
 def clientCertificate = new File('/usr/share/jenkins/cert/apiserver.crt')
 def clientKey = new File('/usr/share/jenkins/cert/apiserver.key')
 
-boolean kubernetesCredentialsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
-	it.getDescriptor().getId() == 'k8s-ca'
-}.empty
-
-if (kubernetesCredentialsMissing) {
-	println "Kubernetes credentials are missing - will create it"
-	SystemCredentialsProvider.getInstance().getCredentials().add(
-			new CertificateCredentialsImpl(CredentialsScope.GLOBAL, 'k8s-ca',
-					"K8s Certificate Authority", "",
-					new CertificateCredentialsImpl.FileOnMasterKeyStoreSource(certificateAuthority.getAbsolutePath())))
-	SystemCredentialsProvider.getInstance().getCredentials().add(
-			new CertificateCredentialsImpl(CredentialsScope.GLOBAL, 'k8s-client-cert',
-					"K8s Client Certificate", "",
-					new CertificateCredentialsImpl.FileOnMasterKeyStoreSource(clientCertificate.getAbsolutePath())))
-	SystemCredentialsProvider.getInstance().getCredentials().add(
-			new CertificateCredentialsImpl(CredentialsScope.GLOBAL, 'k8s-client-key',
-					"K8s Client Key", "",
-					new CertificateCredentialsImpl.FileOnMasterKeyStoreSource(clientKey.getAbsolutePath())))
-	SystemCredentialsProvider.getInstance().save()
+if (certificateAuthority.exists()) {
+	println "Copying Kubernetes certificates"
+	File targetFile = new File("${jenkinsHome}/.kubernetes/")
+	targetFile.createNewFile()
+	Files.copy(new File('/usr/share/jenkins/cert/').toPath(), targetFile.toPath())
 }
 
 println "Adding jdk"
