@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mysql-{{artifactid}}
+  name: {{appName}}
   labels:
-    name: mysql-{{artifactid}}
+    name: {{appName}}
+    environment: {{env}}
     visualize: "true"
 spec:
   containers:
@@ -11,39 +12,48 @@ spec:
         limits :
           cpu: 0.5
       image: mysql:5.6
-      name: mysql-{{artifactid}}
+      name: {{appName}}
       env:
-      # kubectl create secret generic test-secret --from-literal=username='my-app',password='39528$vdg7Jb
+      # kubectl create secret generic {{appName}}-secret --from-literal=username='my-app' --from-literal=password='39528$vdg7Jb
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mysql-{{artifactid}}-secret
+              name: {{appName}}-secret
+              key: rootpassword
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{appName}}-secret
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{appName}}-secret
               key: password
         - name: MYSQL_DATABASE
-          value: {{mysql_database}}
+          value: {{mysqlDatabase}}
       ports:
         - containerPort: 3306
           name: mysql
       volumeMounts:
           # name must match the volume name below
-        - name: mysql-{{artifactid}}-persistent-storage
+        - name: {{appName}}-persistent-storage
           # mount path within the container
           mountPath: /var/lib/mysql
   volumes:
-    - name: mysql-{{artifactid}}-persistent-storage
+    - name: {{appName}}-persistent-storage
       persistentVolumeClaim:
-        claimName: mysql-{{artifactid}}-claim
+        claimName: {{appName}}-pvc
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: mysql-{{artifactid}}-claim
+  name: {{appName}}-pvc
+  annotations:
+    volume.beta.kubernetes.io/storage-class: pd-standard
 spec:
-  selector:
-    matchLabels:
-      dir: mysql-{{artifactid}}
+  accessModes:
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
-  accessModes:
-    - ReadWriteMany
+      storage: 100m

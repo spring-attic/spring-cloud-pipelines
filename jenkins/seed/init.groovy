@@ -73,7 +73,6 @@ if (repoWithJarCredsMissing) {
 	SystemCredentialsProvider.getInstance().save()
 }
 
-
 println "Importing GPG Keys"
 def privateKey = new File('/usr/share/jenkins/private.key')
 def publicKey = new File('/usr/share/jenkins/public.key')

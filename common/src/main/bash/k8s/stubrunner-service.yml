@@ -1,10 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: stubrunner-{{artifactid}}-service
+  name: {{appName}}
 spec:
   ports:
     - port: 8080
   selector:
-    app: stubrunner-{{artifactid}}
+    app: {{appName}}
+    environment: {{env}}
   type: NodePort

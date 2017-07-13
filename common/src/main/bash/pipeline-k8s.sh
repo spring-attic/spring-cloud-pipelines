@@ -3,39 +3,43 @@ set -e
 
 function logInToPaas() {
     local redownloadInfra="${REDOWNLOAD_INFRA}"
-    local user="PAAS_${ENVIRONMENT}_USERNAME"
-    local cfUsername="${!user}"
-    local pass="PAAS_${ENVIRONMENT}_PASSWORD"
-    local cfPassword="${!pass}"
-    local org="PAAS_${ENVIRONMENT}_ORG"
-    local cfOrg="${!org}"
-    local space="PAAS_${ENVIRONMENT}_SPACE"
-    local cfSpace="${!space}"
+    local ca="PAAS_${ENVIRONMENT}_CA"
+    local k8sCa="${!ca}"
+    local clientCert="PAAS_${ENVIRONMENT}_CLIENT_CERT"
+    local k8sClientCert="${!clientCert}"
+    local clientKey="PAAS_${ENVIRONMENT}_CLIENT_KEY"
+    local k8sClientKey="${!clientKey}"
+    local clusterName="PAAS_${ENVIRONMENT}_CLUSTER_NAME"
+    local k8sClusterName="${!clusterName}"
+    local clusterUser="PAAS_${ENVIRONMENT}_CLUSTER_USERNAME"
+    local k8sClusterUser="${!clusterUser}"
     local api="PAAS_${ENVIRONMENT}_API_URL"
-    local apiUrl="${!api:-api.run.pivotal.io}"
-    CF_INSTALLED="$( cf --version || echo "false" )"
-    CF_DOWNLOADED="$( test -r cf && echo "true" || echo "false" )"
-    echo "CF Installed? [${CF_INSTALLED}], CF Downloaded? [${CF_DOWNLOADED}]"
-    if [[ ${CF_INSTALLED} == "false" && (${CF_DOWNLOADED} == "false" || ${CF_DOWNLOADED} == "true" && ${redownloadInfra} == "true") ]]; then
-        echo "Downloading Cloud Foundry"
-        curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
-        CF_DOWNLOADED="true"
+    local apiUrl="${!api:-192.168.99.100:8443}"
+    CLI_INSTALLED="$( kubectl --version || echo "false" )"
+    CLI_DOWNLOADED="$( test -r kubectl && echo "true" || echo "false" )"
+    echo "CLI Installed? [${CLI_INSTALLED}], CLI Downloaded? [${CLI_DOWNLOADED}]"
+    if [[ ${CLI_INSTALLED} == "false" && (${CLI_DOWNLOADED} == "false" || ${CLI_DOWNLOADED} == "true" && ${redownloadInfra} == "true") ]]; then
+        echo "Downloading CLI"
+        curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl --fail
+        CLI_DOWNLOADED="true"
     else
-        echo "CF is already installed or was already downloaded but the flag to redownload was disabled"
+        echo "CLI is already installed or was already downloaded but the flag to redownload was disabled"
     fi
 
-    if [[ ${CF_DOWNLOADED} == "true" ]]; then
-        echo "Adding CF to PATH"
+    if [[ ${CLI_DOWNLOADED} == "true" ]]; then
+        echo "Adding CLI to PATH"
         PATH=${PATH}:`pwd`
-        chmod +x cf
+        chmod +x kubectl
     fi
 
-    echo "Cloud foundry version"
-    cf --version
+    echo "CLI version"
+    kubectl version
 
-    echo "Logging in to CF to org [${cfOrg}], space [${cfSpace}]"
-    cf api --skip-ssl-validation "${apiUrl}"
-    cf login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
+    echo "Logging in to Kubernetes API [${api}], with cluster name [${k8sClusterName}] and user [${k8sClusterUser}]"
+    kubectl config set-cluster default-cluster --server=https://${apiUrl} --certificate-authority=${k8sCa}
+    kubectl config set-credentials default-admin --certificate-authority=${k8sCa} --client-key=${k8sClientKey} --client-certificate=${k8sClientCert}
+    kubectl config set-context default-system --cluster=${k8sClusterName} --user=${k8sClusterUser}
+    kubectl config use-context default-system
 }
 
 function testDeploy() {
@@ -65,9 +69,7 @@ function testDeploy() {
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
 
     # deploy app
-    downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
     deployAndRestartAppWithNameForSmokeTests ${appName} "${appName}-${PIPELINE_VERSION}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
-    propagatePropertiesForTests ${appName}
 }
 
 function testRollbackDeploy() {
@@ -81,7 +83,6 @@ function testRollbackDeploy() {
     downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${LATEST_PROD_VERSION}
     logInToPaas
     deployAndRestartAppWithNameForSmokeTests ${appName} "${appName}-${LATEST_PROD_VERSION}"
-    propagatePropertiesForTests ${appName}
     # Adding latest prod tag
     echo "LATEST_PROD_TAG=${latestProdTag}" >> ${OUTPUT_FOLDER}/test.properties
 }
@@ -97,11 +98,9 @@ function deployService() {
       deployMySql "${serviceName}"
       ;;
     EUREKA)
-      downloadAppArtifact ${REDEPLOY_INFRA} ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
       deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
     STUBRUNNER)
-      downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${STUBRUNNER_GROUP_ID} ${STUBRUNNER_ARTIFACT_ID} ${STUBRUNNER_VERSION}
       deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
       ;;
     *)
@@ -128,29 +127,65 @@ function deleteService() {
 function deployRabbitMq() {
     local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
-    local foundApp=`cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'`
+    local foundApp=`kubectl get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
     if [[ "${foundApp}" == "" ]]; then
-        hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
-        (cf cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
-        (cf cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
+        local deploymentFile="${__DIR}/k8s/rabbitmq.yml"
+        local serviceFile="${__DIR}/k8s/rabbitmq-service.yml"
+        substituteVariables "appName" "${serviceName}" "${deploymentFile}"
+        substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
+        substituteVariables "appName" "${serviceName}" "${serviceFile}"
+        substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
+        deployApp "${deploymentFile}"
+        deployApp "${serviceFile}"
     else
         echo "Service [${serviceName}] already started"
     fi
 }
 
+function deployApp() {
+    local fileName="${1}"
+    kubectl create -f "${fileName}"
+}
+
+function deleteAppByName() {
+    local serviceName="${1}"
+    kubectl delete service ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete deployment ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+}
+
+function deleteAppByFile() {
+    local file="${1}"
+    kubectl delete -f ${file} || echo "Failed to delete ${file}. Continuing with the script"
+}
+
+function substituteVariables() {
+    local variableName="${1}"
+    local substitution="${2}"
+    local fileName="${3}"
+    sed -i "s/{{${variableName}}}/{{${substitution}}}/" ${fileName}
+}
+
 function deleteMySql() {
     local serviceName="${1:-mysql-github}"
-    cf delete-service -f ${serviceName}
+    deleteAppByName ${serviceName}
 }
 
 function deployMySql() {
     local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
-    local foundApp=`cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'`
+    local foundApp=`kubectl get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
     if [[ "${foundApp}" == "" ]]; then
-        hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
-        (cf cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
-        (cf cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev")
+        local deploymentFile="${__DIR}/k8s/mysql.yml"
+        local serviceFile="${__DIR}/k8s/mysql-service.yml"
+        echo "Generating secret"
+        kubectl create secret generic "${appName}-secret" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
+        substituteVariables "appName" "${serviceName}" "${deploymentFile}"
+        substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
+        substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
+        substituteVariables "appName" "${serviceName}" "${serviceFile}"
+        substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
+        deployApp "${deploymentFile}"
+        deployApp "${serviceFile}"
     else
         echo "Service [${serviceName}] already started"
     fi
@@ -176,23 +211,18 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local mysqlName="mysql-${appName}"
     local profiles="cloud,smoke"
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
-    deleteAppInstance "${appName}"
-    echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
-    deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'false'
-    bindService "${rabbitName}" "${appName}"
-    if [[ "${eurekaName}" != "" ]]; then
-        bindService "${eurekaName}" "${appName}"
-    fi
-    bindService "${mysqlName}" "${appName}"
-    setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
-    restartApp "${appName}"
-}
-
-function appHost() {
-    local appName="${1}"
-    local lowerCase="$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )"
-    local APP_HOST=`cf apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
-    echo "${APP_HOST}" | tail -1
+    local deploymentFile="deployment.yml"
+    local serviceFile="service.yml"
+    deleteAppByFile "${deploymentFile}"
+    deleteAppByFile "${serviceFile}"
+    local systemOpts="-Dspring.profiles.active=${profiles}"
+    systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
+    substituteVariables "appName" "${serviceName}" "${deploymentFile}"
+    substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
+    substituteVariables "appName" "${serviceName}" "${serviceFile}"
+    substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
+    deployApp "${deploymentFile}"
+    deployApp "${serviceFile}"
 }
 
 function deployAppWithName() {
@@ -228,7 +258,8 @@ function deleteAppInstance() {
     local lowerCaseAppName=$( echo "${serviceName}" | tr '[:upper:]' '[:lower:]' )
     local APP_NAME="${lowerCaseAppName}"
     echo "Deleting application [${APP_NAME}]"
-    cf delete -f ${APP_NAME} || echo "Failed to delete the app. Continuing with the script"
+    kubectl delete deployment ${APP_NAME}-deployment || echo "Failed to delete app deployment. Continuing with the script"
+    kubectl delete service ${APP_NAME}-service || echo "Failed to delete app service. Continuing with the script"
 }
 
 function setEnvVarIfMissing() {
@@ -255,54 +286,55 @@ function restartApp() {
 
 function deployEureka() {
     local redeploy="${1}"
-    local jarName="${2}"
+    local imageName="${2}"
     local appName="${3}"
     local env="${4}"
-    echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${appName}], env [${env}]"
-    local fileExists="true"
-    local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
-    if [[ ! -f "${fileName}" ]]; then
-        fileExists="false"
-    fi
-    if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
-        deployAppWithName "${appName}" "${jarName}" "${env}"
-        restartApp "${appName}"
-        createServiceWithName "${appName}"
+    echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${imageName}], app name [${appName}], env [${env}]"
+    if [[ "${redeploy}" == "true" ]]; then
+        local deploymentFile="${__DIR}/k8s/eureka.yml"
+        local serviceFile="${__DIR}/k8s/eureka-service.yml"
+        substituteVariables "appName" "${appName}" "${deploymentFile}"
+        substituteVariables "env" "${env}" "${deploymentFile}"
+        substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
+        substituteVariables "appName" "${appName}" "${serviceFile}"
+        substituteVariables "env" "${env}" "${serviceFile}"
+        deployApp "${deploymentFile}"
+        deployApp "${appName}"
     else
-        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]; redeploy flag was set [${redeploy}]. Skipping deployment"
+        echo "Current folder is [`pwd`]; Redeploy flag was set [${redeploy}]. Skipping deployment"
     fi
 }
 
 function deployStubRunnerBoot() {
     local redeploy="${1}"
-    local jarName="${2}"
+    local imageName="${2}"
+    # TODO: Add passing of properties to docker images
     local repoWithJars="${3}"
     local rabbitName="${4}"
     local eurekaName="${5}"
     local env="${6:-test}"
     local stubRunnerName="${7:-stubrunner}"
     local fileExists="true"
-    local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
-    if [[ ! -f "${fileName}" ]]; then
-        fileExists="false"
-    fi
-    echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}]"
-    if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
-        deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "false"
+    echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${imageName}], app name [${stubRunnerName}]"
+    if [[ ${redeploy} == "true" ]]; then
         local prop="$( retrieveStubRunnerIds )"
         echo "Found following stub runner ids [${prop}]"
-        setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
+        local systemOpts=""
         if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
-            setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
+            systemOpts="${systemOpts} -Dstubrunner.repositoryRoot=${repoWithJars}"
         fi
-        bindService "${rabbitName}" "${stubRunnerName}"
-        setEnvVar "${stubRunnerName}" "spring.rabbitmq.addresses" "\${vcap.services.${rabbitName}.credentials.uri}"
-        if [[ "${eurekaName}" != "" ]]; then
-            bindService "${eurekaName}" "${stubRunnerName}"
-            setEnvVar "${stubRunnerName}" "eureka.client.serviceUrl.defaultZone" "\${vcap.services.${eurekaName}.credentials.uri:http://127.0.0.1:8761}/eureka/"
-        fi
-        restartApp "${stubRunnerName}"
+        systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
+        local deploymentFile="${__DIR}/k8s/stubrunner.yml"
+        local serviceFile="${__DIR}/k8s/stubrunner-service.yml"
+        substituteVariables "appName" "${appName}" "${deploymentFile}"
+        substituteVariables "env" "${env}" "${deploymentFile}"
+        substituteVariables "systemOpts" "${systemOpts}" "${deploymentFile}"
+        substituteVariables "stubrunnerIds" "${prop}" "${deploymentFile}"
+        substituteVariables "appName" "${appName}" "${serviceFile}"
+        substituteVariables "env" "${env}" "${serviceFile}"
+        deployApp "${deploymentFile}"
+        deployApp "${appName}"
     else
         echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]; redeploy flag was set [${redeploy}]. Skipping deployment"
     fi
@@ -328,8 +360,6 @@ function prepareForSmokeTests() {
     appName=$( retrieveAppName )
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
-    propagatePropertiesForTests ${appName}
-    readTestPropertiesFromFile
     echo "Application URL [${APPLICATION_URL}]"
     echo "StubRunner URL [${STUBRUNNER_URL}]"
     echo "Latest production tag [${LATEST_PROD_TAG}]"
@@ -367,7 +397,6 @@ function stageDeploy() {
 
     # deploy app
     deployAndRestartAppWithName ${appName} "${appName}-${PIPELINE_VERSION}"
-    propagatePropertiesForTests ${appName}
 }
 
 function prepareForE2eTests() {
@@ -376,11 +405,8 @@ function prepareForE2eTests() {
     echo "Project artifactId is ${appName}"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
-    propagatePropertiesForTests ${appName}
-    readTestPropertiesFromFile
     echo "Application URL [${APPLICATION_URL}]"
 }
-
 
 function performGreenDeployment() {
     projectGroupId=$( retrieveGroupId )
@@ -427,42 +453,6 @@ function deleteBlueInstance() {
         cf delete "${oldName}" -f
     else
         echo "Will not remove the old application cause it's not there"
-    fi
-}
-
-function propagatePropertiesForTests() {
-    local projectArtifactId="${1}"
-    local stubRunnerHost="${2:-stubrunner-${projectArtifactId}}"
-    local fileLocation="${3:-${OUTPUT_FOLDER}/test.properties}"
-    echo "Propagating properties for tests. Project [${projectArtifactId}] stub runner host [${stubRunnerHost}] properties location [${fileLocation}]"
-    # retrieve host of the app / stubrunner
-    # we have to store them in a file that will be picked as properties
-    rm -rf "${fileLocation}"
-    local host=$( appHost "${projectArtifactId}" )
-    export APPLICATION_URL="${host}"
-    echo "APPLICATION_URL=${host}" >> ${fileLocation}
-    host=$( appHost "${stubRunnerHost}" )
-    export STUBRUNNER_URL="${host}"
-    echo "STUBRUNNER_URL=${host}" >> ${fileLocation}
-    echo "Resolved properties"
-    cat ${fileLocation}
-}
-
-function downloadAppArtifact() {
-    local redownloadInfra="${1}"
-    local repoWithJars="${2}"
-    local groupId="${3}"
-    local artifactId="${4}"
-    local version="${5}"
-    local destination="`pwd`/${OUTPUT_FOLDER}/${artifactId}-${version}.jar"
-    local changedGroupId="$( echo "${groupId}" | tr . / )"
-    local pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.jar"
-    if [[ ! -e ${destination} || ( -e ${destination} && ${redownloadInfra} == "true" ) ]]; then
-        mkdir -p "${OUTPUT_FOLDER}"
-        echo "Current folder is [`pwd`]; Downloading [${pathToJar}] to [${destination}]"
-        (curl "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
-    else
-        echo "File [${destination}] exists and redownload flag was set to false. Will not download it again"
     fi
 }
 

@@ -46,3 +46,28 @@ Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like t
 Just type in `minikube start` to start Kubernetes on your local box.
 
 To add the dashboard just execute `minikube dashboard`
+
+=== Certificates and workers
+
+To target a given Kubernetes instance one needs to pass around Certificate Authority
+key and also user keys.
+
+You can read more about the instructions on how to generate those keys https://coreos.com/kubernetes/docs/latest/openssl.html[here].
+ Generally speaking if you have a Kubernetes installation (e.g. `minikube`) this step
+ has already been done for you. Time to reuse those keys on the workers.
+
+Extracted from the https://coreos.com/kubernetes/docs/latest/configure-kubectl.html[official docs].
+
+Configure kubectl to connect to the target cluster using the following commands, replacing several values as indicated:
+
+- Replace `${MASTER_HOST}` with the master node address or name used in previous steps
+- Replace `${CA_CERT}` with the absolute path to the ca.pem created in previous steps
+- Replace `${ADMIN_KEY}` with the absolute path to the admin-key.pem created in previous steps
+- Replace `${ADMIN_CERT}` with the absolute path to the admin.pem created in previous steps
+
+```
+$ kubectl config set-cluster default-cluster --server=https://${MASTER_HOST} --certificate-authority=${CA_CERT}
+$ kubectl config set-credentials default-admin --certificate-authority=${CA_CERT} --client-key=${ADMIN_KEY} --client-certificate=${ADMIN_CERT}
+$ kubectl config set-context default-system --cluster=default-cluster --user=default-admin
+$ kubectl config use-context default-system
+```

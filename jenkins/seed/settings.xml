@@ -6,5 +6,13 @@
 			<username>admin</username>
 			<password>password</password>
 		</server>
+		<server>
+			<id>docker-repo</id>
+			<username>admin</username>
+			<password>password</password>
+			<configuration>
+				<email>pivo@tal.com</email>
+			</configuration>
+		</server>
 	</servers>
 </settings>

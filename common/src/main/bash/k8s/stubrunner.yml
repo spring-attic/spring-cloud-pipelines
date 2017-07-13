@@ -1,23 +1,32 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: stubrunner-{{artifactid}}-deployment
+  name: {{appName}}
 spec:
   replicas: 1
   template:
       metadata:
         labels:
-            app: stubrunner-{{artifactid}}
+            app: {{appName}}
+            environment: {{env}}
       spec:
         containers:
-        - name: stubrunner-{{artifactid}}
-          image: {{stubrunner-img}}
+        - name: {{appName}}
+          image: {{stubrunnerImg}}
           ports:
           - containerPort: 8080
           env:
           - name: PORT
             value: "8080"
           - name: SPRING_RABBITMQ_ADDRESSES
-            value: "rabbitmq-{{artifactid}}-service"
-          - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-            value: "eureka-{{artifactid}}-service:8080/eureka/"
+            value: "{{rabbitAppName}}-service"
+          - name: eureka_client_serviceUrl_defaultZone
+            value: "http://{{eurekaAppName}}:8761/eureka/"
+          - name: STUBRUNNER_IDS
+            value: "{{stubrunnerIds}}"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 3

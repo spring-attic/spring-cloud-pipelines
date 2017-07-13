@@ -101,7 +101,6 @@ function extractVersionFromProdTag() {
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# CURRENTLY WE ONLY SUPPORT CF AS PAAS OUT OF THE BOX
 export PAAS_TYPE="${PAAS_TYPE:-cf}"
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
