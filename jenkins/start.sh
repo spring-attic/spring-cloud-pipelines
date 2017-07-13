@@ -25,5 +25,11 @@ fi
 echo "Forked organization [${FORKED_ORG}]"
 echo "External IP [${EXTERNAL_IP}]"
 
+# Kubernetes
+echo "Copying Kubernetes certificates"
+cp ~/.minikube/ca.crt seed/k8s/ || echo "Failed to copy Kubernetes certificate authority file"
+cp ~/.minikube/apiserver.crt seed/k8s/ || echo "Failed to copy Kubernetes client certificate file"
+cp ~/.minikube/apiserver.key seed/k8s/ || echo "Failed to copy Kubernetes client key file"
+
 docker-compose build
 docker-compose up -d

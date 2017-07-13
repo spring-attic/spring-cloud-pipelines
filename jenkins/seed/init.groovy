@@ -117,6 +117,33 @@ if (gitCredsMissing) {
 	SystemCredentialsProvider.getInstance().save()
 }
 
+//  TODO: Remove when not using Kubernetes
+println "Importing Minikube"
+def certificateAuthority = new File('/usr/share/jenkins/cert/ca.crt')
+def clientCertificate = new File('/usr/share/jenkins/cert/apiserver.crt')
+def clientKey = new File('/usr/share/jenkins/cert/apiserver.key')
+
+boolean kubernetesCredentialsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
+	it.getDescriptor().getId() == 'k8s-ca'
+}.empty
+
+if (kubernetesCredentialsMissing) {
+	println "Kubernetes credentials are missing - will create it"
+	SystemCredentialsProvider.getInstance().getCredentials().add(
+			new CertificateCredentialsImpl(CredentialsScope.GLOBAL, 'k8s-ca',
+					"K8s Certificate Authority", "",
+					new CertificateCredentialsImpl.FileOnMasterKeyStoreSource(certificateAuthority.getAbsolutePath())))
+	SystemCredentialsProvider.getInstance().getCredentials().add(
+			new CertificateCredentialsImpl(CredentialsScope.GLOBAL, 'k8s-client-cert',
+					"K8s Client Certificate", "",
+					new CertificateCredentialsImpl.FileOnMasterKeyStoreSource(clientCertificate.getAbsolutePath())))
+	SystemCredentialsProvider.getInstance().getCredentials().add(
+			new CertificateCredentialsImpl(CredentialsScope.GLOBAL, 'k8s-client-key',
+					"K8s Client Key", "",
+					new CertificateCredentialsImpl.FileOnMasterKeyStoreSource(clientKey.getAbsolutePath())))
+	SystemCredentialsProvider.getInstance().save()
+}
+
 println "Adding jdk"
 Jenkins.getInstance().getJDKs().add(new JDK("jdk8", "/usr/lib/jvm/java-8-openjdk-amd64"))
 
