@@ -6,6 +6,10 @@
 FROM jenkins:2.19.1
 ARG gituser=changeme
 ARG gitpass=changeme
+ARG dockerRegistryOrg=changeme
+ARG dockerRegistryUser=changeme
+ARG dockerRegistryPass=changeme
+ARG dockerRegistryEmail=changeme
 
 MAINTAINER Marcin Grzejszczak <mgrzejszczak@pivotal.io>
 

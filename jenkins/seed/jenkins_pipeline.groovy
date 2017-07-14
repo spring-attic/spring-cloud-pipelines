@@ -34,9 +34,10 @@ factory.job('jenkins-pipeline-seed') {
             booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
             choiceParam('PAAS_TYPE', ['cf', 'k8s'], "Which PAAS do you want to choose")
             // remove::start[CF]
-            stringParam('PAAS_TEST_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for test env')
-            stringParam('PAAS_STAGE_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for stage env')
-            stringParam('PAAS_PROD_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for prod env')
+            // TODO: Uncomment this
+//            stringParam('PAAS_TEST_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for test env')
+//            stringParam('PAAS_STAGE_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for stage env')
+//            stringParam('PAAS_PROD_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for prod env')
             stringParam('PAAS_TEST_ORG', 'pcfdev-org', 'Name of the CF organization for test env')
             stringParam('PAAS_TEST_SPACE', 'pcfdev-test', 'Name of the CF space for test env')
             stringParam('PAAS_STAGE_ORG', 'pcfdev-org', 'Name of the CF organization for stage env')
