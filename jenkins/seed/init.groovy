@@ -46,7 +46,7 @@ new DslScriptLoader(jobManagement).with {
 	runScript(jobScript.text
 			.replace('https://github.com/marcingrzejszczak', "https://github.com/${System.getenv('FORKED_ORG')}")
 			.replace('http://artifactory', "http://${System.getenv('EXTERNAL_IP') ?: "localhost"}")
-			.replace('scpipelines', "http://${System.getenv('DOCKER_REGISTRY_ORGANIZATION') ?: "scpipelines"}"))
+			.replace('scpipelines', "${System.getenv('DOCKER_REGISTRY_ORGANIZATION') ?: "scpipelines"}"))
 }
 
 // remove::start[CF]
@@ -130,7 +130,6 @@ def clientKey = new File('/usr/share/jenkins/cert/apiserver.key')
 if (certificateAuthority.exists()) {
 	println "Copying Kubernetes certificates"
 	File targetFile = new File("${jenkinsHome}/.kubernetes/")
-	targetFile.createNewFile()
 	Files.copy(new File('/usr/share/jenkins/cert/').toPath(), targetFile.toPath())
 }
 
