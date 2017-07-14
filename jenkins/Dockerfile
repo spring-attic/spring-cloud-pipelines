@@ -22,6 +22,9 @@ USER root
 # files there
 RUN printf "%s" "${gituser}" > /usr/share/jenkins/gituser
 RUN printf "%s" "${gitpass}" > /usr/share/jenkins/gitpass
+RUN printf "%s" "${dockerRegistryUser}" > /usr/share/jenkins/dockerRegistryUser
+RUN printf "%s" "${dockerRegistryPass}" > /usr/share/jenkins/dockerRegistryPass
+RUN printf "%s" "${dockerRegistryEmail}" > /usr/share/jenkins/dockerRegistryEmail
 
 USER root
 

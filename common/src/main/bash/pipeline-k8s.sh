@@ -217,6 +217,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     deleteAppByFile "${serviceFile}"
     local systemOpts="-Dspring.profiles.active=${profiles}"
     systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
+    substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "appName" "${serviceName}" "${deploymentFile}"
     substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
     substituteVariables "appName" "${serviceName}" "${serviceFile}"
@@ -455,16 +456,6 @@ function deleteBlueInstance() {
         echo "Will not remove the old application cause it's not there"
     fi
 }
-
-# TODO: Make this removeable
-# We have the same application example for both CF & Kubernetes. In CF we don't need
-# docker so we're disabling those tasks. However normally the `deploy` should already do
-# all that's necessary to deploy a binary (whatever that binary is)
-if [[ ! -z "${BUILD_OPTIONS}" ]]; then
-    export BUILD_OPTIONS="${BUILD_OPTIONS} -DskipDocker"
-else
-    export BUILD_OPTIONS="-DskipDocker"
-fi
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

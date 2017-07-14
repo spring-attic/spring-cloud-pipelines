@@ -14,11 +14,11 @@ String jenkinsHome = '/var/jenkins_home'
 println "Creating the settings.xml file"
 String m2Home = jenkinsHome + '/.m2'
 boolean m2Created = new File(m2Home).mkdirs()
+File mavenSettings = new File("${m2Home}/settings.xml")
 if (m2Created) {
-	boolean settingsCreated = new File("${m2Home}/settings.xml").createNewFile()
+	boolean settingsCreated = mavenSettings.createNewFile()
 	if (settingsCreated) {
-		new File("${m2Home}/settings.xml").text =
-				new File('/usr/share/jenkins/settings.xml').text
+		mavenSettings.text = new File('/usr/share/jenkins/settings.xml').text
 	} else {
 		println "Failed to create settings.xml!"
 	}
@@ -45,10 +45,12 @@ println "Creating the seed job"
 new DslScriptLoader(jobManagement).with {
 	runScript(jobScript.text
 			.replace('https://github.com/marcingrzejszczak', "https://github.com/${System.getenv('FORKED_ORG')}")
-			.replace('http://artifactory', "http://${System.getenv('EXTERNAL_IP') ?: "localhost"}"))
+			.replace('http://artifactory', "http://${System.getenv('EXTERNAL_IP') ?: "localhost"}")
+			.replace('scpipelines', "http://${System.getenv('DOCKER_REGISTRY_ORGANIZATION') ?: "scpipelines"}"))
 }
 
-println "Creating the credentials"
+// remove::start[CF]
+println "Creating the credentials for CF"
 ['cf-test', 'cf-stage', 'cf-prod'].each { String id ->
 	boolean credsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
 		it.getDescriptor().getId() == id
@@ -61,6 +63,7 @@ println "Creating the credentials"
 		SystemCredentialsProvider.getInstance().save()
 	}
 }
+// remove::end[CF]
 
 println "Adding credentials to deploy to the repo with jars"
 String repoWithJarsId = "repo-with-binaries"
@@ -119,7 +122,7 @@ if (gitCredsMissing) {
 	SystemCredentialsProvider.getInstance().save()
 }
 
-//  TODO: Remove when not using Kubernetes
+// remove::start[K8S]
 def certificateAuthority = new File('/usr/share/jenkins/cert/ca.crt')
 def clientCertificate = new File('/usr/share/jenkins/cert/apiserver.crt')
 def clientKey = new File('/usr/share/jenkins/cert/apiserver.key')
@@ -130,6 +133,18 @@ if (certificateAuthority.exists()) {
 	targetFile.createNewFile()
 	Files.copy(new File('/usr/share/jenkins/cert/').toPath(), targetFile.toPath())
 }
+
+println "Updating maven settings with docker registry data"
+
+String dockerRegistryUser = new File('/usr/share/jenkins/dockerRegistryUser')?.text ?: "changeme"
+String dockerRegistryPass = new File('/usr/share/jenkins/dockerRegistryPass')?.text ?: "changeme"
+String dockerRegistryEmail = new File('/usr/share/jenkins/dockerRegistryEmail')?.text ?: "change@me.com"
+
+mavenSettings.text = mavenSettings.text
+		.replace("dockeruser", dockerRegistryUser)
+		.replace("dockerpass", dockerRegistryPass)
+		.replace("docker@email.com", dockerRegistryEmail)
+// remove::end[K8S]
 
 println "Adding jdk"
 Jenkins.getInstance().getJDKs().add(new JDK("jdk8", "/usr/lib/jvm/java-8-openjdk-amd64"))

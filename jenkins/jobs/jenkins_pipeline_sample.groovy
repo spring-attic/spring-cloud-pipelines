@@ -669,6 +669,8 @@ class PipelineDefaults {
 
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
 		Map<String, String> envs = [:]
+		envs['PAAS_TYPE'] = variables['PAAS_TYPE'] ?: 'cf'
+		// remove::start[CF]
 		envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: 'api.local.pcfdev.io'
 		envs['PAAS_STAGE_API_URL'] = variables['PAAS_STAGE_API_URL'] ?: 'api.local.pcfdev.io'
 		envs['PAAS_PROD_API_URL'] = variables['PAAS_PROD_API_URL'] ?: 'api.local.pcfdev.io'
@@ -683,7 +685,28 @@ class PipelineDefaults {
 		envs['REPO_WITH_BINARIES'] = variables['REPO_WITH_BINARIES'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 		envs['APP_MEMORY_LIMIT'] = variables['APP_MEMORY_LIMIT'] ?: '256m'
 		envs['JAVA_BUILDPACK_URL'] = variables['JAVA_BUILDPACK_URL'] ?: 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1'
-		envs['PAAS_TYPE'] = variables['PAAS_TYPE'] ?: 'cf'
+		// remove::end[CF]
+		// remove::start[K8S]
+		envs['DOCKER_REGISTRY_ORGANIZATION'] = variables['DOCKER_REGISTRY_ORGANIZATION'] ?: 'scpipelines'
+		envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: '192.169.99.100:8443'
+		envs['PAAS_STAGE_API_URL'] = variables['PAAS_STAGE_API_URL'] ?: '192.169.99.100:8443'
+		envs['PAAS_PROD_API_URL'] = variables['PAAS_PROD_API_URL'] ?: '192.169.99.100:8443'
+		envs['PAAS_TEST_CA'] = variables['PAAS_TEST_CA'] ?: '/usr/share/jenkins/cert/ca.crt'
+		envs['PAAS_STAGE_CA'] = variables['PAAS_STAGE_CA'] ?: '/usr/share/jenkins/cert/ca.crt'
+		envs['PAAS_PROD_CA'] = variables['PAAS_PROD_CA'] ?: '/usr/share/jenkins/cert/ca.crt'
+		envs['PAAS_TEST_CLIENT_CERT'] = variables['PAAS_TEST_CLIENT_CERT'] ?: '/usr/share/jenkins/cert/apiserver.crt'
+		envs['PAAS_STAGE_CLIENT_CERT'] = variables['PAAS_STAGE_CLIENT_CERT'] ?: '/usr/share/jenkins/cert/apiserver.crt'
+		envs['PAAS_PROD_CLIENT_CERT'] = variables['PAAS_PROD_CLIENT_CERT'] ?: '/usr/share/jenkins/cert/apiserver.crt'
+		envs['PAAS_TEST_CLIENT_KEY'] = variables['PAAS_TEST_CLIENT_KEY'] ?: '/usr/share/jenkins/cert/apiserver.key'
+		envs['PAAS_STAGE_CLIENT_KEY'] = variables['PAAS_STAGE_CLIENT_KEY'] ?: '/usr/share/jenkins/cert/apiserver.key'
+		envs['PAAS_PROD_CLIENT_KEY'] = variables['PAAS_PROD_CLIENT_KEY'] ?: '/usr/share/jenkins/cert/apiserver.key'
+		envs['PAAS_TEST_CLUSTER_NAME'] = variables['PAAS_TEST_CLUSTER_NAME'] ?: 'minikube'
+		envs['PAAS_STAGE_CLUSTER_NAME'] = variables['PAAS_STAGE_CLUSTER_NAME'] ?: 'minikube'
+		envs['PAAS_PROD_CLUSTER_NAME'] = variables['PAAS_PROD_CLUSTER_NAME'] ?: 'minikube'
+		envs['PAAS_TEST_CLUSTER_USERNAME'] = variables['PAAS_TEST_CLUSTER_USERNAME'] ?: 'minikube'
+		envs['PAAS_STAGE_CLUSTER_USERNAME'] = variables['PAAS_STAGE_CLUSTER_USERNAME'] ?: 'minikube'
+		envs['PAAS_PROD_CLUSTER_USERNAME'] = variables['PAAS_PROD_CLUSTER_USERNAME'] ?: 'minikube'
+		// remove::end[K8S]
 		return envs
 	}
 

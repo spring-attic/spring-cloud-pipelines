@@ -8,10 +8,10 @@
 		</server>
 		<server>
 			<id>docker-repo</id>
-			<username>admin</username>
-			<password>password</password>
+			<username>dockeruser</username>
+			<password>dockerpass</password>
 			<configuration>
-				<email>pivo@tal.com</email>
+				<email>docker@email.com</email>
 			</configuration>
 		</server>
 	</servers>
