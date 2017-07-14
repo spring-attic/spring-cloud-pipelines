@@ -45,37 +45,15 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s
 RUN chmod +x ./kubectl
 RUN mv ./kubectl /usr/local/bin/kubectl
 
-RUN apt-get update
-RUN apt-get install -y apt-transport-https ca-certificates curl tar \
-                    gnupg2 software-properties-common python-software-properties \
-                    btrfs-progs e2fsprogs iptables
-
-# Installing Docker for Kubernetes builds
-# https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-using-the-repository
-
-# https://github.com/docker/docker/blob/master/project/PACKAGERS.md#runtime-dependencies
-# TODO aufs-tools
-
-# set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
-RUN set -x \
-	&& addgroup --system dockremap \
-	&& adduser --system --ingroup dockremap dockremap \
-	&& echo 'dockremap:165536:65536' >> /etc/subuid \
-	&& echo 'dockremap:165536:65536' >> /etc/subgid
-
-ENV DIND_COMMIT 3b5fac462d21ca164b3778647420016315289034
-
-RUN set -ex; \
-	wget -O /usr/local/bin/dind "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind"; \
-	chmod +x /usr/local/bin/dind; \
-
-COPY dockerd-entrypoint.sh /usr/local/bin/
-RUN /usr/local/bin/dockerd-entrypoint.sh
-
-VOLUME /var/lib/docker
-EXPOSE 2375
-
-USER jenkins
+USER root
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y install apt-transport-https ca-certificates
+RUN echo "deb https://apt.dockerproject.org/repo debian-jessie main" | tee /etc/apt/sources.list.d/docker.list && \
+    apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D && \
+    DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install --assume-yes docker-engine
+RUN echo "jenkins ALL=NOPASSWD: /usr/bin/docker" >> /etc/sudoers && \
+    echo "jenkins ALL=NOPASSWD: /usr/local/bin/docker-compose" >> /etc/sudoers && \
+    echo 'Defaults  env_keep += "HOME"' >> /etc/sudoers
 
 # You can use Jenkins API to generate the list of plugins from a running
 # Jenkins instance:
