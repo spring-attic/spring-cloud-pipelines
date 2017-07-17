@@ -18,17 +18,17 @@ spec:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{appName}}-secret
+              name: {{appName}}
               key: rootpassword
         - name: MYSQL_USER
           valueFrom:
             secretKeyRef:
-              name: {{appName}}-secret
+              name: {{appName}}
               key: username
         - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{appName}}-secret
+              name: {{appName}}
               key: password
         - name: MYSQL_DATABASE
           value: {{mysqlDatabase}}
@@ -37,11 +37,11 @@ spec:
           name: mysql
       volumeMounts:
           # name must match the volume name below
-        - name: {{appName}}-persistent-storage
+        - name: {{appName}}
           # mount path within the container
           mountPath: /var/lib/mysql
   volumes:
-    - name: {{appName}}-persistent-storage
+    - name: {{appName}}
       persistentVolumeClaim:
         claimName: {{appName}}
 ---

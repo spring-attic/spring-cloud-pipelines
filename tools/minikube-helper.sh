@@ -5,15 +5,6 @@ function usage {
 	exit 1
 }
 
-function pcfdev_login {
-	cf login -a https://api.local.pcfdev.io \
-		--skip-ssl-validation \
-		-u admin \
-		-p admin \
-		-o pcfdev-org \
-		-s pcfdev-test
-}
-
 function system {
     unameOut="$(uname -s)"
     case "${unameOut}" in
@@ -40,19 +31,19 @@ case $1 in
 		;;
 
 	delete-all-apps)
-		kubectl delete pods,deployments,services,persistentvolumeclaims --all
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets --all
 		;;
 
 	delete-all-test-apps)
-		kubectl delete pods,deployments,services,persistentvolumeclaims --all -l environment=test
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets --all -l environment=test
 		;;
 
 	delete-all-stage-apps)
-		kubectl delete pods,deployments,services,persistentvolumeclaims --all -l environment=stage
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets --all -l environment=stage
 		;;
 
 	delete-all-prod-apps)
-		kubectl delete pods,deployments,services,persistentvolumeclaims --all -l environment=prod
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets --all -l environment=prod
 		;;
 
 	*)

@@ -154,6 +154,7 @@ function deleteAppByName() {
     kubectl delete service ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
     kubectl delete deployment ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
     kubectl delete persistentvolumeclaim ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete secret ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete secret [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
 }
 
 function deleteAppByFile() {
@@ -182,7 +183,7 @@ function deployMySql() {
         local deploymentFile="${__ROOT}/k8s/mysql.yml"
         local serviceFile="${__ROOT}/k8s/mysql-service.yml"
         echo "Generating secret"
-        kubectl create secret generic "${appName}-secret" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
+        kubectl create secret generic "${appName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
         substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
