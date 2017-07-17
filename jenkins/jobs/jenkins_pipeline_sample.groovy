@@ -671,7 +671,8 @@ class PipelineDefaults {
 		Map<String, String> envs = [:]
 		envs['PAAS_TYPE'] = variables['PAAS_TYPE'] ?: 'cf'
 		// remove::start[CF]
-		envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: 'api.local.pcfdev.io'
+		// TODO: Remove it via task
+		/*envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: 'api.local.pcfdev.io'
 		envs['PAAS_STAGE_API_URL'] = variables['PAAS_STAGE_API_URL'] ?: 'api.local.pcfdev.io'
 		envs['PAAS_PROD_API_URL'] = variables['PAAS_PROD_API_URL'] ?: 'api.local.pcfdev.io'
 		envs['PAAS_TEST_ORG'] = variables['PAAS_TEST_ORG'] ?: 'pcfdev-org'
@@ -684,7 +685,7 @@ class PipelineDefaults {
 		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
 		envs['REPO_WITH_BINARIES'] = variables['REPO_WITH_BINARIES'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 		envs['APP_MEMORY_LIMIT'] = variables['APP_MEMORY_LIMIT'] ?: '256m'
-		envs['JAVA_BUILDPACK_URL'] = variables['JAVA_BUILDPACK_URL'] ?: 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1'
+		envs['JAVA_BUILDPACK_URL'] = variables['JAVA_BUILDPACK_URL'] ?: 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1'*/
 		// remove::end[CF]
 		// remove::start[K8S]
 		envs['DOCKER_REGISTRY_ORGANIZATION'] = variables['DOCKER_REGISTRY_ORGANIZATION'] ?: 'scpipelines'
