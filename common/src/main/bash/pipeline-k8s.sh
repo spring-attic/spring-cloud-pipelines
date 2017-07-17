@@ -164,7 +164,7 @@ function substituteVariables() {
     local variableName="${1}"
     local substitution="${2}"
     local fileName="${3}"
-    #echo "Changing [${variableName}] -> [${substitution}] for file [${fileName}]"
+    echo "Changing [${variableName}] -> [${substitution}] for file [${fileName}]"
     sed -i "s/{{${variableName}}}/${substitution}/" ${fileName}
 }
 
@@ -294,9 +294,10 @@ function deployEureka() {
     echo "Deploying Eureka. Options - image name [${imageName}], app name [${appName}], env [${env}]"
     local deploymentFile="${__ROOT}/k8s/eureka.yml"
     local serviceFile="${__ROOT}/k8s/eureka-service.yml"
+    local escapedImageName="${imageName/:/\:}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
     substituteVariables "env" "${env}" "${deploymentFile}"
-    substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
+    substituteVariables "eurekaImg" "${escapedImageName}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     substituteVariables "env" "${env}" "${serviceFile}"
     deployApp "${deploymentFile}"
@@ -323,7 +324,9 @@ function deployStubRunnerBoot() {
     systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
     local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
     local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
+    local escapedImageName="${imageName/:/\:}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
+    substituteVariables "stubrunnerImg" "${escapedImageName}" "${deploymentFile}"
     substituteVariables "env" "${env}" "${deploymentFile}"
     substituteVariables "systemOpts" "${systemOpts}" "${deploymentFile}"
     if [[ "${prop}" == "false" ]]; then
