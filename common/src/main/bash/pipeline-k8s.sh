@@ -339,7 +339,7 @@ function deployStubRunnerBoot() {
     systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
     local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
     local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
-    substituteVariables "appName" "${appName}" "${deploymentFile}"
+    substituteVariables "appName" "${stubRunnerName}" "${deploymentFile}"
     substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
     substituteVariables "rabbitAppName" "${rabbitName}" "${deploymentFile}"
     substituteVariables "eurekaAppName" "${eurekaName}" "${deploymentFile}"
@@ -349,10 +349,10 @@ function deployStubRunnerBoot() {
     if [[ "${prop}" == "false" ]]; then
         substituteVariables "stubrunnerIds" "${prop}" "${deploymentFile}"
     fi
-    substituteVariables "appName" "${appName}" "${serviceFile}"
+    substituteVariables "appName" "${stubRunnerName}" "${serviceFile}"
     substituteVariables "env" "${env}" "${serviceFile}"
     deployApp "${deploymentFile}"
-    deployApp "${appName}"
+    deployApp "${serviceFile}"
 }
 
 function bindService() {
