@@ -208,7 +208,7 @@ function deployAndRestartAppWithName() {
 }
 
 function deployAndRestartAppWithNameForSmokeTests() {
-    local appName="${1}-${LOWER_CASE_ENV}"
+    local appName="${1}"
     local rabbitName="${2}"
     local eurekaName="${3}"
     local mysqlName="${4}"
