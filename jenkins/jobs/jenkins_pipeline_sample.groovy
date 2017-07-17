@@ -689,9 +689,9 @@ class PipelineDefaults {
 		// remove::end[CF]
 		// remove::start[K8S]
 		envs['DOCKER_REGISTRY_ORGANIZATION'] = variables['DOCKER_REGISTRY_ORGANIZATION'] ?: 'scpipelines'
-		envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: '192.169.99.100:8443'
-		envs['PAAS_STAGE_API_URL'] = variables['PAAS_STAGE_API_URL'] ?: '192.169.99.100:8443'
-		envs['PAAS_PROD_API_URL'] = variables['PAAS_PROD_API_URL'] ?: '192.169.99.100:8443'
+		envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: '192.168.99.100:8443'
+		envs['PAAS_STAGE_API_URL'] = variables['PAAS_STAGE_API_URL'] ?: '192.168.99.100:8443'
+		envs['PAAS_PROD_API_URL'] = variables['PAAS_PROD_API_URL'] ?: '192.168.99.100:8443'
 		envs['PAAS_TEST_CA'] = variables['PAAS_TEST_CA'] ?: '/usr/share/jenkins/cert/ca.crt'
 		envs['PAAS_STAGE_CA'] = variables['PAAS_STAGE_CA'] ?: '/usr/share/jenkins/cert/ca.crt'
 		envs['PAAS_PROD_CA'] = variables['PAAS_PROD_CA'] ?: '/usr/share/jenkins/cert/ca.crt'
