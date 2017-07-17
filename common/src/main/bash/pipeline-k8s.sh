@@ -131,8 +131,8 @@ function deployRabbitMq() {
     echo "Waiting for RabbitMQ to start"
     local foundApp=`kubectl get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
     if [[ "${foundApp}" == "" ]]; then
-        local deploymentFile="${__DIR}/k8s/rabbitmq.yml"
-        local serviceFile="${__DIR}/k8s/rabbitmq-service.yml"
+        local deploymentFile="${__ROOT}/k8s/rabbitmq.yml"
+        local serviceFile="${__ROOT}/k8s/rabbitmq-service.yml"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
         substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
@@ -177,8 +177,8 @@ function deployMySql() {
     echo "Waiting for MySQL to start"
     local foundApp=`kubectl get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
     if [[ "${foundApp}" == "" ]]; then
-        local deploymentFile="${__DIR}/k8s/mysql.yml"
-        local serviceFile="${__DIR}/k8s/mysql-service.yml"
+        local deploymentFile="${__ROOT}/k8s/mysql.yml"
+        local serviceFile="${__ROOT}/k8s/mysql-service.yml"
         echo "Generating secret"
         kubectl create secret generic "${appName}-secret" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
@@ -294,8 +294,8 @@ function deployEureka() {
     local env="${4}"
     echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${imageName}], app name [${appName}], env [${env}]"
     if [[ "${redeploy}" == "true" ]]; then
-        local deploymentFile="${__DIR}/k8s/eureka.yml"
-        local serviceFile="${__DIR}/k8s/eureka-service.yml"
+        local deploymentFile="${__ROOT}/k8s/eureka.yml"
+        local serviceFile="${__ROOT}/k8s/eureka-service.yml"
         substituteVariables "appName" "${appName}" "${deploymentFile}"
         substituteVariables "env" "${env}" "${deploymentFile}"
         substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
@@ -328,8 +328,8 @@ function deployStubRunnerBoot() {
             systemOpts="${systemOpts} -Dstubrunner.repositoryRoot=${repoWithJars}"
         fi
         systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
-        local deploymentFile="${__DIR}/k8s/stubrunner.yml"
-        local serviceFile="${__DIR}/k8s/stubrunner-service.yml"
+        local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
+        local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
         substituteVariables "appName" "${appName}" "${deploymentFile}"
         substituteVariables "env" "${env}" "${deploymentFile}"
         substituteVariables "systemOpts" "${systemOpts}" "${deploymentFile}"
@@ -459,8 +459,8 @@ function deleteBlueInstance() {
     fi
 }
 
-__DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+__ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
-[[ -f "${__DIR}/projectType/pipeline-jvm.sh" ]] && source "${__DIR}/projectType/pipeline-jvm.sh" || \
+[[ -f "${__ROOT}/projectType/pipeline-jvm.sh" ]] && source "${__ROOT}/projectType/pipeline-jvm.sh" || \
     echo "No projectType/pipeline-jvm.sh found"
