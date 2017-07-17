@@ -303,7 +303,7 @@ function deployEureka() {
     substituteVariables "appName" "${appName}" "${serviceFile}"
     substituteVariables "env" "${env}" "${serviceFile}"
     deployApp "${deploymentFile}"
-    deployApp "${appName}"
+    deployApp "${serviceFile}"
 }
 
 function deployStubRunnerBoot() {
