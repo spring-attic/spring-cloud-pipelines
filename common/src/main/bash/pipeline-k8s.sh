@@ -169,7 +169,7 @@ function substituteVariables() {
     local variableName="${1}"
     local substitution="${2}"
     local fileName="${3}"
-    echo "Changing [${variableName}] -> [${substitution}] for file [${file}]"
+    echo "Changing [${variableName}] -> [${substitution}] for file [${fileName}]"
     sed -i 's/{{'"${variableName}"'}}/{{'"${substitution}"'}}/' ${fileName}
 }
 
