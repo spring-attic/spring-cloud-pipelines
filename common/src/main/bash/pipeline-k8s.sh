@@ -92,10 +92,10 @@ function deployService() {
     local serviceName="${2}-${LOWER_CASE_ENV}"
     case ${serviceType} in
     RABBITMQ)
-      deployRabbitMq "${serviceName}-${LOWER_CASE_ENV}"
+      deployRabbitMq "${serviceName}"
       ;;
     MYSQL)
-      deployMySql "${serviceName}-${LOWER_CASE_ENV}"
+      deployMySql "${serviceName}"
       ;;
     EUREKA)
       deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}-${LOWER_CASE_ENV}" "${ENVIRONMENT}"
