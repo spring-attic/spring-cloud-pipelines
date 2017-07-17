@@ -137,11 +137,6 @@ function deployRabbitMq() {
         substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
-        #echo "Printing substituted file contents"
-        #echo "Deployment"
-        #cat ${deploymentFile}
-        #echo "Service"
-        #cat ${serviceFile}
         deployApp "${deploymentFile}"
         deployApp "${serviceFile}"
     else
@@ -157,7 +152,8 @@ function deployApp() {
 function deleteAppByName() {
     local serviceName="${1}"
     kubectl delete service ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete deployment ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete deployment ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete persistentvolumeclaim ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
 }
 
 function deleteAppByFile() {

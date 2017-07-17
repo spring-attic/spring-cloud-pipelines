@@ -40,19 +40,19 @@ case $1 in
 		;;
 
 	delete-all-apps)
-		kubectl delete pods,deployments,services --all
+		kubectl delete pods,deployments,services,persistentvolumeclaims --all
 		;;
 
 	delete-all-test-apps)
-		kubectl delete pods,deployments,services --all -l environment=test
+		kubectl delete pods,deployments,services,persistentvolumeclaims --all -l environment=test
 		;;
 
 	delete-all-stage-apps)
-		kubectl delete pods,deployments,services --all -l environment=stage
+		kubectl delete pods,deployments,services,persistentvolumeclaims --all -l environment=stage
 		;;
 
 	delete-all-prod-apps)
-		kubectl delete pods,deployments,services --all -l environment=prod
+		kubectl delete pods,deployments,services,persistentvolumeclaims --all -l environment=prod
 		;;
 
 	*)
