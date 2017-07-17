@@ -726,11 +726,11 @@ class PipelineDefaults {
 	 */
 	static Closure defaultParams() {
 		return context {
-			booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
-			booleanParam('REDEPLOY_INFRA', true, "If Eureka JAR should be deployed. Uncheck this if you're not using Eureka")
-			// remove::start[CF]
 			// TODO: Remember to remove this via some task
-			/*stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
+			// remove::start[CF]
+			/*booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
+			booleanParam('REDEPLOY_INFRA', true, "If Eureka JAR should be deployed. Uncheck this if you're not using Eureka")
+			stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
 			stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
 			stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
 			stringParam('STUBRUNNER_GROUP_ID', 'com.example.github', "Group Id for Stub Runner used by tests")
