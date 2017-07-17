@@ -89,7 +89,7 @@ function testRollbackDeploy() {
 
 function deployService() {
     local serviceType="${1}"
-    local serviceName="${2}"
+    local serviceName="${2}-${ENVIRONMENT}"
     case ${serviceType} in
     RABBITMQ)
       deployRabbitMq "${serviceName}"
@@ -149,10 +149,10 @@ function deployApp() {
 
 function deleteAppByName() {
     local serviceName="${1}"
-    kubectl delete service ${serviceName} -l env="${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete deployment ${serviceName} -l env="${ENVIRONMENT}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete persistentvolumeclaim ${serviceName} -l env="${ENVIRONMENT}" || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete secret ${serviceName} -l env="${ENVIRONMENT}" || echo "Failed to delete secret [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete service "${serviceName}-${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete deployment "${serviceName}-${ENVIRONMENT}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete persistentvolumeclaim "${serviceName}-${ENVIRONMENT}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete secret "${serviceName}-${ENVIRONMENT}" || echo "Failed to delete secret [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
 }
 
 function deleteAppByFile() {
@@ -206,11 +206,11 @@ function deployAndRestartAppWithName() {
 }
 
 function deployAndRestartAppWithNameForSmokeTests() {
-    local appName="${1}"
+    local appName="${1}-${ENVIRONMENT}"
     local jarName="${2}"
-    local rabbitName="rabbitmq-${appName}"
-    local eurekaName="eureka-${appName}"
-    local mysqlName="mysql-${appName}"
+    local rabbitName="rabbitmq-${appName}-${ENVIRONMENT}"
+    local eurekaName="eureka-${appName}-${ENVIRONMENT}"
+    local mysqlName="mysql-${appName}-${ENVIRONMENT}"
     local profiles="cloud,smoke"
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
     local deploymentFile="deployment.yml"
