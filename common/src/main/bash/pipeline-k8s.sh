@@ -184,6 +184,7 @@ function deployMySql() {
         local serviceFile="${__ROOT}/k8s/mysql-service.yml"
         echo "Generating secret"
         kubectl create secret generic "${appName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
+        kubectl label secrets "${appName}" env="${ENVIRONMENT}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
         substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
