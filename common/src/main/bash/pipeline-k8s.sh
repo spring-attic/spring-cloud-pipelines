@@ -63,9 +63,7 @@ function testDeploy() {
     deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
 
     # dependant apps
-    if [[ "${REDEPLOY_INFRA}" == "true" ]]; then
-        export UNIQUE_EUREKA_NAME="eureka-${appName}"
-    fi
+    export UNIQUE_EUREKA_NAME="eureka-${appName}"
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
@@ -100,7 +98,7 @@ function deployService() {
       deployMySql "${serviceName}"
       ;;
     EUREKA)
-      deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
+      deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
     STUBRUNNER)
       deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
@@ -211,10 +209,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
     local jarName="${2}"
     local rabbitName="rabbitmq-${appName}"
-    local eurekaName=""
-    if [[ "${REDEPLOY_INFRA}" == "true" ]]; then
-        eurekaName="eureka-${appName}"
-    fi
+    local eurekaName="eureka-${appName}"
     local mysqlName="mysql-${appName}"
     local profiles="cloud,smoke"
     local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
@@ -293,59 +288,51 @@ function restartApp() {
 }
 
 function deployEureka() {
-    local redeploy="${1}"
-    local imageName="${2}"
-    local appName="${3}"
-    local env="${4}"
-    echo "Deploying Eureka. Options - redeploy [${redeploy}], image name [${imageName}], app name [${appName}], env [${env}]"
-    if [[ "${redeploy}" == "true" ]]; then
-        local deploymentFile="${__ROOT}/k8s/eureka.yml"
-        local serviceFile="${__ROOT}/k8s/eureka-service.yml"
-        substituteVariables "appName" "${appName}" "${deploymentFile}"
-        substituteVariables "env" "${env}" "${deploymentFile}"
-        substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
-        substituteVariables "appName" "${appName}" "${serviceFile}"
-        substituteVariables "env" "${env}" "${serviceFile}"
-        deployApp "${deploymentFile}"
-        deployApp "${appName}"
-    else
-        echo "Current folder is [`pwd`]; Redeploy flag was set [${redeploy}]. Skipping deployment"
-    fi
+    local imageName="${1}"
+    local appName="${2}"
+    local env="${3}"
+    echo "Deploying Eureka. Options - image name [${imageName}], app name [${appName}], env [${env}]"
+    local deploymentFile="${__ROOT}/k8s/eureka.yml"
+    local serviceFile="${__ROOT}/k8s/eureka-service.yml"
+    substituteVariables "appName" "${appName}" "${deploymentFile}"
+    substituteVariables "env" "${env}" "${deploymentFile}"
+    substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
+    substituteVariables "appName" "${appName}" "${serviceFile}"
+    substituteVariables "env" "${env}" "${serviceFile}"
+    deployApp "${deploymentFile}"
+    deployApp "${appName}"
 }
 
 function deployStubRunnerBoot() {
-    local redeploy="${1}"
-    local imageName="${2}"
+    local imageName="${1}"
     # TODO: Add passing of properties to docker images
-    local repoWithJars="${3}"
-    local rabbitName="${4}"
-    local eurekaName="${5}"
-    local env="${6:-test}"
-    local stubRunnerName="${7:-stubrunner}"
+    local repoWithJars="${2}"
+    local rabbitName="${3}"
+    local eurekaName="${4}"
+    local env="${5:-test}"
+    local stubRunnerName="${6:-stubrunner}"
     local fileExists="true"
     local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
-    echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${imageName}], app name [${stubRunnerName}]"
-    if [[ ${redeploy} == "true" ]]; then
-        local prop="$( retrieveStubRunnerIds )"
-        echo "Found following stub runner ids [${prop}]"
-        local systemOpts=""
-        if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
-            systemOpts="${systemOpts} -Dstubrunner.repositoryRoot=${repoWithJars}"
-        fi
-        systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
-        local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
-        local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
-        substituteVariables "appName" "${appName}" "${deploymentFile}"
-        substituteVariables "env" "${env}" "${deploymentFile}"
-        substituteVariables "systemOpts" "${systemOpts}" "${deploymentFile}"
-        substituteVariables "stubrunnerIds" "${prop}" "${deploymentFile}"
-        substituteVariables "appName" "${appName}" "${serviceFile}"
-        substituteVariables "env" "${env}" "${serviceFile}"
-        deployApp "${deploymentFile}"
-        deployApp "${appName}"
-    else
-        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]; redeploy flag was set [${redeploy}]. Skipping deployment"
+    echo "Deploying Stub Runner. Options - image name [${imageName}], app name [${stubRunnerName}]"
+    local prop="$( retrieveStubRunnerIds )"
+    echo "Found following stub runner ids [${prop}]"
+    local systemOpts=""
+    if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
+        systemOpts="${systemOpts} -Dstubrunner.repositoryRoot=${repoWithJars}"
     fi
+    systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
+    local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
+    local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
+    substituteVariables "appName" "${appName}" "${deploymentFile}"
+    substituteVariables "env" "${env}" "${deploymentFile}"
+    substituteVariables "systemOpts" "${systemOpts}" "${deploymentFile}"
+    if [[ "${prop}" == "false" ]]; then
+        substituteVariables "stubrunnerIds" "${prop}" "${deploymentFile}"
+    fi
+    substituteVariables "appName" "${appName}" "${serviceFile}"
+    substituteVariables "env" "${env}" "${serviceFile}"
+    deployApp "${deploymentFile}"
+    deployApp "${appName}"
 }
 
 function bindService() {
@@ -429,8 +416,8 @@ function performGreenDeployment() {
     # TODO: most likely rabbitmq / eureka / db would be there on production; this remains for demo purposes
     deployRabbitMq
     deployMySql "mysql-github-analytics"
-    downloadAppArtifact ${REDEPLOY_INFRA} ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
-    deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}"
+    downloadAppArtifact ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
+    deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}"
 
     # deploy app
     performGreenDeploymentOfTestedApplication "${appName}"

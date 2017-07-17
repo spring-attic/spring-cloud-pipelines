@@ -726,6 +726,7 @@ class PipelineDefaults {
 	 */
 	static Closure defaultParams() {
 		return context {
+			booleanParam('STUBRUNNER_USE_CLASSPATH', false, "Should Stub Runner use classpath instead of reaching a repo")
 			// TODO: Remember to remove this via some task
 			// remove::start[CF]
 			/*booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
@@ -735,8 +736,7 @@ class PipelineDefaults {
 			stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
 			stringParam('STUBRUNNER_GROUP_ID', 'com.example.github', "Group Id for Stub Runner used by tests")
 			stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
-			stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
-			booleanParam('STUBRUNNER_USE_CLASSPATH', false, "Should Stub Runner use classpath instead of reaching a repo")*/
+			stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")*/
 			// remove::end[CF]
 			// remove::start[K8S]
 			stringParam('EUREKA_ARTIFACT_ID', 'scpipelines/github-eureka', "Name of image with Eureka used by tests")
