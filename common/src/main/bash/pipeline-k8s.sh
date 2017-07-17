@@ -137,11 +137,11 @@ function deployRabbitMq() {
         substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
-        echo "Printing substituted file contents"
-        echo "Deployment"
-        cat ${deploymentFile}
-        echo "Service"
-        cat ${serviceFile}
+        #echo "Printing substituted file contents"
+        #echo "Deployment"
+        #cat ${deploymentFile}
+        #echo "Service"
+        #cat ${serviceFile}
         deployApp "${deploymentFile}"
         deployApp "${serviceFile}"
     else
@@ -169,8 +169,8 @@ function substituteVariables() {
     local variableName="${1}"
     local substitution="${2}"
     local fileName="${3}"
-    echo "Changing [${variableName}] -> [${substitution}] for file [${fileName}]"
-    sed -i 's/{{'"${variableName}"'}}/{{'"${substitution}"'}}/' ${fileName}
+    #echo "Changing [${variableName}] -> [${substitution}] for file [${fileName}]"
+    sed -i "s/{{${variableName}}}/${substitution}/" ${fileName}
 }
 
 function deleteMySql() {
