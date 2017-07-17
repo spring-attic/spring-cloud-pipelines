@@ -15,7 +15,7 @@ function logInToPaas() {
     local k8sClusterUser="${!clusterUser}"
     local api="PAAS_${ENVIRONMENT}_API_URL"
     local apiUrl="${!api:-192.168.99.100:8443}"
-    CLI_INSTALLED="$( kubectl --version || echo "false" )"
+    CLI_INSTALLED="$( kubectl version || echo "false" )"
     CLI_DOWNLOADED="$( test -r kubectl && echo "true" || echo "false" )"
     echo "CLI Installed? [${CLI_INSTALLED}], CLI Downloaded? [${CLI_DOWNLOADED}]"
     if [[ ${CLI_INSTALLED} == "false" && (${CLI_DOWNLOADED} == "false" || ${CLI_DOWNLOADED} == "true" && ${redownloadInfra} == "true") ]]; then

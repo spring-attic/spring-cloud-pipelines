@@ -9,7 +9,7 @@ import java.nio.file.*
 
 def jobScript = new File('/usr/share/jenkins/jenkins_pipeline.groovy')
 def jobManagement = new JenkinsJobManagement(System.out, [:], new File('.'))
-String jenkinsHome = '/var/jenkins_home'
+String jenkinsHome = '/root'
 
 println "Creating the settings.xml file"
 String m2Home = jenkinsHome + '/.m2'

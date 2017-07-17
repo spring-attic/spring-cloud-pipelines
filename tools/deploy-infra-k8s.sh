@@ -33,7 +33,7 @@ function deploy_project {
 	pushd "${DEST_DIR}"
 	rm -rf "${project_name}"
 	git clone "${project_repo}" "${project_name}" && cd "${project_name}"
-	./mvnw install docker:build
+	./mvnw install docker:build -Pdocker
 	popd
 }
 
