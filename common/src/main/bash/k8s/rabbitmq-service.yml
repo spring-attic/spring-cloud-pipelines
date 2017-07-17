@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     component: {{appName}}
-    environment: {{env}}
+    env: {{env}}
   name: {{appName}}
 spec:
   ports:

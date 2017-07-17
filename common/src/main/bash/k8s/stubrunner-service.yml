@@ -7,5 +7,5 @@ spec:
     - port: 8080
   selector:
     app: {{appName}}
-    environment: {{env}}
+    env: {{env}}
   type: NodePort

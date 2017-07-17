@@ -4,7 +4,7 @@ metadata:
   name: {{appName}}
   labels:
     name: {{appName}}
-    environment: {{env}}
+    env: {{env}}
     visualize: "true"
 spec:
   containers:
@@ -49,6 +49,9 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{appName}}
+  labels:
+    name: {{appName}}
+    env: {{env}}
   annotations:
     volume.beta.kubernetes.io/storage-class: pd-standard
 spec:

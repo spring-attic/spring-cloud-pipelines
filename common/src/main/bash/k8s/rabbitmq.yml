@@ -3,7 +3,7 @@ kind: ReplicationController
 metadata:
   labels:
     component: {{appName}}
-    environment: {{env}}
+    env: {{env}}
   name: {{appName}}
 spec:
   replicas: 1
