@@ -52,9 +52,9 @@ factory.job('jenkins-pipeline-seed') {
             // remove::end[CF]
             // remove::start[K8S]
             stringParam('DOCKER_REGISTRY_ORGANIZATION', 'scpipelines', 'URL to Kubernetes cluster for test env')
-            stringParam('PAAS_TEST_API_URL', '192.169.99.100:8443', 'URL to Kubernetes cluster for test env')
-            stringParam('PAAS_STAGE_API_URL', '192.169.99.100:8443', 'URL to Kubernetes cluster for stage env')
-            stringParam('PAAS_PROD_API_URL', '192.169.99.100:8443', 'URL to Kubernetes cluster for prod env')
+            stringParam('PAAS_TEST_API_URL', '192.168.99.100:8443', 'URL to Kubernetes cluster for test env')
+            stringParam('PAAS_STAGE_API_URL', '192.168.99.100:8443', 'URL to Kubernetes cluster for stage env')
+            stringParam('PAAS_PROD_API_URL', '192.168.99.100:8443', 'URL to Kubernetes cluster for prod env')
             stringParam('PAAS_TEST_CA', '/usr/share/jenkins/cert/ca.crt', "Certificate Authority location for test env")
             stringParam('PAAS_STAGE_CA', '/usr/share/jenkins/cert/ca.crt', "Certificate Authority location for stage env")
             stringParam('PAAS_PROD_CA', '/usr/share/jenkins/cert/ca.crt', "Certificate Authority location for prod env")
