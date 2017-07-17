@@ -150,6 +150,7 @@ function deployApp() {
 function deleteAppByName() {
     local serviceName="${1}"
     kubectl delete service "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete pod "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
     kubectl delete deployment "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
     kubectl delete persistentvolumeclaim "${serviceName}-${LOWER_CASE_ENV}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
     kubectl delete secret "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete secret [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
@@ -272,10 +273,8 @@ function lowerCaseEnv() {
 function deleteAppInstance() {
     local serviceName="${1}"
     local lowerCaseAppName=$( toLowerCase "${serviceName}" )
-    local APP_NAME="${lowerCaseAppName}"
-    echo "Deleting application [${APP_NAME}]"
-    kubectl delete deployment ${APP_NAME}-deployment || echo "Failed to delete app deployment. Continuing with the script"
-    kubectl delete service ${APP_NAME}-service || echo "Failed to delete app service. Continuing with the script"
+    echo "Deleting application [${lowerCaseAppName}]"
+    deleteAppByName "${lowerCaseAppName}"
 }
 
 function setEnvVarIfMissing() {
