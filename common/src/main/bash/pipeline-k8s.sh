@@ -92,13 +92,13 @@ function deployService() {
     local serviceName="${2}-${LOWER_CASE_ENV}"
     case ${serviceType} in
     RABBITMQ)
-      deployRabbitMq "${serviceName}"
+      deployRabbitMq "${serviceName}-${LOWER_CASE_ENV}"
       ;;
     MYSQL)
-      deployMySql "${serviceName}"
+      deployMySql "${serviceName}-${LOWER_CASE_ENV}"
       ;;
     EUREKA)
-      deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
+      deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}-${LOWER_CASE_ENV}" "${ENVIRONMENT}"
       ;;
     STUBRUNNER)
       deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
@@ -112,7 +112,7 @@ function deployService() {
 
 function deleteService() {
     local serviceType="${1}"
-    local serviceName="${2}"
+    local serviceName="${2}-${LOWER_CASE_ENV}"
     case ${serviceType} in
     MYSQL)
       deleteMySql "${serviceName}"
@@ -132,9 +132,9 @@ function deployRabbitMq() {
         local deploymentFile="${__ROOT}/k8s/rabbitmq.yml"
         local serviceFile="${__ROOT}/k8s/rabbitmq-service.yml"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
-        substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
+        substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
-        substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
+        substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
         deployApp "${deploymentFile}"
         deployApp "${serviceFile}"
     else
@@ -149,11 +149,11 @@ function deployApp() {
 
 function deleteAppByName() {
     local serviceName="${1}"
-    kubectl delete service "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete pod "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete deployment "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete persistentvolumeclaim "${serviceName}-${LOWER_CASE_ENV}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete secret "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete secret [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete service "${serviceName}" || echo "Failed to delete service [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
+    kubectl delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
+    kubectl delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
+    kubectl delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
+    kubectl delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
 }
 
 function deleteAppByFile() {
@@ -184,13 +184,13 @@ function deployMySql() {
         local deploymentFile="${__ROOT}/k8s/mysql.yml"
         local serviceFile="${__ROOT}/k8s/mysql-service.yml"
         echo "Generating secret with name [${serviceName}]"
-        kubectl create secret generic "${serviceName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
-        kubectl label secrets "${serviceName}" env="${ENVIRONMENT}"
+        kubectl create secret generic "${serviceName}-${LOWER_CASE_ENV}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
+        kubectl label secrets "${serviceName}-${LOWER_CASE_ENV}" env="${LOWER_CASE_ENV}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
-        substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
+        substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
-        substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
+        substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
         deployApp "${deploymentFile}"
         deployApp "${serviceFile}"
     else
@@ -201,7 +201,7 @@ function deployMySql() {
 function deployAndRestartAppWithName() {
     local appName="${1}"
     local jarName="${2}"
-    local env="${ENVIRONMENT}"
+    local env="${LOWER_CASE_ENV}"
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
     deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
     restartApp "${appName}"
@@ -223,13 +223,13 @@ function deployAndRestartAppWithNameForSmokeTests() {
     systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "appName" "${serviceName}" "${deploymentFile}"
-    substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
+    substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     substituteVariables "appName" "${serviceName}" "${serviceFile}"
-    substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
+    substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
-    kubectl label deployment "${serviceName}" env="${ENVIRONMENT}"
-    kubectl label service "${serviceName}" env="${ENVIRONMENT}"
+    kubectl label deployment "${serviceName}" env="${LOWER_CASE_ENV}"
+    kubectl label service "${serviceName}" env="${LOWER_CASE_ENV}"
 }
 
 function deployAppWithName() {
@@ -340,6 +340,9 @@ function deployStubRunnerBoot() {
     local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
     local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
+    substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
+    substituteVariables "rabbitAppName" "${rabbitName}" "${deploymentFile}"
+    substituteVariables "eurekaAppName" "${eurekaName}" "${deploymentFile}"
     substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
     substituteVariables "env" "${env}" "${deploymentFile}"
     substituteVariables "systemOpts" "${systemOpts}" "${deploymentFile}"
