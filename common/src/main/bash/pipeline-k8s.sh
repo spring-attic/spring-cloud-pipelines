@@ -89,7 +89,7 @@ function testRollbackDeploy() {
 
 function deployService() {
     local serviceType="${1}"
-    local serviceName="${2}-${ENVIRONMENT}"
+    local serviceName="${2}-${LOWER_CASE_ENV}"
     case ${serviceType} in
     RABBITMQ)
       deployRabbitMq "${serviceName}"
@@ -149,10 +149,10 @@ function deployApp() {
 
 function deleteAppByName() {
     local serviceName="${1}"
-    kubectl delete service "${serviceName}-${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete deployment "${serviceName}-${ENVIRONMENT}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete persistentvolumeclaim "${serviceName}-${ENVIRONMENT}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete secret "${serviceName}-${ENVIRONMENT}" || echo "Failed to delete secret [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete service "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete deployment "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete persistentvolumeclaim "${serviceName}-${LOWER_CASE_ENV}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete secret "${serviceName}-${LOWER_CASE_ENV}" || echo "Failed to delete secret [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
 }
 
 function deleteAppByFile() {
@@ -206,13 +206,13 @@ function deployAndRestartAppWithName() {
 }
 
 function deployAndRestartAppWithNameForSmokeTests() {
-    local appName="${1}-${ENVIRONMENT}"
+    local appName="${1}-${LOWER_CASE_ENV}"
     local jarName="${2}"
-    local rabbitName="rabbitmq-${appName}-${ENVIRONMENT}"
-    local eurekaName="eureka-${appName}-${ENVIRONMENT}"
-    local mysqlName="mysql-${appName}-${ENVIRONMENT}"
+    local rabbitName="rabbitmq-${appName}-${LOWER_CASE_ENV}"
+    local eurekaName="eureka-${appName}-${LOWER_CASE_ENV}"
+    local mysqlName="mysql-${appName}-${LOWER_CASE_ENV}"
     local profiles="cloud,smoke"
-    local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
+    local lowerCaseAppName=$( toLowerCase "${appName}" )
     local deploymentFile="deployment.yml"
     local serviceFile="service.yml"
     deleteAppByFile "${deploymentFile}"
@@ -236,7 +236,7 @@ function deployAppWithName() {
     local env="${3}"
     local useManifest="${4:-false}"
     local manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo "--no-manifest"; else echo "" ; fi )
-    local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
+    local lowerCaseAppName=$( toLowerCase "${appName}" )
     local hostname="${lowerCaseAppName}"
     local memory="${APP_MEMORY_LIMIT:-256m}"
     local buildPackUrl="${JAVA_BUILDPACK_URL:-https://github.com/cloudfoundry/java-buildpack.git#v3.8.1}"
@@ -258,9 +258,19 @@ function deployAppWithName() {
     setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
 }
 
+function toLowerCase() {
+    local string=${1}
+    echo "${appName}" | tr '[:upper:]' '[:lower:]'
+}
+
+function lowerCaseEnv() {
+    local string=${1}
+    echo "${ENVIRONMENT}" | tr '[:upper:]' '[:lower:]'
+}
+
 function deleteAppInstance() {
     local serviceName="${1}"
-    local lowerCaseAppName=$( echo "${serviceName}" | tr '[:upper:]' '[:lower:]' )
+    local lowerCaseAppName=$( toLowerCase "${serviceName}" )
     local APP_NAME="${lowerCaseAppName}"
     echo "Deleting application [${APP_NAME}]"
     kubectl delete deployment ${APP_NAME}-deployment || echo "Failed to delete app deployment. Continuing with the script"
@@ -463,6 +473,7 @@ else
 fi
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export LOWER_CASE_ENV=$( lowerCaseEnv )
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 [[ -f "${__ROOT}/projectType/pipeline-jvm.sh" ]] && source "${__ROOT}/projectType/pipeline-jvm.sh" || \
