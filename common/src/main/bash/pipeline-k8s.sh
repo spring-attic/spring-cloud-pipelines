@@ -69,7 +69,7 @@ function testDeploy() {
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
 
     # deploy app
-    deployAndRestartAppWithNameForSmokeTests ${appName} "${appName}-${PIPELINE_VERSION}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+    deployAndRestartAppWithNameForSmokeTests ${appName} "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
 }
 
 function testRollbackDeploy() {
@@ -209,27 +209,28 @@ function deployAndRestartAppWithName() {
 
 function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}-${LOWER_CASE_ENV}"
-    local jarName="${2}"
-    local rabbitName="rabbitmq-${appName}-${LOWER_CASE_ENV}"
-    local eurekaName="eureka-${appName}-${LOWER_CASE_ENV}"
-    local mysqlName="mysql-${appName}-${LOWER_CASE_ENV}"
+    local rabbitName="${2}"
+    local eurekaName="${3}"
+    local mysqlName="${4}"
     local profiles="cloud,smoke"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local deploymentFile="deployment.yml"
     local serviceFile="service.yml"
     deleteAppByFile "${deploymentFile}"
     deleteAppByFile "${serviceFile}"
-    local systemOpts="-Dspring.profiles.active=${profiles}"
-    systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
+    local systemProps="-Dspring.profiles.active=${profiles}"
+    systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
-    substituteVariables "appName" "${serviceName}" "${deploymentFile}"
+    substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
+    substituteVariables "appName" "${appName}" "${deploymentFile}"
+    substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
-    substituteVariables "appName" "${serviceName}" "${serviceFile}"
+    substituteVariables "appName" "${appName}" "${serviceFile}"
     substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
-    kubectl label deployment "${serviceName}" env="${LOWER_CASE_ENV}"
-    kubectl label service "${serviceName}" env="${LOWER_CASE_ENV}"
+    kubectl label deployment "${appName}" env="${LOWER_CASE_ENV}"
+    kubectl label service "${appName}" env="${LOWER_CASE_ENV}"
 }
 
 function deployAppWithName() {
