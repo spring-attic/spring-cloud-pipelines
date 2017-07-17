@@ -169,8 +169,8 @@ function substituteVariables() {
     local variableName="${1}"
     local substitution="${2}"
     local fileName="${3}"
-    echo "Changing [${variableName}] -> [${substitution}]"
-    sed -i "s/{{${variableName}}}/{{${substitution}}}/" ${fileName}
+    echo "Changing [${variableName}] -> [${substitution}] for file [${file}]"
+    sed -i 's/{{'"${variableName}"'}}/{{'"${substitution}"'}}/' ${fileName}
 }
 
 function deleteMySql() {
