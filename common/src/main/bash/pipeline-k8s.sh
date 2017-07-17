@@ -464,11 +464,11 @@ function deleteBlueInstance() {
     fi
 }
 
-#if [[ ! -z "${BUILD_OPTIONS}" ]]; then
-#    export BUILD_OPTIONS="${BUILD_OPTIONS} -Ddocker.image.prefix='${DOCKER_REGISTRY_ORGANIZATION}' -DdockerImageTags='${PIPELINE_VERSION}'"
-#else
-#    export BUILD_OPTIONS="-Ddocker.image.prefix='${DOCKER_REGISTRY_ORGANIZATION}' -DdockerImageTags='${PIPELINE_VERSION}'"
-#fi
+if [[ ! -z "${BUILD_OPTIONS}" ]]; then
+    export BUILD_OPTIONS="${BUILD_OPTIONS} -Ddocker.image.prefix='${DOCKER_REGISTRY_ORGANIZATION}' -DdockerImageTags='${PIPELINE_VERSION}'"
+else
+    export BUILD_OPTIONS="-Ddocker.image.prefix='${DOCKER_REGISTRY_ORGANIZATION}' -DdockerImageTags='${PIPELINE_VERSION}'"
+fi
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

@@ -670,6 +670,7 @@ class PipelineDefaults {
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
 		Map<String, String> envs = [:]
 		envs['PAAS_TYPE'] = variables['PAAS_TYPE'] ?: 'cf'
+		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
 		// remove::start[CF]
 		// TODO: Remove it via task
 		/*envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: 'api.local.pcfdev.io'
@@ -682,7 +683,6 @@ class PipelineDefaults {
 		envs['PAAS_PROD_ORG'] = variables['PAAS_PROD_ORG'] ?: 'pcfdev-org'
 		envs['PAAS_PROD_SPACE'] = variables['PAAS_PROD_SPACE'] ?: 'pfcdev-prod'
 		envs['PAAS_HOSTNAME_UUID'] = variables['PAAS_HOSTNAME_UUID'] ?: ''
-		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
 		envs['REPO_WITH_BINARIES'] = variables['REPO_WITH_BINARIES'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
 		envs['APP_MEMORY_LIMIT'] = variables['APP_MEMORY_LIMIT'] ?: '256m'
 		envs['JAVA_BUILDPACK_URL'] = variables['JAVA_BUILDPACK_URL'] ?: 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1'*/
