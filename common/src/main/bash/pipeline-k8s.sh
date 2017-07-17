@@ -32,14 +32,14 @@ function logInToPaas() {
         chmod +x kubectl
     fi
 
-    echo "CLI version"
-    kubectl version
-
     echo "Logging in to Kubernetes API [${api}], with cluster name [${k8sClusterName}] and user [${k8sClusterUser}]"
     kubectl config set-cluster default-cluster --server=https://${apiUrl} --certificate-authority=${k8sCa}
     kubectl config set-credentials default-admin --certificate-authority=${k8sCa} --client-key=${k8sClientKey} --client-certificate=${k8sClientCert}
     kubectl config set-context default-system --cluster=${k8sClusterName} --user=${k8sClusterUser}
     kubectl config use-context default-system
+
+    echo "CLI version"
+    kubectl version
 }
 
 function testDeploy() {
