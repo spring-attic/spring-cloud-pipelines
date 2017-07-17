@@ -100,10 +100,10 @@ function deployService() {
       deployMySql "${serviceName}"
       ;;
     EUREKA)
-      deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
+      deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
     STUBRUNNER)
-      deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
+      deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
       ;;
     *)
       echo "Unknown service"
@@ -297,7 +297,7 @@ function deployEureka() {
     local imageName="${2}"
     local appName="${3}"
     local env="${4}"
-    echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${imageName}], app name [${appName}], env [${env}]"
+    echo "Deploying Eureka. Options - redeploy [${redeploy}], image name [${imageName}], app name [${appName}], env [${env}]"
     if [[ "${redeploy}" == "true" ]]; then
         local deploymentFile="${__ROOT}/k8s/eureka.yml"
         local serviceFile="${__ROOT}/k8s/eureka-service.yml"
@@ -463,6 +463,13 @@ function deleteBlueInstance() {
         echo "Will not remove the old application cause it's not there"
     fi
 }
+
+# docker.image.prefix
+if [[ ! -z "${BUILD_OPTIONS}" ]]; then
+    export BUILD_OPTIONS="${BUILD_OPTIONS} -Ddocker.image.prefix=${DOCKER_REGISTRY_ORGANIZATION} -DdockerImageTags=${PIPELINE_VERSION}"
+else
+    export BUILD_OPTIONS="-Ddocker.image.prefix=${DOCKER_REGISTRY_ORGANIZATION} -DdockerImageTags=${PIPELINE_VERSION}"
+fi
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
