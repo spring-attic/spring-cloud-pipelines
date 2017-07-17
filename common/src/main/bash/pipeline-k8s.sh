@@ -172,6 +172,7 @@ function substituteVariables() {
 
 function deleteMySql() {
     local serviceName="${1:-mysql-github}"
+    echo "Deleting all mysql related services with name [${serviceName}]"
     deleteAppByName ${serviceName}
 }
 
@@ -182,7 +183,7 @@ function deployMySql() {
     if [[ "${foundApp}" == "" ]]; then
         local deploymentFile="${__ROOT}/k8s/mysql.yml"
         local serviceFile="${__ROOT}/k8s/mysql-service.yml"
-        echo "Generating secret"
+        echo "Generating secret with name [${appName}]"
         kubectl create secret generic "${appName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
         kubectl label secrets "${appName}" env="${ENVIRONMENT}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
