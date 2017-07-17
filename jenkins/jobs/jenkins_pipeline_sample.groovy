@@ -740,9 +740,9 @@ class PipelineDefaults {
 			// remove::end[CF]
 			// remove::start[K8S]
 			stringParam('EUREKA_ARTIFACT_ID', 'scpipelines/github-eureka', "Name of image with Eureka used by tests")
-			stringParam('EUREKA_VERSION', 'LATEST', "Image version for Eureka used by tests")
+			stringParam('EUREKA_VERSION', 'latest', "Image version for Eureka used by tests")
 			stringParam('STUBRUNNER_ARTIFACT_ID', 'scpipelines/github-analytics-stub-runner-boot-classpath-stubs', "Name of image with Stub Runner used by tests")
-			stringParam('STUBRUNNER_VERSION', 'LATEST', "Image Version for Stub Runner used by tests")
+			stringParam('STUBRUNNER_VERSION', 'latest', "Image Version for Stub Runner used by tests")
 			// remove::end[K8S]
 		}
 	}
