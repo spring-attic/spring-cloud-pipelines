@@ -707,6 +707,9 @@ class PipelineDefaults {
 		envs['PAAS_TEST_CLUSTER_USERNAME'] = variables['PAAS_TEST_CLUSTER_USERNAME'] ?: 'minikube'
 		envs['PAAS_STAGE_CLUSTER_USERNAME'] = variables['PAAS_STAGE_CLUSTER_USERNAME'] ?: 'minikube'
 		envs['PAAS_PROD_CLUSTER_USERNAME'] = variables['PAAS_PROD_CLUSTER_USERNAME'] ?: 'minikube'
+		envs['PAAS_TEST_SYSTEM_NAME'] = variables['PAAS_TEST_SYSTEM_NAME'] ?: 'minikube'
+		envs['PAAS_STAGE_SYSTEM_NAME'] = variables['PAAS_STAGE_SYSTEM_NAME'] ?: 'minikube'
+		envs['PAAS_PROD_SYSTEM_NAME'] = variables['PAAS_PROD_SYSTEM_NAME'] ?: 'minikube'
 		// remove::end[K8S]
 		return envs
 	}

@@ -70,6 +70,9 @@ factory.job('jenkins-pipeline-seed') {
             stringParam('PAAS_TEST_CLUSTER_USERNAME', 'minikube', "Username for the cluster for test env")
             stringParam('PAAS_STAGE_CLUSTER_USERNAME', 'minikube', "Username for the cluster for stage env")
             stringParam('PAAS_PROD_CLUSTER_USERNAME', 'minikube', "Username for the cluster for prod env")
+            stringParam('PAAS_TEST_SYSTEM_NAME', 'minikube', "Name for the system for test env")
+            stringParam('PAAS_STAGE_SYSTEM_NAME', 'minikube', "Name for the system for stage env")
+            stringParam('PAAS_PROD_SYSTEM_NAME', 'minikube', "Name for the system for prod env")
             // remove::end[K8S]
         }
     }
