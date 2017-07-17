@@ -35,15 +35,15 @@ case $1 in
 		;;
 
 	delete-all-test-apps)
-		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets --all -l environment=test
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets -l env=TEST
 		;;
 
 	delete-all-stage-apps)
-		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets --all -l environment=stage
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets -l env=STAGE
 		;;
 
 	delete-all-prod-apps)
-		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets --all -l environment=prod
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets -l env=PROD
 		;;
 
 	*)

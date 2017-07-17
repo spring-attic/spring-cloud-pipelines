@@ -149,10 +149,10 @@ function deployApp() {
 
 function deleteAppByName() {
     local serviceName="${1}"
-    kubectl delete service ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete deployment ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete persistentvolumeclaim ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
-    kubectl delete secret ${serviceName} -l environment="${ENVIRONMENT}" || echo "Failed to delete secret [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete service ${serviceName} -l env="${ENVIRONMENT}" || echo "Failed to delete service [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete deployment ${serviceName} -l env="${ENVIRONMENT}" || echo "Failed to delete deployment [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete persistentvolumeclaim ${serviceName} -l env="${ENVIRONMENT}" || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
+    kubectl delete secret ${serviceName} -l env="${ENVIRONMENT}" || echo "Failed to delete secret [${serviceName}] for env [${ENVIRONMENT}]. Continuing with the script"
 }
 
 function deleteAppByFile() {
@@ -226,6 +226,8 @@ function deployAndRestartAppWithNameForSmokeTests() {
     substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
+    kubectl label deployment "${serviceName}" env="${ENVIRONMENT}"
+    kubectl label service "${serviceName}" env="${ENVIRONMENT}"
 }
 
 function deployAppWithName() {
