@@ -89,7 +89,7 @@ function testRollbackDeploy() {
 
 function deployService() {
     local serviceType="${1}"
-    local serviceName="${2}-${LOWER_CASE_ENV}"
+    local serviceName="${2}"
     case ${serviceType} in
     RABBITMQ)
       deployRabbitMq "${serviceName}"
@@ -149,11 +149,11 @@ function deployApp() {
 
 function deleteAppByName() {
     local serviceName="${1}"
-    kubectl delete service "${serviceName}" || echo "Failed to delete service [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
-    kubectl delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
-    kubectl delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
-    kubectl delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
-    kubectl delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}] for env [${LOWER_CASE_ENV}]. Continuing with the script"
+    kubectl delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
+    kubectl delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
+    kubectl delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
+    kubectl delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] . Continuing with the script"
+    kubectl delete service "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
 }
 
 function deleteAppByFile() {
@@ -472,10 +472,11 @@ function deleteBlueInstance() {
     fi
 }
 
+DOCKER_BUILD_OPTIONS="-Ddocker.image.prefix=${DOCKER_REGISTRY_ORGANIZATION} -DdockerImageTags=${PIPELINE_VERSION} -DdockerImageTags=latest"
 if [[ ! -z "${BUILD_OPTIONS}" ]]; then
-    export BUILD_OPTIONS="${BUILD_OPTIONS} -Ddocker.image.prefix=${DOCKER_REGISTRY_ORGANIZATION} -DdockerImageTags=${PIPELINE_VERSION}"
+    export BUILD_OPTIONS="${BUILD_OPTIONS} ${DOCKER_BUILD_OPTIONS}"
 else
-    export BUILD_OPTIONS="-Ddocker.image.prefix=${DOCKER_REGISTRY_ORGANIZATION} -DdockerImageTags=${PIPELINE_VERSION}"
+    export BUILD_OPTIONS="${DOCKER_BUILD_OPTIONS}"
 fi
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
