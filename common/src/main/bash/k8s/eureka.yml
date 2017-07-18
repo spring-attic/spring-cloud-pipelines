@@ -20,9 +20,9 @@ spec:
             value: "8080"
           - name: eureka_client_serviceUrl_defaultZone
             value: "http://{{appName}}:8761/eureka/"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8761
-            initialDelaySeconds: 30
-            periodSeconds: 3
+#          livenessProbe:
+#            httpGet:
+#              path: /health
+#              port: 8761
+#            initialDelaySeconds: 30
+#            periodSeconds: 3
