@@ -37,18 +37,18 @@ spec:
           name: mysql
       volumeMounts:
           # name must match the volume name below
-        - name: {{appName}}
+        - name: {{appName}}-persistent-storage
           # mount path within the container
           mountPath: /var/lib/mysql
   volumes:
-    - name: {{appName}}
+    - name: {{appName}}-persistent-storage
       persistentVolumeClaim:
-        claimName: {{appName}}
+        claimName: {{appName}}-pvc
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{appName}}
+  name: {{appName}}-pvc
   labels:
     name: {{appName}}
     env: {{env}}
