@@ -56,16 +56,16 @@ function testDeploy() {
 
     # TODO: Consider picking services and apps from file
     # services
-    export UNIQUE_RABBIT_NAME="rabbitmq-${appName}"
+    export UNIQUE_RABBIT_NAME="rabbitmq-${appName}-${LOWER_CASE_ENV}"
     deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
-    export UNIQUE_MYSQL_NAME="mysql-${appName}"
+    export UNIQUE_MYSQL_NAME="mysql-${appName}-${LOWER_CASE_ENV}"
     deleteService "MYSQL" "${UNIQUE_MYSQL_NAME}"
     deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
 
     # dependant apps
-    export UNIQUE_EUREKA_NAME="eureka-${appName}"
+    export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
-    export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}"
+    export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}-${LOWER_CASE_ENV}"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
 
     # deploy app

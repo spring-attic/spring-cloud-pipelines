@@ -7,8 +7,8 @@ spec:
   template:
       metadata:
         labels:
-            app: {{appName}}
-            env: {{env}}
+          name: {{appName}}
+          env: {{env}}
       spec:
         containers:
         - name: {{appName}}
