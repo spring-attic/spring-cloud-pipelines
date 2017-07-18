@@ -52,22 +52,22 @@ function testDeploy() {
     logInToPaas
 
     # First delete the app instance to remove all bindings
-    deleteAppInstance
+    deleteAppInstance "${appName}"
 
     # TODO: Consider picking services and apps from file
     # services
     export UNIQUE_RABBIT_NAME="rabbitmq-${appName}-${LOWER_CASE_ENV}"
     deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
     export UNIQUE_MYSQL_NAME="mysql-${appName}-${LOWER_CASE_ENV}"
-    deleteService "MYSQL"
+    deleteService "MYSQL" "${UNIQUE_MYSQL_NAME}"
     deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
 
     # dependant apps
     export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
-    deleteService "EUREKA"
+    deleteService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}-${LOWER_CASE_ENV}"
-    deleteService "STUBRUNNER"
+    deleteService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
 
     # deploy app
@@ -114,21 +114,18 @@ function deployService() {
 
 function deleteService() {
     local serviceType="${1}"
-    case ${serviceType} in
-    MYSQL)
-      deleteMySql
-      ;;
-    EUREKA)
-      deleteEureka
-      ;;
-    STUBRNUNER)
-      deleteStubRunner
-      ;;
-    *)
-      echo "Unknown service"
-      return 1
-      ;;
-    esac
+    local serviceName="${2}"
+    echo "Deleting all mysql related services with name [${serviceName}]"
+#    case ${serviceType} in
+#    MYSQL)
+#        deleteAppByName ${serviceName}
+#      ;;
+#    *)
+#      echo "Unknown service"
+#      return 1
+#      ;;
+#    esac
+    deleteAppByName ${serviceName}
 }
 
 function deployRabbitMq() {
@@ -154,9 +151,18 @@ function deployApp() {
     kubectl create -f "${fileName}"
 }
 
+function deleteAppByName() {
+    local serviceName="${1}"
+    kubectl delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
+    kubectl delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
+    kubectl delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
+    kubectl delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] . Continuing with the script"
+    kubectl delete service "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
+}
+
 function deleteAppByFile() {
     local file="${1}"
-    kubectl delete -f ${file} || echo "Failed to delete app by file [${file}]. Continuing with the script"
+    kubectl delete -f ${file} || echo "Failed to delete ${file}. Continuing with the script"
 }
 
 function substituteVariables() {
@@ -169,24 +175,9 @@ function substituteVariables() {
 }
 
 function deleteMySql() {
-    local deploymentFile="${__ROOT}/k8s/mysql.yml"
-    local serviceFile="${__ROOT}/k8s/mysql-service.yml"
-    deleteAppByFile ${deploymentFile}
-    deleteAppByFile ${serviceFile}
-}
-
-function deleteEureka() {
-    local deploymentFile="${__ROOT}/k8s/eureka.yml"
-    local serviceFile="${__ROOT}/k8s/eureka-service.yml"
-    deleteAppByFile ${deploymentFile}
-    deleteAppByFile ${serviceFile}
-}
-
-function deleteStubRunner() {
-    local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
-    local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
-    deleteAppByFile ${deploymentFile}
-    deleteAppByFile ${serviceFile}
+    local serviceName="${1:-mysql-github}"
+    echo "Deleting all mysql related services with name [${serviceName}]"
+    deleteAppByName ${serviceName}
 }
 
 function deployMySql() {
@@ -285,8 +276,10 @@ function lowerCaseEnv() {
 }
 
 function deleteAppInstance() {
-    deleteAppByFile "deployment.yml"
-    deleteAppByFile  "service.yml"
+    local serviceName="${1}"
+    local lowerCaseAppName=$( toLowerCase "${serviceName}" )
+    echo "Deleting application [${lowerCaseAppName}]"
+    deleteAppByName "${lowerCaseAppName}"
 }
 
 function setEnvVarIfMissing() {
