@@ -222,7 +222,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local rabbitName="${2}"
     local eurekaName="${3}"
     local mysqlName="${4}"
-    local profiles="cloud,smoke"
+    local profiles="smoke"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local deploymentFile="deployment.yml"
     local serviceFile="service.yml"
