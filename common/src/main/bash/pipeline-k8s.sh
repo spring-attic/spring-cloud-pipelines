@@ -220,8 +220,6 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local deploymentFile="deployment.yml"
     local serviceFile="service.yml"
-    deleteAppByFile "${deploymentFile}"
-    deleteAppByFile "${serviceFile}"
     local systemProps="-Dspring.profiles.active=${profiles}"
     systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaName}"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
