@@ -98,7 +98,7 @@ function deployService() {
       deployMySql "${serviceName}"
       ;;
     EUREKA)
-      deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}-${LOWER_CASE_ENV}" "${ENVIRONMENT}"
+      deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
     STUBRUNNER)
       deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
@@ -112,7 +112,7 @@ function deployService() {
 
 function deleteService() {
     local serviceType="${1}"
-    local serviceName="${2}-${LOWER_CASE_ENV}"
+    local serviceName="${2}"
     case ${serviceType} in
     MYSQL)
       deleteMySql "${serviceName}"
