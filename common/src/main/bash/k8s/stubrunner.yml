@@ -19,11 +19,13 @@ spec:
           - name: PORT
             value: "8080"
           - name: SPRING_RABBITMQ_ADDRESSES
-            value: "{{rabbitAppName}}-service"
+            value: "{{rabbitAppName}}"
           - name: eureka_client_serviceUrl_defaultZone
             value: "http://{{eurekaAppName}}:8761/eureka/"
           - name: STUBRUNNER_IDS
             value: "{{stubrunnerIds}}"
+          - name: STUBRUNNER_REPOSITORY_ROOT
+            value: "{{repoWithJars}}"
           livenessProbe:
             httpGet:
               path: /health

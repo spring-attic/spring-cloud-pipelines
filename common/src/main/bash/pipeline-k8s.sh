@@ -66,9 +66,13 @@ function testDeploy() {
     export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
     deleteService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
+    # TODO: TERRIBLE :|
+    sleep 30
     export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}-${LOWER_CASE_ENV}"
     deleteService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
+    # TODO: TERRIBLE :|
+    sleep 30
 
     # deploy app
     deployAndRestartAppWithNameForSmokeTests ${appName} "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
@@ -225,7 +229,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
-    substituteVariables "systemProps" "\"${systemProps}\"" "${deploymentFile}"
+    substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
@@ -335,22 +339,23 @@ function deployStubRunnerBoot() {
     echo "Deploying Stub Runner. Options - image name [${imageName}], app name [${stubRunnerName}]"
     local prop="$( retrieveStubRunnerIds )"
     echo "Found following stub runner ids [${prop}]"
-    local systemOpts=""
-    if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
-        systemOpts="${systemOpts} -Dstubrunner.repositoryRoot=${repoWithJars}"
-    fi
-    systemOpts="${systemOpts} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaAppName}"
     local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
     local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
+    if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
+        substituteVariables "repoWithJars" "${repoWithJars}" "${deploymentFile}"
+    else
+        substituteVariables "repoWithJars" "" "${deploymentFile}"
+    fi
     substituteVariables "appName" "${stubRunnerName}" "${deploymentFile}"
     substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
     substituteVariables "rabbitAppName" "${rabbitName}" "${deploymentFile}"
     substituteVariables "eurekaAppName" "${eurekaName}" "${deploymentFile}"
     substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
     substituteVariables "env" "${env}" "${deploymentFile}"
-    substituteVariables "systemOpts" "${systemOpts}" "${deploymentFile}"
     if [[ "${prop}" == "false" ]]; then
         substituteVariables "stubrunnerIds" "${prop}" "${deploymentFile}"
+    else
+        substituteVariables "stubrunnerIds" "" "${deploymentFile}"
     fi
     substituteVariables "appName" "${stubRunnerName}" "${serviceFile}"
     substituteVariables "env" "${env}" "${serviceFile}"
