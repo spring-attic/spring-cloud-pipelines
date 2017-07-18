@@ -472,7 +472,7 @@ function deleteBlueInstance() {
     fi
 }
 
-DOCKER_BUILD_OPTIONS="-Ddocker.image.prefix=${DOCKER_REGISTRY_ORGANIZATION} -DdockerImageTags=${PIPELINE_VERSION} -DdockerImageTags=latest"
+DOCKER_BUILD_OPTIONS="docker:build -DpushImage -Ddocker.image.prefix=${DOCKER_REGISTRY_ORGANIZATION} -DdockerImageTags=${PIPELINE_VERSION} -DdockerImageTags=latest"
 if [[ ! -z "${BUILD_OPTIONS}" ]]; then
     export BUILD_OPTIONS="${BUILD_OPTIONS} ${DOCKER_BUILD_OPTIONS}"
 else
