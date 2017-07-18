@@ -158,7 +158,7 @@ function deployApp() {
 function deleteAppByName() {
     local serviceName="${1}"
     kubectl delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
-    kubectl delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
+    kubectl delete persistentvolumeclaim "${serviceName}-pvc"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
     kubectl delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
     kubectl delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] . Continuing with the script"
     kubectl delete service "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
