@@ -472,13 +472,6 @@ function deleteBlueInstance() {
     fi
 }
 
-DOCKER_BUILD_OPTIONS="-DpushImage -Ddocker.image.prefix=${DOCKER_REGISTRY_ORGANIZATION} -DdockerImageTags=${PIPELINE_VERSION} -DdockerImageTags=latest"
-if [[ ! -z "${BUILD_OPTIONS}" ]]; then
-    export BUILD_OPTIONS="${BUILD_OPTIONS} ${DOCKER_BUILD_OPTIONS}"
-else
-    export BUILD_OPTIONS="${DOCKER_BUILD_OPTIONS}"
-fi
-
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export LOWER_CASE_ENV=$( lowerCaseEnv )
 
@@ -495,8 +488,10 @@ function build() {
 
     ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${BUILD_OPTIONS}
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean package docker:build docker:tag -Dimage="${DOCKER_REGISTRY_ORGANIZATION}/${appName}" -DnewName="${DOCKER_REGISTRY_ORGANIZATION}/${appName}:${PIPELINE_VERSION}" -DpushTags ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./mvnw clean package docker:build docker:tag -Dimage="${DOCKER_REGISTRY_ORGANIZATION}/${appName}" -DnewName="${DOCKER_REGISTRY_ORGANIZATION}/${appName}:${PIPELINE_VERSION}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./mvnw docker:push ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
     else
-        ./mvnw clean package docker:build docker:tag -Dimage="${DOCKER_REGISTRY_ORGANIZATION}/${appName}" -DnewName="${DOCKER_REGISTRY_ORGANIZATION}/${appName}:${PIPELINE_VERSION}" -DpushTags ${BUILD_OPTIONS}
+        ./mvnw clean package docker:build docker:tag -Dimage="${DOCKER_REGISTRY_ORGANIZATION}/${appName}" -DnewName="${DOCKER_REGISTRY_ORGANIZATION}/${appName}:${PIPELINE_VERSION}" ${BUILD_OPTIONS}
+        ./mvnw docker:push ${BUILD_OPTIONS}
     fi
 }
