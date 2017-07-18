@@ -485,3 +485,17 @@ export LOWER_CASE_ENV=$( lowerCaseEnv )
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 [[ -f "${__ROOT}/projectType/pipeline-jvm.sh" ]] && source "${__ROOT}/projectType/pipeline-jvm.sh" || \
     echo "No projectType/pipeline-jvm.sh found"
+
+# TODO: MOve this back to pipeline-jvm
+# OVerriding default building options
+
+function build() {
+    echo "Additional Build Options [${BUILD_OPTIONS}]"
+
+    ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${BUILD_OPTIONS}
+    if [[ "${CI}" == "CONCOURSE" ]]; then
+        ./mvnw clean package docker:build ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+    else
+        ./mvnw clean package docker:build ${BUILD_OPTIONS} ${BUILD_OPTIONS}
+    fi
+}
