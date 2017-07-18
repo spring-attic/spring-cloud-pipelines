@@ -52,20 +52,22 @@ function testDeploy() {
     logInToPaas
 
     # First delete the app instance to remove all bindings
-    deleteAppInstance "${appName}"
+    deleteAppInstance
 
     # TODO: Consider picking services and apps from file
     # services
     export UNIQUE_RABBIT_NAME="rabbitmq-${appName}-${LOWER_CASE_ENV}"
     deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
     export UNIQUE_MYSQL_NAME="mysql-${appName}-${LOWER_CASE_ENV}"
-    deleteService "MYSQL" "${UNIQUE_MYSQL_NAME}"
+    deleteService "MYSQL"
     deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
 
     # dependant apps
     export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
+    deleteService "EUREKA"
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}-${LOWER_CASE_ENV}"
+    deleteService "STUBRUNNER"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
 
     # deploy app
@@ -112,10 +114,15 @@ function deployService() {
 
 function deleteService() {
     local serviceType="${1}"
-    local serviceName="${2}"
     case ${serviceType} in
     MYSQL)
-      deleteMySql "${serviceName}"
+      deleteMySql
+      ;;
+    EUREKA)
+      deleteEureka
+      ;;
+    STUBRNUNER)
+      deleteStubRunner
       ;;
     *)
       echo "Unknown service"
@@ -147,18 +154,9 @@ function deployApp() {
     kubectl create -f "${fileName}"
 }
 
-function deleteAppByName() {
-    local serviceName="${1}"
-    kubectl delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
-    kubectl delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
-    kubectl delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
-    kubectl delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] . Continuing with the script"
-    kubectl delete service "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
-}
-
 function deleteAppByFile() {
     local file="${1}"
-    kubectl delete -f ${file} || echo "Failed to delete ${file}. Continuing with the script"
+    kubectl delete -f ${file} || echo "Failed to delete app by file [${file}]. Continuing with the script"
 }
 
 function substituteVariables() {
@@ -171,9 +169,24 @@ function substituteVariables() {
 }
 
 function deleteMySql() {
-    local serviceName="${1:-mysql-github}"
-    echo "Deleting all mysql related services with name [${serviceName}]"
-    deleteAppByName ${serviceName}
+    local deploymentFile="${__ROOT}/k8s/mysql.yml"
+    local serviceFile="${__ROOT}/k8s/mysql-service.yml"
+    deleteAppByFile ${deploymentFile}
+    deleteAppByFile ${serviceFile}
+}
+
+function deleteEureka() {
+    local deploymentFile="${__ROOT}/k8s/eureka.yml"
+    local serviceFile="${__ROOT}/k8s/eureka-service.yml"
+    deleteAppByFile ${deploymentFile}
+    deleteAppByFile ${serviceFile}
+}
+
+function deleteStubRunner() {
+    local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
+    local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
+    deleteAppByFile ${deploymentFile}
+    deleteAppByFile ${serviceFile}
 }
 
 function deployMySql() {
@@ -272,10 +285,8 @@ function lowerCaseEnv() {
 }
 
 function deleteAppInstance() {
-    local serviceName="${1}"
-    local lowerCaseAppName=$( toLowerCase "${serviceName}" )
-    echo "Deleting application [${lowerCaseAppName}]"
-    deleteAppByName "${lowerCaseAppName}"
+    deleteAppByFile "deployment.yml"
+    deleteAppByFile  "service.yml"
 }
 
 function setEnvVarIfMissing() {
