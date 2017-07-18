@@ -490,12 +490,13 @@ export LOWER_CASE_ENV=$( lowerCaseEnv )
 # OVerriding default building options
 
 function build() {
+    appName=$( retrieveAppName )
     echo "Additional Build Options [${BUILD_OPTIONS}]"
 
     ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${BUILD_OPTIONS}
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean package docker:build ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./mvnw clean package docker:build docker:tag -Dimage="${DOCKER_REGISTRY_ORGANIZATION}/${appName}" -DnewName="${DOCKER_REGISTRY_ORGANIZATION}/${appName}:${PIPELINE_VERSION}" -DpushTags ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
     else
-        ./mvnw clean package docker:build ${BUILD_OPTIONS} ${BUILD_OPTIONS}
+        ./mvnw clean package docker:build docker:tag -Dimage="${DOCKER_REGISTRY_ORGANIZATION}/${appName}" -DnewName="${DOCKER_REGISTRY_ORGANIZATION}/${appName}:${PIPELINE_VERSION}" -DpushTags ${BUILD_OPTIONS}
     fi
 }
