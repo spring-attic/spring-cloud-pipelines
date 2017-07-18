@@ -27,7 +27,9 @@ String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src
 // TODO: Automate customization of this value
 String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines"
 String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
-
+// TODO: K8S - consider parametrization
+String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: "mysql-root"
+String mySqlCredential = binding.variables["MYSQL_CREDENTIAL_ID"] ?: "mysql"
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables["REPOS"] ?:
@@ -189,6 +191,8 @@ parsedRepos.each {
 			}
 			credentialsBinding {
 				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
+				usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 			}
 			timestamps()
 			colorizeOutput()
@@ -440,6 +444,8 @@ parsedRepos.each {
 				}
 				credentialsBinding {
 					usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
+					usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
+					usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 				}
 				timestamps()
 				colorizeOutput()
@@ -559,6 +565,8 @@ parsedRepos.each {
 			}
 			credentialsBinding {
 				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
+				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
+				usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 			}
 			timestamps()
 			colorizeOutput()
@@ -743,6 +751,7 @@ class PipelineDefaults {
 			stringParam('EUREKA_VERSION', 'latest', "Image version for Eureka used by tests")
 			stringParam('STUBRUNNER_ARTIFACT_ID', 'scpipelines/github-analytics-stub-runner-boot-classpath-stubs', "Name of image with Stub Runner used by tests")
 			stringParam('STUBRUNNER_VERSION', 'latest', "Image Version for Stub Runner used by tests")
+			stringParam('MYSQL_DATABASE', 'example', "Database to be created for test purposes")
 			// remove::end[K8S]
 		}
 	}

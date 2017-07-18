@@ -143,6 +143,26 @@ mavenSettings.text = mavenSettings.text
 		.replace("dockeruser", dockerRegistryUser)
 		.replace("dockerpass", dockerRegistryPass)
 		.replace("docker@email.com", dockerRegistryEmail)
+
+println "Adding MySQL credentials"
+boolean mySqlCredsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
+	it.getDescriptor().getId().startsWith('mysql')
+}.empty
+
+String mySqlRootPass = new File('/usr/share/jenkins/mySqlRootPass')?.text ?: "rootpassword"
+String mySqlPass = new File('/usr/share/jenkins/mySqlPass')?.text ?: "username"
+String mySqlUser = new File('/usr/share/jenkins/mySqlUser')?.text ?: "password"
+
+if (mySqlCredsMissing) {
+	println "MySQL credentials are missing - will create it"
+	SystemCredentialsProvider.getInstance().getCredentials().add(
+			new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'mysql-root',
+					"MySQL root credentials", "root", mySqlRootPass))
+	SystemCredentialsProvider.getInstance().getCredentials().add(
+			new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'mysql',
+					"MySQL credentials", mySqlPass, mySqlUser))
+	SystemCredentialsProvider.getInstance().save()
+}
 // remove::end[K8S]
 
 println "Adding jdk"

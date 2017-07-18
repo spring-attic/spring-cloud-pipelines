@@ -30,6 +30,12 @@ RUN printf "%s" "${dockerRegistryUser}" > /usr/share/jenkins/dockerRegistryUser
 RUN printf "%s" "${dockerRegistryPass}" > /usr/share/jenkins/dockerRegistryPass
 RUN printf "%s" "${dockerRegistryEmail}" > /usr/share/jenkins/dockerRegistryEmail
 
+# Default mysql credentials - you can modify them as you please. You can
+# parametrize them so that values are not hardcoded
+RUN printf "%s" "rootpassword" > /usr/share/jenkins/mySqlRootPass
+RUN printf "%s" "username" > /usr/share/jenkins/mySqlPass
+RUN printf "%s" "password" > /usr/share/jenkins/mySqlUser
+
 USER root
 
 ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false \

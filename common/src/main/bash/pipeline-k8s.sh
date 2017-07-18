@@ -166,7 +166,7 @@ function substituteVariables() {
     local substitution="${2}"
     local escapedSubstitution=$( escapeValueForSed "${substitution}" )
     local fileName="${3}"
-    echo "Changing [${variableName}] -> [${escapedSubstitution}] for file [${fileName}]"
+    #echo "Changing [${variableName}] -> [${escapedSubstitution}] for file [${fileName}]"
     sed -i "s/{{${variableName}}}/${escapedSubstitution}/" ${fileName}
 }
 
@@ -184,8 +184,8 @@ function deployMySql() {
         local deploymentFile="${__ROOT}/k8s/mysql.yml"
         local serviceFile="${__ROOT}/k8s/mysql-service.yml"
         echo "Generating secret with name [${serviceName}]"
-        kubectl create secret generic "${serviceName}-${LOWER_CASE_ENV}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
-        kubectl label secrets "${serviceName}-${LOWER_CASE_ENV}" env="${LOWER_CASE_ENV}"
+        kubectl create secret generic "${serviceName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
+        kubectl label secrets "${serviceName}" env="${LOWER_CASE_ENV}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
         substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
