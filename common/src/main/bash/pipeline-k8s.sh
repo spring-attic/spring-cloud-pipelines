@@ -352,7 +352,6 @@ function deployStubRunnerBoot() {
     substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
     substituteVariables "rabbitAppName" "${rabbitName}" "${deploymentFile}"
     substituteVariables "eurekaAppName" "${eurekaName}" "${deploymentFile}"
-    substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
     substituteVariables "env" "${env}" "${deploymentFile}"
     if [[ "${prop}" == "false" ]]; then
         substituteVariables "stubrunnerIds" "${prop}" "${deploymentFile}"
