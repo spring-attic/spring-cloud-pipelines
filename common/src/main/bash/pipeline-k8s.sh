@@ -63,12 +63,12 @@ function testDeploy() {
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     # TODO: TERRIBLE :|
     echo "Waiting for eureka to start"
-    sleep 30
+    sleep 60
     export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}-${LOWER_CASE_ENV}"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
     # TODO: TERRIBLE :|
     echo "Waiting for stubrunner to start"
-    sleep 30
+    sleep 60
 
     # deploy app
     deployAndRestartAppWithNameForSmokeTests ${appName} "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"

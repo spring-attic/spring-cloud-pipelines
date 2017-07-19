@@ -43,19 +43,3 @@ spec:
   volumes:
     - name: {{appName}}-persistent-storage
       emptyDir: {}
-#      persistentVolumeClaim:
-#        claimName: {{appName}}
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: {{appName}}
-  labels:
-    name: {{appName}}
-    env: {{env}}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100m
