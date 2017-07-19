@@ -8,7 +8,7 @@ metadata:
     visualize: "true"
 spec:
   ports:
-    - port: 8080
+    - port: 8761
   selector:
     app: {{appName}}
     env: {{env}}
