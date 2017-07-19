@@ -172,7 +172,7 @@ function deleteAppByName() {
 
 function deleteAppByFile() {
     local file="${1}"
-    kubectl delete -f ${file} || echo "Failed to delete ${file}. Continuing with the script"
+    kubectl delete -f ${file} || echo "Failed to delete app by [${file}] file. Continuing with the script"
 }
 
 function substituteVariables() {
@@ -329,6 +329,8 @@ function deployEureka() {
     substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     substituteVariables "env" "${env}" "${serviceFile}"
+    deleteAppByFile "${deploymentFile}"
+    deleteAppByFile "${serviceFile}"
     replaceApp "${deploymentFile}"
     replaceApp "${serviceFile}"
 }
