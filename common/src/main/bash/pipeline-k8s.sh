@@ -51,26 +51,20 @@ function testDeploy() {
     # Log in to PaaS to start deployment
     logInToPaas
 
-    # First delete the app instance to remove all bindings
-    deleteAppInstance "${appName}"
-
     # TODO: Consider picking services and apps from file
     # services
     export UNIQUE_RABBIT_NAME="rabbitmq-${appName}-${LOWER_CASE_ENV}"
     deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
     export UNIQUE_MYSQL_NAME="mysql-${appName}-${LOWER_CASE_ENV}"
-    deleteService "MYSQL" "${UNIQUE_MYSQL_NAME}"
     deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
 
     # dependant apps
     export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
-    deleteService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     # TODO: TERRIBLE :|
     echo "Waiting for eureka to start"
     sleep 30
     export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}-${LOWER_CASE_ENV}"
-    deleteService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
     # TODO: TERRIBLE :|
     echo "Waiting for stubrunner to start"
@@ -145,8 +139,8 @@ function deployRabbitMq() {
         substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
-        deployApp "${deploymentFile}"
-        deployApp "${serviceFile}"
+        replaceApp "${deploymentFile}"
+        replaceApp "${serviceFile}"
     else
         echo "Service [${serviceName}] already started"
     fi
@@ -155,6 +149,11 @@ function deployRabbitMq() {
 function deployApp() {
     local fileName="${1}"
     kubectl create -f "${fileName}"
+}
+
+function replaceApp() {
+    local fileName="${1}"
+    kubectl replace --force -f "${fileName}"
 }
 
 function deleteAppByName() {
@@ -201,8 +200,8 @@ function deployMySql() {
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
-        deployApp "${deploymentFile}"
-        deployApp "${serviceFile}"
+        replaceApp "${deploymentFile}"
+        replaceApp "${serviceFile}"
     else
         echo "Service [${serviceName}] already started"
     fi
@@ -235,8 +234,8 @@ function deployAndRestartAppWithNameForSmokeTests() {
     substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
-    deployApp "${deploymentFile}"
-    deployApp "${serviceFile}"
+    replaceApp "${deploymentFile}"
+    replaceApp "${serviceFile}"
     kubectl label deployment "${appName}" env="${LOWER_CASE_ENV}"
     kubectl label service "${appName}" env="${LOWER_CASE_ENV}"
 }
@@ -320,8 +319,8 @@ function deployEureka() {
     substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     substituteVariables "env" "${env}" "${serviceFile}"
-    deployApp "${deploymentFile}"
-    deployApp "${serviceFile}"
+    replaceApp "${deploymentFile}"
+    replaceApp "${serviceFile}"
 }
 
 function escapeValueForSed() {
@@ -361,8 +360,8 @@ function deployStubRunnerBoot() {
     fi
     substituteVariables "appName" "${stubRunnerName}" "${serviceFile}"
     substituteVariables "env" "${env}" "${serviceFile}"
-    deployApp "${deploymentFile}"
-    deployApp "${serviceFile}"
+    replaceApp "${deploymentFile}"
+    replaceApp "${serviceFile}"
 }
 
 function bindService() {
