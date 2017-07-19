@@ -42,8 +42,9 @@ spec:
           mountPath: /var/lib/mysql
   volumes:
     - name: {{appName}}-persistent-storage
-      persistentVolumeClaim:
-        claimName: {{appName}}
+      emptyDir: {}
+#      persistentVolumeClaim:
+#        claimName: {{appName}}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
