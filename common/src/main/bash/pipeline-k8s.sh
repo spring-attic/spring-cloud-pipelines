@@ -142,6 +142,8 @@ function deployRabbitMq() {
         substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
+        deleteAppByFile "${deploymentFile}"
+        deleteAppByFile "${serviceFile}"
         replaceApp "${deploymentFile}"
         replaceApp "${serviceFile}"
     else
@@ -204,6 +206,8 @@ function deployMySql() {
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
+        deleteAppByFile "${deploymentFile}"
+        deleteAppByFile "${serviceFile}"
         replaceApp "${deploymentFile}"
         replaceApp "${serviceFile}"
     else
@@ -230,7 +234,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local deploymentFile="deployment.yml"
     local serviceFile="service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
-    systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=http://${eurekaName}:8761/eureka"
+    systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
@@ -238,6 +242,8 @@ function deployAndRestartAppWithNameForSmokeTests() {
     substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
+    deleteAppByFile "${deploymentFile}"
+    deleteAppByFile "${serviceFile}"
     replaceApp "${deploymentFile}"
     replaceApp "${serviceFile}"
     kubectl label deployment "${appName}" env="${LOWER_CASE_ENV}"
@@ -363,6 +369,8 @@ function deployStubRunnerBoot() {
     fi
     substituteVariables "appName" "${stubRunnerName}" "${serviceFile}"
     substituteVariables "env" "${env}" "${serviceFile}"
+    deleteAppByFile "${deploymentFile}"
+    deleteAppByFile "${serviceFile}"
     replaceApp "${deploymentFile}"
     replaceApp "${serviceFile}"
 }
