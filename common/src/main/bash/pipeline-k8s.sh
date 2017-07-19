@@ -72,6 +72,9 @@ function testDeploy() {
 
     # deploy app
     deployAndRestartAppWithNameForSmokeTests ${appName} "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+    # TODO: TERRIBLE :|
+    echo "Waiting for the app to start"
+    sleep 60
 }
 
 function testRollbackDeploy() {
@@ -227,7 +230,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local deploymentFile="deployment.yml"
     local serviceFile="service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
-    systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=${eurekaName}"
+    systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka_client_serviceUrl_defaultZone=http://${eurekaName}:8761/eureka"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
