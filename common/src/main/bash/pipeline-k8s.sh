@@ -103,7 +103,7 @@ function deployService() {
       deployMySql "${serviceName}"
       ;;
     EUREKA)
-      deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
+      deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}"
       ;;
     STUBRUNNER)
       deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
@@ -320,15 +320,14 @@ function restartApp() {
 function deployEureka() {
     local imageName="${1}"
     local appName="${2}"
-    local env="${3}"
-    echo "Deploying Eureka. Options - image name [${imageName}], app name [${appName}], env [${env}]"
+    echo "Deploying Eureka. Options - image name [${imageName}], app name [${appName}], env [${ENVIRONMENT}]"
     local deploymentFile="${__ROOT}/k8s/eureka.yml"
     local serviceFile="${__ROOT}/k8s/eureka-service.yml"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
-    substituteVariables "env" "${env}" "${deploymentFile}"
+    substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
     substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
-    substituteVariables "env" "${env}" "${serviceFile}"
+    substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
     deleteAppByFile "${deploymentFile}"
     deleteAppByFile "${serviceFile}"
     replaceApp "${deploymentFile}"

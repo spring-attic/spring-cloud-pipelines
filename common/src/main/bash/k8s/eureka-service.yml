@@ -10,6 +10,6 @@ spec:
   ports:
     - port: 8761
   selector:
-    app: {{appName}}
+    name: {{appName}}
     env: {{env}}
   type: NodePort
