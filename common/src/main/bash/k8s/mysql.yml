@@ -43,17 +43,15 @@ spec:
   volumes:
     - name: {{appName}}-persistent-storage
       persistentVolumeClaim:
-        claimName: {{appName}}-pvc
+        claimName: {{appName}}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{appName}}-pvc
+  name: {{appName}}
   labels:
     name: {{appName}}
     env: {{env}}
-  annotations:
-    volume.beta.kubernetes.io/storage-class: pd-standard
 spec:
   accessModes:
     - ReadWriteOnce
