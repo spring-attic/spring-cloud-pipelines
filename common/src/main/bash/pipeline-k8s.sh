@@ -62,16 +62,16 @@ function testDeploy() {
     export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     # TODO: FIX THIS :|
-    sleep 30
+    sleep 120
     export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}-${LOWER_CASE_ENV}"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
     # TODO: FIX THIS :|
-    sleep 30
+    sleep 120
 
     # deploy app
     deployAndRestartAppWithNameForSmokeTests ${appName} "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
     # TODO: FIX THIS :|
-    sleep 30
+    sleep 120
 }
 
 function testRollbackDeploy() {
