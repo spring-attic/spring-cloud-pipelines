@@ -61,11 +61,17 @@ function testDeploy() {
     # dependant apps
     export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
+    # TODO: FIX THIS :|
+    sleep 30
     export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}-${LOWER_CASE_ENV}"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
+    # TODO: FIX THIS :|
+    sleep 30
 
     # deploy app
     deployAndRestartAppWithNameForSmokeTests ${appName} "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+    # TODO: FIX THIS :|
+    sleep 30
 }
 
 function testRollbackDeploy() {
@@ -388,10 +394,25 @@ function prepareForSmokeTests() {
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
     # TODO: Maybe this has to be changed somehow
-    export APPLICATION_URL="${PAAS_TEST_API_URL}"
-    export STUBRUNNER_URL="${PAAS_TEST_API_URL}"
+    local applicationPort=$( portFromKubernetes "${appName}" )
+    local stubrunnerAppName="stubrunner-${appName}-${LOWER_CASE_ENV}"
+    local stubrunnerPort=$( portFromKubernetes "${stubrunnerAppName}" )
+    export kubHost=$( hostFromApi "${PAAS_TEST_API_URL}" )
+    export APPLICATION_URL="${kubHost}:${applicationPort}"
+    export STUBRUNNER_URL="${kubHost}:${stubrunnerPort}"
     echo "Application URL [${APPLICATION_URL}]"
     echo "StubRunner URL [${STUBRUNNER_URL}]"
+}
+
+function portFromKubernetes() {
+    local appName="${1}"
+    echo `kubectl get svc ${appName} -o jsonpath='{.spec.ports[0].nodePort}'`
+}
+
+function hostFromApi() {
+    local api="${1}"
+    IFS=';' read -r id string <<< "${api}"
+    echo "$id"
 }
 
 function readTestPropertiesFromFile() {
