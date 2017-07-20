@@ -20,11 +20,6 @@ spec:
             value: "8761"
           - name: eureka_client_serviceUrl_defaultZone
             value: "http://{{appName}}:8761/eureka/"
-          resources:
-            limits:
-              memory: 256Mi
-            requests:
-              memory: 128Mi
 #          livenessProbe:
 #            httpGet:
 #              path: /health
