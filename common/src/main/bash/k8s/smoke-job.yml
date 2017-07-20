@@ -7,10 +7,10 @@ metadata:
     env: {{env}}
 spec:
   template:
-      metadata:
-        labels:
-          name: {{appName}}-job
-          env: {{env}}
+    metadata:
+      labels:
+        name: {{appName}}-job
+        env: {{env}}
     spec:
       containers:
       - name: test
