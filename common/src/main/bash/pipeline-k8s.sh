@@ -387,31 +387,11 @@ function prepareForSmokeTests() {
     appName=$( retrieveAppName )
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
+    # TODO: Maybe this has to be changed somehow
+    export APPLICATION_URL="${PAAS_TEST_API_URL}"
+    export STUBRUNNER_URL="${PAAS_TEST_API_URL}"
     echo "Application URL [${APPLICATION_URL}]"
     echo "StubRunner URL [${STUBRUNNER_URL}]"
-    echo "Latest production tag [${LATEST_PROD_TAG}]"
-    local jobFile="${__ROOT}/k8s/smoke-job.yml"
-    local workspace="${WORKSPACE}"
-    local command="cd ${workspace} \&\& source .git/tools/common/src/main/bash/pipeline.sh \&\& runSmokeTestsForMaven"
-    local stubrunnerName="stubrunner-${appName}-${LOWER_CASE_ENV}"
-    substituteVariables "appName" "${appName}" "${jobFile}"
-    substituteVariables "env" "${ENVIRONMENT}" "${jobFile}"
-    substituteVariables "stubrunnerName" "${stubrunnerName}" "${jobFile}"
-    substituteVariables "command" "${command}" "${jobFile}"
-    local volumesFile="${__ROOT}/k8s/jenkins-volumes.yml"
-    replaceApp "${volumesFile}"
-}
-
-function runSmokeTestsForMaven() {
-    local applicationHost="${APPLICATION_URL}"
-    local stubrunnerHost="${STUBRUNNER_URL}"
-    echo "Running smoke tests"
-
-    if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( echo "$( printTestResults )" && return 1)
-    else
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
-    fi
 }
 
 function readTestPropertiesFromFile() {
@@ -527,11 +507,4 @@ function build() {
         ./mvnw clean package docker:build docker:tag -Dimage="${DOCKER_REGISTRY_ORGANIZATION}/${appName}" -DnewName="${DOCKER_REGISTRY_ORGANIZATION}/${appName}:${PIPELINE_VERSION}" ${BUILD_OPTIONS}
         ./mvnw docker:push ${BUILD_OPTIONS}
     fi
-}
-
-function runSmokeTests() {
-    local jobFile="${__ROOT}/k8s/smoke-job.yml"
-    replaceApp "${jobFile}"
-    # TODO: FIX THIS
-    sleep 60
 }
