@@ -484,7 +484,7 @@ function stageDeploy() {
     sleep ${DEFAULT_TIMEOUT}
 
     # deploy app
-    deployAndRestartAppWithNameForSmokeTests "${appName}-${LOWER_CASE_ENV}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+    deployAndRestartAppWithNameForE2ETests "${appName}-${LOWER_CASE_ENV}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
     # TODO: FIX THIS :|
     echo "Waiting for the app to start"
     sleep ${DEFAULT_TIMEOUT}
