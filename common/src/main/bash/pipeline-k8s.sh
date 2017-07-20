@@ -397,6 +397,8 @@ function prepareForSmokeTests() {
     substituteVariables "appName" "${appName}" "${jobFile}"
     substituteVariables "stubrunnerName" "${stubrunnerName}" "${jobFile}"
     substituteVariables "command" "${command}" "${jobFile}"
+    local volumesFile="${__ROOT}/k8s/jenkins-volumes.yml"
+    replaceApp "${volumesFile}"
 }
 
 function runSmokeTestsForMaven() {
