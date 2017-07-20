@@ -502,7 +502,9 @@ function build() {
     ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${BUILD_OPTIONS}
     if [[ "${CI}" == "CONCOURSE" ]]; then
         ./mvnw clean package docker:build -DpushImageTags -DdockerImageTags="latest" -DdockerImageTags="${PIPELINE_VERSION}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./mvnw docker:push ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
     else
         ./mvnw clean package docker:build -DpushImageTags -DdockerImageTags="latest" -DdockerImageTags="${PIPELINE_VERSION}" ${BUILD_OPTIONS}
+        ./mvnw docker:push ${BUILD_OPTIONS}
     fi
 }
