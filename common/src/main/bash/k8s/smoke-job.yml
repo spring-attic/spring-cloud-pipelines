@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{appName}}
+  labels:
+    name: {{appName}}
+    env: {{env}}
+spec:
+  template:
+      metadata:
+        labels:
+          name: {{appName}}
+          env: {{env}}
+    spec:
+      containers:
+      - name: test
+        image: frolvlad/alpine-oraclejdk8:slim
+        command: {{command}}
+        volumeMounts:
+          - mountPath: "."
+            name: "jenkins-vol"
+          - mountPath: "{{home}}/.m2"
+            name: "jenkins-vol-maven"
+          - mountPath: "{{home}}/.gradle"
+            name: "jenkins-vol-gradle"
+      volumes:
+        - name: "jenkins-vol"
+          persistentVolumeClaim:
+            claimName: "jenkins-vol-claim"
+        - name: "jenkins-vol-maven"
+          persistentVolumeClaim:
+            claimName: "jenkins-vol-claim"
+        - name: "jenkins-vol-gradle"
+          persistentVolumeClaim:
+            claimName: "jenkins-vol-claim"
+      restartPolicy: Never
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pd
+spec:
+  containers:
+  - image: gcr.io/google_containers/test-webserver
+    name: test-container
+    volumeMounts:
+    - mountPath: /test-pd
+      name: test-volume
+  volumes:
+  - name: test-volume
+    hostPath:
+      # directory location on host
+      path: /data

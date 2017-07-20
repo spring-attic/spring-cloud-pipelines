@@ -390,6 +390,17 @@ function prepareForSmokeTests() {
     echo "Application URL [${APPLICATION_URL}]"
     echo "StubRunner URL [${STUBRUNNER_URL}]"
     echo "Latest production tag [${LATEST_PROD_TAG}]"
+    local jobFile="${__ROOT}/k8s/smoke-job.yml"
+    local command=""
+    # attach volumes
+    # ~/.m2
+    # ~/.gradle
+    # ${WORKSPACE}
+    # docker inspect $(docker ps | grep jenkins | cut -d ' ' -f 1)  | jq '.[0].Mounts[] | select(.Type == "volume") | .Source'
+
+    # I NEED AN IP of 2 apps running on Kubernetes
+
+    substituteVariables "command" "${stubRunnerName}" "${serviceFile}"
 }
 
 function readTestPropertiesFromFile() {
