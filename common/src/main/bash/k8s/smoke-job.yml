@@ -25,9 +25,9 @@ spec:
         - name: STUBRUNNER_URL
           value: "http://{{stubrunnerName}}"
         volumeMounts:
-          - mountPath: "/var/jenkins_home/"
+          - mountPath: "/var/jenkins_home"
             name: user-smoke-volume
-          - mountPath: "/root/"
+          - mountPath: "/root"
             name: root-smoke-volume
       volumes:
         - name: user-smoke-volume
