@@ -26,6 +26,11 @@ spec:
             value: "{{stubrunnerIds}}"
           - name: STUBRUNNER_REPOSITORY_ROOT
             value: "{{repoWithJars}}"
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              memory: 128Mi
 #          livenessProbe:
 #            httpGet:
 #              path: /health
