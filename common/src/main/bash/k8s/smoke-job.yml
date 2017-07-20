@@ -26,14 +26,14 @@ spec:
           value: "http://{{stubrunnerName}}"
         volumeMounts:
           - mountPath: "/var/jenkins_home/"
-            name: "user-smoke-volume-claim"
+            name: user-smoke-volume
           - mountPath: "/root/"
-            name: "root-smoke-volume-claim"
+            name: root-smoke-volume
       volumes:
-        - name: "user-smoke-volume-claim"
+        - name: user-smoke-volume
           persistentVolumeClaim:
-            claimName: "user-smoke-volume-claim"
-        - name: "root-smoke-volume-claim"
+            claimName: user-smoke-volume-claim
+        - name: root-smoke-volume
           persistentVolumeClaim:
-            claimName: "root-smoke-volume-claim"
+            claimName: root-smoke-volume-claim
       restartPolicy: Never

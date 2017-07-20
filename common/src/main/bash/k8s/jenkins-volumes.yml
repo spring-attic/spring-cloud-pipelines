@@ -40,7 +40,7 @@ spec:
       storage: 3Gi
   selector:
     matchLabels:
-      dir: "jenkins_home"
+      dir: jenkins_home
 
 ---
 kind: PersistentVolumeClaim
@@ -55,4 +55,4 @@ spec:
       storage: 3Gi
   selector:
     matchLabels:
-      dir: "jenkins_root"
+      dir: jenkins_root
