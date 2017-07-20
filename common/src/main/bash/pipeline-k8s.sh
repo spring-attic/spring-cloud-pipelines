@@ -395,6 +395,7 @@ function prepareForSmokeTests() {
     local command="cd ${workspace} && source .git/tools/common/src/main/bash/pipeline.sh && runSmokeTestsForMaven"
     local stubrunnerName="stubrunner-${appName}-${LOWER_CASE_ENV}"
     substituteVariables "appName" "${appName}" "${jobFile}"
+    substituteVariables "env" "${ENVIRONMENT}" "${jobFile}"
     substituteVariables "stubrunnerName" "${stubrunnerName}" "${jobFile}"
     substituteVariables "command" "${command}" "${jobFile}"
     local volumesFile="${__ROOT}/k8s/jenkins-volumes.yml"
