@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# TODO: REMOVE THIS :(
+DEFAULT_TIMEOUT=150
+
 function logInToPaas() {
     local redownloadInfra="${REDOWNLOAD_INFRA}"
     local ca="PAAS_${ENVIRONMENT}_CA"
@@ -63,18 +66,18 @@ function testDeploy() {
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
     # TODO: FIX THIS :|
     echo "Waiting for Eureka to start"
-    sleep 120
+    sleep ${DEFAULT_TIMEOUT}
     export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}-${LOWER_CASE_ENV}"
     deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
     # TODO: FIX THIS :|
     echo "Waiting for StubRunner to start"
-    sleep 120
+    sleep ${DEFAULT_TIMEOUT}
 
     # deploy app
-    deployAndRestartAppWithNameForSmokeTests ${appName} "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+    deployAndRestartAppWithNameForSmokeTests "${appName}-${LOWER_CASE_ENV}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
     # TODO: FIX THIS :|
     echo "Waiting for the app to start"
-    sleep 120
+    sleep ${DEFAULT_TIMEOUT}
 }
 
 function testRollbackDeploy() {
@@ -442,43 +445,64 @@ function stageDeploy() {
 
     # TODO: Consider picking services and apps from file
     # services
-    deployService "RABBITMQ" "rabbitmq-github"
-    deployService "MYSQL" "mysql-github"
-    deployService "EUREKA" "${EUREKA_ARTIFACT_ID}"
+    export UNIQUE_RABBIT_NAME="rabbitmq-${appName}-${LOWER_CASE_ENV}"
+    deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
+    export UNIQUE_MYSQL_NAME="mysql-${appName}-${LOWER_CASE_ENV}"
+    deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
 
-    downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
+    # dependant apps
+    export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
+    deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
+    # TODO: FIX THIS :|
+    echo "Waiting for Eureka to start"
+    sleep ${DEFAULT_TIMEOUT}
 
     # deploy app
-    deployAndRestartAppWithName ${appName} "${appName}-${PIPELINE_VERSION}"
+    deployAndRestartAppWithNameForSmokeTests "${appName}-${LOWER_CASE_ENV}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+    # TODO: FIX THIS :|
+    echo "Waiting for the app to start"
+    sleep ${DEFAULT_TIMEOUT}
 }
 
 function prepareForE2eTests() {
     echo "Retrieving group and artifact id - it can take a while..."
     appName=$( retrieveAppName )
-    echo "Project artifactId is ${appName}"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
+    # TODO: Maybe this has to be changed somehow
+    local applicationPort=$( portFromKubernetes "${appName}" )
+    local stubrunnerAppName="stubrunner-${appName}-${LOWER_CASE_ENV}"
+    export kubHost=$( hostFromApi "${PAAS_TEST_API_URL}" )
+    export APPLICATION_URL="${kubHost}:${applicationPort}"
     echo "Application URL [${APPLICATION_URL}]"
 }
 
 function performGreenDeployment() {
+    # TODO: Consider making it less JVM specific
     projectGroupId=$( retrieveGroupId )
     appName=$( retrieveAppName )
-
-    # download app
-    downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
-    # Log in to CF to start deployment
+    # Log in to PaaS to start deployment
     logInToPaas
 
-    # deploying infra
-    # TODO: most likely rabbitmq / eureka / db would be there on production; this remains for demo purposes
-    deployRabbitMq
-    deployMySql "mysql-github-analytics"
-    downloadAppArtifact ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
-    deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}"
+    # TODO: Consider picking services and apps from file
+    # services
+    export UNIQUE_RABBIT_NAME="rabbitmq-${appName}-${LOWER_CASE_ENV}"
+    deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
+    export UNIQUE_MYSQL_NAME="mysql-${appName}-${LOWER_CASE_ENV}"
+    deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
+
+    # dependant apps
+    export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
+    deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
+    # TODO: FIX THIS :|
+    echo "Waiting for Eureka to start"
+    sleep ${DEFAULT_TIMEOUT}
 
     # deploy app
     performGreenDeploymentOfTestedApplication "${appName}"
+    # TODO: FIX THIS :|
+    echo "Waiting for the app to start"
+    sleep ${DEFAULT_TIMEOUT}
 }
 
 function performGreenDeploymentOfTestedApplication() {
