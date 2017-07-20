@@ -392,7 +392,7 @@ function prepareForSmokeTests() {
     echo "Latest production tag [${LATEST_PROD_TAG}]"
     local jobFile="${__ROOT}/k8s/smoke-job.yml"
     local workspace="${WORKSPACE}"
-    local command="cd ${workspace} && source .git/tools/common/src/main/bash/pipeline.sh && runSmokeTestsForMaven"
+    local command="cd ${workspace} \&\& source .git/tools/common/src/main/bash/pipeline.sh \&\& runSmokeTestsForMaven"
     local stubrunnerName="stubrunner-${appName}-${LOWER_CASE_ENV}"
     substituteVariables "appName" "${appName}" "${jobFile}"
     substituteVariables "env" "${ENVIRONMENT}" "${jobFile}"
