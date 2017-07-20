@@ -3,7 +3,7 @@ kind: PersistentVolume
 metadata:
   name: user-smoke-volume
   labels:
-    dir: jenkins_home
+    dir: jenkins-home
 spec:
   capacity:
     storage: 5Gi
@@ -18,7 +18,7 @@ kind: PersistentVolume
 metadata:
   name: root-smoke-volume
   labels:
-    dir: jenkins_root
+    dir: jenkins-root
 spec:
   capacity:
     storage: 5Gi
@@ -40,7 +40,7 @@ spec:
       storage: 3Gi
   selector:
     matchLabels:
-      dir: jenkins_home
+      dir: jenkins-home
 
 ---
 kind: PersistentVolumeClaim
@@ -55,4 +55,4 @@ spec:
       storage: 3Gi
   selector:
     matchLabels:
-      dir: jenkins_root
+      dir: jenkins-root
