@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: user-smoke-volume
+  labels:
+    dir: jenkins_home
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /var/jenkins_home/
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: root-smoke-volume
+  labels:
+    dir: jenkins_root
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /var/jenkins_root/
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: user-smoke-volume-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  selector:
+    matchLabels:
+      dir: "jenkins_home"
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: root-smoke-volume-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  selector:
+    matchLabels:
+      dir: "jenkins_root"

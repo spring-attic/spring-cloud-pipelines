@@ -1,54 +1,38 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{appName}}
+  name: {{appName}}-job
   labels:
-    name: {{appName}}
+    name: {{appName}}-job
     env: {{env}}
 spec:
   template:
       metadata:
         labels:
-          name: {{appName}}
+          name: {{appName}}-job
           env: {{env}}
     spec:
       containers:
       - name: test
         image: frolvlad/alpine-oraclejdk8:slim
         command: {{command}}
+        env:
+        - name: PAAS_TYPE
+          value: "k8s"
+        - name: APPLICATION_URL
+          value: "http://{{appName}}"
+        - name: STUBRUNNER_URL
+          value: "http://{{stubrunnerName}}"
         volumeMounts:
-          - mountPath: "."
-            name: "jenkins-vol"
-          - mountPath: "{{home}}/.m2"
-            name: "jenkins-vol-maven"
-          - mountPath: "{{home}}/.gradle"
-            name: "jenkins-vol-gradle"
+          - mountPath: "/var/jenkins_home/"
+            name: "user-smoke-volume-claim"
+          - mountPath: "/root/"
+            name: "root-smoke-volume-claim"
       volumes:
-        - name: "jenkins-vol"
+        - name: "user-smoke-volume-claim"
           persistentVolumeClaim:
-            claimName: "jenkins-vol-claim"
-        - name: "jenkins-vol-maven"
+            claimName: "user-smoke-volume-claim"
+        - name: "root-smoke-volume-claim"
           persistentVolumeClaim:
-            claimName: "jenkins-vol-claim"
-        - name: "jenkins-vol-gradle"
-          persistentVolumeClaim:
-            claimName: "jenkins-vol-claim"
+            claimName: "root-smoke-volume-claim"
       restartPolicy: Never
-
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: test-pd
-spec:
-  containers:
-  - image: gcr.io/google_containers/test-webserver
-    name: test-container
-    volumeMounts:
-    - mountPath: /test-pd
-      name: test-volume
-  volumes:
-  - name: test-volume
-    hostPath:
-      # directory location on host
-      path: /data

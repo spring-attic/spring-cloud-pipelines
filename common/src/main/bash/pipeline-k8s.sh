@@ -391,16 +391,24 @@ function prepareForSmokeTests() {
     echo "StubRunner URL [${STUBRUNNER_URL}]"
     echo "Latest production tag [${LATEST_PROD_TAG}]"
     local jobFile="${__ROOT}/k8s/smoke-job.yml"
-    local command=""
-    # attach volumes
-    # ~/.m2
-    # ~/.gradle
-    # ${WORKSPACE}
-    # docker inspect $(docker ps | grep jenkins | cut -d ' ' -f 1)  | jq '.[0].Mounts[] | select(.Type == "volume") | .Source'
+    local workspace="${WORKSPACE}"
+    local command="cd ${workspace} && source .git/tools/common/src/main/bash/pipeline.sh && runSmokeTestsForMaven"
+    local stubrunnerName="stubrunner-${appName}-${LOWER_CASE_ENV}"
+    substituteVariables "appName" "${appName}" "${jobFile}"
+    substituteVariables "stubrunnerName" "${stubrunnerName}" "${jobFile}"
+    substituteVariables "command" "${command}" "${jobFile}"
+}
 
-    # I NEED AN IP of 2 apps running on Kubernetes
+function runSmokeTestsForMaven() {
+    local applicationHost="${APPLICATION_URL}"
+    local stubrunnerHost="${STUBRUNNER_URL}"
+    echo "Running smoke tests"
 
-    substituteVariables "command" "${stubRunnerName}" "${serviceFile}"
+    if [[ "${CI}" == "CONCOURSE" ]]; then
+        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( echo "$( printTestResults )" && return 1)
+    else
+        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
+    fi
 }
 
 function readTestPropertiesFromFile() {
@@ -516,4 +524,11 @@ function build() {
         ./mvnw clean package docker:build docker:tag -Dimage="${DOCKER_REGISTRY_ORGANIZATION}/${appName}" -DnewName="${DOCKER_REGISTRY_ORGANIZATION}/${appName}:${PIPELINE_VERSION}" ${BUILD_OPTIONS}
         ./mvnw docker:push ${BUILD_OPTIONS}
     fi
+}
+
+function runSmokeTests() {
+    local jobFile="${__ROOT}/k8s/smoke-job.yml"
+    replaceApp "${jobFile}"
+    # TODO: FIX THIS
+    sleep 60
 }
