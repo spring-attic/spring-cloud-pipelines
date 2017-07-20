@@ -411,7 +411,7 @@ function portFromKubernetes() {
 
 function hostFromApi() {
     local api="${1}"
-    IFS=';' read -r id string <<< "${api}"
+    IFS=':' read -r id string <<< "${api}"
     echo "$id"
 }
 
