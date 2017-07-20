@@ -15,7 +15,8 @@ spec:
       containers:
       - name: test
         image: frolvlad/alpine-oraclejdk8:slim
-        command: "{{command}}"
+        command: ["/bin/sh"]
+        args: ["-c", "{{command}}"]
         env:
         - name: PAAS_TYPE
           value: "k8s"
