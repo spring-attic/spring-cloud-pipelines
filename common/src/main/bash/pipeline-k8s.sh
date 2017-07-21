@@ -109,7 +109,7 @@ function deployService() {
       deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}"
       ;;
     STUBRUNNER)
-      deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
+      deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_STUBRUNNER_NAME}"
       ;;
     *)
       echo "Unknown service"
@@ -353,10 +353,10 @@ function deployEureka() {
     local deploymentFile="${__ROOT}/k8s/eureka.yml"
     local serviceFile="${__ROOT}/k8s/eureka-service.yml"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
-    substituteVariables "env" "${ENVIRONMENT}" "${deploymentFile}"
+    substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
-    substituteVariables "env" "${ENVIRONMENT}" "${serviceFile}"
+    substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
     deleteAppByFile "${deploymentFile}"
     deleteAppByFile "${serviceFile}"
     replaceApp "${deploymentFile}"
@@ -373,8 +373,7 @@ function deployStubRunnerBoot() {
     local repoWithJars="${2}"
     local rabbitName="${3}"
     local eurekaName="${4}"
-    local env="${5:-test}"
-    local stubRunnerName="${6:-stubrunner}"
+    local stubRunnerName="${5:-stubrunner}"
     local fileExists="true"
     local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
     echo "Deploying Stub Runner. Options - image name [${imageName}], app name [${stubRunnerName}]"
@@ -391,14 +390,14 @@ function deployStubRunnerBoot() {
     substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
     substituteVariables "rabbitAppName" "${rabbitName}" "${deploymentFile}"
     substituteVariables "eurekaAppName" "${eurekaName}" "${deploymentFile}"
-    substituteVariables "env" "${env}" "${deploymentFile}"
+    substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     if [[ "${prop}" == "false" ]]; then
         substituteVariables "stubrunnerIds" "${prop}" "${deploymentFile}"
     else
         substituteVariables "stubrunnerIds" "" "${deploymentFile}"
     fi
     substituteVariables "appName" "${stubRunnerName}" "${serviceFile}"
-    substituteVariables "env" "${env}" "${serviceFile}"
+    substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
     deleteAppByFile "${deploymentFile}"
     deleteAppByFile "${serviceFile}"
     replaceApp "${deploymentFile}"
