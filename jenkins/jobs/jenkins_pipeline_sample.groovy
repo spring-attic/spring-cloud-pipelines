@@ -670,56 +670,63 @@ parsedRepos.each {
 class PipelineDefaults {
 
 	final Map<String, String> defaultEnvVars
+	final String paasType
 
 	PipelineDefaults(Map<String, String> variables) {
 		this.defaultEnvVars = defaultEnvVars(variables)
+		this.paasType = variables["PAAS_TYPE"] ?: "cf"
 	}
 
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
 		Map<String, String> envs = [:]
-		envs['PAAS_TYPE'] = variables['PAAS_TYPE'] ?: 'cf'
-		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
-		envs['REPO_WITH_BINARIES'] = variables['REPO_WITH_BINARIES'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
+		setIfPresent(envs, variables, "PAAS_TYPE")
+		setIfPresent(envs, variables, "M2_SETTINGS_REPO_ID")
+		setIfPresent(envs, variables, "REPO_WITH_BINARIES")
 		// remove::start[CF]
-		// TODO: Remove it via task
-		/*envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: 'api.local.pcfdev.io'
-		envs['PAAS_STAGE_API_URL'] = variables['PAAS_STAGE_API_URL'] ?: 'api.local.pcfdev.io'
-		envs['PAAS_PROD_API_URL'] = variables['PAAS_PROD_API_URL'] ?: 'api.local.pcfdev.io'
-		envs['PAAS_TEST_ORG'] = variables['PAAS_TEST_ORG'] ?: 'pcfdev-org'
-		envs['PAAS_TEST_SPACE'] = variables['PAAS_TEST_SPACE'] ?: 'pfcdev-test'
-		envs['PAAS_STAGE_ORG'] = variables['PAAS_STAGE_ORG'] ?: 'pcfdev-org'
-		envs['PAAS_STAGE_SPACE'] = variables['PAAS_STAGE_SPACE'] ?: 'pfcdev-stage'
-		envs['PAAS_PROD_ORG'] = variables['PAAS_PROD_ORG'] ?: 'pcfdev-org'
-		envs['PAAS_PROD_SPACE'] = variables['PAAS_PROD_SPACE'] ?: 'pfcdev-prod'
-		envs['PAAS_HOSTNAME_UUID'] = variables['PAAS_HOSTNAME_UUID'] ?: ''
-		envs['APP_MEMORY_LIMIT'] = variables['APP_MEMORY_LIMIT'] ?: '256m'
-		envs['JAVA_BUILDPACK_URL'] = variables['JAVA_BUILDPACK_URL'] ?: 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1'*/
+		setIfPresent(envs, variables, "PAAS_TEST_API_URL")
+		setIfPresent(envs, variables, "PAAS_STAGE_API_URL")
+		setIfPresent(envs, variables, "PAAS_PROD_API_URL")
+		setIfPresent(envs, variables, "PAAS_TEST_ORG")
+		setIfPresent(envs, variables, "PAAS_TEST_SPACE")
+		setIfPresent(envs, variables, "PAAS_STAGE_ORG")
+		setIfPresent(envs, variables, "PAAS_STAGE_SPACE")
+		setIfPresent(envs, variables, "PAAS_PROD_ORG")
+		setIfPresent(envs, variables, "PAAS_PROD_SPACE")
+		setIfPresent(envs, variables, "PAAS_HOSTNAME_UUID")
+		setIfPresent(envs, variables, "APP_MEMORY_LIMIT")
+		setIfPresent(envs, variables, "JAVA_BUILDPACK_URL")
 		// remove::end[CF]
 		// remove::start[K8S]
-		envs['DOCKER_REGISTRY_ORGANIZATION'] = variables['DOCKER_REGISTRY_ORGANIZATION'] ?: 'scpipelines'
-		envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: '192.168.99.100:8443'
-		envs['PAAS_STAGE_API_URL'] = variables['PAAS_STAGE_API_URL'] ?: '192.168.99.100:8443'
-		envs['PAAS_PROD_API_URL'] = variables['PAAS_PROD_API_URL'] ?: '192.168.99.100:8443'
-		envs['PAAS_TEST_CA'] = variables['PAAS_TEST_CA'] ?: '/usr/share/jenkins/cert/ca.crt'
-		envs['PAAS_STAGE_CA'] = variables['PAAS_STAGE_CA'] ?: '/usr/share/jenkins/cert/ca.crt'
-		envs['PAAS_PROD_CA'] = variables['PAAS_PROD_CA'] ?: '/usr/share/jenkins/cert/ca.crt'
-		envs['PAAS_TEST_CLIENT_CERT'] = variables['PAAS_TEST_CLIENT_CERT'] ?: '/usr/share/jenkins/cert/apiserver.crt'
-		envs['PAAS_STAGE_CLIENT_CERT'] = variables['PAAS_STAGE_CLIENT_CERT'] ?: '/usr/share/jenkins/cert/apiserver.crt'
-		envs['PAAS_PROD_CLIENT_CERT'] = variables['PAAS_PROD_CLIENT_CERT'] ?: '/usr/share/jenkins/cert/apiserver.crt'
-		envs['PAAS_TEST_CLIENT_KEY'] = variables['PAAS_TEST_CLIENT_KEY'] ?: '/usr/share/jenkins/cert/apiserver.key'
-		envs['PAAS_STAGE_CLIENT_KEY'] = variables['PAAS_STAGE_CLIENT_KEY'] ?: '/usr/share/jenkins/cert/apiserver.key'
-		envs['PAAS_PROD_CLIENT_KEY'] = variables['PAAS_PROD_CLIENT_KEY'] ?: '/usr/share/jenkins/cert/apiserver.key'
-		envs['PAAS_TEST_CLUSTER_NAME'] = variables['PAAS_TEST_CLUSTER_NAME'] ?: 'minikube'
-		envs['PAAS_STAGE_CLUSTER_NAME'] = variables['PAAS_STAGE_CLUSTER_NAME'] ?: 'minikube'
-		envs['PAAS_PROD_CLUSTER_NAME'] = variables['PAAS_PROD_CLUSTER_NAME'] ?: 'minikube'
-		envs['PAAS_TEST_CLUSTER_USERNAME'] = variables['PAAS_TEST_CLUSTER_USERNAME'] ?: 'minikube'
-		envs['PAAS_STAGE_CLUSTER_USERNAME'] = variables['PAAS_STAGE_CLUSTER_USERNAME'] ?: 'minikube'
-		envs['PAAS_PROD_CLUSTER_USERNAME'] = variables['PAAS_PROD_CLUSTER_USERNAME'] ?: 'minikube'
-		envs['PAAS_TEST_SYSTEM_NAME'] = variables['PAAS_TEST_SYSTEM_NAME'] ?: 'minikube'
-		envs['PAAS_STAGE_SYSTEM_NAME'] = variables['PAAS_STAGE_SYSTEM_NAME'] ?: 'minikube'
-		envs['PAAS_PROD_SYSTEM_NAME'] = variables['PAAS_PROD_SYSTEM_NAME'] ?: 'minikube'
+		setIfPresent(envs, variables, "DOCKER_REGISTRY_ORGANIZATION")
+		setIfPresent(envs, variables, "PAAS_TEST_API_URL")
+		setIfPresent(envs, variables, "PAAS_STAGE_API_URL")
+		setIfPresent(envs, variables, "PAAS_PROD_API_URL")
+		setIfPresent(envs, variables, "PAAS_TEST_CA")
+		setIfPresent(envs, variables, "PAAS_STAGE_CA")
+		setIfPresent(envs, variables, "PAAS_PROD_CA")
+		setIfPresent(envs, variables, "PAAS_TEST_CLIENT_CERT")
+		setIfPresent(envs, variables, "PAAS_STAGE_CLIENT_CERT")
+		setIfPresent(envs, variables, "PAAS_PROD_CLIENT_CERT")
+		setIfPresent(envs, variables, "PAAS_TEST_CLIENT_KEY")
+		setIfPresent(envs, variables, "PAAS_STAGE_CLIENT_KEY")
+		setIfPresent(envs, variables, "PAAS_PROD_CLIENT_KEY")
+		setIfPresent(envs, variables, "PAAS_TEST_CLUSTER_NAME")
+		setIfPresent(envs, variables, "PAAS_STAGE_CLUSTER_NAME")
+		setIfPresent(envs, variables, "PAAS_PROD_CLUSTER_NAME")
+		setIfPresent(envs, variables, "PAAS_TEST_CLUSTER_USERNAME")
+		setIfPresent(envs, variables, "PAAS_STAGE_CLUSTER_NAME")
+		setIfPresent(envs, variables, "PAAS_PROD_CLUSTER_USERNAME")
+		setIfPresent(envs, variables, "PAAS_TEST_SYSTEM_NAME")
+		setIfPresent(envs, variables, "PAAS_STAGE_SYSTEM_NAME")
+		setIfPresent(envs, variables, "PAAS_PROD_SYSTEM_NAME")
 		// remove::end[K8S]
 		return envs
+	}
+
+	private void setIfPresent(Map<String, String> envs, Map<String, String> variables, String prop) {
+		if (variables[prop]) {
+			envs[prop] = variables[prop]
+		}
 	}
 
 	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
@@ -735,23 +742,26 @@ class PipelineDefaults {
 	static Closure defaultParams() {
 		return context {
 			booleanParam('STUBRUNNER_USE_CLASSPATH', false, "Should Stub Runner use classpath instead of reaching a repo")
-			// TODO: Remember to remove this via some task
 			// remove::start[CF]
-			/*booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
-			booleanParam('REDEPLOY_INFRA', true, "If Eureka JAR should be deployed. Uncheck this if you're not using Eureka")
-			stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
-			stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
-			stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
-			stringParam('STUBRUNNER_GROUP_ID', 'com.example.github', "Group Id for Stub Runner used by tests")
-			stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
-			stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")*/
+			if (paasType == "cf") {
+				booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
+				booleanParam('REDEPLOY_INFRA', true, "If Eureka JAR should be deployed. Uncheck this if you're not using Eureka")
+				stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
+				stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
+				stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
+				stringParam('STUBRUNNER_GROUP_ID', 'com.example.github', "Group Id for Stub Runner used by tests")
+				stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
+				stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
+			}
 			// remove::end[CF]
 			// remove::start[K8S]
-			stringParam('EUREKA_ARTIFACT_ID', 'scpipelines/github-eureka', "Name of image with Eureka used by tests")
-			stringParam('EUREKA_VERSION', 'latest', "Image version for Eureka used by tests")
-			stringParam('STUBRUNNER_ARTIFACT_ID', 'scpipelines/github-analytics-stub-runner-boot-classpath-stubs', "Name of image with Stub Runner used by tests")
-			stringParam('STUBRUNNER_VERSION', 'latest', "Image Version for Stub Runner used by tests")
-			stringParam('MYSQL_DATABASE', 'example', "Database to be created for test purposes")
+			if (paasType == "k8s") {
+				stringParam('EUREKA_ARTIFACT_ID', 'scpipelines/github-eureka', "Name of image with Eureka used by tests")
+				stringParam('EUREKA_VERSION', 'latest', "Image version for Eureka used by tests")
+				stringParam('STUBRUNNER_ARTIFACT_ID', 'scpipelines/github-analytics-stub-runner-boot-classpath-stubs', "Name of image with Stub Runner used by tests")
+				stringParam('STUBRUNNER_VERSION', 'latest', "Image Version for Stub Runner used by tests")
+				stringParam('MYSQL_DATABASE', 'example', "Database to be created for test purposes")
+			}
 			// remove::end[K8S]
 		}
 	}
