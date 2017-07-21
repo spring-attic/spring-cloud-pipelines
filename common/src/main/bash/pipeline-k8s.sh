@@ -145,8 +145,10 @@ function deployRabbitMq() {
         substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
-        deleteAppByFile "${deploymentFile}"
-        deleteAppByFile "${serviceFile}"
+        if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+            deleteAppByFile "${deploymentFile}"
+            deleteAppByFile "${serviceFile}"
+        fi
         replaceApp "${deploymentFile}"
         replaceApp "${serviceFile}"
     else
@@ -209,8 +211,10 @@ function deployMySql() {
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
-        deleteAppByFile "${deploymentFile}"
-        deleteAppByFile "${serviceFile}"
+        if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+            deleteAppByFile "${deploymentFile}"
+            deleteAppByFile "${serviceFile}"
+        fi
         replaceApp "${deploymentFile}"
         replaceApp "${serviceFile}"
     else
@@ -357,8 +361,10 @@ function deployEureka() {
     substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
-    deleteAppByFile "${deploymentFile}"
-    deleteAppByFile "${serviceFile}"
+    if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+        deleteAppByFile "${deploymentFile}"
+        deleteAppByFile "${serviceFile}"
+    fi
     replaceApp "${deploymentFile}"
     replaceApp "${serviceFile}"
 }
@@ -398,8 +404,10 @@ function deployStubRunnerBoot() {
     fi
     substituteVariables "appName" "${stubRunnerName}" "${serviceFile}"
     substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
-    deleteAppByFile "${deploymentFile}"
-    deleteAppByFile "${serviceFile}"
+    if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+        deleteAppByFile "${deploymentFile}"
+        deleteAppByFile "${serviceFile}"
+    fi
     replaceApp "${deploymentFile}"
     replaceApp "${serviceFile}"
 }
@@ -425,7 +433,7 @@ function prepareForSmokeTests() {
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
     # TODO: Maybe this has to be changed somehow
-    local applicationPort=$( portFromKubernetes "${appName}" )
+    local applicationPort=$( portFromKubernetes "${appName}-${LOWER_CASE_ENV}" )
     local stubrunnerAppName="stubrunner-${appName}-${LOWER_CASE_ENV}"
     local stubrunnerPort=$( portFromKubernetes "${stubrunnerAppName}" )
     export kubHost=$( hostFromApi "${PAAS_TEST_API_URL}" )
@@ -495,7 +503,7 @@ function prepareForE2eTests() {
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
     # TODO: Maybe this has to be changed somehow
-    local applicationPort=$( portFromKubernetes "${appName}" )
+    local applicationPort=$( portFromKubernetes "${appName}-${LOWER_CASE_ENV}" )
     local stubrunnerAppName="stubrunner-${appName}-${LOWER_CASE_ENV}"
     export kubHost=$( hostFromApi "${PAAS_TEST_API_URL}" )
     export APPLICATION_URL="${kubHost}:${applicationPort}"
