@@ -30,6 +30,8 @@ String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
 // TODO: K8S - consider parametrization
 String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: "mysql-root"
 String mySqlCredential = binding.variables["MYSQL_CREDENTIAL_ID"] ?: "mysql"
+String paasType = binding.variables["PAAS_TYPE"] ?: "cf"
+
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables["REPOS"] ?:
@@ -61,7 +63,7 @@ parsedRepos.each {
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
-			parameters(PipelineDefaults.defaultParams())
+			parameters(PipelineDefaults.defaultParams(paasType))
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -134,7 +136,7 @@ parsedRepos.each {
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
-			parameters(PipelineDefaults.defaultParams())
+			parameters(PipelineDefaults.defaultParams(paasType))
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -185,7 +187,7 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Deploy to test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters(PipelineDefaults.defaultParams())
+			parameters(PipelineDefaults.defaultParams(paasType))
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
@@ -236,7 +238,7 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Tests on test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters(PipelineDefaults.defaultParams())
+			parameters(PipelineDefaults.defaultParams(paasType))
 			parameters PipelineDefaults.smokeTestParams()
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
@@ -302,7 +304,7 @@ parsedRepos.each {
 			deliveryPipelineConfiguration('Test', 'Deploy to test latest prod version')
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				parameters(PipelineDefaults.defaultParams())
+				parameters(PipelineDefaults.defaultParams(paasType))
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
 				}
@@ -350,7 +352,7 @@ parsedRepos.each {
 			deliveryPipelineConfiguration('Test', 'Tests on test latest prod version')
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				parameters(PipelineDefaults.defaultParams())
+				parameters(PipelineDefaults.defaultParams(paasType))
 				parameters PipelineDefaults.smokeTestParams()
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
@@ -438,7 +440,7 @@ parsedRepos.each {
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 				maskPasswords()
-				parameters(PipelineDefaults.defaultParams())
+				parameters(PipelineDefaults.defaultParams(paasType))
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
 				}
@@ -496,7 +498,7 @@ parsedRepos.each {
 			deliveryPipelineConfiguration('Stage', 'End to end tests on stage')
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				parameters(PipelineDefaults.defaultParams())
+				parameters(PipelineDefaults.defaultParams(paasType))
 				parameters PipelineDefaults.smokeTestParams()
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
@@ -559,7 +561,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters(PipelineDefaults.defaultParams())
+			parameters(PipelineDefaults.defaultParams(paasType))
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
@@ -624,7 +626,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters(PipelineDefaults.defaultParams())
+			parameters(PipelineDefaults.defaultParams(paasType))
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
@@ -670,11 +672,9 @@ parsedRepos.each {
 class PipelineDefaults {
 
 	final Map<String, String> defaultEnvVars
-	final String paasType
 
 	PipelineDefaults(Map<String, String> variables) {
 		this.defaultEnvVars = defaultEnvVars(variables)
-		this.paasType = variables["PAAS_TYPE"] ?: "cf"
 	}
 
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
@@ -739,7 +739,7 @@ class PipelineDefaults {
 	 * has to define the parameters on input. In order not to copy paste the params we're doing this
 	 * default params method.
 	 */
-	static Closure defaultParams() {
+	static Closure defaultParams(String paasType) {
 		return context {
 			booleanParam('STUBRUNNER_USE_CLASSPATH', false, "Should Stub Runner use classpath instead of reaching a repo")
 			// remove::start[CF]
