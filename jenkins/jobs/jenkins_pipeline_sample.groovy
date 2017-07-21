@@ -714,7 +714,7 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "PAAS_STAGE_CLUSTER_NAME")
 		setIfPresent(envs, variables, "PAAS_PROD_CLUSTER_NAME")
 		setIfPresent(envs, variables, "PAAS_TEST_CLUSTER_USERNAME")
-		setIfPresent(envs, variables, "PAAS_STAGE_CLUSTER_NAME")
+		setIfPresent(envs, variables, "PAAS_STAGE_CLUSTER_USERNAME")
 		setIfPresent(envs, variables, "PAAS_PROD_CLUSTER_USERNAME")
 		setIfPresent(envs, variables, "PAAS_TEST_SYSTEM_NAME")
 		setIfPresent(envs, variables, "PAAS_STAGE_SYSTEM_NAME")
