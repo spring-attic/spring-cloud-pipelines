@@ -39,7 +39,7 @@ jobs:
       GIT_NAME: ((git-name))
   - put: version
     params:
-      repository: out
+      repository: updated-version
 
 - name: build-and-upload
   serial: true

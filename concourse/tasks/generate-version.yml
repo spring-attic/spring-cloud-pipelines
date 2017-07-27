@@ -1,15 +1,21 @@
 ---
 platform: linux
+
 image_resource:
   type: docker-image
   source:
     repository: springcloud/pipeline-base
+
 inputs:
   - name: version
   - name: tools
+
 outputs:
-  - name: out
+  - name: updated-version
+
 run:
-  path: /bin/bash
-  args:
-    - tools/concourse/tasks/generate-version.sh
+  path: tools/concourse/tasks/generate-version.sh
+
+params:
+  GIT_EMAIL:
+  GIT_NAME:
