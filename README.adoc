@@ -1549,7 +1549,7 @@ image::{demo-root-docs}/demo_alerting.png[caption="Alerting over metrics: ", tit
 
 === Running Prometheus on CF
 
-You can check out https://github.com/making/cf-grafana[Toshiaki Maki's code] on how to automate Grafana installation on CF.
+You can check out https://github.com/making/prometheus-on-PCF[Toshiaki Maki's code] on how to automate Prometheus installation on CF.
 
 Go to https://prometheus.io/download/ and download linux binary. Then call:
 
