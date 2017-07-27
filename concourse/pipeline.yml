@@ -1,234 +1,247 @@
 ---
 resources:
-  - name: repo
-    type: git
-    source:
-      uri: ((app-url))
-      branch: ((app-branch))
-      private_key: ((github-private-key))
-  - name: version
-    type: git
-    source:
-      uri: ((app-url))
-      branch: version
-      private_key: ((github-private-key))
-  - name: tools
-    type: git
-    source:
-      uri: ((tools-scripts-url))
-      branch: ((tools-branch))
-  - name: m2
-    type: docker-image
-    source:
-      repository: springcloud/spring-pipeline-m2
+- name: repo
+  type: git
+  source:
+    uri: ((app-url))
+    branch: ((app-branch))
+    private_key: ((github-private-key))
+
+- name: version
+  type: git
+  source:
+    uri: ((app-url))
+    branch: version
+    private_key: ((github-private-key))
+
+- name: tools
+  type: git
+  source:
+    uri: ((tools-scripts-url))
+    branch: ((tools-branch))
+
+- name: m2
+  type: docker-image
+  source:
+    repository: springcloud/spring-pipeline-m2
 
 jobs:
-  - name: generate-version
-    public: true
-    plan:
-    - aggregate:
-        - get: tools
-        - get: version
-    - task: generate-version
-      file: tools/concourse/tasks/generate-version.yml
-      params:
-        GIT_EMAIL: ((git-email))
-        GIT_NAME: ((git-name))
-    - put: version
-      params:
-        repository: out
+- name: generate-version
+  public: true
+  plan:
+  - aggregate:
+    - get: tools
+    - get: version
+  - task: generate-version
+    file: tools/concourse/tasks/generate-version.yml
+    params:
+      GIT_EMAIL: ((git-email))
+      GIT_NAME: ((git-name))
+  - put: version
+    params:
+      repository: out
 
-  - name: build-and-upload
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ generate-version ]
-        trigger: true
-    - task: build-and-upload
-      file: tools/concourse/tasks/build-and-upload.yml
-      params:
-        <<: *common-params
-    - put: repo
-      params:
-        repository: out
-        tag: out/tag
-        only_tag: true
+- name: build-and-upload
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - generate-version
+      trigger: true
+  - task: build-and-upload
+    file: tools/concourse/tasks/build-and-upload.yml
+    params:
+      <<: *common-params
+  - put: repo
+    params:
+      repository: out
+      tag: out/tag
+      only_tag: true
 
-  - name: build-api-compatibility-check
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ build-and-upload ]
-        trigger: true
-    - task: build-api-compatibility-check
-      file: tools/concourse/tasks/build-api-compatibility-check.yml
-      params:
-        <<: *common-params
+- name: build-api-compatibility-check
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - build-and-upload
+      trigger: true
+  - task: build-api-compatibility-check
+    file: tools/concourse/tasks/build-api-compatibility-check.yml
+    params:
+      <<: *common-params
 
-  - name: test-deploy
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ build-api-compatibility-check ]
-        trigger: true
-    - task: test-deploy
-      file: tools/concourse/tasks/test-deploy.yml
-      params:
-        <<: *common-params
-        <<: *paas-test-params
-        PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+- name: test-deploy
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - build-api-compatibility-check
+      trigger: true
+  - task: test-deploy
+    file: tools/concourse/tasks/test-deploy.yml
+    params:
+      <<: *common-params
+      <<: *paas-test-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
 
-  - name: test-smoke
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ test-deploy ]
-        trigger: true
-    - task: test-smoke
-      file: tools/concourse/tasks/test-smoke.yml
-      params:
-        <<: *common-params
-        <<: *paas-test-params
+- name: test-smoke
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - test-deploy
+      trigger: true
+  - task: test-smoke
+    file: tools/concourse/tasks/test-smoke.yml
+    params:
+      <<: *common-params
+      <<: *paas-test-params
 
-  - name: test-rollback-deploy
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ test-smoke ]
-        trigger: true
-    - task: test-rollback-deploy
-      file: tools/concourse/tasks/test-rollback-deploy.yml
-      params:
-        <<: *common-params
-        <<: *paas-test-params
-        PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+- name: test-rollback-deploy
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - test-smoke
+      trigger: true
+  - task: test-rollback-deploy
+    file: tools/concourse/tasks/test-rollback-deploy.yml
+    params:
+      <<: *common-params
+      <<: *paas-test-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
 
-  - name: test-rollback-smoke
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ test-rollback-deploy ]
-        trigger: true
-    - task: test-rollback-smoke
-      file: tools/concourse/tasks/test-rollback-smoke.yml
-      params:
-        <<: *common-params
-        <<: *paas-test-params
+- name: test-rollback-smoke
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - test-rollback-deploy
+      trigger: true
+  - task: test-rollback-smoke
+    file: tools/concourse/tasks/test-rollback-smoke.yml
+    params:
+      <<: *common-params
+      <<: *paas-test-params
 
-  - name: stage-deploy
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ test-rollback-smoke ]
-        trigger: false
-    - task: stage-deploy
-      file: tools/concourse/tasks/stage-deploy.yml
-      params:
-        <<: *common-params
-        <<: *paas-stage-params
-        PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+- name: stage-deploy
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - test-rollback-smoke
+      trigger: false
+  - task: stage-deploy
+    file: tools/concourse/tasks/stage-deploy.yml
+    params:
+      <<: *common-params
+      <<: *paas-stage-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
 
-  - name: stage-e2e
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ stage-deploy ]
-        trigger: false
-    - task: stage-smoke
-      file: tools/concourse/tasks/stage-e2e.yml
-      params:
-        <<: *common-params
-        <<: *paas-stage-params
+- name: stage-e2e
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - stage-deploy
+      trigger: false
+  - task: stage-smoke
+    file: tools/concourse/tasks/stage-e2e.yml
+    params:
+      <<: *common-params
+      <<: *paas-stage-params
 
-  - name: prod-deploy
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ stage-e2e ]
-        trigger: false
-    - task: prod-deploy
-      file: tools/concourse/tasks/prod-deploy.yml
-      params:
-        <<: *common-params
-        <<: *paas-prod-params
-        PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
-    - put: repo
-      params:
-        repository: out
-        tag: out/tag
-        only_tag: true
+- name: prod-deploy
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - stage-e2e
+      trigger: false
+  - task: prod-deploy
+    file: tools/concourse/tasks/prod-deploy.yml
+    params:
+      <<: *common-params
+      <<: *paas-prod-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+  - put: repo
+    params:
+      repository: out
+      tag: out/tag
+      only_tag: true
 
-  - name: prod-complete
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ prod-deploy ]
-        trigger: false
-    - task: prod-complete
-      file: tools/concourse/tasks/prod-complete.yml
-      params:
-        <<: *common-params
-        <<: *paas-prod-params
+- name: prod-complete
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - prod-deploy
+      trigger: false
+  - task: prod-complete
+    file: tools/concourse/tasks/prod-complete.yml
+    params:
+      <<: *common-params
+      <<: *paas-prod-params
 
 common-params: &common-params
   _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
