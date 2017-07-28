@@ -1,453 +1,287 @@
 ---
 resources:
-  - name: repo
-    type: git
-    source:
-      uri: {{app-url}}
-      branch: {{app-branch}}
-      private_key: {{github-private-key}}
-  - name: version
-    type: git
-    source:
-      uri: {{app-url}}
-      branch: version
-      private_key: {{github-private-key}}
-  - name: tools
-    type: git
-    source:
-      uri: {{tools-scripts-url}}
-      branch: {{tools-branch}}
-  - name: m2
-    type: docker-image
-    source:
-      repository: springcloud/spring-pipeline-m2
+- name: repo
+  type: git
+  source:
+    uri: ((app-url))
+    branch: ((app-branch))
+    private_key: ((github-private-key))
+
+- name: version
+  type: git
+  source:
+    uri: ((app-url))
+    branch: version
+    private_key: ((github-private-key))
+
+- name: tools
+  type: git
+  source:
+    uri: ((tools-scripts-url))
+    branch: ((tools-branch))
+
+- name: m2
+  type: docker-image
+  source:
+    repository: springcloud/spring-pipeline-m2
 
 jobs:
-  - name: generate-version
-    public: true
-    plan:
-    - aggregate:
-        - get: tools
-        - get: version
-    - task: generate-version
-      file: tools/concourse/tasks/generate-version.yml
-      params:
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-    - put: version
-      params:
-        repository: out
+- name: generate-version
+  public: true
+  plan:
+  - aggregate:
+    - get: tools
+    - get: version
+  - task: generate-version
+    file: tools/concourse/tasks/generate-version.yml
+    params:
+      GIT_EMAIL: ((git-email))
+      GIT_NAME: ((git-name))
+  - put: version
+    params:
+      repository: updated-version
 
-  - name: build-and-upload
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ generate-version ]
-        trigger: true
-    - task: build-and-upload
-      file: tools/concourse/tasks/build-and-upload.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
-    - put: repo
-      params:
-        repository: out
-        tag: out/tag
-        only_tag: true
+- name: build-and-upload
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - generate-version
+      trigger: true
+  - task: build-and-upload
+    file: tools/concourse/tasks/build-and-upload.yml
+    params:
+      <<: *common-params
+  - put: repo
+    params:
+      repository: out
+      tag: out/tag
+      only_tag: true
 
-  - name: build-api-compatibility-check
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ build-and-upload ]
-        trigger: true
-    - task: build-api-compatibility-check
-      file: tools/concourse/tasks/build-api-compatibility-check.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
+- name: build-api-compatibility-check
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - build-and-upload
+      trigger: true
+  - task: build-api-compatibility-check
+    file: tools/concourse/tasks/build-api-compatibility-check.yml
+    params:
+      <<: *common-params
 
-  - name: test-deploy
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ build-api-compatibility-check ]
-        trigger: true
-    - task: test-deploy
-      file: tools/concourse/tasks/test-deploy.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        PAAS_TEST_USERNAME: {{paas-test-username}}
-        PAAS_TEST_PASSWORD: {{paas-test-password}}
-        PAAS_TEST_ORG: {{paas-test-org}}
-        PAAS_TEST_SPACE: {{paas-test-space}}
-        PAAS_TEST_API_URL: {{paas-test-api-url}}
-        PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
+- name: test-deploy
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - build-api-compatibility-check
+      trigger: true
+  - task: test-deploy
+    file: tools/concourse/tasks/test-deploy.yml
+    params:
+      <<: *common-params
+      <<: *paas-test-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
 
-  - name: test-smoke
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ test-deploy ]
-        trigger: true
-    - task: test-smoke
-      file: tools/concourse/tasks/test-smoke.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        PAAS_TEST_USERNAME: {{paas-test-username}}
-        PAAS_TEST_PASSWORD: {{paas-test-password}}
-        PAAS_TEST_ORG: {{paas-test-org}}
-        PAAS_TEST_SPACE: {{paas-test-space}}
-        PAAS_TEST_API_URL: {{paas-test-api-url}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
+- name: test-smoke
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - test-deploy
+      trigger: true
+  - task: test-smoke
+    file: tools/concourse/tasks/test-smoke.yml
+    params:
+      <<: *common-params
+      <<: *paas-test-params
 
-  - name: test-rollback-deploy
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ test-smoke ]
-        trigger: true
-    - task: test-rollback-deploy
-      file: tools/concourse/tasks/test-rollback-deploy.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        PAAS_TEST_USERNAME: {{paas-test-username}}
-        PAAS_TEST_PASSWORD: {{paas-test-password}}
-        PAAS_TEST_ORG: {{paas-test-org}}
-        PAAS_TEST_SPACE: {{paas-test-space}}
-        PAAS_TEST_API_URL: {{paas-test-api-url}}
-        PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
+- name: test-rollback-deploy
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - test-smoke
+      trigger: true
+  - task: test-rollback-deploy
+    file: tools/concourse/tasks/test-rollback-deploy.yml
+    params:
+      <<: *common-params
+      <<: *paas-test-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
 
-  - name: test-rollback-smoke
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ test-rollback-deploy ]
-        trigger: true
-    - task: test-rollback-smoke
-      file: tools/concourse/tasks/test-rollback-smoke.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        PAAS_TEST_USERNAME: {{paas-test-username}}
-        PAAS_TEST_PASSWORD: {{paas-test-password}}
-        PAAS_TEST_ORG: {{paas-test-org}}
-        PAAS_TEST_SPACE: {{paas-test-space}}
-        PAAS_TEST_API_URL: {{paas-test-api-url}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
+- name: test-rollback-smoke
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - test-rollback-deploy
+      trigger: true
+  - task: test-rollback-smoke
+    file: tools/concourse/tasks/test-rollback-smoke.yml
+    params:
+      <<: *common-params
+      <<: *paas-test-params
 
-  - name: stage-deploy
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ test-rollback-smoke ]
-        trigger: false
-    - task: stage-deploy
-      file: tools/concourse/tasks/stage-deploy.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        PAAS_STAGE_USERNAME: {{paas-stage-username}}
-        PAAS_STAGE_PASSWORD: {{paas-stage-password}}
-        PAAS_STAGE_ORG: {{paas-stage-org}}
-        PAAS_STAGE_SPACE: {{paas-stage-space}}
-        PAAS_STAGE_API_URL: {{paas-stage-api-url}}
-        PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
+- name: stage-deploy
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - test-rollback-smoke
+      trigger: false
+  - task: stage-deploy
+    file: tools/concourse/tasks/stage-deploy.yml
+    params:
+      <<: *common-params
+      <<: *paas-stage-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
 
-  - name: stage-e2e
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ stage-deploy ]
-        trigger: false
-    - task: stage-smoke
-      file: tools/concourse/tasks/stage-e2e.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        PAAS_STAGE_USERNAME: {{paas-stage-username}}
-        PAAS_STAGE_PASSWORD: {{paas-stage-password}}
-        PAAS_STAGE_ORG: {{paas-stage-org}}
-        PAAS_STAGE_SPACE: {{paas-stage-space}}
-        PAAS_STAGE_API_URL: {{paas-stage-api-url}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
+- name: stage-e2e
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - stage-deploy
+      trigger: false
+  - task: stage-smoke
+    file: tools/concourse/tasks/stage-e2e.yml
+    params:
+      <<: *common-params
+      <<: *paas-stage-params
 
-  - name: prod-deploy
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ stage-e2e ]
-        trigger: false
-    - task: prod-deploy
-      file: tools/concourse/tasks/prod-deploy.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        PAAS_PROD_USERNAME: {{paas-prod-username}}
-        PAAS_PROD_PASSWORD: {{paas-prod-password}}
-        PAAS_PROD_ORG: {{paas-prod-org}}
-        PAAS_PROD_SPACE: {{paas-prod-space}}
-        PAAS_PROD_API_URL: {{paas-prod-api-url}}
-        PAAS_HOSTNAME_UUID: {{paas-hostname-uuid}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
-    - put: repo
-      params:
-        repository: out
-        tag: out/tag
-        only_tag: true
+- name: prod-deploy
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - stage-e2e
+      trigger: false
+  - task: prod-deploy
+    file: tools/concourse/tasks/prod-deploy.yml
+    params:
+      <<: *common-params
+      <<: *paas-prod-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+  - put: repo
+    params:
+      repository: out
+      tag: out/tag
+      only_tag: true
 
-  - name: prod-complete
-    serial: true
-    public: false
-    plan:
-    - aggregate:
-      - get: tools
-      - get: repo
-      - get: m2
-      - get: version
-        resource: version
-        passed: [ prod-deploy ]
-        trigger: false
-    - task: prod-complete
-      file: tools/concourse/tasks/prod-complete.yml
-      params:
-        _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-        GIT_EMAIL: {{git-email}}
-        GIT_NAME: {{git-name}}
-        REDOWNLOAD_INFRA: {{redownload-infra}}
-        REDEPLOY_INFRA: {{redeploy-infra}}
-        EUREKA_GROUP_ID: {{eureka-group-id}}
-        EUREKA_ARTIFACT_ID: {{eureka-artifact-id}}
-        EUREKA_VERSION: {{eureka-version}}
-        STUBRUNNER_GROUP_ID: {{stubrunner-group-id}}
-        STUBRUNNER_ARTIFACT_ID: {{stubrunner-artifact-id}}
-        STUBRUNNER_VERSION: {{stubrunner-version}}
-        STUBRUNNER_USE_CLASSPATH: {{stubrunner-use-classpath}}
-        M2_SETTINGS_REPO_ID: {{m2-settings-repo-id}}
-        M2_SETTINGS_REPO_USERNAME: {{m2-settings-repo-username}}
-        M2_SETTINGS_REPO_PASSWORD: {{m2-settings-repo-password}}
-        REPO_WITH_BINARIES: {{repo-with-binaries}}
-        M2_REPO: {{maven-local-dir}}
-        PAAS_PROD_USERNAME: {{paas-prod-username}}
-        PAAS_PROD_PASSWORD: {{paas-prod-password}}
-        PAAS_PROD_ORG: {{paas-prod-org}}
-        PAAS_PROD_SPACE: {{paas-prod-space}}
-        PAAS_PROD_API_URL: {{paas-prod-api-url}}
-        APP_MEMORY_LIMIT: {{app-memory-limit}}
-        BUILD_OPTIONS: {{build-options}}
-        PAAS_TYPE: {{paas-type}}
+- name: prod-complete
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: m2
+    - get: version
+      resource: version
+      passed:
+      - prod-deploy
+      trigger: false
+  - task: prod-complete
+    file: tools/concourse/tasks/prod-complete.yml
+    params:
+      <<: *common-params
+      <<: *paas-prod-params
+
+common-params: &common-params
+  _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
+  APP_MEMORY_LIMIT: ((app-memory-limit))
+  BUILD_OPTIONS: ((build-options))
+  EUREKA_ARTIFACT_ID: ((eureka-artifact-id))
+  EUREKA_GROUP_ID: ((eureka-group-id))
+  EUREKA_VERSION: ((eureka-version))
+  GIT_EMAIL: ((git-email))
+  GIT_NAME: ((git-name))
+  M2_REPO: ((maven-local-dir))
+  M2_SETTINGS_REPO_ID: ((m2-settings-repo-id))
+  M2_SETTINGS_REPO_PASSWORD: ((m2-settings-repo-password))
+  M2_SETTINGS_REPO_USERNAME: ((m2-settings-repo-username))
+  PAAS_TYPE: ((paas-type))
+  REDEPLOY_INFRA: ((redeploy-infra))
+  REDOWNLOAD_INFRA: ((redownload-infra))
+  REPO_WITH_BINARIES: ((repo-with-binaries))
+  STUBRUNNER_ARTIFACT_ID: ((stubrunner-artifact-id))
+  STUBRUNNER_GROUP_ID: ((stubrunner-group-id))
+  STUBRUNNER_USE_CLASSPATH: ((stubrunner-use-classpath))
+  STUBRUNNER_VERSION: ((stubrunner-version))
+
+paas-prod-params: &paas-prod-params
+  PAAS_PROD_API_URL: ((paas-prod-api-url))
+  PAAS_PROD_ORG: ((paas-prod-org))
+  PAAS_PROD_PASSWORD: ((paas-prod-password))
+  PAAS_PROD_SPACE: ((paas-prod-space))
+  PAAS_PROD_USERNAME: ((paas-prod-username))
+
+paas-stage-params: &paas-stage-params
+  PAAS_STAGE_API_URL: ((paas-stage-api-url))
+  PAAS_STAGE_ORG: ((paas-stage-org))
+  PAAS_STAGE_PASSWORD: ((paas-stage-password))
+  PAAS_STAGE_SPACE: ((paas-stage-space))
+  PAAS_STAGE_USERNAME: ((paas-stage-username))
+
+paas-test-params: &paas-test-params
+  PAAS_TEST_API_URL: ((paas-test-api-url))
+  PAAS_TEST_ORG: ((paas-test-org))
+  PAAS_TEST_PASSWORD: ((paas-test-password))
+  PAAS_TEST_SPACE: ((paas-test-space))
+  PAAS_TEST_USERNAME: ((paas-test-username))
