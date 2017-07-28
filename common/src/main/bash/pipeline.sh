@@ -153,6 +153,9 @@ function serviceExists() {
 function deployServices() {
   if [[ "$( pipelineDescriptorExists )" == "true" ]]; then
     export PARSED_YAML=$( yaml2json "pipeline.yml" )
+    # TODO:
+    # first reverse to delete
+    # then normally to deploy
     while read -r line; do
       for service in "${line}"
       do
