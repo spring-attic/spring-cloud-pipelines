@@ -258,13 +258,9 @@ function deployEureka() {
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
-    if [[ ${fileExists} == "false" ]]; then
-        deployAppWithName "${appName}" "${jarName}" "${env}"
-        restartApp "${appName}"
-        createServiceWithName "${appName}"
-    else
-        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]. Skipping deployment"
-    fi
+    deployAppWithName "${appName}" "${jarName}" "${env}"
+    restartApp "${appName}"
+    createServiceWithName "${appName}"
 }
 
 function deployStubRunnerBoot() {
@@ -281,24 +277,20 @@ function deployStubRunnerBoot() {
         fileExists="false"
     fi
     echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}]"
-    if [[ ${fileExists} == "false" ]]; then
-        deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "false"
-        local prop="$( retrieveStubRunnerIds )"
-        echo "Found following stub runner ids [${prop}]"
-        setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
-        if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
-            setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
-        fi
-        bindService "${rabbitName}" "${stubRunnerName}"
-        setEnvVar "${stubRunnerName}" "spring.rabbitmq.addresses" "\${vcap.services.${rabbitName}.credentials.uri}"
-        if [[ "${eurekaName}" != "" ]]; then
-            bindService "${eurekaName}" "${stubRunnerName}"
-            setEnvVar "${stubRunnerName}" "eureka.client.serviceUrl.defaultZone" "\${vcap.services.${eurekaName}.credentials.uri:http://127.0.0.1:8761}/eureka/"
-        fi
-        restartApp "${stubRunnerName}"
-    else
-        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]. Skipping deployment"
+    deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "false"
+    local prop="$( retrieveStubRunnerIds )"
+    echo "Found following stub runner ids [${prop}]"
+    setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
+    if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
+        setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
     fi
+    bindService "${rabbitName}" "${stubRunnerName}"
+    setEnvVar "${stubRunnerName}" "spring.rabbitmq.addresses" "\${vcap.services.${rabbitName}.credentials.uri}"
+    if [[ "${eurekaName}" != "" ]]; then
+        bindService "${eurekaName}" "${stubRunnerName}"
+        setEnvVar "${stubRunnerName}" "eureka.client.serviceUrl.defaultZone" "\${vcap.services.${eurekaName}.credentials.uri:http://127.0.0.1:8761}/eureka/"
+    fi
+    restartApp "${stubRunnerName}"
 }
 
 function bindService() {
