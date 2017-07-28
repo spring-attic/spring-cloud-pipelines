@@ -171,7 +171,7 @@ function deployServices() {
         fi
       done
     # Removes quotes from the result
-    done <<< "$( echo "${PARSED_YAML}" | jq '.[env.LOWER_CASE_ENV].services[] | "\(.type) \(.name)"' | sed 's/^"\(.*\)"$/\1/' )"
+    done <<< "$( echo "${PARSED_YAML}" | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | "\(.type) \(.name)"' | sed 's/^"\(.*\)"$/\1/' )"
   else
     echo "No pipeline descriptor found - will not deploy any services"
   fi
