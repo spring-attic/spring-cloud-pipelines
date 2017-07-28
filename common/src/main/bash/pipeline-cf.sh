@@ -128,7 +128,7 @@ function deployRabbitMq() {
 
 function deleteMySql() {
     local serviceName="${1:-mysql-github}"
-    deleteServiceWithName -f ${serviceName}
+    deleteServiceWithName ${serviceName}
 }
 
 function deleteRabbitMq() {
