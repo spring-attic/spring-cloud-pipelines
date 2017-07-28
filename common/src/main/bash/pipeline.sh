@@ -163,6 +163,7 @@ function deployServices() {
       set ${service}
       serviceType=${1}
       serviceName=${2}
+      IFS="${PREVIOUS_IFS}"
       echo "Found service of type [${serviceType}] and name [${serviceName}]"
       if [[ "${ENVIRONMENT}" == "TEST" ]]; then
         deleteService "${serviceType}" "${serviceName}"
@@ -175,7 +176,6 @@ function deployServices() {
         fi
       fi
     done
-    IFS="${PREVIOUS_IFS}"
   else
     echo "No pipeline.rc found - will not deploy any services"
   fi
