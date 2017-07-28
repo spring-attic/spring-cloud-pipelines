@@ -104,9 +104,11 @@ function deleteService() {
     mysql)
       deleteMySql "${serviceName}"
       ;;
+    rabbitmq)
+      deleteRabbitMq "${serviceName}"
+      ;;
     *)
-      echo "Unknown service"
-      return 1
+      deleteServiceWithName "${serviceName}" || echo "Failed to delete service with type [${serviceType}] and name [${serviceName}]"
       ;;
     esac
 }
@@ -126,6 +128,16 @@ function deployRabbitMq() {
 
 function deleteMySql() {
     local serviceName="${1:-mysql-github}"
+    deleteServiceWithName -f ${serviceName}
+}
+
+function deleteRabbitMq() {
+    local serviceName="${1:-rabbitmq-github}"
+    deleteServiceWithName ${serviceName}
+}
+
+function deleteServiceWithName() {
+    local serviceName="${1}"
     cf delete-service -f ${serviceName}
 }
 
