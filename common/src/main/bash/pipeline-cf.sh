@@ -83,7 +83,7 @@ function deployService() {
       deployMySql "${serviceName}"
       ;;
     eureka)
-      downloadAppBinary ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
+      downloadAppBinary 'true' ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
       deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
     stubrunner)
@@ -408,13 +408,6 @@ function performGreenDeployment() {
     downloadAppBinary 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
     # Log in to CF to start deployment
     logInToPaas
-
-    # deploying infra
-    # TODO: most likely rabbitmq / eureka / db would be there on production; this remains for demo purposes
-    deployRabbitMq
-    deployMySql "mysql-github-analytics"
-    downloadAppBinary ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
-    deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}"
 
     # deploy app
     performGreenDeploymentOfTestedApplication "${appName}"
