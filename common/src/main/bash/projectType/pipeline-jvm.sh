@@ -5,20 +5,19 @@ set -e
 export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
 
 function downloadAppBinary() {
-    local redownloadInfra="${1}"
-    local repoWithJars="${2}"
-    local groupId="${3}"
-    local artifactId="${4}"
-    local version="${5}"
+    local repoWithJars="${1}"
+    local groupId="${2}"
+    local artifactId="${3}"
+    local version="${4}"
     local destination="`pwd`/${OUTPUT_FOLDER}/${artifactId}-${version}.jar"
     local changedGroupId="$( echo "${groupId}" | tr . / )"
     local pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.jar"
-    if [[ ! -e ${destination} || ( -e ${destination} && ${redownloadInfra} == "true" ) ]]; then
+    if [[ ! -e ${destination} ]]; then
         mkdir -p "${OUTPUT_FOLDER}"
         echo "Current folder is [`pwd`]; Downloading [${pathToJar}] to [${destination}]"
         (curl "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
     else
-        echo "File [${destination}] exists and redownload flag was set to false. Will not download it again"
+        echo "File [${destination}] exists. Will not download it again"
     fi
 }
 
