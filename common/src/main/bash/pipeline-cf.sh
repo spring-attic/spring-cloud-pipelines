@@ -88,8 +88,6 @@ function deployService() {
       ;;
     stubrunner)
       appName=$( retrieveAppName )
-      UNIQUE_EUREKA_NAME="eureka-${appName}"
-      UNIQUE_RABBIT_NAME="rabbitmq-${appName}"
       downloadAppBinary ${REPO_WITH_BINARIES} ${STUBRUNNER_GROUP_ID} ${STUBRUNNER_ARTIFACT_ID} ${STUBRUNNER_VERSION}
       deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${serviceName}"
       ;;
@@ -287,8 +285,10 @@ function deployStubRunnerBoot() {
     if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
         setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
     fi
-    bindService "${rabbitName}" "${stubRunnerName}"
-    setEnvVar "${stubRunnerName}" "spring.rabbitmq.addresses" "\${vcap.services.${rabbitName}.credentials.uri}"
+    if [[ "${rabbitName}" != "" ]]; then
+        bindService "${rabbitName}" "${stubRunnerName}"
+        setEnvVar "${stubRunnerName}" "spring.rabbitmq.addresses" "\${vcap.services.${rabbitName}.credentials.uri}"
+    fi
     if [[ "${eurekaName}" != "" ]]; then
         bindService "${eurekaName}" "${stubRunnerName}"
         setEnvVar "${stubRunnerName}" "eureka.client.serviceUrl.defaultZone" "\${vcap.services.${eurekaName}.credentials.uri:http://127.0.0.1:8761}/eureka/"
