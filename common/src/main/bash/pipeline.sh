@@ -108,12 +108,10 @@ function retrieveServices() {
     echo "${envServices}"
 }
 
-# Checks for existence of pipeline.rc file that contains types and names of the
+# Checks for existence of pipeline.yaml file that contains types and names of the
 # services required to be deployed for the given environment
-# example for TEST environment:
-# export TEST_SERVICES="rabbitmq:rabbitmq-github-webhook mysql:mysql-github-webhook"
-function pipelineRcExists() {
-    if [ -f "pipeline.rc" ]
+function pipelineDescriptorExists() {
+    if [ -f "pipeline.yml" ]
     then
         echo "true"
     else
@@ -153,32 +151,41 @@ function serviceExists() {
 # For TEST environment first deletes, then deploys services
 # For other environments only deploys a service if it wasn't there
 function deployServices() {
-  if [[ "$( pipelineRcExists )" == "true" ]]; then
-    source "pipeline.rc"
-    SERVICES=$( retrieveServices )
-    PREVIOUS_IFS="${IFS}"
-    for service in ${SERVICES}
-    do
-      IFS=:
-      set ${service}
-      serviceType=${1}
-      serviceName=${2}
-      IFS="${PREVIOUS_IFS}"
-      echo "Found service of type [${serviceType}] and name [${serviceName}]"
-      if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-        deleteService "${serviceType}" "${serviceName}"
-        deployService "${serviceType}" "${serviceName}"
-      else
-        if [[ "$( serviceExists ${serviceType} ${serviceName} )" == "true" ]]; then
-          echo "Skipping deployment since service is already deployed"
-        else
+  if [[ "$( pipelineDescriptorExists )" == "true" ]]; then
+    export PARSED_YAML=$( yaml2json "pipeline.yml" )
+    while read -r line; do
+      for service in "${line}"
+      do
+        set ${service}
+        serviceType=${1}
+        serviceName=${2}
+        if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+          deleteService "${serviceType}" "${serviceName}"
           deployService "${serviceType}" "${serviceName}"
+        else
+          if [[ "$( serviceExists ${serviceName} )" == "true" ]]; then
+            echo "Skipping deployment since service is already deployed"
+          else
+            deployService "${serviceType}" "${serviceName}"
+          fi
         fi
-      fi
-    done
+      done
+    # Removes quotes from the result
+    done <<< "$( echo "${PARSED_YAML}" | jq '.[env.LOWER_CASE_ENV].services[] | "\(.type) \(.name)"' | sed 's/^"\(.*\)"$/\1/' )"
   else
-    echo "No pipeline.rc found - will not deploy any services"
+    echo "No pipeline descriptor found - will not deploy any services"
   fi
+}
+
+# Converts YAML to JSON
+function yaml2json() {
+    ruby -ryaml -rjson -e \
+         'puts JSON.pretty_generate(YAML.load(ARGF))' $*
+}
+
+function lowerCaseEnv() {
+    local string=${1}
+    echo "${ENVIRONMENT}" | tr '[:upper:]' '[:lower:]'
 }
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -188,6 +195,7 @@ export PAAS_TYPE="${PAAS_TYPE:-cf}"
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"
+export LOWER_CASE_ENV=$( lowerCaseEnv )
 
 [[ -f "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__ROOT}/pipeline-${PAAS_TYPE}.sh" || \
     echo "No pipeline-${PAAS_TYPE}.sh found"
