@@ -48,21 +48,7 @@ function testDeploy() {
     # First delete the app instance to remove all bindings
     deleteAppInstance "${appName}"
 
-    # TODO: Consider picking services and apps from file
-    # services
-    export UNIQUE_RABBIT_NAME="rabbitmq-${appName}"
-    deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
-    export UNIQUE_MYSQL_NAME="mysql-${appName}"
-    deleteService "MYSQL" "${UNIQUE_MYSQL_NAME}"
-    deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
-
-    # dependant apps
-    if [[ "${REDEPLOY_INFRA}" == "true" ]]; then
-        export UNIQUE_EUREKA_NAME="eureka-${appName}"
-    fi
-    deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
-    export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}"
-    deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
+    deployServices
 
     # deploy app
     downloadAppBinary 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
@@ -87,20 +73,20 @@ function testRollbackDeploy() {
 }
 
 function deployService() {
-    local serviceType="${1}"
+    local serviceType=$( toLowerCase "${1}" )
     local serviceName="${2}"
     case ${serviceType} in
-    RABBITMQ)
+    rabbitmq)
       deployRabbitMq "${serviceName}"
       ;;
-    MYSQL)
+    mysql)
       deployMySql "${serviceName}"
       ;;
-    EUREKA)
-      downloadAppBinary ${REDEPLOY_INFRA} ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
-      deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
+    eureka)
+      downloadAppBinary ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
+      deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
-    STUBRUNNER)
+    stubrunner)
       downloadAppBinary 'true' ${REPO_WITH_BINARIES} ${STUBRUNNER_GROUP_ID} ${STUBRUNNER_ARTIFACT_ID} ${STUBRUNNER_VERSION}
       deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
       ;;
@@ -112,10 +98,10 @@ function deployService() {
 }
 
 function deleteService() {
-    local serviceType="${1}"
+    local serviceType=$( toLowerCase "${1}" )
     local serviceName="${2}"
     case ${serviceType} in
-    MYSQL)
+    mysql)
       deleteMySql "${serviceName}"
       ;;
     *)
@@ -169,13 +155,10 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
     local jarName="${2}"
     local rabbitName="rabbitmq-${appName}"
-    local eurekaName=""
-    if [[ "${REDEPLOY_INFRA}" == "true" ]]; then
-        eurekaName="eureka-${appName}"
-    fi
+    local eurekaName="eureka-${appName}"
     local mysqlName="mysql-${appName}"
     local profiles="cloud,smoke"
-    local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
+    local lowerCaseAppName=$( toLowerCase "${appName}" )
     deleteAppInstance "${appName}"
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
     deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'false'
@@ -190,7 +173,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
 
 function appHost() {
     local appName="${1}"
-    local lowerCase="$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )"
+    local lowerCase="$( toLowerCase "${appName}" )"
     local APP_HOST=`cf apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
     echo "${APP_HOST}" | tail -1
 }
@@ -201,7 +184,7 @@ function deployAppWithName() {
     local env="${3}"
     local useManifest="${4:-false}"
     local manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo "--no-manifest"; else echo "" ; fi )
-    local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
+    local lowerCaseAppName=$( toLowerCase "${appName}" )
     local hostname="${lowerCaseAppName}"
     local memory="${APP_MEMORY_LIMIT:-256m}"
     local buildPackUrl="${JAVA_BUILDPACK_URL:-https://github.com/cloudfoundry/java-buildpack.git#v3.8.1}"
@@ -225,7 +208,7 @@ function deployAppWithName() {
 
 function deleteAppInstance() {
     local serviceName="${1}"
-    local lowerCaseAppName=$( echo "${serviceName}" | tr '[:upper:]' '[:lower:]' )
+    local lowerCaseAppName=$( toLowerCase "${serviceName}" )
     local APP_NAME="${lowerCaseAppName}"
     echo "Deleting application [${APP_NAME}]"
     cf delete -f ${APP_NAME} || echo "Failed to delete the app. Continuing with the script"
@@ -254,41 +237,39 @@ function restartApp() {
 }
 
 function deployEureka() {
-    local redeploy="${1}"
-    local jarName="${2}"
-    local appName="${3}"
-    local env="${4}"
-    echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${appName}], env [${env}]"
+    local jarName="${1}"
+    local appName="${2}"
+    local env="${3}"
+    echo "Deploying Eureka. Options - jar name [${jarName}], app name [${appName}], env [${env}]"
     local fileExists="true"
     local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
-    if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
+    if [[ ${fileExists} == "false" ]]; then
         deployAppWithName "${appName}" "${jarName}" "${env}"
         restartApp "${appName}"
         createServiceWithName "${appName}"
     else
-        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]; redeploy flag was set [${redeploy}]. Skipping deployment"
+        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]. Skipping deployment"
     fi
 }
 
 function deployStubRunnerBoot() {
-    local redeploy="${1}"
-    local jarName="${2}"
-    local repoWithJars="${3}"
-    local rabbitName="${4}"
-    local eurekaName="${5}"
-    local env="${6:-test}"
-    local stubRunnerName="${7:-stubrunner}"
+    local jarName="${1}"
+    local repoWithJars="${2}"
+    local rabbitName="${3}"
+    local eurekaName="${4}"
+    local env="${5:-test}"
+    local stubRunnerName="${6:-stubrunner}"
     local fileExists="true"
     local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
-    echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}]"
-    if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
+    echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}]"
+    if [[ ${fileExists} == "false" ]]; then
         deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "false"
         local prop="$( retrieveStubRunnerIds )"
         echo "Found following stub runner ids [${prop}]"
@@ -304,7 +285,7 @@ function deployStubRunnerBoot() {
         fi
         restartApp "${stubRunnerName}"
     else
-        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]; redeploy flag was set [${redeploy}]. Skipping deployment"
+        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]. Skipping deployment"
     fi
 }
 
@@ -386,11 +367,7 @@ function stageDeploy() {
     # Log in to PaaS to start deployment
     logInToPaas
 
-    # TODO: Consider picking services and apps from file
-    # services
-    deployService "RABBITMQ" "rabbitmq-github"
-    deployService "MYSQL" "mysql-github"
-    deployService "EUREKA" "${EUREKA_ARTIFACT_ID}"
+    deployServices
 
     downloadAppBinary 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
 
@@ -424,8 +401,8 @@ function performGreenDeployment() {
     # TODO: most likely rabbitmq / eureka / db would be there on production; this remains for demo purposes
     deployRabbitMq
     deployMySql "mysql-github-analytics"
-    downloadAppBinary ${REDEPLOY_INFRA} ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
-    deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}"
+    downloadAppBinary ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
+    deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}"
 
     # deploy app
     performGreenDeploymentOfTestedApplication "${appName}"
@@ -475,6 +452,12 @@ function propagatePropertiesForTests() {
     echo "STUBRUNNER_URL=${host}" >> ${fileLocation}
     echo "Resolved properties"
     cat ${fileLocation}
+}
+
+function toLowerCase() {
+    local string=${1}
+    local result=$( echo "${string}" | tr '[:upper:]' '[:lower:]' )
+    echo "${result}"
 }
 
 # TODO: Make this removeable

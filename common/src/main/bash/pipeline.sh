@@ -99,7 +99,87 @@ function extractVersionFromProdTag() {
     echo "${LAST_PROD_VERSION}"
 }
 
-__DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# For the given environment retrieves the contents of the variable.
+# Example for TEST environment would be resolution of the
+# TEST_SERVICES variable
+function retrieveServices() {
+    local services="${ENVIRONMENT}_SERVICES"
+    local envServices="${!services}"
+    echo "${envServices}"
+}
+
+# Checks for existence of pipeline.rc file that contains types and names of the
+# services required to be deployed for the given environment
+# example for TEST environment:
+# export TEST_SERVICES="rabbitmq:rabbitmq-github-webhook mysql:mysql-github-webhook"
+function pipelineRcExists() {
+    if [ -f "pipeline.rc" ]
+    then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+function deleteService() {
+    local serviceType="${1}"
+    local serviceName="${2}"
+    echo "Should delete a service of type [${serviceType}] and name [${serviceName}]
+    Example: deleteService mysql foo-mysql
+    "
+    exit 1
+}
+
+function deployService() {
+    local serviceType="${1}"
+    local serviceName="${2}"
+    echo "Should deploy a service of type [${serviceType}] and name [${serviceName}]
+    Example: deployService mysql foo-mysql
+    "
+    exit 1
+}
+
+function serviceExists() {
+    local serviceType="${1}"
+    local serviceName="${2}"
+    echo "Should check if a service of type [${serviceType}] and name [${serviceName}] exists
+    Example: serviceExists mysql foo-mysql
+    Returns: 'true' if service exists and 'false' if it doesn't
+    "
+    exit 1
+}
+
+# Deploys services assuming that pipeline.rc exists
+# For TEST environment first deletes, then deploys services
+# For other environments only deploys a service if it wasn't there
+function deployServices() {
+  if [[ "$( pipelineRcExists )" == "true" ]]; then
+    source "pipeline.rc"
+    SERVICES=$( retrieveServices )
+    for service in ${SERVICES}
+    do
+      IFS=:
+      set ${service}
+      serviceType=${1}
+      serviceName=${2}
+      echo "Found service of type [${serviceType}] and name [${serviceName}]"
+      if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+        deleteService "${serviceType}" "${serviceName}"
+        deployService "${serviceType}" "${serviceName}"
+      else
+        if [[ "$( serviceExists ${serviceType} ${serviceName} )" == "true" ]]; then
+          echo "Skipping deployment since service is already deployed"
+        else
+          deployService "${serviceType}" "${serviceName}"
+        fi
+      fi
+    done
+  else
+    echo "No pipeline.rc found - will not deploy any services"
+  fi
+}
+
+__ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # CURRENTLY WE ONLY SUPPORT CF AS PAAS OUT OF THE BOX
 export PAAS_TYPE="${PAAS_TYPE:-cf}"
@@ -107,7 +187,7 @@ export PAAS_TYPE="${PAAS_TYPE:-cf}"
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"
 
-[[ -f "${__DIR}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__DIR}/pipeline-${PAAS_TYPE}.sh" || \
+[[ -f "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__ROOT}/pipeline-${PAAS_TYPE}.sh" || \
     echo "No pipeline-${PAAS_TYPE}.sh found"
 
 export OUTPUT_FOLDER=$( outputFolder )

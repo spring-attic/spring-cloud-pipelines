@@ -257,7 +257,6 @@ common-params: &common-params
   M2_SETTINGS_REPO_PASSWORD: ((m2-settings-repo-password))
   M2_SETTINGS_REPO_USERNAME: ((m2-settings-repo-username))
   PAAS_TYPE: ((paas-type))
-  REDEPLOY_INFRA: ((redeploy-infra))
   REDOWNLOAD_INFRA: ((redownload-infra))
   REPO_WITH_BINARIES: ((repo-with-binaries))
   STUBRUNNER_ARTIFACT_ID: ((stubrunner-artifact-id))
