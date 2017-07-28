@@ -156,6 +156,7 @@ function deployServices() {
   if [[ "$( pipelineRcExists )" == "true" ]]; then
     source "pipeline.rc"
     SERVICES=$( retrieveServices )
+    PREVIOUS_IFS="${IFS}"
     for service in ${SERVICES}
     do
       IFS=:
@@ -174,6 +175,7 @@ function deployServices() {
         fi
       fi
     done
+    IFS="${PREVIOUS_IFS}"
   else
     echo "No pipeline.rc found - will not deploy any services"
   fi
