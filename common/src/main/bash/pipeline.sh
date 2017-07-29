@@ -99,15 +99,6 @@ function extractVersionFromProdTag() {
     echo "${LAST_PROD_VERSION}"
 }
 
-# For the given environment retrieves the contents of the variable.
-# Example for TEST environment would be resolution of the
-# TEST_SERVICES variable
-function retrieveServices() {
-    local services="${ENVIRONMENT}_SERVICES"
-    local envServices="${!services}"
-    echo "${envServices}"
-}
-
 # Checks for existence of pipeline.yaml file that contains types and names of the
 # services required to be deployed for the given environment
 function pipelineDescriptorExists() {
