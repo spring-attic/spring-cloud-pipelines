@@ -164,7 +164,7 @@ function deployServices() {
             deleteService "${serviceType}" "${serviceName}"
           done
         # Removes quotes from the result
-        done <<< "$( echo "${PARSED_YAML}" | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | reverse | "\(.type) \(.name)"' | sed 's/^"\(.*\)"$/\1/' )"
+        done <<< "$( echo "${PARSED_YAML}" | jq --arg x ${LOWER_CASE_ENV} '.[$x].services | reverse | .[] | "\(.type) \(.name)"' | sed 's/^"\(.*\)"$/\1/' )"
     fi
     echo "Deploying services"
     while read -r line; do
