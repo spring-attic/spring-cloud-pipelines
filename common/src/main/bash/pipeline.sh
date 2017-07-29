@@ -138,9 +138,10 @@ function serviceExists() {
     exit 1
 }
 
-# Deploys services assuming that pipeline.rc exists
+# Deploys services assuming that pipeline descriptor exists
 # For TEST environment first deletes, then deploys services
-# For other environments only deploys a service if it wasn't there
+# For other environments only deploys a service if it wasn't there.
+# Uses ruby and jq
 function deployServices() {
   if [[ "$( pipelineDescriptorExists )" == "true" ]]; then
     export PARSED_YAML=$( yaml2json "pipeline.yml" )
@@ -168,7 +169,7 @@ function deployServices() {
   fi
 }
 
-# Converts YAML to JSON
+# Converts YAML to JSON - uses ruby
 function yaml2json() {
     ruby -ryaml -rjson -e \
          'puts JSON.pretty_generate(YAML.load(ARGF))' $*
