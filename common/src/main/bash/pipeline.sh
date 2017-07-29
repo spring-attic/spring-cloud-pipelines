@@ -153,20 +153,6 @@ function serviceExists() {
 function deployServices() {
   if [[ "$( pipelineDescriptorExists )" == "true" ]]; then
     export PARSED_YAML=$( yaml2json "pipeline.yml" )
-    if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-        echo "Deleting services in reverse order"
-        while read -r line; do
-          for service in "${line}"
-          do
-            set ${service}
-            serviceType=${1}
-            serviceName=${2}
-            deleteService "${serviceType}" "${serviceName}"
-          done
-        # Removes quotes from the result
-        done <<< "$( echo "${PARSED_YAML}" | jq --arg x ${LOWER_CASE_ENV} '.[$x].services | reverse | .[] | "\(.type) \(.name)"' | sed 's/^"\(.*\)"$/\1/' )"
-    fi
-    echo "Deploying services"
     while read -r line; do
       for service in "${line}"
       do
@@ -174,6 +160,7 @@ function deployServices() {
         serviceType=${1}
         serviceName=${2}
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+          deleteService "${serviceType}" "${serviceName}"
           deployService "${serviceType}" "${serviceName}"
         else
           if [[ "$( serviceExists ${serviceName} )" == "true" ]]; then

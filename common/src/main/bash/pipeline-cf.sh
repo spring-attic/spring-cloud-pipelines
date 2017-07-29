@@ -141,7 +141,8 @@ function deleteRabbitMq() {
 
 function deleteServiceWithName() {
     local serviceName="${1}"
-    cf delete-service -f ${serviceName}
+    cf delete -f ${serviceName} || echo "Failed to delete app [${serviceName}]"
+    cf delete-service -f ${serviceName} || echo "Failed to delete service [${serviceName}]"
 }
 
 function deployMySql() {
