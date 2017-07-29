@@ -204,6 +204,77 @@ the `github-analytics` needs the stubs of `github-webhook` to pass the tests. Be
 references to `github-analytics` project since it contains more interesting pieces as far as testing
 is concerned.
 
+===== CI Server worker prerequisites
+
+Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
+that needs to be installed on a CI server worker for the build to pass
+
+[source,bash]
+----
+ apt-get -y install \
+    bash \
+    git \
+    tar \
+    zip \
+    curl \
+    ruby \
+    wget \
+    unzip \
+    python \
+    jq
+----
+
+===== Pipeline descriptor
+
+Each application can contain a file called `pipeline.yml` with the following structure:
+
+[source,yaml]
+----
+lowercaseEnvironmentName1:
+    services:
+        - type: service1Type
+          name: service1Name
+        - type: service2Type
+          name: service2Name
+lowercaseEnvironmentName2:
+    services:
+        - type: service3Type
+          name: service3Name
+        - type: service4Type
+          name: service4Name
+----
+
+Example:
+
+[source,yaml]
+----
+test:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github-webhook
+    - type: mysql
+      name: mysql-github-webhook
+    - type: eureka
+      name: eureka-github-webhook
+    - type: stubrunner
+      name: stubrunner-github-webhook
+stage:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github
+    - type: mysql
+      name: mysql-github
+    - type: eureka
+      name: github-eureka
+----
+
+When the deployment to test or deployment to stage occurs, Spring Cloud Pipelines
+will:
+
+    - for `test` environment, delete existing services and redeploy the ones from the list
+    - for `stage` environment, if the service is not available it will get deployed. Otherwise
+    nothing will happen
+
 ===== Build
 
 image::{intro-root-docs}/build.png[title="Build and upload artifacts"]

@@ -314,35 +314,6 @@ function createServiceWithName() {
     cf create-user-provided-service "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
 }
 
-# Function that executes integration tests
-function runSmokeTests() {
-    local applicationHost="${APPLICATION_URL}"
-    local stubrunnerHost="${STUBRUNNER_URL}"
-    echo "Running smoke tests"
-    echo "Application URL [${APPLICATION_URL}]"
-    echo "StubRunner URL [${STUBRUNNER_URL}]"
-
-    LATEST_PROD_VERSION=$( extractVersionFromProdTag ${LATEST_PROD_TAG} )
-    echo "Last prod version equals ${LATEST_PROD_VERSION}"
-
-    if [[ "${PROJECT_TYPE}" == "MAVEN" ]]; then
-        if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( echo "$( printTestResults )" && return 1)
-        else
-            ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
-        fi
-    elif [[ "${PROJECT_TYPE}" == "GRADLE" ]]; then
-        if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( echo "$( printTestResults )" && return 1)
-        else
-            ./gradlew smoke -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
-        fi
-    else
-        echo "Unsupported project build tool"
-        return 1
-    fi
-}
-
 function prepareForSmokeTests() {
     echo "Retrieving group and artifact id - it can take a while..."
     appName=$( retrieveAppName )
@@ -422,7 +393,7 @@ function performGreenDeploymentOfTestedApplication() {
     else
         echo "Will not rename the application cause it's not there"
     fi
-    deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}" "PROD"
+    deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 }
 
 function deleteBlueInstance() {

@@ -161,12 +161,12 @@ case $1 in
 		pcfdev_login
 		cf target -s pcfdev-prod
 
-        POTENTIAL_DOCKER_HOST="$( echo "$DOCKER_HOST" | cut -d ":" -f 2 | cut -d "/" -f 3 )"
-        if [[ -z "${POTENTIAL_DOCKER_HOST}" ]]; then
-            POTENTIAL_DOCKER_HOST="localhost"
-        fi
-        ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://admin:password@${POTENTIAL_DOCKER_HOST}:8081/artifactory/libs-release-local}"
-        ARTIFACTORY_ID="${ARTIFACTORY_ID:-artifactory-local}"
+		POTENTIAL_DOCKER_HOST="$( echo "$DOCKER_HOST" | cut -d ":" -f 2 | cut -d "/" -f 3 )"
+		if [[ -z "${POTENTIAL_DOCKER_HOST}" ]]; then
+			POTENTIAL_DOCKER_HOST="localhost"
+		fi
+		ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://admin:password@${POTENTIAL_DOCKER_HOST}:8081/artifactory/libs-release-local}"
+		ARTIFACTORY_ID="${ARTIFACTORY_ID:-artifactory-local}"
 
 		echo "Installing rabbitmq" && cf cs p-rabbitmq standard rabbitmq-github
 		# for Standard CF
@@ -180,11 +180,11 @@ case $1 in
 		echo "Deploying eureka"
 		cf push "github-eureka" -p "build/eureka.jar" -n "github-eureka" -b "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" -m "256m" -i 1 --no-manifest --no-start
 		APPLICATION_DOMAIN=`cf apps | grep github-eureka | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
-        JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
-        cf set-env "github-eureka" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"
-        cf set-env "github-eureka" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
-        cf restart "github-eureka"
-        cf create-user-provided-service "github-eureka" -p "${JSON}" || echo "Service already created. Proceeding with the script"
+		JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
+		cf set-env "github-eureka" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"
+		cf set-env "github-eureka" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
+		cf restart "github-eureka"
+		cf create-user-provided-service "github-eureka" -p "${JSON}" || echo "Service already created. Proceeding with the script"
 		;;
 
 	*)
