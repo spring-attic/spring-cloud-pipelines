@@ -1090,15 +1090,46 @@ that needs to be installed on a CI server worker for the build to pass</p>
     services:
         - type: service1Type
           name: service1Name
+          coordinates: value
         - type: service2Type
           name: service2Name
+          key: value
 lowercaseEnvironmentName2:
     services:
         - type: service3Type
           name: service3Name
+          coordinates: value
         - type: service4Type
-          name: service4Name</code></pre>
+          name: service4Name
+          key: value</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>For a given environment we declare a list of infrastructure services that we
+want to have deployed. Services have</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> (example: <code>eureka</code>, <code>mysql</code>, <code>rabbitmq</code>, <code>stubrunner</code>) - this value gets
+then applied to the <code>deployService</code> Bash function</p>
+</li>
+<li>
+<p><code>name</code> - name of the service to get deployed</p>
+</li>
+<li>
+<p><code>coordinates</code> - coordinate that allows you to fetch the binary of the service.
+Examples: It can be a maven coordinate <code>groupid:artifactid:version</code>,
+ docker image <code>organization/nameOfImage</code>, etc.</p>
+</li>
+<li>
+<p>arbitrary key value pairs - you can customize the services as you wish</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>stubrunner</code> type can also have the <code>useClasspath</code> flag turned on to <code>true</code>
+or <code>false</code>.</p>
 </div>
 <div class="paragraph">
 <p>Example:</p>
@@ -1113,8 +1144,11 @@ lowercaseEnvironmentName2:
       name: mysql-github-webhook
     - type: eureka
       name: eureka-github-webhook
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
     - type: stubrunner
       name: stubrunner-github-webhook
+      coordinates: com.example.eureka:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
+      useClasspath: true
 stage:
   services:
     - type: rabbitmq
@@ -1122,7 +1156,8 @@ stage:
     - type: mysql
       name: mysql-github
     - type: eureka
-      name: github-eureka</code></pre>
+      name: github-eureka
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1</code></pre>
 </div>
 </div>
 <div class="paragraph">
