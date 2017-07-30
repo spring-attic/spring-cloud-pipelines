@@ -122,8 +122,9 @@ function deleteService() {
 function deployService() {
     local serviceType="${1}"
     local serviceName="${2}"
-    echo "Should deploy a service of type [${serviceType}] and name [${serviceName}]
-    Example: deployService mysql foo-mysql
+    local serviceCoordinates="${3}"
+    echo "Should deploy a service of type [${serviceType}], name [${serviceName}] and coordinates [${serviceCoordinates}]
+    Example: deployService eureka foo-eureka groupid:artifactid:1.0.0.RELEASE
     "
     exit 1
 }
@@ -151,6 +152,7 @@ function deployServices() {
         set ${service}
         serviceType=${1}
         serviceName=${2}
+        serviceCoordinates=${3}
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
           deleteService "${serviceType}" "${serviceName}"
           deployService "${serviceType}" "${serviceName}"
@@ -163,7 +165,7 @@ function deployServices() {
         fi
       done
     # Removes quotes from the result
-    done <<< "$( echo "${PARSED_YAML}" | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | "\(.type) \(.name)"' | sed 's/^"\(.*\)"$/\1/' )"
+    done <<< "$( echo "${PARSED_YAML}" | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"' | sed 's/^"\(.*\)"$/\1/' )"
   else
     echo "No pipeline descriptor found - will not deploy any services"
   fi
