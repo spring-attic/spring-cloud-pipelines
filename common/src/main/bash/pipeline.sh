@@ -26,12 +26,13 @@ function testRollbackDeploy() {
 }
 
 function prepareForSmokeTests() {
-    echo "Prepares environment for smoke tests"
+    echo "Prepares environment for smoke tests. Retrieves the latest production
+    tags, exports all URLs required for smoke tests, etc."
     exit 1
 }
 
 function runSmokeTests() {
-    echo "Executes smoke tests "
+    echo "Executes smoke tests. Profits from env vars set by 'prepareForSmokeTests'"
     exit 1
 }
 
@@ -39,12 +40,6 @@ function runSmokeTests() {
 
 function stageDeploy() {
     echo "Deploy binaries and required services to stage environment"
-    exit 1
-}
-
-function prepareForE2eTests() {
-    echo "Prepares the environment for end to end tests. Most likely will download
-    some binaries and upload them to the environment"
     exit 1
 }
 
@@ -114,8 +109,7 @@ function deleteService() {
     local serviceType="${1}"
     local serviceName="${2}"
     echo "Should delete a service of type [${serviceType}] and name [${serviceName}]
-    Example: deleteService mysql foo-mysql
-    "
+    Example: deleteService mysql foo-mysql"
     exit 1
 }
 
@@ -124,8 +118,7 @@ function deployService() {
     local serviceName="${2}"
     local serviceCoordinates="${3}"
     echo "Should deploy a service of type [${serviceType}], name [${serviceName}] and coordinates [${serviceCoordinates}]
-    Example: deployService eureka foo-eureka groupid:artifactid:1.0.0.RELEASE
-    "
+    Example: deployService eureka foo-eureka groupid:artifactid:1.0.0.RELEASE"
     exit 1
 }
 
@@ -134,8 +127,7 @@ function serviceExists() {
     local serviceName="${2}"
     echo "Should check if a service of type [${serviceType}] and name [${serviceName}] exists
     Example: serviceExists mysql foo-mysql
-    Returns: 'true' if service exists and 'false' if it doesn't
-    "
+    Returns: 'true' if service exists and 'false' if it doesn't"
     exit 1
 }
 
@@ -164,7 +156,7 @@ function deployServices() {
           fi
         fi
       done
-    # Removes quotes from the result
+    # Removes quotes from the result and retrieve the space separated type, name and coordinates
     done <<< "$( echo "${PARSED_YAML}" | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"' | sed 's/^"\(.*\)"$/\1/' )"
   else
     echo "No pipeline descriptor found - will not deploy any services"

@@ -67,6 +67,8 @@ function runSmokeTests() {
 }
 
 function runE2eTests() {
+    # Retrieves Application URL
+    retrieveApplicationUrl
     local applicationHost="${APPLICATION_URL}"
     echo "Running e2e tests"
 

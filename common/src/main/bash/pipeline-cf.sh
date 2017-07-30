@@ -127,13 +127,29 @@ function deleteService() {
 function deployRabbitMq() {
     local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
-    local foundApp=`cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'`
+    local foundApp=$( serviceExists "rabbitmq" "${serviceName}" )
     if [[ "${foundApp}" == "" ]]; then
         hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
         (cf cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
     else
         echo "Service [${serviceName}] already started"
+    fi
+}
+
+function findAppByName() {
+    local serviceName="${1}"
+    echo $( cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}' )
+}
+
+function serviceExists() {
+    local serviceType="${1}"
+    local serviceName="${2}"
+    local foundApp=$( findAppByName "${serviceName}" )
+    if [[ "${foundApp}" == "" ]]; then
+        echo "false"
+    else
+        echo "true"
     fi
 }
 
@@ -156,7 +172,7 @@ function deleteServiceWithName() {
 function deployMySql() {
     local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
-    local foundApp=`cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'`
+    local foundApp=$( serviceExists "mysql" "${serviceName}" )
     if [[ "${foundApp}" == "" ]]; then
         hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
@@ -365,8 +381,8 @@ function stageDeploy() {
     propagatePropertiesForTests ${appName}
 }
 
-function prepareForE2eTests() {
-    echo "Retrieving group and artifact id - it can take a while..."
+function retrieveApplicationUrl() {
+    echo "Retrieving artifact id - it can take a while..."
     appName=$( retrieveAppName )
     echo "Project artifactId is ${appName}"
     mkdir -p "${OUTPUT_FOLDER}"
