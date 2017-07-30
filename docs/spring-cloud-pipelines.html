@@ -436,6 +436,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_general_view">General view</a></li>
 <li><a href="#_opinionated_implementation">Opinionated implementation</a>
 <ul class="sectlevel4">
+<li><a href="#_ci_server_worker_prerequisites">CI Server worker prerequisites</a></li>
+<li><a href="#_pipeline_descriptor">Pipeline descriptor</a></li>
 <li><a href="#_build">Build</a></li>
 <li><a href="#_test">Test</a></li>
 <li><a href="#_stage">Stage</a></li>
@@ -544,6 +546,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_the_demo_setup">The demo setup</a>
 <ul class="sectlevel2">
+<li><a href="#_deploying_production_applications_to_pcf_dev">Deploying production applications to PCF Dev</a></li>
 <li><a href="#_running_prometheus_on_cf">Running Prometheus on CF</a></li>
 <li><a href="#_running_grafana_on_cf">Running Grafana on CF</a></li>
 </ul>
@@ -1053,6 +1056,125 @@ is concerned.
 </td>
 </tr>
 </table>
+</div>
+<div class="sect4">
+<h5 id="_ci_server_worker_prerequisites">CI Server worker prerequisites</h5>
+<div class="paragraph">
+<p>Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
+that needs to be installed on a CI server worker for the build to pass</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash"> apt-get -y install \
+    bash \
+    git \
+    tar \
+    zip \
+    curl \
+    ruby \
+    wget \
+    unzip \
+    python \
+    jq</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_pipeline_descriptor">Pipeline descriptor</h5>
+<div class="paragraph">
+<p>Each application can contain a file called <code>pipeline.yml</code> with the following structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-yaml" data-lang="yaml">lowercaseEnvironmentName1:
+    services:
+        - type: service1Type
+          name: service1Name
+          coordinates: value
+        - type: service2Type
+          name: service2Name
+          key: value
+lowercaseEnvironmentName2:
+    services:
+        - type: service3Type
+          name: service3Name
+          coordinates: value
+        - type: service4Type
+          name: service4Name
+          key: value</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For a given environment we declare a list of infrastructure services that we
+want to have deployed. Services have</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> (example: <code>eureka</code>, <code>mysql</code>, <code>rabbitmq</code>, <code>stubrunner</code>) - this value gets
+then applied to the <code>deployService</code> Bash function</p>
+</li>
+<li>
+<p><code>name</code> - name of the service to get deployed</p>
+</li>
+<li>
+<p><code>coordinates</code> - coordinate that allows you to fetch the binary of the service.
+Examples: It can be a maven coordinate <code>groupid:artifactid:version</code>,
+ docker image <code>organization/nameOfImage</code>, etc.</p>
+</li>
+<li>
+<p>arbitrary key value pairs - you can customize the services as you wish</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>stubrunner</code> type can also have the <code>useClasspath</code> flag turned on to <code>true</code>
+or <code>false</code>.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-yaml" data-lang="yaml">test:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github-webhook
+    - type: mysql
+      name: mysql-github-webhook
+    - type: eureka
+      name: eureka-github-webhook
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+    - type: stubrunner
+      name: stubrunner-github-webhook
+      coordinates: com.example.eureka:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
+      useClasspath: true
+stage:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github
+    - type: mysql
+      name: mysql-github
+    - type: eureka
+      name: github-eureka
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the deployment to test or deployment to stage occurs, Spring Cloud Pipelines
+will:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>for <code>test</code> environment, delete existing services and redeploy the ones from the list</p>
+</li>
+<li>
+<p>for <code>stage</code> environment, if the service is not available it will get deployed. Otherwise
+nothing will happen</p>
+</li>
+</ul>
+</div>
 </div>
 <div class="sect4">
 <h5 id="_build">Build</h5>
@@ -3476,6 +3598,26 @@ Remember that views can be overridden that&#8217;s why the suggestion is to cont
 <div class="paragraph">
 <p>&#160;
 &#160;</p>
+</div>
+<div class="sect2">
+<h3 id="_deploying_production_applications_to_pcf_dev">Deploying production applications to PCF Dev</h3>
+<div class="paragraph">
+<p>In the real world scenario we wouldn&#8217;t want to automatically provision services like
+RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
+production is provisioned manually (using automated solutions). In our case, before
+you deploy to production you can provision the <code>pcfdev-prod</code> space using the
+ <code>pcfdev-helper.sh</code>. Just call</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ ./pcfdev-helper.sh setup-prod-infra</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>What will happen is that the CF CLI will login to PCF Dev, target <code>pcfdev-prod</code> space,
+setup RabbitMQ (under <code>rabbitmq-github</code> name), MySQL (under <code>mysql-github-analytics</code> name)
+and Eureka (under <code>github-eureka</code> name).</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_running_prometheus_on_cf">Running Prometheus on CF</h3>

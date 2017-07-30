@@ -1,7 +1,9 @@
 #!/bin/bash
 
 function usage {
-	echo "usage: $0: <kill-all-apps|kill-all-prod-apps|delete-all-apps|delete-all-test-apps|delete-all-stage-apps|delete-routes|delete-all-services|setup-spaces>"
+	echo "usage: $0: <kill-all-apps|kill-all-prod-apps|delete-all-apps\
+|delete-all-test-apps|delete-all-stage-apps|delete-routes|delete-all-services\
+|setup-spaces|setup-prod-infra>"
 	exit 1
 }
 
@@ -153,6 +155,36 @@ case $1 in
 		yes | cf delete-service -f rabbitmq-github
 		yes | cf delete-service -f mysql-github
 		yes | cf delete-service -f github-eureka
+		;;
+
+	setup-prod-infra)
+		pcfdev_login
+		cf target -s pcfdev-prod
+
+		POTENTIAL_DOCKER_HOST="$( echo "$DOCKER_HOST" | cut -d ":" -f 2 | cut -d "/" -f 3 )"
+		if [[ -z "${POTENTIAL_DOCKER_HOST}" ]]; then
+			POTENTIAL_DOCKER_HOST="localhost"
+		fi
+		ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://admin:password@${POTENTIAL_DOCKER_HOST}:8081/artifactory/libs-release-local}"
+		ARTIFACTORY_ID="${ARTIFACTORY_ID:-artifactory-local}"
+
+		echo "Installing rabbitmq" && cf cs p-rabbitmq standard rabbitmq-github
+		# for Standard CF
+		# cf cs cloudamqp lemur
+		echo "Installing mysql" && cf cs p-mysql 512mb "mysql-github-analytics"
+		# for Standard CF
+		# cf cs p-mysql 100mb
+		echo "Downloading eureka jar"
+		mkdir -p build
+		curl "${ARTIFACTORY_URL}/com/example/eureka/github-eureka/0.0.1.M1/github-eureka-0.0.1.M1.jar" -o "build/eureka.jar" --fail
+		echo "Deploying eureka"
+		cf push "github-eureka" -p "build/eureka.jar" -n "github-eureka" -b "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" -m "256m" -i 1 --no-manifest --no-start
+		APPLICATION_DOMAIN=`cf apps | grep github-eureka | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
+		JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
+		cf set-env "github-eureka" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"
+		cf set-env "github-eureka" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
+		cf restart "github-eureka"
+		cf create-user-provided-service "github-eureka" -p "${JSON}" || echo "Service already created. Proceeding with the script"
 		;;
 
 	*)

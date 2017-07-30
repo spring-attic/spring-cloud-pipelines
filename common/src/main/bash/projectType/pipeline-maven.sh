@@ -2,7 +2,14 @@
 set -e
 
 # It takes ages on Docker to run the app without this
-export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
+if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
+    if [[ ! -z ${BUILD_OPTIONS} && ${BUILD_OPTIONS} != "null" ]]; then
+        export BUILD_OPTIONS="${BUILD_OPTIONS} -Djava.security.egd=file:///dev/urandom"
+    else
+        export BUILD_OPTIONS="-Djava.security.egd=file:///dev/urandom"
+    fi
+fi
+
 
 function build() {
     echo "Additional Build Options [${BUILD_OPTIONS}]"

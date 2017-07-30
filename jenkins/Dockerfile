@@ -29,7 +29,7 @@ ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false \
               -Dhudson.model.ParametersAction.keepUndefinedParameters=true
 
 RUN apt-get update && \
-    apt-get install -y ruby curl && \
+    apt-get install -y ruby curl jq && \
     apt-get clean
 
 # Install cf-cli
