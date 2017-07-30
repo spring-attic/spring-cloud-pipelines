@@ -612,7 +612,7 @@ We&#8217;ve taken the following opinionated decisions:</p>
 <div class="ulist">
 <ul>
 <li>
-<p>usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka</p>
+<p>application built using Maven or Gradle wrappers</p>
 </li>
 <li>
 <p>application deployment to Cloud Foundry</p>
@@ -629,6 +629,21 @@ We&#8217;ve taken the following opinionated decisions:</p>
 </li>
 <li>
 <p><code>stubrunner.ids</code> property to retrieve list of collaborators for which stubs should be downloaded</p>
+</li>
+<li>
+<p><code>repo.with.binaries</code> - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)</p>
+</li>
+<li>
+<p><code>distribution.management.release.id</code> - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in <code>settings.xml</code></p>
+</li>
+<li>
+<p><code>distribution.management.release.url</code> - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)</p>
+</li>
+<li>
+<p>running API compatibility tests via the <code>apicompatibility</code> Maven profile</p>
+</li>
+<li>
+<p><code>latest.production.version</code> - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)</p>
 </li>
 <li>
 <p>running smoke tests on a deployed app via the <code>smoke</code> Maven profile</p>
@@ -648,6 +663,21 @@ We&#8217;ve taken the following opinionated decisions:</p>
 </li>
 <li>
 <p><code>deploy</code> task for artifacts deployment</p>
+</li>
+<li>
+<p><code>REPO_WITH_BINARIES</code> - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)</p>
+</li>
+<li>
+<p><code>M2_SETTINGS_REPO_USERNAME</code> - (Injected by the pipeline) Username used to send the binary to the repo containing binaries (e.g. Artifactory)</p>
+</li>
+<li>
+<p><code>M2_SETTINGS_REPO_PASSWORD</code> - (Injected by the pipeline) Password used to send the binary to the repo containing binaries (e.g. Artifactory)</p>
+</li>
+<li>
+<p>running API compatibility tests via the <code>apiCompatibility</code> task</p>
+</li>
+<li>
+<p><code>latestProductionVersion</code> - (Injected by the pipeline) property will contain the latest production version for the repo (retrieved from Git tags)</p>
 </li>
 <li>
 <p>running smoke tests on a deployed app via the <code>smoke</code> task</p>

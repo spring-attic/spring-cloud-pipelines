@@ -21,17 +21,27 @@ and time needed by new developers to blend in when they change projects.
 This repo contains an *opinionated pipeline* to deploy a Spring Cloud based microservice.
 We've taken the following opinionated decisions:
 
-- usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
+- application built using Maven or Gradle wrappers
 - application deployment to Cloud Foundry
 - For Maven:
     * usage of Maven Wrapper
     * artifacts deployment by `./mvnw clean deploy`
     * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * `repo.with.binaries` - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `distribution.management.release.id` - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in `settings.xml`
+    * `distribution.management.release.url` - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * running API compatibility tests via the `apicompatibility` Maven profile
+    * `latest.production.version` - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
     * running smoke tests on a deployed app via the `smoke` Maven profile
     * running end to end tests on a deployed app via the `e2e` Maven profile
 - For Gradle (in the `github-analytics` application check the `gradle/pipeline.gradle` file):
     * usage of Gradlew Wrapper
     * `deploy` task for artifacts deployment
+    * `REPO_WITH_BINARIES` - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_USERNAME` - (Injected by the pipeline) Username used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_PASSWORD` - (Injected by the pipeline) Password used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * running API compatibility tests via the `apiCompatibility` task
+    * `latestProductionVersion` - (Injected by the pipeline) property will contain the latest production version for the repo (retrieved from Git tags)
     * running smoke tests on a deployed app via the `smoke` task
     * running end to end tests on a deployed app via the `e2e` task
     * `groupId` task to retrieve group id
