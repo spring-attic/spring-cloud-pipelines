@@ -155,12 +155,12 @@ function deployServices() {
         serviceCoordinates=${3}
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
           deleteService "${serviceType}" "${serviceName}"
-          deployService "${serviceType}" "${serviceName}"
+          deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
         else
           if [[ "$( serviceExists ${serviceName} )" == "true" ]]; then
             echo "Skipping deployment since service is already deployed"
           else
-            deployService "${serviceType}" "${serviceName}"
+            deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
           fi
         fi
       done
