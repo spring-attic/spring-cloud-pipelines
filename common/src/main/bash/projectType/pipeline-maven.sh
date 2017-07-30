@@ -7,7 +7,6 @@ if [[ ! -z "${BUILD_OPTIONS}" ]]; then
 else
     export BUILD_OPTIONS="-Djava.security.egd=file:///dev/urandom"
 fi
-export BUILD_OPTIONS="${BUILD_OPTIONS} -Djava.security.egd=file:///dev/urandom"
 
 function build() {
     echo "Additional Build Options [${BUILD_OPTIONS}]"
