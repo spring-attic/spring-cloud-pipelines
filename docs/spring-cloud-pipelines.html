@@ -3579,6 +3579,13 @@ Remember that views can be overridden that&#8217;s why the suggestion is to cont
 <p>&#160;
 &#160;</p>
 </div>
+<div class="paragraph">
+<p>For the demo scenario we have two applications. <code>Github Analytics</code> and <code>Github Webhook</code>.
+Let&#8217;s imagine a case where Github is emitting events via HTTP. <code>Github Webhook</code> has
+an API that could register to such hooks and receive those messages. Once this happens
+ <code>Github Webhook</code> sends a message by RabbitMQ to a channel. <code>Github Analytics</code> is
+ listening to those messages and stores them in a MySQL database.</p>
+</div>
 <div class="imageblock">
 <div class="content">
 <img src="img/demo/demo_metrics.png" alt="demo metrics">
@@ -3589,6 +3596,10 @@ Remember that views can be overridden that&#8217;s why the suggestion is to cont
 <p>&#160;
 &#160;</p>
 </div>
+<div class="paragraph">
+<p><code>Github Analytics</code> has its KPIs (Key Performance Indicators) monitored. In the case
+of that application the KPI is number of issues.</p>
+</div>
 <div class="imageblock">
 <div class="content">
 <img src="img/demo/demo_alerting.png" alt="demo alerting">
@@ -3598,6 +3609,10 @@ Remember that views can be overridden that&#8217;s why the suggestion is to cont
 <div class="paragraph">
 <p>&#160;
 &#160;</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s assume that if we go below the threshold of X issues then an alert should be
+sent to Slack.</p>
 </div>
 <div class="sect2">
 <h3 id="_deploying_production_applications_to_pcf_dev">Deploying production applications to PCF Dev</h3>
