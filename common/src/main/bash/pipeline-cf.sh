@@ -128,7 +128,7 @@ function deployRabbitMq() {
     local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
     local foundApp=$( serviceExists "rabbitmq" "${serviceName}" )
-    if [[ "${foundApp}" == "" ]]; then
+    if [[ "${foundApp}" == "false" ]]; then
         hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
         (cf cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
@@ -173,7 +173,7 @@ function deployMySql() {
     local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
     local foundApp=$( serviceExists "mysql" "${serviceName}" )
-    if [[ "${foundApp}" == "" ]]; then
+    if [[ "${foundApp}" == "false" ]]; then
         hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
         (cf cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev")
