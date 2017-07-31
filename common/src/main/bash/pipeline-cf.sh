@@ -2,7 +2,6 @@
 set -e
 
 function logInToPaas() {
-    local redownloadInfra="${REDOWNLOAD_INFRA}"
     local user="PAAS_${ENVIRONMENT}_USERNAME"
     local cfUsername="${!user}"
     local pass="PAAS_${ENVIRONMENT}_PASSWORD"
@@ -16,12 +15,12 @@ function logInToPaas() {
     CF_INSTALLED="$( cf --version || echo "false" )"
     CF_DOWNLOADED="$( test -r cf && echo "true" || echo "false" )"
     echo "CF Installed? [${CF_INSTALLED}], CF Downloaded? [${CF_DOWNLOADED}]"
-    if [[ ${CF_INSTALLED} == "false" && (${CF_DOWNLOADED} == "false" || ${CF_DOWNLOADED} == "true" && ${redownloadInfra} == "true") ]]; then
+    if [[ ${CF_INSTALLED} == "false" && ${CF_DOWNLOADED} == "false" ]]; then
         echo "Downloading Cloud Foundry"
         curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
         CF_DOWNLOADED="true"
     else
-        echo "CF is already installed or was already downloaded but the flag to redownload was disabled"
+        echo "CF is already installed"
     fi
 
     if [[ ${CF_DOWNLOADED} == "true" ]]; then
