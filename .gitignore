@@ -18,3 +18,4 @@ build
 .DS_Store
 *.log
 target
+out
