@@ -17,7 +17,7 @@ class JobScriptsSpec extends Specification {
 		given:
 
 		MemoryJobManagement jm = new MemoryJobManagement()
-		jm.availableFiles['foo/Jenkinsfile-sample'] = JobScriptsSpec.getResource('/Jenkinsfile-sample').text
+		jm.availableFiles['foo/Jenkinsfile-sample'] = new File('declarative-pipeline/Jenkinsfile-sample').text
 		jm.availableFiles['foo/pipeline.sh'] = JobScriptsSpec.getResource('/pipeline.sh').text
 		jm.availableFiles['foo/build_and_upload.sh'] = JobScriptsSpec.getResource('/build_and_upload.sh').text
 		jm.availableFiles['foo/build_api_compatibility_check.sh'] = JobScriptsSpec.getResource('/build_api_compatibility_check.sh').text
@@ -50,6 +50,22 @@ class JobScriptsSpec extends Specification {
 
 		where:
 		file << jobFiles
+	}
+
+	def 'test jenkins_pipeline seed job'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+				new File("seed/jenkins_pipeline.groovy").text)])
+
+		then:
+		noExceptionThrown()
+
+		and:
+		scripts.jobs.collect { it.jobName } == ["jenkins-pipeline-seed"]
 	}
 
 	static List<File> getJobFiles() {
