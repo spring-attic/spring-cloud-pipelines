@@ -168,7 +168,7 @@ case $1 in
 		ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://admin:password@${POTENTIAL_DOCKER_HOST}:8081/artifactory/libs-release-local}"
 		ARTIFACTORY_ID="${ARTIFACTORY_ID:-artifactory-local}"
 
-		echo "Installing rabbitmq" && cf cs p-rabbitmq standard rabbitmq-github
+		echo "Installing rabbitmq" && cf cs p-rabbitmq standard github-rabbitmq
 		# for Standard CF
 		# cf cs cloudamqp lemur
 		echo "Installing mysql" && cf cs p-mysql 512mb "mysql-github-analytics"
