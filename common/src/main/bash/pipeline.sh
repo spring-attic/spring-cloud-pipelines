@@ -26,12 +26,13 @@ function testRollbackDeploy() {
 }
 
 function prepareForSmokeTests() {
-    echo "Prepares environment for smoke tests"
+    echo "Prepares environment for smoke tests. Retrieves the latest production
+    tags, exports all URLs required for smoke tests, etc."
     exit 1
 }
 
 function runSmokeTests() {
-    echo "Executes smoke tests "
+    echo "Executes smoke tests. Profits from env vars set by 'prepareForSmokeTests'"
     exit 1
 }
 
@@ -39,12 +40,6 @@ function runSmokeTests() {
 
 function stageDeploy() {
     echo "Deploy binaries and required services to stage environment"
-    exit 1
-}
-
-function prepareForE2eTests() {
-    echo "Prepares the environment for end to end tests. Most likely will download
-    some binaries and upload them to the environment"
     exit 1
 }
 
@@ -99,14 +94,95 @@ function extractVersionFromProdTag() {
     echo "${LAST_PROD_VERSION}"
 }
 
-__DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Checks for existence of pipeline.yaml file that contains types and names of the
+# services required to be deployed for the given environment
+function pipelineDescriptorExists() {
+    if [ -f "pipeline.yml" ]
+    then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+function deleteService() {
+    local serviceType="${1}"
+    local serviceName="${2}"
+    echo "Should delete a service of type [${serviceType}] and name [${serviceName}]
+    Example: deleteService mysql foo-mysql"
+    exit 1
+}
+
+function deployService() {
+    local serviceType="${1}"
+    local serviceName="${2}"
+    local serviceCoordinates="${3}"
+    echo "Should deploy a service of type [${serviceType}], name [${serviceName}] and coordinates [${serviceCoordinates}]
+    Example: deployService eureka foo-eureka groupid:artifactid:1.0.0.RELEASE"
+    exit 1
+}
+
+function serviceExists() {
+    local serviceType="${1}"
+    local serviceName="${2}"
+    echo "Should check if a service of type [${serviceType}] and name [${serviceName}] exists
+    Example: serviceExists mysql foo-mysql
+    Returns: 'true' if service exists and 'false' if it doesn't"
+    exit 1
+}
+
+# Deploys services assuming that pipeline descriptor exists
+# For TEST environment first deletes, then deploys services
+# For other environments only deploys a service if it wasn't there.
+# Uses ruby and jq
+function deployServices() {
+  if [[ "$( pipelineDescriptorExists )" == "true" ]]; then
+    export PARSED_YAML=$( yaml2json "pipeline.yml" )
+    while read -r line; do
+      for service in "${line}"
+      do
+        set ${service}
+        serviceType=${1}
+        serviceName=${2}
+        serviceCoordinates=${3}
+        if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+          deleteService "${serviceType}" "${serviceName}"
+          deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
+        else
+          if [[ "$( serviceExists ${serviceName} )" == "true" ]]; then
+            echo "Skipping deployment since service is already deployed"
+          else
+            deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
+          fi
+        fi
+      done
+    # Removes quotes from the result and retrieve the space separated type, name and coordinates
+    done <<< "$( echo "${PARSED_YAML}" | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"' | sed 's/^"\(.*\)"$/\1/' )"
+  else
+    echo "No pipeline descriptor found - will not deploy any services"
+  fi
+}
+
+# Converts YAML to JSON - uses ruby
+function yaml2json() {
+    ruby -ryaml -rjson -e \
+         'puts JSON.pretty_generate(YAML.load(ARGF))' $*
+}
+
+function lowerCaseEnv() {
+    local string=${1}
+    echo "${ENVIRONMENT}" | tr '[:upper:]' '[:lower:]'
+}
+
+__ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export PAAS_TYPE="${PAAS_TYPE:-cf}"
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"
+export LOWER_CASE_ENV=$( lowerCaseEnv )
 
-[[ -f "${__DIR}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__DIR}/pipeline-${PAAS_TYPE}.sh" || \
+[[ -f "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__ROOT}/pipeline-${PAAS_TYPE}.sh" || \
     echo "No pipeline-${PAAS_TYPE}.sh found"
 
 export OUTPUT_FOLDER=$( outputFolder )

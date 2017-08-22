@@ -2,16 +2,23 @@
 set -e
 
 # It takes ages on Docker to run the app without this
-export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
+if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
+    if [[ ! -z ${BUILD_OPTIONS} && ${BUILD_OPTIONS} != "null" ]]; then
+        export BUILD_OPTIONS="${BUILD_OPTIONS} -Djava.security.egd=file:///dev/urandom"
+    else
+        export BUILD_OPTIONS="-Djava.security.egd=file:///dev/urandom"
+    fi
+fi
+
 
 function build() {
     echo "Additional Build Options [${BUILD_OPTIONS}]"
 
     ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${BUILD_OPTIONS}
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./mvnw clean verify deploy -Ddistribution.management.release.id=${M2_SETTINGS_REPO_ID} -Ddistribution.management.release.url=${REPO_WITH_BINARIES} -Drepo.with.binaries=${REPO_WITH_BINARIES} ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
     else
-        ./mvnw clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
+        ./mvnw clean verify deploy -Ddistribution.management.release.id=${M2_SETTINGS_REPO_ID} -Ddistribution.management.release.url=${REPO_WITH_BINARIES} -Drepo.with.binaries=${REPO_WITH_BINARIES} ${BUILD_OPTIONS}
     fi
 }
 
@@ -31,9 +38,9 @@ function apiCompatibilityCheck() {
         echo "Last prod version equals ${LATEST_PROD_VERSION}"
         echo "Additional Build Options [${BUILD_OPTIONS}]"
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./mvnw clean verify -Papicompatibility -Dlatest.production.version="${LATEST_PROD_VERSION}" -Drepo.with.jars="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+            ./mvnw clean verify -Papicompatibility -Dlatest.production.version=${LATEST_PROD_VERSION} -Drepo.with.binaries=${REPO_WITH_BINARIES} ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
         else
-            ./mvnw clean verify -Papicompatibility -Dlatest.production.version="${LATEST_PROD_VERSION}" -Drepo.with.jars="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
+            ./mvnw clean verify -Papicompatibility -Dlatest.production.version=${LATEST_PROD_VERSION} -Drepo.with.binaries=${REPO_WITH_BINARIES} ${BUILD_OPTIONS}
         fi
     fi
 }
@@ -90,6 +97,8 @@ function runSmokeTests() {
 }
 
 function runE2eTests() {
+    # Retrieves Application URL
+    retrieveApplicationUrl
     local applicationHost="${APPLICATION_URL}"
     echo "Running e2e tests"
 

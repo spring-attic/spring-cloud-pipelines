@@ -29,17 +29,27 @@ and time needed by new developers to blend in when they change projects.
 This repo contains an *opinionated pipeline* to deploy a Spring Cloud based microservice.
 We've taken the following opinionated decisions:
 
-- usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
+- application built using Maven or Gradle wrappers
 - application deployment to Cloud Foundry
 - For Maven:
     * usage of Maven Wrapper
     * artifacts deployment by `./mvnw clean deploy`
     * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * `repo.with.binaries` - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `distribution.management.release.id` - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in `settings.xml`
+    * `distribution.management.release.url` - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * running API compatibility tests via the `apicompatibility` Maven profile
+    * `latest.production.version` - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
     * running smoke tests on a deployed app via the `smoke` Maven profile
     * running end to end tests on a deployed app via the `e2e` Maven profile
 - For Gradle (in the `github-analytics` application check the `gradle/pipeline.gradle` file):
     * usage of Gradlew Wrapper
     * `deploy` task for artifacts deployment
+    * `REPO_WITH_BINARIES` - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_USERNAME` - (Injected by the pipeline) Username used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_PASSWORD` - (Injected by the pipeline) Password used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * running API compatibility tests via the `apiCompatibility` task
+    * `latestProductionVersion` - (Injected by the pipeline) property will contain the latest production version for the repo (retrieved from Git tags)
     * running smoke tests on a deployed app via the `smoke` task
     * running end to end tests on a deployed app via the `e2e` task
     * `groupId` task to retrieve group id
@@ -57,6 +67,99 @@ You can go through the setup of the demo environment for
 
 Each of these setups are available under the folders `jenkins` and
 `concourse` respectively.
+
+=== CI Server worker prerequisites
+
+Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
+that needs to be installed on a CI server worker for the build to pass
+
+[source,bash]
+----
+ apt-get -y install \
+    bash \
+    git \
+    tar \
+    zip \
+    curl \
+    ruby \
+    wget \
+    unzip \
+    python \
+    jq
+----
+
+=== Pipeline descriptor
+
+Each application can contain a file called `pipeline.yml` with the following structure:
+
+[source,yaml]
+----
+lowercaseEnvironmentName1:
+    services:
+        - type: service1Type
+          name: service1Name
+          coordinates: value
+        - type: service2Type
+          name: service2Name
+          key: value
+lowercaseEnvironmentName2:
+    services:
+        - type: service3Type
+          name: service3Name
+          coordinates: value
+        - type: service4Type
+          name: service4Name
+          key: value
+----
+
+For a given environment we declare a list of infrastructure services that we
+want to have deployed. Services have
+
+    - `type` (example: `eureka`, `mysql`, `rabbitmq`, `stubrunner`) - this value gets
+    then applied to the `deployService` Bash function
+    - `name` - name of the service to get deployed
+    - `coordinates` - coordinate that allows you to fetch the binary of the service.
+      Examples: It can be a maven coordinate `groupid:artifactid:version`,
+       docker image `organization/nameOfImage`, etc.
+    - arbitrary key value pairs - you can customize the services as you wish
+
+The `stubrunner` type can also have the `useClasspath` flag turned on to `true`
+or `false`.
+
+Example:
+
+[source,yaml]
+----
+test:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github-webhook
+    - type: mysql
+      name: mysql-github-webhook
+    - type: eureka
+      name: eureka-github-webhook
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+    - type: stubrunner
+      name: stubrunner-github-webhook
+      coordinates: com.example.eureka:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
+      useClasspath: true
+stage:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github
+    - type: mysql
+      name: mysql-github
+    - type: eureka
+      name: github-eureka
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+----
+
+When the deployment to test or deployment to stage occurs, Spring Cloud Pipelines
+will:
+
+    - for `test` environment, delete existing services and redeploy the ones from the list
+    - for `stage` environment, if the service is not available it will get deployed. Otherwise
+    nothing will happen
 
 == Introduction
 
@@ -1536,16 +1639,45 @@ image::{demo-root-docs}/demo.png[caption="The overview of the demo: ", title="Gi
 {nbsp}
 {nbsp}
 
+For the demo scenario we have two applications. `Github Analytics` and `Github Webhook`.
+Let's imagine a case where Github is emitting events via HTTP. `Github Webhook` has
+an API that could register to such hooks and receive those messages. Once this happens
+ `Github Webhook` sends a message by RabbitMQ to a channel. `Github Analytics` is
+ listening to those messages and stores them in a MySQL database.
+
 image::{demo-root-docs}/demo_metrics.png[caption="Gathering metrics: ", title="Github Analytics exposes metrics that are polled by Prometheus"]
 
 {nbsp}
 {nbsp}
+
+`Github Analytics` has its KPIs (Key Performance Indicators) monitored. In the case
+of that application the KPI is number of issues.
 
 image::{demo-root-docs}/demo_alerting.png[caption="Alerting over metrics: ", title="Grafana alerts Slack over Prometheus metrics"]
 
 {nbsp}
 {nbsp}
 
+Let's assume that if we go below the threshold of X issues then an alert should be
+sent to Slack.
+
+
+=== Deploying production applications to PCF Dev
+
+In the real world scenario we wouldn't want to automatically provision services like
+RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
+production is provisioned manually (using automated solutions). In our case, before
+you deploy to production you can provision the `pcfdev-prod` space using the
+ `pcfdev-helper.sh`. Just call
+
+[source,bash]
+----
+$ ./pcfdev-helper.sh setup-prod-infra
+----
+
+What will happen is that the CF CLI will login to PCF Dev, target `pcfdev-prod` space,
+setup RabbitMQ (under `rabbitmq-github` name), MySQL (under `mysql-github-analytics` name)
+and Eureka (under `github-eureka` name).
 
 === Running Prometheus on CF
 

@@ -11,7 +11,7 @@ factory.job('jenkins-pipeline-cf-seed') {
             remote {
                 github('spring-cloud/spring-cloud-pipelines')
             }
-            branch('master')
+            branch('${TOOLS_BRANCH}')
         }
     }
     wrappers {

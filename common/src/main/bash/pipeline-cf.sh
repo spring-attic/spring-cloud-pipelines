@@ -2,7 +2,6 @@
 set -e
 
 function logInToPaas() {
-    local redownloadInfra="${REDOWNLOAD_INFRA}"
     local user="PAAS_${ENVIRONMENT}_USERNAME"
     local cfUsername="${!user}"
     local pass="PAAS_${ENVIRONMENT}_PASSWORD"
@@ -16,12 +15,12 @@ function logInToPaas() {
     CF_INSTALLED="$( cf --version || echo "false" )"
     CF_DOWNLOADED="$( test -r cf && echo "true" || echo "false" )"
     echo "CF Installed? [${CF_INSTALLED}], CF Downloaded? [${CF_DOWNLOADED}]"
-    if [[ ${CF_INSTALLED} == "false" && (${CF_DOWNLOADED} == "false" || ${CF_DOWNLOADED} == "true" && ${redownloadInfra} == "true") ]]; then
+    if [[ ${CF_INSTALLED} == "false" && ${CF_DOWNLOADED} == "false" ]]; then
         echo "Downloading Cloud Foundry"
         curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
         CF_DOWNLOADED="true"
     else
-        echo "CF is already installed or was already downloaded but the flag to redownload was disabled"
+        echo "CF is already installed"
     fi
 
     if [[ ${CF_DOWNLOADED} == "true" ]]; then
@@ -48,24 +47,10 @@ function testDeploy() {
     # First delete the app instance to remove all bindings
     deleteAppInstance "${appName}"
 
-    # TODO: Consider picking services and apps from file
-    # services
-    export UNIQUE_RABBIT_NAME="rabbitmq-${appName}"
-    deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
-    export UNIQUE_MYSQL_NAME="mysql-${appName}"
-    deleteService "MYSQL" "${UNIQUE_MYSQL_NAME}"
-    deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
-
-    # dependant apps
-    if [[ "${REDEPLOY_INFRA}" == "true" ]]; then
-        export UNIQUE_EUREKA_NAME="eureka-${appName}"
-    fi
-    deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
-    export UNIQUE_STUBRUNNER_NAME="stubrunner-${appName}"
-    deployService "STUBRUNNER" "${UNIQUE_STUBRUNNER_NAME}"
+    deployServices
 
     # deploy app
-    downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
+    downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
     deployAndRestartAppWithNameForSmokeTests ${appName} "${appName}-${PIPELINE_VERSION}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
     propagatePropertiesForTests ${appName}
 }
@@ -78,7 +63,7 @@ function testRollbackDeploy() {
     # Downloading latest jar
     LATEST_PROD_VERSION=${latestProdTag#prod/}
     echo "Last prod version equals ${LATEST_PROD_VERSION}"
-    downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${LATEST_PROD_VERSION}
+    downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${LATEST_PROD_VERSION}
     logInToPaas
     deployAndRestartAppWithNameForSmokeTests ${appName} "${appName}-${LATEST_PROD_VERSION}"
     propagatePropertiesForTests ${appName}
@@ -87,40 +72,53 @@ function testRollbackDeploy() {
 }
 
 function deployService() {
-    local serviceType="${1}"
+    local serviceType=$( toLowerCase "${1}" )
     local serviceName="${2}"
+    local serviceCoordinates=$( if [[ "${3}" == "null" ]] ; then echo ""; else echo "${3}" ; fi )
     case ${serviceType} in
-    RABBITMQ)
+    rabbitmq)
       deployRabbitMq "${serviceName}"
       ;;
-    MYSQL)
+    mysql)
       deployMySql "${serviceName}"
       ;;
-    EUREKA)
-      downloadAppArtifact ${REDEPLOY_INFRA} ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
-      deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
+    eureka)
+      PREVIOUS_IFS="${IFS}"
+      IFS=: read -r EUREKA_GROUP_ID EUREKA_ARTIFACT_ID EUREKA_VERSION <<< "${serviceCoordinates}"
+      IFS="${PREVIOUS_IFS}"
+      downloadAppBinary ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
+      deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
-    STUBRUNNER)
-      downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${STUBRUNNER_GROUP_ID} ${STUBRUNNER_ARTIFACT_ID} ${STUBRUNNER_VERSION}
-      deployStubRunnerBoot 'true' "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${UNIQUE_STUBRUNNER_NAME}"
+    stubrunner)
+      UNIQUE_EUREKA_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' )"
+      UNIQUE_RABBIT_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' )"
+      PREVIOUS_IFS="${IFS}"
+      IFS=: read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<< "${serviceCoordinates}"
+      IFS="${PREVIOUS_IFS}"
+      PARSED_STUBRUNNER_USE_CLASSPATH="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
+      STUBRUNNER_USE_CLASSPATH=$( if [[ "${PARSED_STUBRUNNER_USE_CLASSPATH}" == "null" ]] ; then echo "false"; else echo "${PARSED_STUBRUNNER_USE_CLASSPATH}" ; fi )
+      downloadAppBinary ${REPO_WITH_BINARIES} ${STUBRUNNER_GROUP_ID} ${STUBRUNNER_ARTIFACT_ID} ${STUBRUNNER_VERSION}
+      deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${serviceName}"
       ;;
     *)
-      echo "Unknown service"
+      echo "Unknown service with type [${serviceType}] and name [${serviceName}]"
       return 1
       ;;
     esac
 }
 
 function deleteService() {
-    local serviceType="${1}"
+    local serviceType=$( toLowerCase "${1}" )
     local serviceName="${2}"
     case ${serviceType} in
-    MYSQL)
+    mysql)
       deleteMySql "${serviceName}"
       ;;
+    rabbitmq)
+      deleteRabbitMq "${serviceName}"
+      ;;
     *)
-      echo "Unknown service"
-      return 1
+      deleteServiceWithName "${serviceName}" || echo "Failed to delete service with type [${serviceType}] and name [${serviceName}]"
       ;;
     esac
 }
@@ -128,8 +126,8 @@ function deleteService() {
 function deployRabbitMq() {
     local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
-    local foundApp=`cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'`
-    if [[ "${foundApp}" == "" ]]; then
+    local foundApp=$( serviceExists "rabbitmq" "${serviceName}" )
+    if [[ "${foundApp}" == "false" ]]; then
         hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
         (cf cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
@@ -138,16 +136,43 @@ function deployRabbitMq() {
     fi
 }
 
+function findAppByName() {
+    local serviceName="${1}"
+    echo $( cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}' )
+}
+
+function serviceExists() {
+    local serviceType="${1}"
+    local serviceName="${2}"
+    local foundApp=$( findAppByName "${serviceName}" )
+    if [[ "${foundApp}" == "" ]]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
 function deleteMySql() {
     local serviceName="${1:-mysql-github}"
-    cf delete-service -f ${serviceName}
+    deleteServiceWithName ${serviceName}
+}
+
+function deleteRabbitMq() {
+    local serviceName="${1:-rabbitmq-github}"
+    deleteServiceWithName ${serviceName}
+}
+
+function deleteServiceWithName() {
+    local serviceName="${1}"
+    cf delete -f ${serviceName} || echo "Failed to delete app [${serviceName}]"
+    cf delete-service -f ${serviceName} || echo "Failed to delete service [${serviceName}]"
 }
 
 function deployMySql() {
     local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
-    local foundApp=`cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'`
-    if [[ "${foundApp}" == "" ]]; then
+    local foundApp=$( serviceExists "mysql" "${serviceName}" )
+    if [[ "${foundApp}" == "false" ]]; then
         hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
         (cf cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev")
@@ -169,13 +194,10 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
     local jarName="${2}"
     local rabbitName="rabbitmq-${appName}"
-    local eurekaName=""
-    if [[ "${REDEPLOY_INFRA}" == "true" ]]; then
-        eurekaName="eureka-${appName}"
-    fi
+    local eurekaName="eureka-${appName}"
     local mysqlName="mysql-${appName}"
     local profiles="cloud,smoke"
-    local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
+    local lowerCaseAppName=$( toLowerCase "${appName}" )
     deleteAppInstance "${appName}"
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
     deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'false'
@@ -190,7 +212,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
 
 function appHost() {
     local appName="${1}"
-    local lowerCase="$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )"
+    local lowerCase="$( toLowerCase "${appName}" )"
     local APP_HOST=`cf apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
     echo "${APP_HOST}" | tail -1
 }
@@ -201,7 +223,7 @@ function deployAppWithName() {
     local env="${3}"
     local useManifest="${4:-false}"
     local manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo "--no-manifest"; else echo "" ; fi )
-    local lowerCaseAppName=$( echo "${appName}" | tr '[:upper:]' '[:lower:]' )
+    local lowerCaseAppName=$( toLowerCase "${appName}" )
     local hostname="${lowerCaseAppName}"
     local memory="${APP_MEMORY_LIMIT:-256m}"
     local buildPackUrl="${JAVA_BUILDPACK_URL:-https://github.com/cloudfoundry/java-buildpack.git#v3.8.1}"
@@ -225,7 +247,7 @@ function deployAppWithName() {
 
 function deleteAppInstance() {
     local serviceName="${1}"
-    local lowerCaseAppName=$( echo "${serviceName}" | tr '[:upper:]' '[:lower:]' )
+    local lowerCaseAppName=$( toLowerCase "${serviceName}" )
     local APP_NAME="${lowerCaseAppName}"
     echo "Deleting application [${APP_NAME}]"
     cf delete -f ${APP_NAME} || echo "Failed to delete the app. Continuing with the script"
@@ -254,58 +276,50 @@ function restartApp() {
 }
 
 function deployEureka() {
-    local redeploy="${1}"
-    local jarName="${2}"
-    local appName="${3}"
-    local env="${4}"
-    echo "Deploying Eureka. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${appName}], env [${env}]"
+    local jarName="${1}"
+    local appName="${2}"
+    local env="${3}"
+    echo "Deploying Eureka. Options - jar name [${jarName}], app name [${appName}], env [${env}]"
     local fileExists="true"
     local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
-    if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
-        deployAppWithName "${appName}" "${jarName}" "${env}"
-        restartApp "${appName}"
-        createServiceWithName "${appName}"
-    else
-        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]; redeploy flag was set [${redeploy}]. Skipping deployment"
-    fi
+    deployAppWithName "${appName}" "${jarName}" "${env}"
+    restartApp "${appName}"
+    createServiceWithName "${appName}"
 }
 
 function deployStubRunnerBoot() {
-    local redeploy="${1}"
-    local jarName="${2}"
-    local repoWithJars="${3}"
-    local rabbitName="${4}"
-    local eurekaName="${5}"
-    local env="${6:-test}"
-    local stubRunnerName="${7:-stubrunner}"
+    local jarName="${1}"
+    local repoWithJars="${2}"
+    local rabbitName="${3}"
+    local eurekaName="${4}"
+    local env="${5:-test}"
+    local stubRunnerName="${6:-stubrunner}"
     local fileExists="true"
     local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
     if [[ ! -f "${fileName}" ]]; then
         fileExists="false"
     fi
-    echo "Deploying Stub Runner. Options - redeploy [${redeploy}], jar name [${jarName}], app name [${stubRunnerName}]"
-    if [[ ${fileExists} == "false" || ( ${fileExists} == "true" && ${redeploy} == "true" ) ]]; then
-        deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "false"
-        local prop="$( retrieveStubRunnerIds )"
-        echo "Found following stub runner ids [${prop}]"
-        setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
-        if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
-            setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
-        fi
+    echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}]"
+    deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "false"
+    local prop="$( retrieveStubRunnerIds )"
+    echo "Found following stub runner ids [${prop}]"
+    setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
+    if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
+        setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
+    fi
+    if [[ "${rabbitName}" != "" ]]; then
         bindService "${rabbitName}" "${stubRunnerName}"
         setEnvVar "${stubRunnerName}" "spring.rabbitmq.addresses" "\${vcap.services.${rabbitName}.credentials.uri}"
-        if [[ "${eurekaName}" != "" ]]; then
-            bindService "${eurekaName}" "${stubRunnerName}"
-            setEnvVar "${stubRunnerName}" "eureka.client.serviceUrl.defaultZone" "\${vcap.services.${eurekaName}.credentials.uri:http://127.0.0.1:8761}/eureka/"
-        fi
-        restartApp "${stubRunnerName}"
-    else
-        echo "Current folder is [`pwd`]; The [${fileName}] exists [${fileExists}]; redeploy flag was set [${redeploy}]. Skipping deployment"
     fi
+    if [[ "${eurekaName}" != "" ]]; then
+        bindService "${eurekaName}" "${stubRunnerName}"
+        setEnvVar "${stubRunnerName}" "eureka.client.serviceUrl.defaultZone" "\${vcap.services.${eurekaName}.credentials.uri:http://127.0.0.1:8761}/eureka/"
+    fi
+    restartApp "${stubRunnerName}"
 }
 
 function bindService() {
@@ -357,21 +371,17 @@ function stageDeploy() {
     # Log in to PaaS to start deployment
     logInToPaas
 
-    # TODO: Consider picking services and apps from file
-    # services
-    deployService "RABBITMQ" "rabbitmq-github"
-    deployService "MYSQL" "mysql-github"
-    deployService "EUREKA" "${EUREKA_ARTIFACT_ID}"
+    deployServices
 
-    downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
+    downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
 
     # deploy app
     deployAndRestartAppWithName ${appName} "${appName}-${PIPELINE_VERSION}"
     propagatePropertiesForTests ${appName}
 }
 
-function prepareForE2eTests() {
-    echo "Retrieving group and artifact id - it can take a while..."
+function retrieveApplicationUrl() {
+    echo "Retrieving artifact id - it can take a while..."
     appName=$( retrieveAppName )
     echo "Project artifactId is ${appName}"
     mkdir -p "${OUTPUT_FOLDER}"
@@ -387,16 +397,9 @@ function performGreenDeployment() {
     appName=$( retrieveAppName )
 
     # download app
-    downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
+    downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
     # Log in to CF to start deployment
     logInToPaas
-
-    # deploying infra
-    # TODO: most likely rabbitmq / eureka / db would be there on production; this remains for demo purposes
-    deployRabbitMq
-    deployMySql "mysql-github-analytics"
-    downloadAppArtifact ${REDEPLOY_INFRA} ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
-    deployEureka ${REDEPLOY_INFRA} "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${EUREKA_ARTIFACT_ID}"
 
     # deploy app
     performGreenDeploymentOfTestedApplication "${appName}"
@@ -413,7 +416,7 @@ function performGreenDeploymentOfTestedApplication() {
     else
         echo "Will not rename the application cause it's not there"
     fi
-    deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}" "PROD"
+    deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 }
 
 function deleteBlueInstance() {
@@ -448,33 +451,11 @@ function propagatePropertiesForTests() {
     cat ${fileLocation}
 }
 
-function downloadAppArtifact() {
-    local redownloadInfra="${1}"
-    local repoWithJars="${2}"
-    local groupId="${3}"
-    local artifactId="${4}"
-    local version="${5}"
-    local destination="`pwd`/${OUTPUT_FOLDER}/${artifactId}-${version}.jar"
-    local changedGroupId="$( echo "${groupId}" | tr . / )"
-    local pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.jar"
-    if [[ ! -e ${destination} || ( -e ${destination} && ${redownloadInfra} == "true" ) ]]; then
-        mkdir -p "${OUTPUT_FOLDER}"
-        echo "Current folder is [`pwd`]; Downloading [${pathToJar}] to [${destination}]"
-        (curl "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
-    else
-        echo "File [${destination}] exists and redownload flag was set to false. Will not download it again"
-    fi
+function toLowerCase() {
+    local string=${1}
+    local result=$( echo "${string}" | tr '[:upper:]' '[:lower:]' )
+    echo "${result}"
 }
-
-# TODO: Make this removeable
-# We have the same application example for both CF & Kubernetes. In CF we don't need
-# docker so we're disabling those tasks. However normally the `deploy` should already do
-# all that's necessary to deploy a binary (whatever that binary is)
-if [[ ! -z "${BUILD_OPTIONS}" ]]; then
-    export BUILD_OPTIONS="${BUILD_OPTIONS} -DskipDocker"
-else
-    export BUILD_OPTIONS="-DskipDocker"
-fi
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

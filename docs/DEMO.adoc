@@ -9,16 +9,45 @@ image::{demo-root-docs}/demo.png[caption="The overview of the demo: ", title="Gi
 {nbsp}
 {nbsp}
 
+For the demo scenario we have two applications. `Github Analytics` and `Github Webhook`.
+Let's imagine a case where Github is emitting events via HTTP. `Github Webhook` has
+an API that could register to such hooks and receive those messages. Once this happens
+ `Github Webhook` sends a message by RabbitMQ to a channel. `Github Analytics` is
+ listening to those messages and stores them in a MySQL database.
+
 image::{demo-root-docs}/demo_metrics.png[caption="Gathering metrics: ", title="Github Analytics exposes metrics that are polled by Prometheus"]
 
 {nbsp}
 {nbsp}
+
+`Github Analytics` has its KPIs (Key Performance Indicators) monitored. In the case
+of that application the KPI is number of issues.
 
 image::{demo-root-docs}/demo_alerting.png[caption="Alerting over metrics: ", title="Grafana alerts Slack over Prometheus metrics"]
 
 {nbsp}
 {nbsp}
 
+Let's assume that if we go below the threshold of X issues then an alert should be
+sent to Slack.
+
+
+=== Deploying production applications to PCF Dev
+
+In the real world scenario we wouldn't want to automatically provision services like
+RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
+production is provisioned manually (using automated solutions). In our case, before
+you deploy to production you can provision the `pcfdev-prod` space using the
+ `pcfdev-helper.sh`. Just call
+
+[source,bash]
+----
+$ ./pcfdev-helper.sh setup-prod-infra
+----
+
+What will happen is that the CF CLI will login to PCF Dev, target `pcfdev-prod` space,
+setup RabbitMQ (under `rabbitmq-github` name), MySQL (under `mysql-github-analytics` name)
+and Eureka (under `github-eureka` name).
 
 === Running Prometheus on CF
 

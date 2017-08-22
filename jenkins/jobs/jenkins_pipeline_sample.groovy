@@ -1,5 +1,4 @@
 import javaposse.jobdsl.dsl.DslFactory
-import javaposse.jobdsl.dsl.helpers.BuildParametersContext
 
 DslFactory dsl = this
 
@@ -63,7 +62,6 @@ parsedRepos.each {
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
-			parameters(PipelineDefaults.defaultParams(paasType))
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -136,7 +134,6 @@ parsedRepos.each {
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
-			parameters(PipelineDefaults.defaultParams(paasType))
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -187,7 +184,6 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Deploy to test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters(PipelineDefaults.defaultParams(paasType))
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
@@ -225,7 +221,6 @@ parsedRepos.each {
 			downstreamParameterized {
 				trigger("${projectName}-test-env-test") {
 					parameters {
-						
 						currentBuild()
 					}
 					triggerWithNoParameters()
@@ -238,8 +233,6 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Tests on test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			parameters(PipelineDefaults.defaultParams(paasType))
-			parameters PipelineDefaults.smokeTestParams()
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
@@ -304,7 +297,6 @@ parsedRepos.each {
 			deliveryPipelineConfiguration('Test', 'Deploy to test latest prod version')
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				parameters(PipelineDefaults.defaultParams(paasType))
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
 				}
@@ -352,8 +344,6 @@ parsedRepos.each {
 			deliveryPipelineConfiguration('Test', 'Tests on test latest prod version')
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				parameters(PipelineDefaults.defaultParams(paasType))
-				parameters PipelineDefaults.smokeTestParams()
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
 				}
@@ -440,7 +430,6 @@ parsedRepos.each {
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 				maskPasswords()
-				parameters(PipelineDefaults.defaultParams(paasType))
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
 				}
@@ -498,8 +487,6 @@ parsedRepos.each {
 			deliveryPipelineConfiguration('Stage', 'End to end tests on stage')
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				parameters(PipelineDefaults.defaultParams(paasType))
-				parameters PipelineDefaults.smokeTestParams()
 				environmentVariables {
 					environmentVariables(defaults.defaultEnvVars)
 				}
@@ -561,7 +548,6 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters(PipelineDefaults.defaultParams(paasType))
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
@@ -626,7 +612,6 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			parameters(PipelineDefaults.defaultParams(paasType))
 			environmentVariables {
 				environmentVariables(defaults.defaultEnvVars)
 			}
@@ -726,54 +711,6 @@ class PipelineDefaults {
 	private void setIfPresent(Map<String, String> envs, Map<String, String> variables, String prop) {
 		if (variables[prop]) {
 			envs[prop] = variables[prop]
-		}
-	}
-
-	protected static Closure context(@DelegatesTo(BuildParametersContext) Closure params) {
-		params.resolveStrategy = Closure.DELEGATE_FIRST
-		return params
-	}
-
-	/**
-	 * With the Security constraints in Jenkins in order to pass the parameters between jobs, every job
-	 * has to define the parameters on input. In order not to copy paste the params we're doing this
-	 * default params method.
-	 */
-	static Closure defaultParams(String paasType) {
-		return context {
-			booleanParam('STUBRUNNER_USE_CLASSPATH', false, "Should Stub Runner use classpath instead of reaching a repo")
-			// remove::start[CF]
-			if (paasType == "cf") {
-				booleanParam('REDOWNLOAD_INFRA', false, "If Eureka & StubRunner & CF binaries should be redownloaded if already present")
-				booleanParam('REDEPLOY_INFRA', true, "If Eureka JAR should be deployed. Uncheck this if you're not using Eureka")
-				stringParam('EUREKA_GROUP_ID', 'com.example.eureka', "Group Id for Eureka used by tests")
-				stringParam('EUREKA_ARTIFACT_ID', 'github-eureka', "Artifact Id for Eureka used by tests")
-				stringParam('EUREKA_VERSION', '0.0.1.M1', "Artifact Version for Eureka used by tests")
-				stringParam('STUBRUNNER_GROUP_ID', 'com.example.github', "Group Id for Stub Runner used by tests")
-				stringParam('STUBRUNNER_ARTIFACT_ID', 'github-analytics-stub-runner-boot', "Artifact Id for Stub Runner used by tests")
-				stringParam('STUBRUNNER_VERSION', '0.0.1.M1', "Artifact Version for Stub Runner used by tests")
-			}
-			// remove::end[CF]
-			// remove::start[K8S]
-			if (paasType == "k8s") {
-				stringParam('EUREKA_ARTIFACT_ID', 'scpipelines/github-eureka', "Name of image with Eureka used by tests")
-				stringParam('EUREKA_VERSION', 'latest', "Image version for Eureka used by tests")
-				stringParam('STUBRUNNER_ARTIFACT_ID', 'scpipelines/github-analytics-stub-runner-boot-classpath-stubs', "Name of image with Stub Runner used by tests")
-				stringParam('STUBRUNNER_VERSION', 'latest', "Image Version for Stub Runner used by tests")
-				stringParam('MYSQL_DATABASE', 'example', "Database to be created for test purposes")
-			}
-			// remove::end[K8S]
-		}
-	}
-
-	/**
-	 * With the Security constraints in Jenkins in order to pass the parameters between jobs, every job
-	 * has to define the parameters on input. We provide additional smoke tests parameters.
-	 */
-	static Closure smokeTestParams() {
-		return context {
-			stringParam('APPLICATION_URL', '', "URL of the deployed application")
-			stringParam('STUBRUNNER_URL', '', "URL of the deployed stub runner application")
 		}
 	}
 }
