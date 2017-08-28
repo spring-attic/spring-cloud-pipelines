@@ -8,3 +8,10 @@ sourceSets {
     }
 }
 
+task shellcheck(type: Exec) {
+    sourceSets*.resources.srcDirs*.each { srcDir ->
+        fileTree(relativePath(srcDir)).include('**/*.sh').each { File script ->
+            commandLine "shellcheck", script
+        }
+    }
+}
