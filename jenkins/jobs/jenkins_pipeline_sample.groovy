@@ -652,6 +652,7 @@ class PipelineDefaults {
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
 		Map<String, String> envs = [:]
 		setIfPresent(envs, variables, "PAAS_TYPE")
+		setIfPresent(envs, variables, "TOOLS_BRANCH")
 		setIfPresent(envs, variables, "M2_SETTINGS_REPO_ID")
 		setIfPresent(envs, variables, "REPO_WITH_BINARIES")
 		// remove::start[CF]
