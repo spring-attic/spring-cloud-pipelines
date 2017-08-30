@@ -3,16 +3,21 @@
 mkdir -p ${HOME}/.m2
 mkdir -p ${HOME}/.gradle
 
-ROOT_IN_M2_RESOURCE="${ROOT_FOLDER}/${M2_REPO}/root"
-export M2_HOME="${ROOT_IN_M2_RESOURCE}/.m2"
-export NEW_LOCAL_REPO="${M2_HOME}/repository/"
+# Maven wrapper script downloads the wrapper to $MAVEN_USER_HOME/wrapper
+export MAVEN_USER_HOME="${ROOT_FOLDER}/.m2"
+mkdir -p ${MAVEN_USER_HOME}
 
-cat > ${HOME}/.m2/settings.xml <<EOF
+export M2_HOME=${HOME}/.m2
+
+echo "Writing maven settings to [${M2_HOME}/settings.xml]"
+
+cat > ${M2_HOME}/settings.xml <<EOF
 
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
                           https://maven.apache.org/xsd/settings-1.0.0.xsd">
+      <localRepository>${MAVEN_USER_HOME}/repository</localRepository>
       <servers>
         <server>
           <id>${M2_SETTINGS_REPO_ID}</id>
@@ -25,7 +30,7 @@ cat > ${HOME}/.m2/settings.xml <<EOF
 EOF
 echo "Settings xml written"
 
-export GRADLE_USER_HOME="${ROOT_IN_M2_RESOURCE}/.gradle"
+export GRADLE_USER_HOME="${ROOT_FOLDER}/.gradle"
 
 echo "Writing gradle.properties to [${GRADLE_USER_HOME}/gradle.properties]"
 
@@ -36,7 +41,3 @@ repoPassword=${M2_SETTINGS_REPO_PASSWORD}
 
 EOF
 echo "gradle.properties written"
-
-echo "Moving [${NEW_LOCAL_REPO}] [${HOME}] folder"
-mv ${NEW_LOCAL_REPO} ${HOME}/.m2/repository
-mv ${M2_HOME}/wrapper ${HOME}/.m2/wrapper
