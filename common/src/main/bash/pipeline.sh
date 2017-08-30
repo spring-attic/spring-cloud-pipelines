@@ -145,17 +145,14 @@ function deployServices() {
         serviceType=${1}
         serviceName=${2}
         serviceCoordinates=${3}
-        local serviceDescription="with type [${serviceType}] name [${serviceName}] and coordinates [${serviceCoordinates}]"
-        echo "Found service ${serviceDescription}"
+        echo "Found service with type [${serviceType}] name [${serviceName}] and coordinates [${serviceCoordinates}]"
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-          echo "Will delete service ${serviceDescription}"
           deleteService "${serviceType}" "${serviceName}"
           deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
         else
           if [[ "$( serviceExists ${serviceName} )" == "true" ]]; then
             echo "Skipping deployment since service is already deployed"
           else
-            echo "Will deploy service ${serviceDescription}"
             deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
           fi
         fi

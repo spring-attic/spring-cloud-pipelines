@@ -82,6 +82,7 @@ function deployService() {
     local serviceType=$( toLowerCase "${1}" )
     local serviceName="${2}"
     local serviceCoordinates=$( if [[ "${3}" == "null" ]] ; then echo ""; else echo "${3}" ; fi )
+    echo "Will deploy service with type [${serviceType}] name [${serviceName}] and coordinates [${serviceCoordinates}]"
     case ${serviceType} in
     rabbitmq)
       deployRabbitMq "${serviceName}"
