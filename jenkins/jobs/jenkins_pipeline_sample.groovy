@@ -692,10 +692,12 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "PAAS_STAGE_SYSTEM_NAME")
 		setIfPresent(envs, variables, "PAAS_PROD_SYSTEM_NAME")
 		// remove::end[K8S]
+		println "Will analyze the following variables psased to the seed job \n\n${variables}"
+		println "Will set the following env vars to the generated jobs \n\n${envs}"
 		return envs
 	}
 
-	private void setIfPresent(Map<String, String> envs, Map<String, String> variables, String prop) {
+	private static void setIfPresent(Map<String, String> envs, Map<String, String> variables, String prop) {
 		if (variables[prop]) {
 			envs[prop] = variables[prop]
 		}
