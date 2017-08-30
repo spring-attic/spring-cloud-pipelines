@@ -12,8 +12,8 @@ function logInToPaas() {
     local cfSpace="${!space}"
     local api="PAAS_${ENVIRONMENT}_API_URL"
     local apiUrl="${!api:-api.run.pivotal.io}"
-    CF_INSTALLED="$( cf --version || echo "false" )"
-    CF_DOWNLOADED="$( test -r cf && echo "true" || echo "false" )"
+    local CF_INSTALLED="$( cf --version || echo "false" )"
+    local CF_DOWNLOADED="$( test -r cf && echo "true" || echo "false" )"
     echo "CF Installed? [${CF_INSTALLED}], CF Downloaded? [${CF_DOWNLOADED}]"
     if [[ ${CF_INSTALLED} == "false" && ${CF_DOWNLOADED} == "false" ]]; then
         echo "Downloading Cloud Foundry"
@@ -39,8 +39,8 @@ function logInToPaas() {
 
 function testDeploy() {
     # TODO: Consider making it less JVM specific
-    projectGroupId=$( retrieveGroupId )
-    appName=$( retrieveAppName )
+    local projectGroupId=$( retrieveGroupId )
+    local appName=$( retrieveAppName )
     # Log in to PaaS to start deployment
     logInToPaas
 
@@ -58,10 +58,10 @@ function testDeploy() {
 function testRollbackDeploy() {
     rm -rf ${OUTPUT_FOLDER}/test.properties
     local latestProdTag="${1}"
-    projectGroupId=$( retrieveGroupId )
-    appName=$( retrieveAppName )
+    local projectGroupId=$( retrieveGroupId )
+    local appName=$( retrieveAppName )
     # Downloading latest jar
-    LATEST_PROD_VERSION=${latestProdTag#prod/}
+    local LATEST_PROD_VERSION=${latestProdTag#prod/}
     echo "Last prod version equals ${LATEST_PROD_VERSION}"
     downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${LATEST_PROD_VERSION}
     logInToPaas
@@ -83,20 +83,20 @@ function deployService() {
       deployMySql "${serviceName}"
       ;;
     eureka)
-      PREVIOUS_IFS="${IFS}"
+      local PREVIOUS_IFS="${IFS}"
       IFS=: read -r EUREKA_GROUP_ID EUREKA_ARTIFACT_ID EUREKA_VERSION <<< "${serviceCoordinates}"
       IFS="${PREVIOUS_IFS}"
       downloadAppBinary ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
       deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
     stubrunner)
-      UNIQUE_EUREKA_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' )"
-      UNIQUE_RABBIT_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' )"
-      PREVIOUS_IFS="${IFS}"
+      local UNIQUE_EUREKA_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' )"
+      local UNIQUE_RABBIT_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' )"
+      local PREVIOUS_IFS="${IFS}"
       IFS=: read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<< "${serviceCoordinates}"
       IFS="${PREVIOUS_IFS}"
-      PARSED_STUBRUNNER_USE_CLASSPATH="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
-      STUBRUNNER_USE_CLASSPATH=$( if [[ "${PARSED_STUBRUNNER_USE_CLASSPATH}" == "null" ]] ; then echo "false"; else echo "${PARSED_STUBRUNNER_USE_CLASSPATH}" ; fi )
+      local PARSED_STUBRUNNER_USE_CLASSPATH="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
+      local STUBRUNNER_USE_CLASSPATH=$( if [[ "${PARSED_STUBRUNNER_USE_CLASSPATH}" == "null" ]] ; then echo "false"; else echo "${PARSED_STUBRUNNER_USE_CLASSPATH}" ; fi )
       downloadAppBinary ${REPO_WITH_BINARIES} ${STUBRUNNER_GROUP_ID} ${STUBRUNNER_ARTIFACT_ID} ${STUBRUNNER_VERSION}
       deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${serviceName}"
       ;;
@@ -128,7 +128,7 @@ function deployRabbitMq() {
     echo "Waiting for RabbitMQ to start"
     local foundApp=$( serviceExists "rabbitmq" "${serviceName}" )
     if [[ "${foundApp}" == "false" ]]; then
-        hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
+        local hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
         (cf cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
     else
@@ -173,7 +173,7 @@ function deployMySql() {
     echo "Waiting for MySQL to start"
     local foundApp=$( serviceExists "mysql" "${serviceName}" )
     if [[ "${foundApp}" == "false" ]]; then
-        hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
+        local hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
         (cf cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev")
     else
@@ -239,7 +239,7 @@ function deployAppWithName() {
     else
         cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b "${buildPackUrl}"
     fi
-    APPLICATION_DOMAIN="$( appHost ${lowerCaseAppName} )"
+    local APPLICATION_DOMAIN="$( appHost ${lowerCaseAppName} )"
     echo "Determined that application_domain for [${lowerCaseAppName}] is [${APPLICATION_DOMAIN}]"
     setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"
     setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
@@ -339,7 +339,7 @@ function createServiceWithName() {
 
 function prepareForSmokeTests() {
     echo "Retrieving group and artifact id - it can take a while..."
-    appName=$( retrieveAppName )
+    local appName=$( retrieveAppName )
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
     propagatePropertiesForTests ${appName}
@@ -366,8 +366,8 @@ function readTestPropertiesFromFile() {
 
 function stageDeploy() {
     # TODO: Consider making it less JVM specific
-    projectGroupId=$( retrieveGroupId )
-    appName=$( retrieveAppName )
+    local projectGroupId=$( retrieveGroupId )
+    local appName=$( retrieveAppName )
     # Log in to PaaS to start deployment
     logInToPaas
 
@@ -382,7 +382,7 @@ function stageDeploy() {
 
 function retrieveApplicationUrl() {
     echo "Retrieving artifact id - it can take a while..."
-    appName=$( retrieveAppName )
+    local appName=$( retrieveAppName )
     echo "Project artifactId is ${appName}"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
@@ -393,8 +393,8 @@ function retrieveApplicationUrl() {
 
 
 function performGreenDeployment() {
-    projectGroupId=$( retrieveGroupId )
-    appName=$( retrieveAppName )
+    local projectGroupId=$( retrieveGroupId )
+    local appName=$( retrieveAppName )
 
     # download app
     downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
@@ -444,7 +444,7 @@ function propagatePropertiesForTests() {
     local host=$( appHost "${projectArtifactId}" )
     export APPLICATION_URL="${host}"
     echo "APPLICATION_URL=${host}" >> ${fileLocation}
-    host=$( appHost "${stubRunnerHost}" )
+    local host=$( appHost "${stubRunnerHost}" )
     export STUBRUNNER_URL="${host}"
     echo "STUBRUNNER_URL=${host}" >> ${fileLocation}
     echo "Resolved properties"
