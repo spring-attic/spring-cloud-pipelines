@@ -83,14 +83,14 @@ function testResultsAntPattern() {
 # Finds the latest prod tag from git
 function findLatestProdTag() {
     local LAST_PROD_TAG=$(git for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | head -n 1)
-    LAST_PROD_TAG=${LAST_PROD_TAG#refs/tags/}
+    local LAST_PROD_TAG=${LAST_PROD_TAG#refs/tags/}
     echo "${LAST_PROD_TAG}"
 }
 
 # Extracts the version from the production tag
 function extractVersionFromProdTag() {
     local tag="${1}"
-    LAST_PROD_VERSION=${tag#prod/}
+    local LAST_PROD_VERSION=${tag#prod/}
     echo "${LAST_PROD_VERSION}"
 }
 
@@ -138,13 +138,14 @@ function serviceExists() {
 function deployServices() {
   if [[ "$( pipelineDescriptorExists )" == "true" ]]; then
     export PARSED_YAML=$( yaml2json "pipeline.yml" )
+    local service
     while read -r line; do
       for service in "${line}"
       do
         set ${service}
-        readonly serviceType=${1}
-        readonly serviceName=${2}
-        readonly serviceCoordinates=${3}
+        local -r serviceType=${1}
+        local -r serviceName=${2}
+        local -r serviceCoordinates=${3}
         echo "Found service with type [${serviceType}] name [${serviceName}] and coordinates [${serviceCoordinates}]"
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
           deleteService "${serviceType}" "${serviceName}"
