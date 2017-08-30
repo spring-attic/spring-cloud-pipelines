@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+#TODO: REMOVE THIS
+set -x
+
 # TODO: REMOVE THIS :(
 DEFAULT_TIMEOUT=150
 
