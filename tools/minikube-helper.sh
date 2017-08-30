@@ -1,7 +1,8 @@
 #!/bin/bash
 
 function usage {
-	echo "usage: $0: <download-kubectl|download-minikube|delete-all-apps|delete-all-test-apps|delete-all-stage-apps|delete-all-prod-apps>"
+	echo "usage: $0: <download-kubectl|download-minikube|delete-all-apps|delete-all-test-apps|\
+	delete-all-stage-apps|delete-all-prod-apps|setup-prod-infra>"
 	exit 1
 }
 
@@ -44,6 +45,12 @@ case $1 in
 
 	delete-all-prod-apps)
 		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets,replicationcontrollers -l env=prod
+		;;
+
+	setup-prod-infra)
+		# TODO
+		echo "TODO"
+		exit 1
 		;;
 
 	*)

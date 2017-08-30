@@ -1,9 +1,5 @@
 List of things still to be done
 
-## Common
-
-- Extract service declaration to a separate file
-
 ## K8S
 
 - I wait for the deployed services to start by `sleep`
@@ -21,6 +17,7 @@ the URL of Kubernetes cluster and search for the `NodePort`
 - Add `--context=${context}` to each `kubectl` call
 - Instead of doing a `sleep` use `kubectl` to get the pod and analyze
 if it's running
+- Setup `minikube-helper.sh` to 
 - For Kubernetes cluster 
     - Jenkins worker has to be in Kubernetes
     - For minikube we'll reach the apps via API
