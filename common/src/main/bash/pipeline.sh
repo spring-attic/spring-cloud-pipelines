@@ -152,6 +152,7 @@ function deployServices() {
           if [[ "$( serviceExists ${serviceName} )" == "true" ]]; then
             echo "Skipping deployment since service is already deployed"
           else
+            echo "Will deploy service with type [${serviceType}] name [${serviceName}] and coordinates [${serviceCoordinates}]"
             deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
           fi
         fi
