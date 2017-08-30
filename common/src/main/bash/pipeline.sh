@@ -142,9 +142,9 @@ function deployServices() {
       for service in "${line}"
       do
         set ${service}
-        local serviceType=${1}
-        local serviceName=${2}
-        local serviceCoordinates=${3}
+        readonly serviceType=${1}
+        readonly serviceName=${2}
+        readonly serviceCoordinates=${3}
         echo "Found service with type [${serviceType}] name [${serviceName}] and coordinates [${serviceCoordinates}]"
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
           deleteService "${serviceType}" "${serviceName}"
