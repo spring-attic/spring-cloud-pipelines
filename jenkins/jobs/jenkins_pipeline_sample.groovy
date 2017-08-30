@@ -29,7 +29,6 @@ String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
 // TODO: K8S - consider parametrization
 String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: "mysql-root"
 String mySqlCredential = binding.variables["MYSQL_CREDENTIAL_ID"] ?: "mysql"
-String paasType = binding.variables["PAAS_TYPE"] ?: "cf"
 
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
@@ -59,9 +58,7 @@ parsedRepos.each {
 		}
 		wrappers {
 			deliveryPipelineVersion(pipelineVersion, true)
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -131,9 +128,7 @@ parsedRepos.each {
 		}
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -184,9 +179,7 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Deploy to test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
@@ -233,9 +226,7 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Tests on test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 			}
@@ -548,9 +539,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
 				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
@@ -612,9 +601,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
 			}
