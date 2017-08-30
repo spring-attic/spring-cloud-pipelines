@@ -106,7 +106,7 @@ function deployService() {
       deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_STUBRUNNER_NAME}"
       ;;
     *)
-      echo "Unknown service"
+      echo "Unknown service [${serviceType}]"
       return 1
       ;;
     esac
