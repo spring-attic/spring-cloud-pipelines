@@ -371,7 +371,10 @@ function curlHealthEndpoint() {
         curl -m 5 "${host}:${port}/health" && running=0 && break
         echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
     done
-    return ${running}
+    if [[ "${running}" == "1" ]]; then
+        echo "App failed to start"
+        exit 1
+    fi
 }
 
 function hostFromApi() {
