@@ -4,12 +4,10 @@ metadata:
   name: {{appName}}
   labels:
     name: {{appName}}
-    env: {{env}}
     visualize: "true"
 spec:
   ports:
     - port: 8761
   selector:
     name: {{appName}}
-    env: {{env}}
   type: NodePort

@@ -8,7 +8,6 @@ spec:
       metadata:
         labels:
           name: {{appName}}
-          env: {{env}}
       spec:
         containers:
         - name: {{appName}}

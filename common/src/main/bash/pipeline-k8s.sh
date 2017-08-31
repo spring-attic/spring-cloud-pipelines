@@ -130,9 +130,7 @@ function deployRabbitMq() {
         local deploymentFile="${__ROOT}/k8s/rabbitmq.yml"
         local serviceFile="${__ROOT}/k8s/rabbitmq-service.yml"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
-        substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
-        substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
             deleteAppByFile "${deploymentFile}"
             deleteAppByFile "${serviceFile}"
@@ -193,12 +191,9 @@ function deployMySql() {
         echo "Generating secret with name [${serviceName}]"
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${serviceName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label secrets "${serviceName}" env="${LOWER_CASE_ENV}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
-        substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
-        substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
             deleteAppByFile "${deploymentFile}"
             deleteAppByFile "${serviceFile}"
@@ -234,15 +229,11 @@ function deployAndRestartAppWithNameForSmokeTests() {
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
-    substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
-    substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
     deleteAppByFile "${deploymentFile}"
     deleteAppByFile "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label deployment "${appName}" env="${LOWER_CASE_ENV}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label service "${appName}" env="${LOWER_CASE_ENV}"
 }
 
 function deployAndRestartAppWithNameForE2ETests() {
@@ -260,15 +251,11 @@ function deployAndRestartAppWithNameForE2ETests() {
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
-    substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
-    substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
     deleteAppByFile "${deploymentFile}"
     deleteAppByFile "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label deployment "${appName}" env="${LOWER_CASE_ENV}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label service "${appName}" env="${LOWER_CASE_ENV}"
 }
 
 function toLowerCase() {
@@ -294,10 +281,8 @@ function deployEureka() {
     local deploymentFile="${__ROOT}/k8s/eureka.yml"
     local serviceFile="${__ROOT}/k8s/eureka-service.yml"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
-    substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
-    substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
     if [[ "${ENVIRONMENT}" == "TEST" ]]; then
         deleteAppByFile "${deploymentFile}"
         deleteAppByFile "${serviceFile}"
@@ -336,14 +321,12 @@ function deployStubRunnerBoot() {
     substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
     substituteVariables "rabbitAppName" "${rabbitName}" "${deploymentFile}"
     substituteVariables "eurekaAppName" "${eurekaName}" "${deploymentFile}"
-    substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
     if [[ "${prop}" == "false" ]]; then
         substituteVariables "stubrunnerIds" "${prop}" "${deploymentFile}"
     else
         substituteVariables "stubrunnerIds" "" "${deploymentFile}"
     fi
     substituteVariables "appName" "${stubRunnerName}" "${serviceFile}"
-    substituteVariables "env" "${LOWER_CASE_ENV}" "${serviceFile}"
     if [[ "${ENVIRONMENT}" == "TEST" ]]; then
         deleteAppByFile "${deploymentFile}"
         deleteAppByFile "${serviceFile}"

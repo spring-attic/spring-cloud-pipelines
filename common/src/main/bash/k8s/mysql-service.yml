@@ -3,7 +3,6 @@ kind: Service
 metadata:
   labels:
     name: {{appName}}
-    env: {{env}}
     visualize: "true"
   name: {{appName}}
 spec:
