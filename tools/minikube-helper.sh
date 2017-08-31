@@ -2,8 +2,33 @@
 
 function usage {
 	echo "usage: $0: <download-kubectl|download-minikube|delete-all-apps|delete-all-test-apps|\
-	delete-all-stage-apps|delete-all-prod-apps|setup-prod-infra>"
+delete-all-stage-apps|delete-all-prod-apps|setup-namespaces|setup-prod-infra>"
 	exit 1
+}
+
+function substituteVariables() {
+    local variableName="${1}"
+    local substitution="${2}"
+    local escapedSubstitution=$( escapeValueForSed "${substitution}" )
+    local fileName="${3}"
+    #echo "Changing [${variableName}] -> [${escapedSubstitution}] for file [${fileName}]"
+    sed -i "s/{{${variableName}}}/${escapedSubstitution}/" ${fileName}
+}
+
+function escapeValueForSed() {
+    echo "${1//\//\\/}"
+}
+
+function createNamespace() {
+    local namespaceName="${1}"
+    local folder=""
+    if [ -d "tools" ]; then
+        folder="tools/"
+    fi
+    mkdir -p "${folder}build"
+    cp "${folder}k8s/namespace.yml" "${folder}build/namespace.yml"
+    substituteVariables "name" "${namespaceName}" "${folder}build/namespace.yml"
+    kubectl create -f "${folder}build/namespace.yml"
 }
 
 function system {
@@ -47,13 +72,20 @@ case $1 in
 		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets,replicationcontrollers -l env=prod
 		;;
 
+	setup-namespaces)
+		mkdir -p build
+		createNamespace "sc-pipelines-test"
+		createNamespace "sc-pipelines-stage"
+		createNamespace "sc-pipelines-prod"
+		;;
+
 	setup-prod-infra)
 		# TODO
 		echo "TODO"
 		exit 1
 		;;
 
-	*)
+    *)
 		usage
 		;;
 esac
