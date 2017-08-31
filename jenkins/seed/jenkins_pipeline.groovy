@@ -4,6 +4,31 @@ DslFactory factory = this
 
 String repos = 'https://github.com/marcingrzejszczak/github-analytics,https://github.com/marcingrzejszczak/github-webhook'
 
+// meta-seed
+factory.job('meta-seed') {
+    scm {
+        git {
+            remote {
+                github('spring-cloud/spring-cloud-pipelines')
+            }
+            branch('${TOOLS_BRANCH}')
+        }
+    }
+    steps {
+        gradle("clean build")
+        dsl {
+            external('jenkins/seed/jenkins_pipeline.groovy')
+            removeAction('DISABLE')
+            removeViewAction('DELETE')
+            ignoreExisting(false)
+            lookupStrategy('SEED_JOB')
+            additionalClasspath([
+                    'jenkins/src/main/groovy', 'jenkins/src/main/resources'
+            ].join("\n"))
+        }
+    }
+}
+
 // remove::start[CF]
 factory.job('jenkins-pipeline-cf-seed') {
     scm {
