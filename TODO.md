@@ -12,9 +12,7 @@ the URL of Kubernetes cluster and search for the `NodePort`
 
 ### K8S
 
-- Use namespaces instead of labels
 - Use `readinessProbe` and `livenessProbe`
-- Add `--context=${context}` to each `kubectl` call
 - Instead of doing a `sleep` use `kubectl` to get the pod and analyze
 if it's running
 - Setup `minikube-helper.sh` to 

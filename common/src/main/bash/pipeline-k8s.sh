@@ -18,6 +18,7 @@ function logInToPaas() {
     local k8sClusterUser="${!clusterUser}"
     local systemName="PAAS_${ENVIRONMENT}_SYSTEM_NAME"
     local k8sSystemName="${!systemName}"
+    export K8S_CONTEXT="${k8sSystemName}"
     local api="PAAS_${ENVIRONMENT}_API_URL"
     local apiUrl="${!api:-192.168.99.100:8443}"
     local CLI_INSTALLED="$( kubectl version || echo "false" )"
@@ -124,7 +125,7 @@ function deleteService() {
 function deployRabbitMq() {
     local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
-    local foundApp=`kubectl get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
+    local foundApp=`kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
     if [[ "${foundApp}" == "" ]]; then
         local deploymentFile="${__ROOT}/k8s/rabbitmq.yml"
         local serviceFile="${__ROOT}/k8s/rabbitmq-service.yml"
@@ -145,26 +146,26 @@ function deployRabbitMq() {
 
 function deployApp() {
     local fileName="${1}"
-    kubectl create -f "${fileName}"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create -f "${fileName}"
 }
 
 function replaceApp() {
     local fileName="${1}"
-    kubectl replace --force -f "${fileName}"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" replace --force -f "${fileName}"
 }
 
 function deleteAppByName() {
     local serviceName="${1}"
-    kubectl delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
-    kubectl delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
-    kubectl delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
-    kubectl delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] . Continuing with the script"
-    kubectl delete service "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] . Continuing with the script"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete service "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
 }
 
 function deleteAppByFile() {
     local file="${1}"
-    kubectl delete -f ${file} || echo "Failed to delete app by [${file}] file. Continuing with the script"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete -f ${file} || echo "Failed to delete app by [${file}] file. Continuing with the script"
 }
 
 function substituteVariables() {
@@ -185,14 +186,14 @@ function deleteMySql() {
 function deployMySql() {
     local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
-    local foundApp=`kubectl get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
+    local foundApp=`kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
     if [[ "${foundApp}" == "" ]]; then
         local deploymentFile="${__ROOT}/k8s/mysql.yml"
         local serviceFile="${__ROOT}/k8s/mysql-service.yml"
         echo "Generating secret with name [${serviceName}]"
-        kubectl delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
-        kubectl create secret generic "${serviceName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
-        kubectl label secrets "${serviceName}" env="${LOWER_CASE_ENV}"
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${serviceName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label secrets "${serviceName}" env="${LOWER_CASE_ENV}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
         substituteVariables "env" "${LOWER_CASE_ENV}" "${deploymentFile}"
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
@@ -240,8 +241,8 @@ function deployAndRestartAppWithNameForSmokeTests() {
     deleteAppByFile "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
-    kubectl label deployment "${appName}" env="${LOWER_CASE_ENV}"
-    kubectl label service "${appName}" env="${LOWER_CASE_ENV}"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label deployment "${appName}" env="${LOWER_CASE_ENV}"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label service "${appName}" env="${LOWER_CASE_ENV}"
 }
 
 function deployAndRestartAppWithNameForE2ETests() {
@@ -266,8 +267,8 @@ function deployAndRestartAppWithNameForE2ETests() {
     deleteAppByFile "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
-    kubectl label deployment "${appName}" env="${LOWER_CASE_ENV}"
-    kubectl label service "${appName}" env="${LOWER_CASE_ENV}"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label deployment "${appName}" env="${LOWER_CASE_ENV}"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label service "${appName}" env="${LOWER_CASE_ENV}"
 }
 
 function toLowerCase() {
@@ -372,7 +373,7 @@ function prepareForSmokeTests() {
 
 function portFromKubernetes() {
     local appName="${1}"
-    echo `kubectl get svc ${appName} -o jsonpath='{.spec.ports[0].nodePort}'`
+    echo `kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc ${appName} -o jsonpath='{.spec.ports[0].nodePort}'`
 }
 
 function hostFromApi() {
@@ -488,6 +489,8 @@ function deleteBlueInstance() {
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export LOWER_CASE_ENV=$( lowerCaseEnv )
+export PAAS_NAMESPACE_VAR="PAAS_${ENVIRONMENT}_NAMESPACE"
+export PAAS_NAMESPACE="${!PAAS_NAMESPACE_VAR}"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 [[ -f "${__ROOT}/projectType/pipeline-jvm.sh" ]] && source "${__ROOT}/projectType/pipeline-jvm.sh" || \
