@@ -11,8 +11,8 @@ inputs:
 outputs:
   - name: out
 caches:
-  - path: .gradle/
-  - path: .m2/
+  - path: gradle
+  - path: maven
 run:
   path: /bin/bash
   args:
