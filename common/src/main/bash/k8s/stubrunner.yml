@@ -25,9 +25,15 @@ spec:
             value: "{{stubrunnerIds}}"
           - name: STUBRUNNER_REPOSITORY_ROOT
             value: "{{repoWithJars}}"
-#          livenessProbe:
-#            httpGet:
-#              path: /health
-#              port: 8080
-#            initialDelaySeconds: 180
-#            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 3

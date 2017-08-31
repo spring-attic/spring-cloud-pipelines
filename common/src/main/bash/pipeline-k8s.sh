@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-# TODO: REMOVE THIS :(
-DEFAULT_TIMEOUT=150
-
 function logInToPaas() {
     local redownloadInfra="${REDOWNLOAD_INFRA}"
     local ca="PAAS_${ENVIRONMENT}_CA"
@@ -58,10 +55,7 @@ function testDeploy() {
     deployServices
 
     # deploy app
-    deployAndRestartAppWithNameForSmokeTests "${appName}-${LOWER_CASE_ENV}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
-    # TODO: FIX THIS :|
-    echo "Waiting for the app to start"
-    sleep ${DEFAULT_TIMEOUT}
+    deployAndRestartAppWithNameForSmokeTests "${appName}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
 }
 
 function testRollbackDeploy() {
@@ -234,6 +228,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     deleteAppByFile "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
+    waitForAppToStart "${appName}"
 }
 
 function deployAndRestartAppWithNameForE2ETests() {
@@ -256,6 +251,7 @@ function deployAndRestartAppWithNameForE2ETests() {
     deleteAppByFile "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
+    waitForAppToStart "${appName}"
 }
 
 function toLowerCase() {
@@ -289,9 +285,7 @@ function deployEureka() {
     fi
     replaceApp "${deploymentFile}"
     replaceApp "${serviceFile}"
-    # TODO: FIX THIS :|
-    echo "Waiting for the app to start"
-    sleep ${DEFAULT_TIMEOUT}
+    waitForAppToStart "${appName}"
 }
 
 function escapeValueForSed() {
@@ -333,10 +327,7 @@ function deployStubRunnerBoot() {
     fi
     replaceApp "${deploymentFile}"
     replaceApp "${serviceFile}"
-    # TODO: FIX THIS :|
-    echo "Waiting for the app to start"
-    sleep ${DEFAULT_TIMEOUT}
-}
+    waitForAppToStart "${stubRunnerName}"
 
 function prepareForSmokeTests() {
     echo "Retrieving group and artifact id - it can take a while..."
@@ -344,8 +335,8 @@ function prepareForSmokeTests() {
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
     # TODO: Maybe this has to be changed somehow
-    local applicationPort=$( portFromKubernetes "${appName}-${LOWER_CASE_ENV}" )
-    local stubrunnerAppName="stubrunner-${appName}-${LOWER_CASE_ENV}"
+    local applicationPort=$( portFromKubernetes "${appName}" )
+    local stubrunnerAppName="stubrunner-${appName}"
     local stubrunnerPort=$( portFromKubernetes "${stubrunnerAppName}" )
     export kubHost=$( hostFromApi "${PAAS_TEST_API_URL}" )
     export APPLICATION_URL="${kubHost}:${applicationPort}"
@@ -357,6 +348,30 @@ function prepareForSmokeTests() {
 function portFromKubernetes() {
     local appName="${1}"
     echo `kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc ${appName} -o jsonpath='{.spec.ports[0].nodePort}'`
+}
+
+function waitForAppToStart() {
+    local appName="${1}"
+    local apiUrlVar="PAAS_${ENVIRONMENT}_API_URL"
+    local apiUrl="${!apiUrlVar}"
+    local port=$( portFromKubernetes "${appName}" )
+    local kubHost=$( hostFromApi "${apiUrl}" )
+    echo "Waiting for the app to start"
+    curlHealthEndpoint "${kubHost}" "${port}"
+}
+
+function curlHealthEndpoint() {
+    local host="${1}"
+    local port="${2}"
+    local waitTime=5
+    local retries=30
+    local running=1
+    for i in $( seq 1 "${retries}" ); do
+        sleep "${waitTime}"
+        curl -m 5 "${host}:${port}/health" && running=0 && break
+        echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
+    done
+    return ${running}
 }
 
 function hostFromApi() {
@@ -394,10 +409,7 @@ function stageDeploy() {
     deployServices
 
     # deploy app
-    deployAndRestartAppWithNameForE2ETests "${appName}-${LOWER_CASE_ENV}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
-    # TODO: FIX THIS :|
-    echo "Waiting for the app to start"
-    sleep ${DEFAULT_TIMEOUT}
+    deployAndRestartAppWithNameForE2ETests "${appName}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
 }
 
 function prepareForE2eTests() {
@@ -406,8 +418,8 @@ function prepareForE2eTests() {
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
     # TODO: Maybe this has to be changed somehow
-    local applicationPort=$( portFromKubernetes "${appName}-${LOWER_CASE_ENV}" )
-    local stubrunnerAppName="stubrunner-${appName}-${LOWER_CASE_ENV}"
+    local applicationPort=$( portFromKubernetes "${appName}" )
+    local stubrunnerAppName="stubrunner-${appName}"
     export kubHost=$( hostFromApi "${PAAS_TEST_API_URL}" )
     export APPLICATION_URL="${kubHost}:${applicationPort}"
     echo "Application URL [${APPLICATION_URL}]"
@@ -422,23 +434,17 @@ function performGreenDeployment() {
 
     # TODO: Consider picking services and apps from file
     # services
-    export UNIQUE_RABBIT_NAME="rabbitmq-${appName}-${LOWER_CASE_ENV}"
+    export UNIQUE_RABBIT_NAME="rabbitmq-${appName}"
     deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
-    export UNIQUE_MYSQL_NAME="mysql-${appName}-${LOWER_CASE_ENV}"
+    export UNIQUE_MYSQL_NAME="mysql-${appName}"
     deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
 
     # dependant apps
-    export UNIQUE_EUREKA_NAME="eureka-${appName}-${LOWER_CASE_ENV}"
+    export UNIQUE_EUREKA_NAME="eureka-${appName}"
     deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
-    # TODO: FIX THIS :|
-    echo "Waiting for Eureka to start"
-    sleep ${DEFAULT_TIMEOUT}
 
     # deploy app
     performGreenDeploymentOfTestedApplication "${appName}"
-    # TODO: FIX THIS :|
-    echo "Waiting for the app to start"
-    sleep ${DEFAULT_TIMEOUT}
 }
 
 function performGreenDeploymentOfTestedApplication() {
