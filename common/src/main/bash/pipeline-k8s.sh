@@ -365,15 +365,16 @@ function isAppRunning() {
     local waitTime=5
     local retries=30
     local running=1
-    for i in $( seq 1 "${retries}" ); do
-        sleep "${waitTime}"
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pod -lname="${appName}" -o=jsonpath='{$.items[*].status.conditions[*].type }' | grep Ready && running=0 && break
-        echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
-    done
-    if [[ "${running}" == 1 ]]; then
-        echo "App failed to start"
-        exit 1
-    fi
+#    for i in $( seq 1 "${retries}" ); do
+#        sleep "${waitTime}"
+#        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pod -lname="${appName}" -o=jsonpath='{$.items[*].status.conditions[*].type }' | grep Ready && running=0 && break
+#        echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
+#    done
+#    if [[ "${running}" == 1 ]]; then
+#        echo "App failed to start"
+#        exit 1
+#    fi
+    sleep 120
 }
 
 function hostFromApi() {
