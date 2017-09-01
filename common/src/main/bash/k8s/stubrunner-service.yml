@@ -10,4 +10,4 @@ spec:
     - port: 8050
   selector:
     name: {{appName}}
-  type: LoadBalancer
+  type: NodePort
