@@ -374,7 +374,7 @@ function isAppRunning() {
 #        echo "App failed to start"
 #        exit 1
 #    fi
-    sleep 120
+    sleep 180
 }
 
 function hostFromApi() {
