@@ -13,7 +13,7 @@ spec:
         - name: {{appName}}
           image: {{stubrunnerImg}}
           ports:
-          - containerPort: 8080
+          - containerPort: 8050
           env:
           - name: PORT
             value: "8080"
