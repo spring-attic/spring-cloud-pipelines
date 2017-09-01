@@ -57,7 +57,9 @@ case $1 in
 		;;
 
 	delete-all-apps)
-		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets,replicationcontrollers --all
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets,replicationcontrollers --namespace=sc-pipelines-test --all
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets,replicationcontrollers --namespace=sc-pipelines-stage --all
+		kubectl delete pods,deployments,services,persistentvolumeclaims,secrets,replicationcontrollers --namespace=sc-pipelines-prod --all
 		;;
 
 	delete-all-test-apps)
