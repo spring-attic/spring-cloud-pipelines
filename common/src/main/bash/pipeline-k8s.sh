@@ -364,7 +364,7 @@ function isAppRunning() {
     local running=1
     for i in $( seq 1 "${retries}" ); do
         sleep "${waitTime}"
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pod -lapp="${appName}" -o=jsonpath='{$.items[0].status.phase}' | grep "Running" && running=0 && break
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pod -lname="${appName}" -o=jsonpath='{$.items[0].status.phase}' | grep "Running" && running=0 && break
         echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
     done
     if [[ "${running}" == 1 ]]; then
