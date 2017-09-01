@@ -328,6 +328,7 @@ function deployStubRunnerBoot() {
     replaceApp "${deploymentFile}"
     replaceApp "${serviceFile}"
     waitForAppToStart "${stubRunnerName}"
+}
 
 function prepareForSmokeTests() {
     echo "Retrieving group and artifact id - it can take a while..."
