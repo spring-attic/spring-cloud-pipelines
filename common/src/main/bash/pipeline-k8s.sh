@@ -100,7 +100,7 @@ function deployService() {
       IFS="${PREVIOUS_IFS}"
       PARSED_STUBRUNNER_USE_CLASSPATH="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
       STUBRUNNER_USE_CLASSPATH=$( if [[ "${PARSED_STUBRUNNER_USE_CLASSPATH}" == "null" ]] ; then echo "false"; else echo "${PARSED_STUBRUNNER_USE_CLASSPATH}" ; fi )
-      deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_STUBRUNNER_NAME}"
+      deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${serviceName}"
       ;;
     *)
       echo "Unknown service [${serviceType}]"
@@ -353,26 +353,21 @@ function portFromKubernetes() {
 
 function waitForAppToStart() {
     local appName="${1}"
-    local apiUrlVar="PAAS_${ENVIRONMENT}_API_URL"
-    local apiUrl="${!apiUrlVar}"
-    local port=$( portFromKubernetes "${appName}" )
-    local kubHost=$( hostFromApi "${apiUrl}" )
     echo "Waiting for the app to start"
-    curlHealthEndpoint "${kubHost}" "${port}"
+    isAppRunning "${appName}"
 }
 
-function curlHealthEndpoint() {
-    local host="${1}"
-    local port="${2}"
+function isAppRunning() {
+    local appName="${1}"
     local waitTime=5
     local retries=30
     local running=1
     for i in $( seq 1 "${retries}" ); do
         sleep "${waitTime}"
-        curl -m 5 "${host}:${port}/health" && running=0 && break
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pod -lname="${appName}" -o=jsonpath='{$.items[0].status.phase}' | grep "Running" && running=0 && break
         echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
     done
-    if [[ "${running}" == "1" ]]; then
+    if [[ "${running}" == 1 ]]; then
         echo "App failed to start"
         exit 1
     fi
