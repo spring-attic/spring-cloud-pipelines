@@ -369,9 +369,11 @@ function isAppRunning() {
     local waitTime=5
     local retries=30
     local running=1
+    # TODO: Why the hell I can't access /health on some services but can access other endpoints????
+    local healthEndpoint="info"
     for i in $( seq 1 "${retries}" ); do
         sleep "${waitTime}"
-        curl -m 5 "${host}:${port}/health" && running=0 && break
+        curl -m 5 "${host}:${port}/${healthEndpoint}" && running=0 && break
         echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
     done
     if [[ "${running}" == 1 ]]; then
