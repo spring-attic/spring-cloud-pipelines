@@ -356,25 +356,28 @@ function portFromKubernetes() {
 
 function waitForAppToStart() {
     local appName="${1}"
-    echo "Waiting for the app to start"
-    isAppRunning "${appName}"
+    local apiUrlVar="PAAS_${ENVIRONMENT}_API_URL"
+    local apiUrl="${!apiUrlVar}"
+    local port=$( portFromKubernetes "${appName}" )
+    local kubHost=$( hostFromApi "${apiUrl}" )
+    isAppRunning "${kubHost}" "${port}"
 }
 
 function isAppRunning() {
-    local appName="${1}"
+    local host="${1}"
+    local port="${2}"
     local waitTime=5
     local retries=30
     local running=1
-#    for i in $( seq 1 "${retries}" ); do
-#        sleep "${waitTime}"
-#        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pod -lname="${appName}" -o=jsonpath='{$.items[*].status.conditions[*].type }' | grep Ready && running=0 && break
-#        echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
-#    done
-#    if [[ "${running}" == 1 ]]; then
-#        echo "App failed to start"
-#        exit 1
-#    fi
-    sleep 180
+    for i in $( seq 1 "${retries}" ); do
+        sleep "${waitTime}"
+        curl -m 5 "${host}:${port}/health" && running=0 && break
+        echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
+    done
+    if [[ "${running}" == 1 ]]; then
+        echo "App failed to start"
+        exit 1
+    fi
 }
 
 function hostFromApi() {

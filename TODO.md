@@ -12,7 +12,7 @@ the URL of Kubernetes cluster and search for the `NodePort`
 
 ### K8S
 
-- Use `readinessProbe` and `livenessProbe`
+- Use `readinessProbe` and `livenessProbe` **I DON'T KNOW HOW TO USE THIS PROPERLY**
 - Instead of doing a `sleep` use `kubectl` to get the pod and analyze
 if it's running
 - Setup `minikube-helper.sh` to 
