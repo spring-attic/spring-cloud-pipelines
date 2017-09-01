@@ -210,14 +210,15 @@ function deployAndRestartAppWithName() {
 
 function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
-    local rabbitName="${2}"
-    local eurekaName="${3}"
-    local mysqlName="${4}"
+    local rabbitName="${2}.${PAAS_NAMESPACE}"
+    local eurekaName="${3}.${PAAS_NAMESPACE}"
+    local mysqlName="${4}.${PAAS_NAMESPACE}"
     local profiles="smoke"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local deploymentFile="deployment.yml"
     local serviceFile="service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
+    # TODO: Not every system needs Eureka... Solve this by analyzing pipeline descriptor
     local systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
@@ -233,14 +234,15 @@ function deployAndRestartAppWithNameForSmokeTests() {
 
 function deployAndRestartAppWithNameForE2ETests() {
     local appName="${1}"
-    local rabbitName="${2}"
-    local eurekaName="${3}"
-    local mysqlName="${4}"
+    local rabbitName="${2}.${PAAS_NAMESPACE}"
+    local eurekaName="${3}.${PAAS_NAMESPACE}"
+    local mysqlName="${4}.${PAAS_NAMESPACE}"
     local profiles="smoke"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local deploymentFile="deployment.yml"
     local serviceFile="service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
+    # TODO: Not every system needs Eureka... Solve this by analyzing pipeline descriptor
     local systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
@@ -277,6 +279,7 @@ function deployEureka() {
     local deploymentFile="${__ROOT}/k8s/eureka.yml"
     local serviceFile="${__ROOT}/k8s/eureka-service.yml"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
+    substituteVariables "appUrl" "${appName}.${PAAS_NAMESPACE}" "${deploymentFile}"
     substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     if [[ "${ENVIRONMENT}" == "TEST" ]]; then
@@ -296,8 +299,8 @@ function deployStubRunnerBoot() {
     local imageName="${1}"
     # TODO: Add passing of properties to docker images
     local repoWithJars="${2}"
-    local rabbitName="${3}"
-    local eurekaName="${4}"
+    local rabbitName="${3}.${PAAS_NAMESPACE}"
+    local eurekaName="${4}.${PAAS_NAMESPACE}"
     local stubRunnerName="${5:-stubrunner}"
     local fileExists="true"
     local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
@@ -364,7 +367,7 @@ function isAppRunning() {
     local running=1
     for i in $( seq 1 "${retries}" ); do
         sleep "${waitTime}"
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pod -lname="${appName}" -o=jsonpath='{$.items[0].status.phase}' | grep "Running" && running=0 && break
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pod -lname="${appName}" -o=jsonpath='{$.items[*].status.conditions[*].type }' | grep Ready && running=0 && break
         echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
     done
     if [[ "${running}" == 1 ]]; then

@@ -18,7 +18,7 @@ spec:
           - name: PORT
             value: "8761"
           - name: eureka_client_serviceUrl_defaultZone
-            value: "http://{{appName}}:8761/eureka/"
+            value: "http://{{appUrl}}:8761/eureka/"
           livenessProbe:
             httpGet:
               path: /health
