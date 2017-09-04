@@ -16,7 +16,7 @@ spec:
           - containerPort: 8050
           env:
           - name: PORT
-            value: "8080"
+            value: "8050"
           - name: SPRING_RABBITMQ_ADDRESSES
             value: "{{rabbitAppName}}"
           - name: eureka_client_serviceUrl_defaultZone
