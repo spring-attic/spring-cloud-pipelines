@@ -257,6 +257,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
     substituteVariables "labelAppName" "${appName}" "${deploymentFile}"
+    substituteVariables "containerName" "${appName}" "${deploymentFile}"
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     deleteAppByFile "${deploymentFile}"
@@ -295,6 +296,7 @@ function deployAndRestartAppWithNameForE2ETests() {
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
     substituteVariables "labelAppName" "${appName}" "${deploymentFile}"
+    substituteVariables "containerName" "${appName}" "${deploymentFile}"
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     deleteAppByFile "${deploymentFile}"
@@ -538,12 +540,13 @@ function performGreenDeploymentOfTestedApplication() {
     local serviceFile="${outputDirectory}/service.yml"
     local changedAppName="$( escapeValueForDns ${appName} )"
     # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
-    UNIQUE_EUREKA_NAME="$( eurekaName )"
-    UNIQUE_RABBIT_NAME="$( rabbitMqName )"
-    if [[ "${UNIQUE_EUREKA_NAME}" != "" && "${UNIQUE_EUREKA_NAME}" != "null" ]]; then
+    local eurekaName="$( eurekaName )"
+    local rabbitName="$( rabbitMqName )"
+    local systemProps=""
+    if [[ "${eurekaName}" != "" && "${eurekaName}" != "null" ]]; then
         systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
     fi
-    if [[ "${UNIQUE_RABBIT_NAME}" != "" && "${UNIQUE_RABBIT_NAME}" != "null" ]]; then
+    if [[ "${rabbitName}" != "" && "${rabbitName}" != "null" ]]; then
         systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName}"
     fi
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
@@ -551,17 +554,16 @@ function performGreenDeploymentOfTestedApplication() {
     # The name will contain also the version
     substituteVariables "appName" "${changedAppName}" "${deploymentFile}"
     substituteVariables "labelAppName" "${appName}" "${deploymentFile}"
+    substituteVariables "containerName" "${appName}" "${deploymentFile}"
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
-    deleteAppByFile "${deploymentFile}"
-    deleteAppByFile "${serviceFile}"
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
     waitForAppToStart "${appName}"
 }
 
 function escapeValueForDns() {
-    echo "$(sed -e 's/\./-/g;s/_/-/g' <<<$1)"
+    echo "$(sed -e 's/\./-/g;s/_/-/g' <<< "$1")"
 }
 
 function deleteBlueInstance() {
@@ -589,10 +591,14 @@ function build() {
 
     ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${BUILD_OPTIONS}
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean package docker:build -DpushImageTags -DdockerImageTags="latest" -DdockerImageTags="${PIPELINE_VERSION}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./mvnw clean package docker:build deploy -DpushImageTags -DdockerImageTags="latest" \
+        -Ddistribution.management.release.id=${M2_SETTINGS_REPO_ID} -Ddistribution.management.release.url=${REPO_WITH_BINARIES} -Drepo.with.binaries=${REPO_WITH_BINARIES} \
+        -DdockerImageTags="${PIPELINE_VERSION}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
         ./mvnw docker:push ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
     else
-        ./mvnw clean package docker:build -DpushImageTags -DdockerImageTags="latest" -DdockerImageTags="${PIPELINE_VERSION}" ${BUILD_OPTIONS}
+        ./mvnw clean package docker:build deploy -DpushImageTags -DdockerImageTags="latest" \
+        -Ddistribution.management.release.id=${M2_SETTINGS_REPO_ID} -Ddistribution.management.release.url=${REPO_WITH_BINARIES} -Drepo.with.binaries=${REPO_WITH_BINARIES} \
+        -DdockerImageTags="${PIPELINE_VERSION}" ${BUILD_OPTIONS}
         ./mvnw docker:push ${BUILD_OPTIONS}
     fi
 }
