@@ -241,6 +241,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
+    substituteVariables "labelAppName" "${appName}" "${deploymentFile}"
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     deleteAppByFile "${deploymentFile}"
@@ -257,14 +258,21 @@ function deployAndRestartAppWithNameForE2ETests() {
     local mysqlName="${4}.${PAAS_NAMESPACE}"
     local profiles="smoke"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
-    local deploymentFile="deployment.yml"
-    local serviceFile="service.yml"
+    local originalDeploymentFile="deployment.yml"
+    local originalServiceFile="service.yml"
+    local outputDirectory="$( outputFolder )"
+    mkdir -p "${outputDirectory}"
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
+    local deploymentFile="${outputDirectory}/deployment.yml"
+    local serviceFile="${outputDirectory}/service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
     # TODO: Not every system needs Eureka... Solve this by analyzing pipeline descriptor
     local systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
+    substituteVariables "labelAppName" "${appName}" "${deploymentFile}"
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     deleteAppByFile "${deploymentFile}"
@@ -450,12 +458,22 @@ function readTestPropertiesFromFile() {
     fi
 }
 
+function label() {
+    local appName="${1}"
+    local key="${2}"
+    local value="${3}"
+    local type="deployment"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label "${type}" "${appName}" "${key}"="${value}"
+}
+
 function stageDeploy() {
     # TODO: Consider making it less JVM specific
     local projectGroupId=$( retrieveGroupId )
     local appName=$( retrieveAppName )
     # Log in to PaaS to start deployment
     logInToPaas
+
+    deployServices
 
     # deploy app
     deployAndRestartAppWithNameForE2ETests "${appName}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
@@ -466,31 +484,17 @@ function prepareForE2eTests() {
     local appName=$( retrieveAppName )
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
-    # TODO: Maybe this has to be changed somehow
     local applicationPort=$( portFromKubernetes "${appName}" )
-    local stubrunnerAppName="stubrunner-${appName}"
-    export kubHost=$( hostFromApi "${PAAS_TEST_API_URL}" )
+    export kubHost=$( hostFromApi "${PAAS_STAGE_API_URL}" )
     export APPLICATION_URL="${kubHost}:${applicationPort}"
     echo "Application URL [${APPLICATION_URL}]"
 }
 
 function performGreenDeployment() {
     # TODO: Consider making it less JVM specific
-    local projectGroupId=$( retrieveGroupId )
     local appName=$( retrieveAppName )
     # Log in to PaaS to start deployment
     logInToPaas
-
-    # TODO: Consider picking services and apps from file
-    # services
-    export UNIQUE_RABBIT_NAME="rabbitmq-${appName}"
-    deployService "RABBITMQ" "${UNIQUE_RABBIT_NAME}"
-    export UNIQUE_MYSQL_NAME="mysql-${appName}"
-    deployService "MYSQL" "${UNIQUE_MYSQL_NAME}"
-
-    # dependant apps
-    export UNIQUE_EUREKA_NAME="eureka-${appName}"
-    deployService "EUREKA" "${UNIQUE_EUREKA_NAME}"
 
     # deploy app
     performGreenDeploymentOfTestedApplication "${appName}"
@@ -498,31 +502,39 @@ function performGreenDeployment() {
 
 function performGreenDeploymentOfTestedApplication() {
     local appName="${1}"
-    local newName="${appName}-venerable"
-    echo "Renaming the app from [${appName}] -> [${newName}]"
-    local appPresent="no"
-    cf app "${appName}" && appPresent="yes"
-    if [[ "${appPresent}" == "yes" ]]; then
-        cf rename "${appName}" "${newName}"
-    else
-        echo "Will not rename the application cause it's not there"
-    fi
-    deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}" "PROD"
+    local rabbitName="${2}.${PAAS_NAMESPACE}"
+    local eurekaName="${3}.${PAAS_NAMESPACE}"
+    local mysqlName="${4}.${PAAS_NAMESPACE}"
+    local lowerCaseAppName=$( toLowerCase "${appName}" )
+    local originalDeploymentFile="deployment.yml"
+    local originalServiceFile="service.yml"
+    local outputDirectory="$( outputFolder )"
+    mkdir -p "${outputDirectory}"
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
+    local deploymentFile="${outputDirectory}/deployment.yml"
+    local serviceFile="${outputDirectory}/service.yml"
+    # TODO: Not every system needs Eureka... Solve this by analyzing pipeline descriptor
+    local systemProps="-DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
+    substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
+    substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
+    # The name will contain also the version
+    substituteVariables "appName" "${appName}-${PIPELINE_VERSION}" "${deploymentFile}"
+    substituteVariables "labelAppName" "${appName}" "${deploymentFile}"
+    substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
+    substituteVariables "appName" "${appName}" "${serviceFile}"
+    deleteAppByFile "${deploymentFile}"
+    deleteAppByFile "${serviceFile}"
+    deployApp "${deploymentFile}"
+    deployApp "${serviceFile}"
+    waitForAppToStart "${appName}"
 }
 
 function deleteBlueInstance() {
     local appName=$( retrieveAppName )
     # Log in to CF to start deployment
     logInToPaas
-    local oldName="${appName}-venerable"
-    local appPresent="no"
-    echo "Deleting the app [${oldName}]"
-    cf app "${oldName}" && appPresent="yes"
-    if [[ "${appPresent}" == "yes" ]]; then
-        cf delete "${oldName}" -f
-    else
-        echo "Will not remove the old application cause it's not there"
-    fi
+    # find the oldest version and remove it
 }
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

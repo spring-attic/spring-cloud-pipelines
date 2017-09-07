@@ -2,7 +2,6 @@ List of things still to be done
 
 ## K8S
 
-- I wait for the deployed services to start by `sleep`
 - I can't find a better way to find the application URL than provide
 the URL of Kubernetes cluster and search for the `NodePort`
 - Versioning of the manifests is gone due to their templating nature
@@ -10,11 +9,12 @@ the URL of Kubernetes cluster and search for the `NodePort`
 
 ## TODOs
 
+- Don't set Eureka / Rabbit on the deployed application by default (analyze the pipeline descriptor)
+- Add if / else for minikube
+
 ### K8S
 
 - Use `readinessProbe` and `livenessProbe` **I DON'T KNOW HOW TO USE THIS PROPERLY**
-- Instead of doing a `sleep` use `kubectl` to get the pod and analyze
-if it's running
 - Setup `minikube-helper.sh` to 
 - For Kubernetes cluster 
     - Jenkins worker has to be in Kubernetes
