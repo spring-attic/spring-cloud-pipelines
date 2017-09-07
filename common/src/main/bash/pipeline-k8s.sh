@@ -514,12 +514,13 @@ function performGreenDeploymentOfTestedApplication() {
     cp ${originalServiceFile} ${outputDirectory}
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
+    local changedAppName="$( escapeValueForDns ${appName} )"
     # TODO: Not every system needs Eureka... Solve this by analyzing pipeline descriptor
     local systemProps="-DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     # The name will contain also the version
-    substituteVariables "appName" "${appName}-${PIPELINE_VERSION}" "${deploymentFile}"
+    substituteVariables "appName" "${changedAppName}" "${deploymentFile}"
     substituteVariables "labelAppName" "${appName}" "${deploymentFile}"
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
@@ -528,6 +529,10 @@ function performGreenDeploymentOfTestedApplication() {
     deployApp "${deploymentFile}"
     deployApp "${serviceFile}"
     waitForAppToStart "${appName}"
+}
+
+function escapeValueForDns() {
+    echo "$(sed -e 's/\./-/g;s/_/-/g' <<<$1)"
 }
 
 function deleteBlueInstance() {
