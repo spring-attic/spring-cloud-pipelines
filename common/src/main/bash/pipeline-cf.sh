@@ -384,14 +384,12 @@ function stageDeploy() {
 function retrieveApplicationUrl() {
     echo "Retrieving artifact id - it can take a while..."
     local appName=$( retrieveAppName )
-    echo "Project artifactId is ${appName}"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
     propagatePropertiesForTests ${appName}
     readTestPropertiesFromFile
-    echo "Application URL [${APPLICATION_URL}]"
+    echo "${APPLICATION_URL}"
 }
-
 
 function performGreenDeployment() {
     local projectGroupId=$( retrieveGroupId )

@@ -68,14 +68,13 @@ function runSmokeTests() {
 
 function runE2eTests() {
     # Retrieves Application URL
-    retrieveApplicationUrl
-    local applicationHost="${APPLICATION_URL}"
+    local applicationUrl="$( retrieveApplicationUrl | tail -1 )"
     echo "Running e2e tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
     else
-        ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS}
+        ./gradlew e2e -PnewVersion=${PIPELINE_VERSION} -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
     fi
 }
 

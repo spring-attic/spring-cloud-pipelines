@@ -98,14 +98,13 @@ function runSmokeTests() {
 
 function runE2eTests() {
     # Retrieves Application URL
-    retrieveApplicationUrl
-    local applicationHost="${APPLICATION_URL}"
+    local applicationUrl="$( retrieveApplicationUrl | tail -1 )"
     echo "Running e2e tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./mvnw clean install -Pe2e -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
     else
-        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS}
+        ./mvnw clean install -Pe2e -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
     fi
 }
 

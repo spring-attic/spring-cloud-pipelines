@@ -363,6 +363,15 @@ function waitForAppToStart() {
     isAppRunning "${kubHost}" "${port}"
 }
 
+function retrieveApplicationUrl() {
+    local appName=$( retrieveAppName )
+    local apiUrlVar="PAAS_${ENVIRONMENT}_API_URL"
+    local apiUrl="${!apiUrlVar}"
+    local port=$( portFromKubernetes "${appName}" )
+    local kubHost=$( hostFromApi "${apiUrl}" )
+    echo "${kubHost}:${port}"
+}
+
 function isAppRunning() {
     local host="${1}"
     local port="${2}"
