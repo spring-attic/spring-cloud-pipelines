@@ -9,8 +9,9 @@ the URL of Kubernetes cluster and search for the `NodePort`
 
 ## TODOs
 
-- Don't set Eureka / Rabbit on the deployed application by default (analyze the pipeline descriptor)
 - Add if / else for minikube
+- Fix the health check to check the status?
+- Publish jars to artifactory cause they are needed for API compatibility
 
 ### K8S
 
