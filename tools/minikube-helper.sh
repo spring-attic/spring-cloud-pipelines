@@ -6,19 +6,6 @@ delete-all-stage-apps|delete-all-prod-apps|setup-namespaces|setup-prod-infra>"
 	exit 1
 }
 
-function substituteVariables() {
-    local variableName="${1}"
-    local substitution="${2}"
-    local escapedSubstitution=$( escapeValueForSed "${substitution}" )
-    local fileName="${3}"
-    #echo "Changing [${variableName}] -> [${escapedSubstitution}] for file [${fileName}]"
-    sed -i "s/{{${variableName}}}/${escapedSubstitution}/" ${fileName}
-}
-
-function escapeValueForSed() {
-    echo "${1//\//\\/}"
-}
-
 function createNamespace() {
     local namespaceName="${1}"
     local folder=""
@@ -29,6 +16,11 @@ function createNamespace() {
     cp "${folder}k8s/namespace.yml" "${folder}build/namespace.yml"
     substituteVariables "name" "${namespaceName}" "${folder}build/namespace.yml"
     kubectl create -f "${folder}build/namespace.yml"
+}
+
+function copyK8sYamls() {
+    mkdir -p "${FOLDER}build"
+    cp ${ROOT_FOLDER}common/src/main/bash/k8s/*.* ${FOLDER}build/
 }
 
 function system {
@@ -44,6 +36,25 @@ function system {
 SYSTEM=$( system )
 
 [[ $# -eq 1 ]] || usage
+
+export ROOT_FOLDER="`pwd`../"
+export FOLDER="`pwd`/"
+if [ -d "tools" ]; then
+    FOLDER="`pwd`/tools/"
+    ROOT_FOLDER="`pwd`/"
+fi
+
+export PAAS_NAMESPACE="sc-pipelines-prod"
+export PAAS_PROD_API_URL="192.168.99.100:8443"
+export ENVIRONMENT="PROD"
+export PAAS_TYPE="k8s"
+
+source ${ROOT_FOLDER}common/src/main/bash/pipeline.sh
+
+function outputFolder() {
+    echo "${ROOT_FOLDER}common/build"
+}
+export -f outputFolder
 
 case $1 in
 	download-kubectl)
@@ -82,9 +93,9 @@ case $1 in
 		;;
 
 	setup-prod-infra)
-		# TODO
-		echo "TODO"
-		exit 1
+		copyK8sYamls
+		deployService "rabbitmq" "github-rabbitmq" "scpipelines/github-analytics-stub-runner-boot-classpath-stubs:latest"
+		deployService "eureka" "github-eureka" "scpipelines/github-eureka:latest"
 		;;
 
     *)

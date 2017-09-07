@@ -121,8 +121,14 @@ function deployRabbitMq() {
     echo "Waiting for RabbitMQ to start"
     local foundApp=`kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
     if [[ "${foundApp}" == "" ]]; then
-        local deploymentFile="${__ROOT}/k8s/rabbitmq.yml"
-        local serviceFile="${__ROOT}/k8s/rabbitmq-service.yml"
+        local originalDeploymentFile="${__ROOT}/k8s/rabbitmq.yml"
+        local originalServiceFile="${__ROOT}/k8s/rabbitmq-service.yml"
+        local outputDirectory="$( outputFolder )"
+        mkdir -p "${outputDirectory}"
+        cp ${originalDeploymentFile} ${outputDirectory}
+        cp ${originalServiceFile} ${outputDirectory}
+        local deploymentFile="${outputDirectory}/rabbitmq.yml"
+        local serviceFile="${outputDirectory}/rabbitmq-service.yml"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
@@ -180,8 +186,14 @@ function deployMySql() {
     echo "Waiting for MySQL to start"
     local foundApp=`kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
     if [[ "${foundApp}" == "" ]]; then
-        local deploymentFile="${__ROOT}/k8s/mysql.yml"
-        local serviceFile="${__ROOT}/k8s/mysql-service.yml"
+        local originalDeploymentFile="${__ROOT}/k8s/mysql.yml"
+        local originalServiceFile="${__ROOT}/k8s/mysql-service.yml"
+        local outputDirectory="$( outputFolder )"
+        mkdir -p "${outputDirectory}"
+        cp ${originalDeploymentFile} ${outputDirectory}
+        cp ${originalServiceFile} ${outputDirectory}
+        local deploymentFile="${outputDirectory}/mysql.yml"
+        local serviceFile="${outputDirectory}/mysql-service.yml"
         echo "Generating secret with name [${serviceName}]"
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${serviceName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
@@ -215,8 +227,14 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local mysqlName="${4}.${PAAS_NAMESPACE}"
     local profiles="smoke"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
-    local deploymentFile="deployment.yml"
-    local serviceFile="service.yml"
+    local originalDeploymentFile="deployment.yml"
+    local originalServiceFile="service.yml"
+    local outputDirectory="$( outputFolder )"
+    mkdir -p "${outputDirectory}"
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
+    local deploymentFile="${outputDirectory}/deployment.yml"
+    local serviceFile="${outputDirectory}/service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
     # TODO: Not every system needs Eureka... Solve this by analyzing pipeline descriptor
     local systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
@@ -276,8 +294,14 @@ function deployEureka() {
     local imageName="${1}"
     local appName="${2}"
     echo "Deploying Eureka. Options - image name [${imageName}], app name [${appName}], env [${ENVIRONMENT}]"
-    local deploymentFile="${__ROOT}/k8s/eureka.yml"
-    local serviceFile="${__ROOT}/k8s/eureka-service.yml"
+    local originalDeploymentFile="${__ROOT}/k8s/eureka.yml"
+    local originalServiceFile="${__ROOT}/k8s/eureka-service.yml"
+    local outputDirectory="$( outputFolder )"
+    mkdir -p "${outputDirectory}"
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
+    local deploymentFile="${outputDirectory}/eureka.yml"
+    local serviceFile="${outputDirectory}/eureka-service.yml"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
     substituteVariables "appUrl" "${appName}.${PAAS_NAMESPACE}" "${deploymentFile}"
     substituteVariables "eurekaImg" "${imageName}" "${deploymentFile}"
@@ -307,8 +331,14 @@ function deployStubRunnerBoot() {
     echo "Deploying Stub Runner. Options - image name [${imageName}], app name [${stubRunnerName}]"
     local prop="$( retrieveStubRunnerIds )"
     echo "Found following stub runner ids [${prop}]"
-    local deploymentFile="${__ROOT}/k8s/stubrunner.yml"
-    local serviceFile="${__ROOT}/k8s/stubrunner-service.yml"
+    local originalDeploymentFile="${__ROOT}/k8s/stubrunner.yml"
+    local originalServiceFile="${__ROOT}/k8s/stubrunner-service.yml"
+    local outputDirectory="$( outputFolder )"
+    mkdir -p "${outputDirectory}"
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
+    local deploymentFile="${outputDirectory}/stubrunner.yml"
+    local serviceFile="${outputDirectory}/stubrunner-service.yml"
     if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
         substituteVariables "repoWithJars" "${repoWithJars}" "${deploymentFile}"
     else
@@ -392,6 +422,7 @@ function isAppRunning() {
         echo "App failed to start"
         exit 1
     fi
+    echo -e "\nApp started successfully!"
 }
 
 function hostFromApi() {
@@ -425,8 +456,6 @@ function stageDeploy() {
     local appName=$( retrieveAppName )
     # Log in to PaaS to start deployment
     logInToPaas
-
-    deployServices
 
     # deploy app
     deployAndRestartAppWithNameForE2ETests "${appName}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
@@ -499,7 +528,7 @@ function deleteBlueInstance() {
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export LOWER_CASE_ENV=$( lowerCaseEnv )
 export PAAS_NAMESPACE_VAR="PAAS_${ENVIRONMENT}_NAMESPACE"
-export PAAS_NAMESPACE="${!PAAS_NAMESPACE_VAR}"
+[[ -z "${PAAS_NAMESPACE}" ]] && PAAS_NAMESPACE="${!PAAS_NAMESPACE_VAR}"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 [[ -f "${__ROOT}/projectType/pipeline-jvm.sh" ]] && source "${__ROOT}/projectType/pipeline-jvm.sh" || \
