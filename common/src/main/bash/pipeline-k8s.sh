@@ -93,8 +93,8 @@ function deployService() {
       deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}"
       ;;
     stubrunner)
-      UNIQUE_EUREKA_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' )"
-      UNIQUE_RABBIT_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' )"
+      UNIQUE_EUREKA_NAME="$( eurekaName )"
+      UNIQUE_RABBIT_NAME="$( rabbitMqName )"
       PREVIOUS_IFS="${IFS}"
       IFS=${coordinatesSeparator} read -r STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<< "${serviceCoordinates}"
       IFS="${PREVIOUS_IFS}"
@@ -107,6 +107,14 @@ function deployService() {
       return 1
       ;;
     esac
+}
+
+function eurekaName() {
+    echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/'
+}
+
+function rabbitMqName() {
+    echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/'
 }
 
 function deleteService() {
@@ -236,8 +244,15 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
-    # TODO: Not every system needs Eureka... Solve this by analyzing pipeline descriptor
-    local systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
+    # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
+    UNIQUE_EUREKA_NAME="$( eurekaName )"
+    UNIQUE_RABBIT_NAME="$( rabbitMqName )"
+    if [[ "${UNIQUE_EUREKA_NAME}" != "" && "${UNIQUE_EUREKA_NAME}" != "null" ]]; then
+        systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
+    fi
+    if [[ "${UNIQUE_RABBIT_NAME}" != "" && "${UNIQUE_RABBIT_NAME}" != "null" ]]; then
+        systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName}"
+    fi
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
@@ -267,8 +282,15 @@ function deployAndRestartAppWithNameForE2ETests() {
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
-    # TODO: Not every system needs Eureka... Solve this by analyzing pipeline descriptor
-    local systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
+    # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
+    UNIQUE_EUREKA_NAME="$( eurekaName )"
+    UNIQUE_RABBIT_NAME="$( rabbitMqName )"
+    if [[ "${UNIQUE_EUREKA_NAME}" != "" && "${UNIQUE_EUREKA_NAME}" != "null" ]]; then
+        systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
+    fi
+    if [[ "${UNIQUE_RABBIT_NAME}" != "" && "${UNIQUE_RABBIT_NAME}" != "null" ]]; then
+        systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName}"
+    fi
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
@@ -515,8 +537,15 @@ function performGreenDeploymentOfTestedApplication() {
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
     local changedAppName="$( escapeValueForDns ${appName} )"
-    # TODO: Not every system needs Eureka... Solve this by analyzing pipeline descriptor
-    local systemProps="-DSPRING_RABBITMQ_ADDRESSES=${rabbitName} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
+    # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
+    UNIQUE_EUREKA_NAME="$( eurekaName )"
+    UNIQUE_RABBIT_NAME="$( rabbitMqName )"
+    if [[ "${UNIQUE_EUREKA_NAME}" != "" && "${UNIQUE_EUREKA_NAME}" != "null" ]]; then
+        systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
+    fi
+    if [[ "${UNIQUE_RABBIT_NAME}" != "" && "${UNIQUE_RABBIT_NAME}" != "null" ]]; then
+        systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName}"
+    fi
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     # The name will contain also the version
