@@ -163,7 +163,7 @@ function deployServices() {
         fi
     # retrieve the space separated type, name and coordinates
     done <<< "$( echo "${PARSED_YAML}" | \
-                 jq -r --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"' )"
+                 jq -r --arg x "${ENVIRONMENT}" '.[$x | ascii_downcase].services[] | "\(.type) \(.name) \(.coordinates)"' )"
 }
 
 # Converts YAML to JSON - uses ruby
@@ -178,12 +178,10 @@ function toLowerCase() {
 
 # CURRENTLY WE ONLY SUPPORT CF AS PAAS OUT OF THE BOX
 PAAS_TYPE="${PAAS_TYPE:-cf}"
-LOWER_CASE_ENV="$( toLowerCase "${ENVIRONMENT}" )"
+export PAAS_TYPE
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"
-
-export LOWER_CASE_ENV PAAS_TYPE
 
 # shellcheck source=/dev/null
 [[ -f "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__ROOT}/pipeline-${PAAS_TYPE}.sh" || \
