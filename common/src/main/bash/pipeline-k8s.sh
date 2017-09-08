@@ -272,7 +272,7 @@ function deployAndRestartAppWithNameForE2ETests() {
     local rabbitName="${2}.${PAAS_NAMESPACE}"
     local eurekaName="${3}.${PAAS_NAMESPACE}"
     local mysqlName="${4}.${PAAS_NAMESPACE}"
-    local profiles="smoke"
+    local profiles="e2e"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
@@ -283,15 +283,6 @@ function deployAndRestartAppWithNameForE2ETests() {
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
-    # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
-    UNIQUE_EUREKA_NAME="$( eurekaName )"
-    UNIQUE_RABBIT_NAME="$( rabbitMqName )"
-    if [[ "${UNIQUE_EUREKA_NAME}" != "" && "${UNIQUE_EUREKA_NAME}" != "null" ]]; then
-        systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
-    fi
-    if [[ "${UNIQUE_RABBIT_NAME}" != "" && "${UNIQUE_RABBIT_NAME}" != "null" ]]; then
-        systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName}"
-    fi
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
@@ -539,16 +530,8 @@ function performGreenDeploymentOfTestedApplication() {
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
     local changedAppName="$( escapeValueForDns ${appName} )"
-    # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
-    local eurekaName="$( eurekaName )"
-    local rabbitName="$( rabbitMqName )"
+    echo "Will name the application [${changedAppName}]"
     local systemProps=""
-    if [[ "${eurekaName}" != "" && "${eurekaName}" != "null" ]]; then
-        systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
-    fi
-    if [[ "${rabbitName}" != "" && "${rabbitName}" != "null" ]]; then
-        systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName}"
-    fi
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     # The name will contain also the version
