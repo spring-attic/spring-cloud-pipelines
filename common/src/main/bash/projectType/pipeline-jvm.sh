@@ -9,12 +9,16 @@ function downloadAppBinary() {
     local groupId="${2}"
     local artifactId="${3}"
     local version="${4}"
-    local destination="`pwd`/${OUTPUT_FOLDER}/${artifactId}-${version}.jar"
-    local changedGroupId="$( echo "${groupId}" | tr . / )"
-    local pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.jar"
+    local destination
+    local changedGroupId
+    local pathToJar
+
+    destination="$( pwd )/${OUTPUT_FOLDER}/${artifactId}-${version}.jar"
+    changedGroupId="$( echo "${groupId}" | tr . / )"
+    pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.jar"
     if [[ ! -e ${destination} ]]; then
         mkdir -p "${OUTPUT_FOLDER}"
-        echo "Current folder is [`pwd`]; Downloading [${pathToJar}] to [${destination}]"
+        echo "Current folder is [$( pwd )]; Downloading [${pathToJar}] to [${destination}]"
         (curl "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
     else
         echo "File [${destination}] exists. Will not download it again"
@@ -41,11 +45,17 @@ function projectType() {
     fi
 }
 
+PROJECT_TYPE=$( projectType )
+
 export -f projectType
-export PROJECT_TYPE=$( projectType )
+export PROJECT_TYPE
+
 echo "Project type [${PROJECT_TYPE}]"
 
 lowerCaseProjectType=$( echo "${PROJECT_TYPE}" | tr '[:upper:]' '[:lower:]' )
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    [[ -f "${__DIR}/pipeline-${lowerCaseProjectType}.sh" ]] && source "${__DIR}/pipeline-${lowerCaseProjectType}.sh" || \
-        echo "No pipeline-${lowerCaseProjectType}.sh found"
+
+# shellcheck source=/dev/null
+[[ -f "${__DIR}/pipeline-${lowerCaseProjectType}.sh" ]] && \
+    source "${__DIR}/pipeline-${lowerCaseProjectType}.sh" || \
+    echo "No pipeline-${lowerCaseProjectType}.sh found"
