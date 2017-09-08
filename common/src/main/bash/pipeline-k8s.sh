@@ -438,7 +438,7 @@ function isAppRunning() {
     local host="${1}"
     local port="${2}"
     local waitTime=5
-    local retries=30
+    local retries=50
     local running=1
     # TODO: Why the hell I can't access /health on some services but can access other endpoints????
     local primaryHealthEndpoint="health"
