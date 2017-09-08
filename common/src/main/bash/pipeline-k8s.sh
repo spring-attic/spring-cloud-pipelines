@@ -580,8 +580,12 @@ function deleteBlueInstance() {
     logInToPaas
     # find the oldest version and remove it
     local oldestDeployment="$( oldestDeployment )"
-    echo "Deleting deployment with name [${oldestDeployment}]"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${oldestDeployment}"
+    if [[ "${oldestDeployment}" != "" ]]; then
+        echo "Deleting deployment with name [${oldestDeployment}]"
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${oldestDeployment}"
+    else
+        echo "There's no blue instance to remove, skipping this step"
+    fi
 }
 
 function oldestDeployment() {
