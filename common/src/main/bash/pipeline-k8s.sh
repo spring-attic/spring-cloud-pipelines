@@ -536,7 +536,7 @@ function performGreenDeploymentOfTestedApplication() {
     cp ${originalServiceFile} ${outputDirectory}
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
-    local changedAppName="$( escapeValueForDns ${appName} )"
+    local changedAppName="$( escapeValueForDns ${appName}-${PIPELINE_VERSION} )"
     echo "Will name the application [${changedAppName}]"
     local systemProps="-Dspring.profiles.active=${profiles}"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
