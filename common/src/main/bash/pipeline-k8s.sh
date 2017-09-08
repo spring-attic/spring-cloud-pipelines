@@ -591,7 +591,7 @@ function deleteBlueInstance() {
 function oldestDeployment() {
     local appName="${1}"
     local changedAppName="$( escapeValueForDns ${appName}-${PIPELINE_VERSION} )"
-    local deployedApps="$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}" )"
+    local deployedApps="$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}" )"
     local oldestDeployment="$( echo "${deployedApps}" | sort | head -n 1 )"
     echo "${oldestDeployment}"
 }
