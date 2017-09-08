@@ -178,8 +178,8 @@ function deleteAppByFile() {
 function substituteVariables() {
     local variableName="${1}"
     local substitution="${2}"
-    local escapedSubstitution=$( escapeValueForSed "${substitution}" )
     local fileName="${3}"
+    local escapedSubstitution=$( escapeValueForSed "${substitution}" )
     #echo "Changing [${variableName}] -> [${escapedSubstitution}] for file [${fileName}]"
     sed -i "s/{{${variableName}}}/${escapedSubstitution}/" ${fileName}
 }
@@ -554,8 +554,8 @@ function performGreenDeploymentOfTestedApplication() {
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     # The name will contain also the version
-    substituteVariables "appName" "${changedAppName}" "${deploymentFile}"
-    substituteVariables "labelAppName" "${appName}" "${deploymentFile}"
+    substituteVariables "labelAppName" "${changedAppName}" "${deploymentFile}"
+    substituteVariables "appName" "${appName}" "${deploymentFile}"
     substituteVariables "containerName" "${appName}" "${deploymentFile}"
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
