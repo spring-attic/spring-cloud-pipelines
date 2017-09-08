@@ -481,6 +481,12 @@ function label() {
     kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label "${type}" "${appName}" "${key}"="${value}"
 }
 
+function objectDeployed() {
+    local appType="${1}"
+    local appName="${2}"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get "${appType}" "${appName}" && echo "true" || echo "false"
+}
+
 function stageDeploy() {
     # TODO: Consider making it less JVM specific
     local projectGroupId=$( retrieveGroupId )
@@ -542,7 +548,11 @@ function performGreenDeploymentOfTestedApplication() {
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     deployApp "${deploymentFile}"
-    deployApp "${serviceFile}"
+    local serviceDeployed="$( objectDeployed "service" ${appName} )"
+    echo "Service already deployed? [${serviceDeployed}]"
+    if [[ "${serviceDeployed}" == "false" ]]; then
+        deployApp "${serviceFile}"
+    fi
     waitForAppToStart "${appName}"
 }
 
