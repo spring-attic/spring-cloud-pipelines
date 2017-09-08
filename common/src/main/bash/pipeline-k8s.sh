@@ -55,7 +55,7 @@ function testDeploy() {
     deployServices
 
     # deploy app
-    deployAndRestartAppWithNameForSmokeTests "${appName}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+    deployAndRestartAppWithNameForSmokeTests "${appName}" "${PIPELINE_VERSION}"
 }
 
 function testRollbackDeploy() {
@@ -66,9 +66,8 @@ function testRollbackDeploy() {
     # Downloading latest jar
     LATEST_PROD_VERSION=${latestProdTag#prod/}
     echo "Last prod version equals ${LATEST_PROD_VERSION}"
-    downloadAppArtifact 'true' ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${LATEST_PROD_VERSION}
     logInToPaas
-    deployAndRestartAppWithNameForSmokeTests ${appName} "${appName}-${LATEST_PROD_VERSION}"
+    deployAndRestartAppWithNameForSmokeTests "${appName}" "${LATEST_PROD_VERSION}"
     # Adding latest prod tag
     echo "LATEST_PROD_TAG=${latestProdTag}" >> ${OUTPUT_FOLDER}/test.properties
 }
@@ -115,6 +114,20 @@ function eurekaName() {
 
 function rabbitMqName() {
     echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/'
+}
+
+function appSystemProps() {
+    local systemProps=""
+    # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
+    local eurekaName="$( eurekaName )"
+    local rabbitMqName="$( rabbitMqName )"
+    if [[ "${eurekaName}" != "" && "${eurekaName}" != "null" ]]; then
+        systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
+    fi
+    if [[ "${rabbitMqName}" != "" && "${rabbitMqName}" != "null" ]]; then
+        systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitMqName}"
+    fi
+    echo "${systemProps}"
 }
 
 function deleteService() {
@@ -232,9 +245,7 @@ function deployAndRestartAppWithName() {
 
 function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
-    local rabbitName="${2}.${PAAS_NAMESPACE}"
-    local eurekaName="${3}.${PAAS_NAMESPACE}"
-    local mysqlName="${4}.${PAAS_NAMESPACE}"
+    local version="${2}"
     local profiles="smoke,kubernetes"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local originalDeploymentFile="deployment.yml"
@@ -246,18 +257,10 @@ function deployAndRestartAppWithNameForSmokeTests() {
     cp ${originalServiceFile} ${outputDirectory}
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
-    local systemProps="-Dspring.profiles.active=${profiles}"
-    # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
-    UNIQUE_EUREKA_NAME="$( eurekaName )"
-    UNIQUE_RABBIT_NAME="$( rabbitMqName )"
-    if [[ "${UNIQUE_EUREKA_NAME}" != "" && "${UNIQUE_EUREKA_NAME}" != "null" ]]; then
-        systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
-    fi
-    if [[ "${UNIQUE_RABBIT_NAME}" != "" && "${UNIQUE_RABBIT_NAME}" != "null" ]]; then
-        systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitName}"
-    fi
+    local systemProps="$( appSystemProps )"
+    systemProps="-Dspring.profiles.active=${profiles} ${systemProps}"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
-    substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
+    substituteVariables "version" "${version}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
     substituteVariables "labelAppName" "${appName}" "${deploymentFile}"
     substituteVariables "containerName" "${appName}" "${deploymentFile}"
@@ -272,9 +275,6 @@ function deployAndRestartAppWithNameForSmokeTests() {
 
 function deployAndRestartAppWithNameForE2ETests() {
     local appName="${1}"
-    local rabbitName="${2}.${PAAS_NAMESPACE}"
-    local eurekaName="${3}.${PAAS_NAMESPACE}"
-    local mysqlName="${4}.${PAAS_NAMESPACE}"
     local profiles="e2e,kubernetes"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local originalDeploymentFile="deployment.yml"
@@ -508,7 +508,7 @@ function stageDeploy() {
     deployServices
 
     # deploy app
-    deployAndRestartAppWithNameForE2ETests "${appName}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+    deployAndRestartAppWithNameForE2ETests "${appName}"
 }
 
 function prepareForE2eTests() {
@@ -534,9 +534,6 @@ function performGreenDeployment() {
 
 function performGreenDeploymentOfTestedApplication() {
     local appName="${1}"
-    local rabbitName="${2}.${PAAS_NAMESPACE}"
-    local eurekaName="${3}.${PAAS_NAMESPACE}"
-    local mysqlName="${4}.${PAAS_NAMESPACE}"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local profiles="kubernetes"
     local originalDeploymentFile="deployment.yml"
