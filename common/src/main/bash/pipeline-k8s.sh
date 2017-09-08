@@ -131,7 +131,8 @@ function deployRabbitMq() {
     if [[ "${foundApp}" == "" ]]; then
         local originalDeploymentFile="${__ROOT}/k8s/rabbitmq.yml"
         local originalServiceFile="${__ROOT}/k8s/rabbitmq-service.yml"
-        local outputDirectory="$( outputFolder )"
+        local outputDirectory="$( outputFolder )/k8s"
+        rm -rf "${outputDirectory}"
         mkdir -p "${outputDirectory}"
         cp ${originalDeploymentFile} ${outputDirectory}
         cp ${originalServiceFile} ${outputDirectory}
@@ -196,7 +197,8 @@ function deployMySql() {
     if [[ "${foundApp}" == "" ]]; then
         local originalDeploymentFile="${__ROOT}/k8s/mysql.yml"
         local originalServiceFile="${__ROOT}/k8s/mysql-service.yml"
-        local outputDirectory="$( outputFolder )"
+        local outputDirectory="$( outputFolder )/k8s"
+        rm -rf "${outputDirectory}"
         mkdir -p "${outputDirectory}"
         cp ${originalDeploymentFile} ${outputDirectory}
         cp ${originalServiceFile} ${outputDirectory}
@@ -237,7 +239,8 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
-    local outputDirectory="$( outputFolder )"
+    local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp ${originalDeploymentFile} ${outputDirectory}
     cp ${originalServiceFile} ${outputDirectory}
@@ -276,7 +279,8 @@ function deployAndRestartAppWithNameForE2ETests() {
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
-    local outputDirectory="$( outputFolder )"
+    local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp ${originalDeploymentFile} ${outputDirectory}
     cp ${originalServiceFile} ${outputDirectory}
@@ -319,7 +323,8 @@ function deployEureka() {
     echo "Deploying Eureka. Options - image name [${imageName}], app name [${appName}], env [${ENVIRONMENT}]"
     local originalDeploymentFile="${__ROOT}/k8s/eureka.yml"
     local originalServiceFile="${__ROOT}/k8s/eureka-service.yml"
-    local outputDirectory="$( outputFolder )"
+    local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp ${originalDeploymentFile} ${outputDirectory}
     cp ${originalServiceFile} ${outputDirectory}
@@ -356,7 +361,8 @@ function deployStubRunnerBoot() {
     echo "Found following stub runner ids [${prop}]"
     local originalDeploymentFile="${__ROOT}/k8s/stubrunner.yml"
     local originalServiceFile="${__ROOT}/k8s/stubrunner-service.yml"
-    local outputDirectory="$( outputFolder )"
+    local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp ${originalDeploymentFile} ${outputDirectory}
     cp ${originalServiceFile} ${outputDirectory}
@@ -530,7 +536,8 @@ function performGreenDeploymentOfTestedApplication() {
     local profiles="kubernetes"
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
-    local outputDirectory="$( outputFolder )"
+    local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp ${originalDeploymentFile} ${outputDirectory}
     cp ${originalServiceFile} ${outputDirectory}
