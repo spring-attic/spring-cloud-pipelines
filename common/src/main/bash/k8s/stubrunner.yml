@@ -25,6 +25,8 @@ spec:
             value: "{{stubrunnerIds}}"
           - name: STUBRUNNER_REPOSITORY_ROOT
             value: "{{repoWithJars}}"
+          - name: SPRING_PROFILES_ACTIVE
+            value: "kubernetes"
 #          livenessProbe:
 #            httpGet:
 #              path: /health

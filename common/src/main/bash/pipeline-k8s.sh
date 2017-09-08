@@ -233,7 +233,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local rabbitName="${2}.${PAAS_NAMESPACE}"
     local eurekaName="${3}.${PAAS_NAMESPACE}"
     local mysqlName="${4}.${PAAS_NAMESPACE}"
-    local profiles="smoke"
+    local profiles="smoke,kubernetes"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
@@ -272,7 +272,7 @@ function deployAndRestartAppWithNameForE2ETests() {
     local rabbitName="${2}.${PAAS_NAMESPACE}"
     local eurekaName="${3}.${PAAS_NAMESPACE}"
     local mysqlName="${4}.${PAAS_NAMESPACE}"
-    local profiles="e2e"
+    local profiles="e2e,kubernetes"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
@@ -521,6 +521,7 @@ function performGreenDeploymentOfTestedApplication() {
     local eurekaName="${3}.${PAAS_NAMESPACE}"
     local mysqlName="${4}.${PAAS_NAMESPACE}"
     local lowerCaseAppName=$( toLowerCase "${appName}" )
+    local profiles="kubernetes"
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
     local outputDirectory="$( outputFolder )"
@@ -531,7 +532,7 @@ function performGreenDeploymentOfTestedApplication() {
     local serviceFile="${outputDirectory}/service.yml"
     local changedAppName="$( escapeValueForDns ${appName} )"
     echo "Will name the application [${changedAppName}]"
-    local systemProps=""
+    local systemProps="-Dspring.profiles.active=${profiles}"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
     # The name will contain also the version
