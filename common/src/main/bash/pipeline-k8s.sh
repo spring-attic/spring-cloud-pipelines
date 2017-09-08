@@ -569,7 +569,9 @@ function performGreenDeploymentOfTestedApplication() {
 }
 
 function escapeValueForDns() {
-    echo "$(sed -e 's/\./-/g;s/_/-/g' <<< "$1")"
+    local sed="$(sed -e 's/\./-/g;s/_/-/g' <<< "$1")"
+    local lowerCaseSed="$( toLowerCase ${sed} )"
+    echo "${lowerCaseSed}"
 }
 
 function deleteBlueInstance() {
