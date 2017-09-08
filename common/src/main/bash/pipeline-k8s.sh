@@ -579,6 +579,17 @@ function deleteBlueInstance() {
     # Log in to CF to start deployment
     logInToPaas
     # find the oldest version and remove it
+    local oldestDeployment="$( oldestDeployment )"
+    echo "Deleting deployment with name [${oldestDeployment}]"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${oldestDeployment}"
+}
+
+function oldestDeployment() {
+    local appName="${1}"
+    local changedAppName="$( escapeValueForDns ${appName}-${PIPELINE_VERSION} )"
+    local deployedApps="$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" deployments -lname="${appName}" --no-headers | awk '{print $1}' |  grep -v "${changedAppName}" )"
+    local oldestDeployment="$( echo "${deployedApps}" | sort | head -n 1 )"
+    echo "${oldestDeployment}"
 }
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
