@@ -451,12 +451,6 @@ function propagatePropertiesForTests() {
     cat ${fileLocation}
 }
 
-function toLowerCase() {
-    local string=${1}
-    local result=$( echo "${string}" | tr '[:upper:]' '[:lower:]' )
-    echo "${result}"
-}
-
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
