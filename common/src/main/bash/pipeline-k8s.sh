@@ -61,13 +61,14 @@ function testDeploy() {
 function testRollbackDeploy() {
     rm -rf ${OUTPUT_FOLDER}/test.properties
     local latestProdTag="${1}"
-    local projectGroupId=$( retrieveGroupId )
     local appName=$( retrieveAppName )
-    # Downloading latest jar
     LATEST_PROD_VERSION=${latestProdTag#prod/}
     echo "Last prod version equals ${LATEST_PROD_VERSION}"
     logInToPaas
+    parsePipelineDescriptor
+
     deployAndRestartAppWithNameForSmokeTests "${appName}" "${LATEST_PROD_VERSION}"
+
     # Adding latest prod tag
     echo "LATEST_PROD_TAG=${latestProdTag}" >> ${OUTPUT_FOLDER}/test.properties
 }

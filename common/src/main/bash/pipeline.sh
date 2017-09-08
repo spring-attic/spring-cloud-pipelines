@@ -131,6 +131,12 @@ function serviceExists() {
     exit 1
 }
 
+# Sets the environment variable with contents of the parsed pipeline descriptor
+function parsePipelineDescriptor() {
+  PARSED_YAML=$( yaml2json "pipeline.yml" )
+  export PARSED_YAML
+}
+
 # Deploys services assuming that pipeline descriptor exists
 # For TEST environment first deletes, then deploys services
 # For other environments only deploys a service if it wasn't there.
@@ -141,8 +147,7 @@ function deployServices() {
     return
   fi
 
-  PARSED_YAML=$( yaml2json "pipeline.yml" )
-  export PARSED_YAML
+  parsePipelineDescriptor
 
   while read -r serviceType serviceName serviceCoordinates; do
     if [[ "${ENVIRONMENT}" == "TEST" ]]; then
