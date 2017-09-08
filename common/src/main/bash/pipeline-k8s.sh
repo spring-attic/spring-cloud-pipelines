@@ -490,7 +490,12 @@ function label() {
 function objectDeployed() {
     local appType="${1}"
     local appName="${2}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get "${appType}" "${appName}" && echo "true" || echo "false"
+    local result=$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get "${appType}" "${appName}" --ignore-not-found=true )
+    if [[ "${result}" != "" ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
 }
 
 function stageDeploy() {
