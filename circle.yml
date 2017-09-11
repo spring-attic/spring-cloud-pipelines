@@ -11,7 +11,6 @@ machine:
     TERM: dumb
 test:
   override:
-    - ./tools/build-helper download-shellcheck
     - ./gradlew clean build
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
