@@ -10,7 +10,6 @@ if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
     fi
 fi
 
-
 function build() {
     echo "Additional Build Options [${BUILD_OPTIONS}]"
 

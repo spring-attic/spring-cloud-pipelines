@@ -29,10 +29,11 @@ if (m2Created) {
 println "Creating the gradle.properties file"
 String gradleHome = jenkinsHome + '/.gradle'
 boolean gradleCreated = new File(gradleHome).mkdirs()
+File gradleProperties = new File("${gradleHome}/gradle.properties")
 if (gradleCreated) {
-	boolean settingsCreated = new File("${gradleHome}/gradle.properties").createNewFile()
+	boolean settingsCreated = gradleProperties.createNewFile()
 	if (settingsCreated) {
-		new File("${gradleHome}/gradle.properties").text =
+        gradleProperties.text =
 				new File('/usr/share/jenkins/gradle.properties').text
 	}  else {
 		println "Failed to create gradle.properties!"
@@ -133,16 +134,21 @@ if (certificateAuthority.exists()) {
 	Files.copy(new File('/usr/share/jenkins/cert/').toPath(), targetFile.toPath())
 }
 
-println "Updating maven settings with docker registry data"
-
 String dockerRegistryUser = new File('/usr/share/jenkins/dockerRegistryUser')?.text ?: "changeme"
 String dockerRegistryPass = new File('/usr/share/jenkins/dockerRegistryPass')?.text ?: "changeme"
 String dockerRegistryEmail = new File('/usr/share/jenkins/dockerRegistryEmail')?.text ?: "change@me.com"
 
+println "Updating maven settings with docker registry data"
 mavenSettings.text = mavenSettings.text
 		.replace("dockeruser", dockerRegistryUser)
 		.replace("dockerpass", dockerRegistryPass)
 		.replace("docker@email.com", dockerRegistryEmail)
+
+println "Updating gradle properties with docker registry data"
+gradleProperties.text = gradleProperties.text
+    .replace("dockeruser", dockerRegistryUser)
+    .replace("dockerpass", dockerRegistryPass)
+    .replace("docker@email.com", dockerRegistryEmail)
 
 println "Adding MySQL credentials"
 boolean mySqlCredsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
