@@ -25,7 +25,7 @@ function logInToPaas() {
 
     if [[ ${CF_DOWNLOADED} == "true" ]]; then
         echo "Adding CF to PATH"
-        PATH=${PATH}:`pwd`
+        PATH=${PATH}:$( pwd )
         chmod +x cf
     fi
 
@@ -50,31 +50,33 @@ function testDeploy() {
     deployServices
 
     # deploy app
-    downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
-    deployAndRestartAppWithNameForSmokeTests ${appName} "${appName}-${PIPELINE_VERSION}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
-    propagatePropertiesForTests ${appName}
+    downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+    deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${PIPELINE_VERSION}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+    propagatePropertiesForTests "${appName}"
 }
 
 function testRollbackDeploy() {
-    rm -rf ${OUTPUT_FOLDER}/test.properties
+    rm -rf "${OUTPUT_FOLDER}/test.properties"
     local latestProdTag="${1}"
     projectGroupId=$( retrieveGroupId )
     appName=$( retrieveAppName )
     # Downloading latest jar
     LATEST_PROD_VERSION=${latestProdTag#prod/}
     echo "Last prod version equals ${LATEST_PROD_VERSION}"
-    downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${LATEST_PROD_VERSION}
+    downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}"
     logInToPaas
-    deployAndRestartAppWithNameForSmokeTests ${appName} "${appName}-${LATEST_PROD_VERSION}"
-    propagatePropertiesForTests ${appName}
+    deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${LATEST_PROD_VERSION}"
+    propagatePropertiesForTests "${appName}"
     # Adding latest prod tag
-    echo "LATEST_PROD_TAG=${latestProdTag}" >> ${OUTPUT_FOLDER}/test.properties
+    echo "LATEST_PROD_TAG=${latestProdTag}" >> "${OUTPUT_FOLDER}/test.properties"
 }
 
 function deployService() {
-    local serviceType=$( toLowerCase "${1}" )
+    local serviceType
+    serviceType=$( toLowerCase "${1}" )
     local serviceName="${2}"
-    local serviceCoordinates=$( if [[ "${3}" == "null" ]] ; then echo ""; else echo "${3}" ; fi )
+    local serviceCoordinates
+    serviceCoordinates=$( if [[ "${3}" == "null" ]] ; then echo ""; else echo "${3}" ; fi )
     case ${serviceType} in
     rabbitmq)
       deployRabbitMq "${serviceName}"
@@ -86,18 +88,18 @@ function deployService() {
       PREVIOUS_IFS="${IFS}"
       IFS=: read -r EUREKA_GROUP_ID EUREKA_ARTIFACT_ID EUREKA_VERSION <<< "${serviceCoordinates}"
       IFS="${PREVIOUS_IFS}"
-      downloadAppBinary ${REPO_WITH_BINARIES} ${EUREKA_GROUP_ID} ${EUREKA_ARTIFACT_ID} ${EUREKA_VERSION}
+      downloadAppBinary "${REPO_WITH_BINARIES}" "${EUREKA_GROUP_ID}" "${EUREKA_ARTIFACT_ID}" "${EUREKA_VERSION}"
       deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
     stubrunner)
-      UNIQUE_EUREKA_NAME="$( echo ${PARSED_YAML} | jq --arg x ${ENVIRONMENT} '.[$x | ascii_downcase].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' )"
-      UNIQUE_RABBIT_NAME="$( echo ${PARSED_YAML} | jq --arg x ${ENVIRONMENT} '.[$x | ascii_downcase].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' )"
+      UNIQUE_EUREKA_NAME="$( echo "${PARSED_YAML}" | jq --arg x "${ENVIRONMENT}" '.[$x | ascii_downcase].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' )"
+      UNIQUE_RABBIT_NAME="$( echo "${PARSED_YAML}" | jq --arg x "${ENVIRONMENT}" '.[$x | ascii_downcase].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' )"
       PREVIOUS_IFS="${IFS}"
       IFS=: read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<< "${serviceCoordinates}"
       IFS="${PREVIOUS_IFS}"
-      PARSED_STUBRUNNER_USE_CLASSPATH="$( echo ${PARSED_YAML} | jq --arg x ${ENVIRONMENT} '.[$x | ascii_downcase].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
+      PARSED_STUBRUNNER_USE_CLASSPATH="$( echo "${PARSED_YAML}" | jq --arg x "${ENVIRONMENT}" '.[$x | ascii_downcase].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
       STUBRUNNER_USE_CLASSPATH=$( if [[ "${PARSED_STUBRUNNER_USE_CLASSPATH}" == "null" ]] ; then echo "false"; else echo "${PARSED_STUBRUNNER_USE_CLASSPATH}" ; fi )
-      downloadAppBinary ${REPO_WITH_BINARIES} ${STUBRUNNER_GROUP_ID} ${STUBRUNNER_ARTIFACT_ID} ${STUBRUNNER_VERSION}
+      downloadAppBinary "${REPO_WITH_BINARIES}" "${STUBRUNNER_GROUP_ID}" "${STUBRUNNER_ARTIFACT_ID}" "${STUBRUNNER_VERSION}"
       deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${serviceName}"
       ;;
     *)
@@ -108,7 +110,8 @@ function deployService() {
 }
 
 function deleteService() {
-    local serviceType=$( toLowerCase "${1}" )
+    local serviceType
+    serviceType=$( toLowerCase "${1}" )
     local serviceName="${2}"
     case ${serviceType} in
     mysql)
@@ -126,7 +129,8 @@ function deleteService() {
 function deployRabbitMq() {
     local serviceName="${1:-rabbitmq-github}"
     echo "Waiting for RabbitMQ to start"
-    local foundApp=$( serviceExists "rabbitmq" "${serviceName}" )
+    local foundApp
+    foundApp=$( serviceExists "rabbitmq" "${serviceName}" )
     if [[ "${foundApp}" == "false" ]]; then
         hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
@@ -138,13 +142,14 @@ function deployRabbitMq() {
 
 function findAppByName() {
     local serviceName="${1}"
-    echo $( cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}' )
+    cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'
 }
 
 function serviceExists() {
     local serviceType="${1}"
     local serviceName="${2}"
-    local foundApp=$( findAppByName "${serviceName}" )
+    local foundApp
+    foundApp=$( findAppByName "${serviceName}" )
     if [[ "${foundApp}" == "" ]]; then
         echo "false"
     else
@@ -154,24 +159,25 @@ function serviceExists() {
 
 function deleteMySql() {
     local serviceName="${1:-mysql-github}"
-    deleteServiceWithName ${serviceName}
+    deleteServiceWithName "${serviceName}"
 }
 
 function deleteRabbitMq() {
     local serviceName="${1:-rabbitmq-github}"
-    deleteServiceWithName ${serviceName}
+    deleteServiceWithName "${serviceName}"
 }
 
 function deleteServiceWithName() {
     local serviceName="${1}"
-    cf delete -f ${serviceName} || echo "Failed to delete app [${serviceName}]"
-    cf delete-service -f ${serviceName} || echo "Failed to delete service [${serviceName}]"
+    cf delete -f "${serviceName}" || echo "Failed to delete app [${serviceName}]"
+    cf delete-service -f "${serviceName}" || echo "Failed to delete service [${serviceName}]"
 }
 
 function deployMySql() {
     local serviceName="${1:-mysql-github}"
     echo "Waiting for MySQL to start"
-    local foundApp=$( serviceExists "mysql" "${serviceName}" )
+    local foundApp
+    foundApp=$( serviceExists "mysql" "${serviceName}" )
     if [[ "${foundApp}" == "false" ]]; then
         hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
         (cf cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
@@ -197,7 +203,8 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local eurekaName="eureka-${appName}"
     local mysqlName="mysql-${appName}"
     local profiles="cloud,smoke"
-    local lowerCaseAppName=$( toLowerCase "${appName}" )
+    local lowerCaseAppName
+    lowerCaseAppName=$( toLowerCase "${appName}" )
     deleteAppInstance "${appName}"
     echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
     deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'false'
@@ -212,9 +219,9 @@ function deployAndRestartAppWithNameForSmokeTests() {
 
 function appHost() {
     local appName="${1}"
-    local lowerCase="$( toLowerCase "${appName}" )"
-    local APP_HOST=`cf apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
-    echo "${APP_HOST}" | tail -1
+    local lowerCase
+    lowerCase="$( toLowerCase "${appName}" )"
+    cf apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
 }
 
 function deployAppWithName() {
@@ -222,8 +229,10 @@ function deployAppWithName() {
     local jarName="${2}"
     local env="${3}"
     local useManifest="${4:-false}"
-    local manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo "--no-manifest"; else echo "" ; fi )
-    local lowerCaseAppName=$( toLowerCase "${appName}" )
+    local manifestOption
+    manifestOption=$( if [[ "${useManifest}" == "false" ]] ; then echo "--no-manifest"; else echo "" ; fi )
+    local lowerCaseAppName
+    lowerCaseAppName=$( toLowerCase "${appName}" )
     local hostname="${lowerCaseAppName}"
     local memory="${APP_MEMORY_LIMIT:-256m}"
     local buildPackUrl="${JAVA_BUILDPACK_URL:-https://github.com/cloudfoundry/java-buildpack.git#v3.8.1}"
@@ -235,11 +244,11 @@ function deployAppWithName() {
     fi
     echo "Deploying app with name [${lowerCaseAppName}], env [${env}] with manifest [${useManifest}] and host [${hostname}]"
     if [[ ! -z "${manifestOption}" ]]; then
-        cf push "${lowerCaseAppName}" -m "${memory}" -i 1 -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b "${buildPackUrl}" ${manifestOption}
+        cf push "${lowerCaseAppName}" -m "${memory}" -i 1 -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b "${buildPackUrl}" "${manifestOption}"
     else
         cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b "${buildPackUrl}"
     fi
-    APPLICATION_DOMAIN="$( appHost ${lowerCaseAppName} )"
+    APPLICATION_DOMAIN="$( appHost "${lowerCaseAppName}" )"
     echo "Determined that application_domain for [${lowerCaseAppName}] is [${APPLICATION_DOMAIN}]"
     setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"
     setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
@@ -247,10 +256,11 @@ function deployAppWithName() {
 
 function deleteAppInstance() {
     local serviceName="${1}"
-    local lowerCaseAppName=$( toLowerCase "${serviceName}" )
+    local lowerCaseAppName
+    lowerCaseAppName=$( toLowerCase "${serviceName}" )
     local APP_NAME="${lowerCaseAppName}"
     echo "Deleting application [${APP_NAME}]"
-    cf delete -f ${APP_NAME} || echo "Failed to delete the app. Continuing with the script"
+    cf delete -f "${APP_NAME}" || echo "Failed to delete the app. Continuing with the script"
 }
 
 function setEnvVarIfMissing() {
@@ -280,11 +290,6 @@ function deployEureka() {
     local appName="${2}"
     local env="${3}"
     echo "Deploying Eureka. Options - jar name [${jarName}], app name [${appName}], env [${env}]"
-    local fileExists="true"
-    local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
-    if [[ ! -f "${fileName}" ]]; then
-        fileExists="false"
-    fi
     deployAppWithName "${appName}" "${jarName}" "${env}"
     restartApp "${appName}"
     createServiceWithName "${appName}"
@@ -297,15 +302,11 @@ function deployStubRunnerBoot() {
     local eurekaName="${4}"
     local env="${5:-test}"
     local stubRunnerName="${6:-stubrunner}"
-    local fileExists="true"
-    local fileName="`pwd`/${OUTPUT_FOLDER}/${jarName}.jar"
     local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
-    if [[ ! -f "${fileName}" ]]; then
-        fileExists="false"
-    fi
     echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}]"
     deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "false"
-    local prop="$( retrieveStubRunnerIds )"
+    local prop
+    prop="$( retrieveStubRunnerIds )"
     echo "Found following stub runner ids [${prop}]"
     setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
     if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
@@ -332,23 +333,26 @@ function bindService() {
 function createServiceWithName() {
     local name="${1}"
     echo "Creating service with name [${name}]"
-    APPLICATION_DOMAIN=`cf apps | grep ${name} | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
+    APPLICATION_DOMAIN="$( cf apps | grep "${name}" | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 )"
     JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
     cf create-user-provided-service "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
 }
 
 function prepareForSmokeTests() {
     echo "Retrieving group and artifact id - it can take a while..."
-    appName=$( retrieveAppName )
+    local appName
+    appName="$( retrieveAppName )"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
-    propagatePropertiesForTests ${appName}
+    propagatePropertiesForTests "${appName}"
+    # shellcheck disable=SC2119
     readTestPropertiesFromFile
     echo "Application URL [${APPLICATION_URL}]"
     echo "StubRunner URL [${STUBRUNNER_URL}]"
     echo "Latest production tag [${LATEST_PROD_TAG}]"
 }
 
+# shellcheck disable=SC2120
 function readTestPropertiesFromFile() {
     local fileLocation="${1:-${OUTPUT_FOLDER}/test.properties}"
     if [ -f "${fileLocation}" ]
@@ -356,7 +360,7 @@ function readTestPropertiesFromFile() {
       echo "${fileLocation} found."
       while IFS='=' read -r key value
       do
-        key=$(echo ${key} | tr '.' '_')
+        key=$(echo "${key}" | tr '.' '_')
         eval "${key}='${value}'"
       done < "${fileLocation}"
     else
@@ -373,31 +377,35 @@ function stageDeploy() {
 
     deployServices
 
-    downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
+    downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
 
     # deploy app
-    deployAndRestartAppWithName ${appName} "${appName}-${PIPELINE_VERSION}"
-    propagatePropertiesForTests ${appName}
+    deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
+    propagatePropertiesForTests "${appName}"
 }
 
 function retrieveApplicationUrl() {
     echo "Retrieving artifact id - it can take a while..."
-    appName=$( retrieveAppName )
+    local appName
+    appName="$( retrieveAppName )"
     echo "Project artifactId is ${appName}"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
-    propagatePropertiesForTests ${appName}
+    propagatePropertiesForTests "${appName}"
+    # shellcheck disable=SC2119
     readTestPropertiesFromFile
     echo "Application URL [${APPLICATION_URL}]"
 }
 
 
 function performGreenDeployment() {
-    projectGroupId=$( retrieveGroupId )
-    appName=$( retrieveAppName )
+    local projectGroupId
+    projectGroupId="$( retrieveGroupId )"
+    local appName
+    appName="$( retrieveAppName )"
 
     # download app
-    downloadAppBinary ${REPO_WITH_BINARIES} ${projectGroupId} ${appName} ${PIPELINE_VERSION}
+    downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
     # Log in to CF to start deployment
     logInToPaas
 
@@ -420,7 +428,8 @@ function performGreenDeploymentOfTestedApplication() {
 }
 
 function deleteBlueInstance() {
-    local appName=$( retrieveAppName )
+    local appName
+    appName="$( retrieveAppName )"
     # Log in to CF to start deployment
     logInToPaas
     local oldName="${appName}-venerable"
@@ -441,18 +450,20 @@ function propagatePropertiesForTests() {
     # retrieve host of the app / stubrunner
     # we have to store them in a file that will be picked as properties
     rm -rf "${fileLocation}"
-    local host=$( appHost "${projectArtifactId}" )
+    local host=
+    host="$( appHost "${projectArtifactId}" )"
     export APPLICATION_URL="${host}"
-    echo "APPLICATION_URL=${host}" >> ${fileLocation}
+    echo "APPLICATION_URL=${host}" >> "${fileLocation}"
     host=$( appHost "${stubRunnerHost}" )
     export STUBRUNNER_URL="${host}"
-    echo "STUBRUNNER_URL=${host}" >> ${fileLocation}
+    echo "STUBRUNNER_URL=${host}" >> "${fileLocation}"
     echo "Resolved properties"
-    cat ${fileLocation}
+    cat "${fileLocation}"
 }
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
+# shellcheck source=/dev/null
 [[ -f "${__DIR}/projectType/pipeline-jvm.sh" ]] && source "${__DIR}/projectType/pipeline-jvm.sh" || \
     echo "No projectType/pipeline-jvm.sh found"
