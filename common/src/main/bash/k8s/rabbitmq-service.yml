@@ -9,4 +9,3 @@ spec:
   - port: 5672
   selector:
     name: {{appName}}
-    component: {{appName}}
