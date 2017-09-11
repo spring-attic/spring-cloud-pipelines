@@ -602,24 +602,3 @@ export PAAS_NAMESPACE_VAR="PAAS_${ENVIRONMENT}_NAMESPACE"
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 [[ -f "${__ROOT}/projectType/pipeline-jvm.sh" ]] && source "${__ROOT}/projectType/pipeline-jvm.sh" || \
     echo "No projectType/pipeline-jvm.sh found"
-
-# TODO: MOve this back to pipeline-jvm
-# OVerriding default building options
-
-function build() {
-    local appName=$( retrieveAppName )
-    echo "Additional Build Options [${BUILD_OPTIONS}]"
-
-    ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${BUILD_OPTIONS}
-    if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean package docker:build deploy -DpushImageTags -DdockerImageTags="latest" \
-        -Ddistribution.management.release.id=${M2_SETTINGS_REPO_ID} -Ddistribution.management.release.url=${REPO_WITH_BINARIES} -Drepo.with.binaries=${REPO_WITH_BINARIES} \
-        -DdockerImageTags="${PIPELINE_VERSION}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
-        ./mvnw docker:push ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
-    else
-        ./mvnw clean package docker:build deploy -DpushImageTags -DdockerImageTags="latest" \
-        -Ddistribution.management.release.id=${M2_SETTINGS_REPO_ID} -Ddistribution.management.release.url=${REPO_WITH_BINARIES} -Drepo.with.binaries=${REPO_WITH_BINARIES} \
-        -DdockerImageTags="${PIPELINE_VERSION}" ${BUILD_OPTIONS}
-        ./mvnw docker:push ${BUILD_OPTIONS}
-    fi
-}
