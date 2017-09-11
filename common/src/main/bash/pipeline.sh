@@ -1,5 +1,12 @@
 #!/bin/bash
-set -e
+
+set -o errexit
+set -o errtrace
+set -o pipefail
+
+IFS=$' \n\t'
+
+__ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ---- BUILD PHASE ----
 function build() {
@@ -82,16 +89,15 @@ function testResultsAntPattern() {
 
 # Finds the latest prod tag from git
 function findLatestProdTag() {
-    local LAST_PROD_TAG=$(git for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | head -n 1)
-    LAST_PROD_TAG=${LAST_PROD_TAG#refs/tags/}
-    echo "${LAST_PROD_TAG}"
+    local LAST_PROD_TAG
+    LAST_PROD_TAG=$( git for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | head -n 1 )
+    echo "${LAST_PROD_TAG#refs/tags/}"
 }
 
 # Extracts the version from the production tag
 function extractVersionFromProdTag() {
     local tag="${1}"
-    LAST_PROD_VERSION=${tag#prod/}
-    echo "${LAST_PROD_VERSION}"
+    echo "${tag#prod/}"
 }
 
 # Checks for existence of pipeline.yaml file that contains types and names of the
@@ -136,55 +142,55 @@ function serviceExists() {
 # For other environments only deploys a service if it wasn't there.
 # Uses ruby and jq
 function deployServices() {
-  if [[ "$( pipelineDescriptorExists )" != "true" ]]; then
-    echo "No pipeline descriptor found - will not deploy any services"
-    return
-  fi
-
-  PARSED_YAML=$( yaml2json "pipeline.yml" )
-  export PARSED_YAML
-
-  while read -r serviceType serviceName serviceCoordinates; do
-    if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-      deleteService "${serviceType}" "${serviceName}"
-      deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
-    else
-      if [[ "$( serviceExists "${serviceName}" )" == "true" ]]; then
-        echo "Skipping deployment since service is already deployed"
-      else
-        deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
-      fi
+    if [[ "$( pipelineDescriptorExists )" != "true" ]]; then
+        echo "No pipeline descriptor found - will not deploy any services"
+        return
     fi
-  # retrieve the space separated type, name and coordinates
-  done <<< "$( echo "${PARSED_YAML}" | \
-               jq -r --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"' )"
+
+    PARSED_YAML=$( yaml2json "pipeline.yml" )
+    export PARSED_YAML
+
+    while read -r serviceType serviceName serviceCoordinates; do
+        if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+            deleteService "${serviceType}" "${serviceName}"
+            deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
+        else
+            if [[ "$( serviceExists "${serviceName}" )" == "true" ]]; then
+                echo "Skipping deployment since service is already deployed"
+            else
+                deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
+            fi
+        fi
+    # retrieve the space separated type, name and coordinates
+    done <<< "$( echo "${PARSED_YAML}" | \
+                 jq -r --arg x "${ENVIRONMENT}" '.[$x | ascii_downcase].services[] | "\(.type) \(.name) \(.coordinates)"' )"
 }
 
 # Converts YAML to JSON - uses ruby
 function yaml2json() {
-    ruby -ryaml -rjson -e \
-         'puts JSON.pretty_generate(YAML.load(ARGF))' $*
+    ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load(ARGF))' "$@"
 }
 
-function lowerCaseEnv() {
-    local string=${1}
-    echo "${ENVIRONMENT}" | tr '[:upper:]' '[:lower:]'
+# Converts a string to lower case
+function toLowerCase() {
+    echo "$1" | tr '[:upper:]' '[:lower:]'
 }
-
-__ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # CURRENTLY WE ONLY SUPPORT CF AS PAAS OUT OF THE BOX
-export PAAS_TYPE="${PAAS_TYPE:-cf}"
+PAAS_TYPE="${PAAS_TYPE:-cf}"
+export PAAS_TYPE
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"
-export LOWER_CASE_ENV=$( lowerCaseEnv )
 
+# shellcheck source=/dev/null
 [[ -f "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__ROOT}/pipeline-${PAAS_TYPE}.sh" || \
     echo "No pipeline-${PAAS_TYPE}.sh found"
 
-export OUTPUT_FOLDER=$( outputFolder )
-export TEST_REPORTS_FOLDER=$( testResultsAntPattern )
+OUTPUT_FOLDER="$( outputFolder )"
+TEST_REPORTS_FOLDER="$( testResultsAntPattern )"
+
+export OUTPUT_FOLDER TEST_REPORTS_FOLDER
 
 echo "Output folder [${OUTPUT_FOLDER}]"
 echo "Test reports folder [${TEST_REPORTS_FOLDER}]"

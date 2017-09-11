@@ -14,18 +14,16 @@ fi
 function build() {
     echo "Additional Build Options [${BUILD_OPTIONS}]"
 
-    ./mvnw versions:set -DnewVersion=${PIPELINE_VERSION} ${BUILD_OPTIONS}
+    ./mvnw versions:set -DnewVersion="${PIPELINE_VERSION}" "${BUILD_OPTIONS}"
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean verify deploy -Ddistribution.management.release.id=${M2_SETTINGS_REPO_ID} -Ddistribution.management.release.url=${REPO_WITH_BINARIES} -Drepo.with.binaries=${REPO_WITH_BINARIES} ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./mvnw clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
-        ./mvnw clean verify deploy -Ddistribution.management.release.id=${M2_SETTINGS_REPO_ID} -Ddistribution.management.release.url=${REPO_WITH_BINARIES} -Drepo.with.binaries=${REPO_WITH_BINARIES} ${BUILD_OPTIONS}
+        ./mvnw clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
     fi
 }
 
 function apiCompatibilityCheck() {
     echo "Running retrieval of group and artifactid to download all dependencies. It might take a while..."
-    projectGroupId=$( retrieveGroupId )
-    appName=$( retrieveAppName )
 
     # Find latest prod version
     LATEST_PROD_TAG=$( findLatestProdTag )
@@ -38,9 +36,9 @@ function apiCompatibilityCheck() {
         echo "Last prod version equals ${LATEST_PROD_VERSION}"
         echo "Additional Build Options [${BUILD_OPTIONS}]"
         if [[ "${CI}" == "CONCOURSE" ]]; then
-            ./mvnw clean verify -Papicompatibility -Dlatest.production.version=${LATEST_PROD_VERSION} -Drepo.with.binaries=${REPO_WITH_BINARIES} ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+            ./mvnw clean verify -Papicompatibility -Dlatest.production.version="${LATEST_PROD_VERSION}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
         else
-            ./mvnw clean verify -Papicompatibility -Dlatest.production.version=${LATEST_PROD_VERSION} -Drepo.with.binaries=${REPO_WITH_BINARIES} ${BUILD_OPTIONS}
+            ./mvnw clean verify -Papicompatibility -Dlatest.production.version="${LATEST_PROD_VERSION}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
         fi
     fi
 }
@@ -65,15 +63,21 @@ function extractMavenProperty() {
 }
 
 function retrieveGroupId() {
-    local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/groupId"].text' pom.xml || ./mvnw ${BUILD_OPTIONS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.groupId |grep -Ev '(^\[|Download\w+:)' )
-    result=$( echo "${result}" | tail -1 )
-    echo "${result}"
+    {
+        ruby -r rexml/document \
+             -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/groupId"].text' pom.xml \
+        || ./mvnw ${BUILD_OPTIONS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate \
+                  -Dexpression=project.groupId | grep -Ev '(^\[|Download\w+:)'
+    } | tail -1
 }
 
 function retrieveAppName() {
-    local result=$( ruby -r rexml/document -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml || ./mvnw ${BUILD_OPTIONS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate -Dexpression=project.artifactId |grep -Ev '(^\[|Download\w+:)' )
-    result=$( echo "${result}" | tail -1 )
-    echo "${result}"
+    { 
+        ruby -r rexml/document \
+              -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml \
+        || ./mvnw ${BUILD_OPTIONS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate \
+                  -Dexpression=project.artifactId | grep -Ev '(^\[|Download\w+:)'
+    } | tail -1
 }
 
 function printTestResults() {
@@ -81,7 +85,7 @@ function printTestResults() {
 }
 
 function retrieveStubRunnerIds() {
-    echo "$( extractMavenProperty 'stubrunner.ids' )"
+    extractMavenProperty 'stubrunner.ids'
 }
 
 function runSmokeTests() {
@@ -90,7 +94,7 @@ function runSmokeTests() {
     echo "Running smoke tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( echo "$( printTestResults )" && return 1)
+        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
         ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
     fi
@@ -103,7 +107,7 @@ function runE2eTests() {
     echo "Running e2e tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS} || ( $( printTestResults ) && return 1)
+        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
         ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS}
     fi

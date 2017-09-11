@@ -90,12 +90,12 @@ function deployService() {
       deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
       ;;
     stubrunner)
-      UNIQUE_EUREKA_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' )"
-      UNIQUE_RABBIT_NAME="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' )"
+      UNIQUE_EUREKA_NAME="$( echo ${PARSED_YAML} | jq --arg x ${ENVIRONMENT} '.[$x | ascii_downcase].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' )"
+      UNIQUE_RABBIT_NAME="$( echo ${PARSED_YAML} | jq --arg x ${ENVIRONMENT} '.[$x | ascii_downcase].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' )"
       PREVIOUS_IFS="${IFS}"
       IFS=: read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<< "${serviceCoordinates}"
       IFS="${PREVIOUS_IFS}"
-      PARSED_STUBRUNNER_USE_CLASSPATH="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
+      PARSED_STUBRUNNER_USE_CLASSPATH="$( echo ${PARSED_YAML} | jq --arg x ${ENVIRONMENT} '.[$x | ascii_downcase].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
       STUBRUNNER_USE_CLASSPATH=$( if [[ "${PARSED_STUBRUNNER_USE_CLASSPATH}" == "null" ]] ; then echo "false"; else echo "${PARSED_STUBRUNNER_USE_CLASSPATH}" ; fi )
       downloadAppBinary ${REPO_WITH_BINARIES} ${STUBRUNNER_GROUP_ID} ${STUBRUNNER_ARTIFACT_ID} ${STUBRUNNER_VERSION}
       deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${ENVIRONMENT}" "${serviceName}"
@@ -449,12 +449,6 @@ function propagatePropertiesForTests() {
     echo "STUBRUNNER_URL=${host}" >> ${fileLocation}
     echo "Resolved properties"
     cat ${fileLocation}
-}
-
-function toLowerCase() {
-    local string=${1}
-    local result=$( echo "${string}" | tr '[:upper:]' '[:lower:]' )
-    echo "${result}"
 }
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
