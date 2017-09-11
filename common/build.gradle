@@ -8,28 +8,45 @@ sourceSets {
     }
 }
 
-//task shellcheck {
-//    sourceSets*.resources.srcDirs*.each { srcDir ->
-//        fileTree(relativePath(srcDir)).include('**/*.sh').each { File script ->
-//            exec {
-//                commandLine "shellcheck", script
-//            }
-//        }
-//    }
-//}
+import org.gradle.internal.os.OperatingSystem;
 
-task validateSyntax() {
-    FileTree tree = fileTree(dir: project.projectDir.path + '/src/main/bash', include: ['**/*.sh'])
-    tree.each {
-        def sout = new StringBuilder(), serr = new StringBuilder()
-        def proc = "bash -n ${it.path}".execute()
-        proc.consumeProcessOutput(sout, serr)
-        proc.waitForOrKill(1000)
-        if (sout.contains("error") || serr.contains("error")) {
-            String processOutput = "SOUT: [\n\n ${sout} \n], SERR: [\n\n ${serr} \n]"
-            throw new IllegalStateException("File [${it}] has invalid syntax. \n\n${processOutput}\n\n")
+task installShellcheckIfMissing(type: Exec) {
+    boolean mac = OperatingSystem.current().isMacOsX()
+    boolean linux = OperatingSystem.current().isLinux()
+    boolean shellcheckInstalled = false
+    try {
+        "shellcheck -V".execute()
+        shellcheckInstalled = true
+    } catch (IOException e) {
+    }
+    if (shellcheckInstalled) {
+        commandLine "echo", "Shellcheck installed - continuing"
+    } else if (linux) {
+        println "Shellcheck is missing. Will install it. You'll be prompted for your sudo password"
+        commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
+    }
+    else if (mac) {
+        println "Shellcheck is missing. Will install it. You'll be prompted for your sudo password"
+        commandLine "brew", "install", "shellcheck"
+    }
+    else throw new IllegalStateException("Unsupported OS")
+}
+
+task shellcheck {
+    doLast {
+        sourceSets*.resources.srcDirs*.each { srcDir ->
+            fileTree(relativePath(srcDir))
+                .include('**/*.sh')
+                // TODO: temporary :)
+                .exclude("**/pipeline-k8s.sh")
+                .each { File script ->
+                exec {
+                    commandLine "shellcheck", script
+                }
+            }
         }
     }
 }
 
-test.dependsOn validateSyntax
+shellcheck.dependsOn("installShellcheckIfMissing")
+build.dependsOn("shellcheck")
