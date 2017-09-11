@@ -9,13 +9,9 @@ machine:
     _JAVA_OPTIONS: "-Xms512m -Xmx1024m"
     GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
     TERM: dumb
-dependencies:
-  override:
-    - "sudo apt-add-repository 'deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted universe'"
-    - "sudo apt-get update"
-    - "sudo apt-get install shellcheck"
 test:
   override:
+    - ./tools/build-helper download-shellcheck
     - ./gradlew clean build
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
