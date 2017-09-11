@@ -35,7 +35,7 @@ case $1 in
 		# Extract
 		tar xvf "${FOLDER}/build/shellcheck-latest.linux.x86_64.tar.xz" -C "${FOLDER}/build"
 		# Make it globally available
-		sudo cp "${FOLDER}/build/shellcheck-latest/shellcheck" /usr/bin/shellcheck
+		sudo cp "${FOLDER}/build/shellcheck-latest/shellcheck" /usr/bin/shellcheck || echo "Failed to copy shellcheck"
 		elif [[ "${SYSTEM}" == "darwin" ]]; then
 			brew install shellcheck
 		fi
