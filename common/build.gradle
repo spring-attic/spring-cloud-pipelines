@@ -39,7 +39,7 @@ task shellcheck {
                         if (fileCopied) {
                             pathToShellcheck = "/usr/bin/shellcheck"
                         } else {
-                            pathToShellcheck = new File(project("common").buildDir, "shellcheck-latest/shellcheck").path
+                            pathToShellcheck = new File(project(":common").buildDir, "shellcheck-latest/shellcheck").path
                         }
                     }
                     commandLine pathToShellcheck, script
