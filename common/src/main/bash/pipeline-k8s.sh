@@ -126,7 +126,7 @@ function appSystemProps() {
         systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
     fi
     if [[ "${rabbitMqName}" != "" && "${rabbitMqName}" != "null" ]]; then
-        systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitMqName}"
+        systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitMqName}:5672"
     fi
     echo "${systemProps}"
 }

@@ -13,11 +13,15 @@ String jenkinsHome = '/root'
 
 println "Creating the settings.xml file"
 String m2Home = jenkinsHome + '/.m2'
-boolean m2Created = new File(m2Home).mkdirs()
+File m2HomeFile = new File(m2Home)
+m2HomeFile.mkdirs()
 File mavenSettings = new File("${m2Home}/settings.xml")
-if (m2Created) {
+if (m2HomeFile.exists()) {
 	boolean settingsCreated = mavenSettings.createNewFile()
 	if (settingsCreated) {
+		mavenSettings.text = new File('/usr/share/jenkins/settings.xml').text
+	} else if (mavenSettings.exists()) {
+		println "Overridden existing maven settings"
 		mavenSettings.text = new File('/usr/share/jenkins/settings.xml').text
 	} else {
 		println "Failed to create settings.xml!"
@@ -28,14 +32,19 @@ if (m2Created) {
 
 println "Creating the gradle.properties file"
 String gradleHome = jenkinsHome + '/.gradle'
-boolean gradleCreated = new File(gradleHome).mkdirs()
+File gradleHomeFile = new File(gradleHome)
+gradleHomeFile.mkdirs()
 File gradleProperties = new File("${gradleHome}/gradle.properties")
-if (gradleCreated) {
+if (gradleHomeFile.exists()) {
 	boolean settingsCreated = gradleProperties.createNewFile()
 	if (settingsCreated) {
-        gradleProperties.text =
+		gradleProperties.text =
 				new File('/usr/share/jenkins/gradle.properties').text
-	}  else {
+	} else if (gradleProperties.exists()) {
+		println "Overridden existing gradle settings"
+		gradleProperties.text =
+			new File('/usr/share/jenkins/gradle.properties').text
+	} else {
 		println "Failed to create gradle.properties!"
 	}
 }  else {
@@ -127,11 +136,15 @@ if (gitCredsMissing) {
 def certificateAuthority = new File('/usr/share/jenkins/cert/ca.crt')
 def clientCertificate = new File('/usr/share/jenkins/cert/apiserver.crt')
 def clientKey = new File('/usr/share/jenkins/cert/apiserver.key')
+def kubernetesHome = new File("${jenkinsHome}/.kubernetes/")
 
-if (certificateAuthority.exists()) {
+if (certificateAuthority.exists() && !kubernetesHome.exists()) {
 	println "Copying Kubernetes certificates"
 	File targetFile = new File("${jenkinsHome}/.kubernetes/")
 	Files.copy(new File('/usr/share/jenkins/cert/').toPath(), targetFile.toPath())
+}
+if (kubernetesHome.exists()) {
+	println "The .kubernetes folder is already created - won't copy the certificates"
 }
 
 String dockerRegistryUser = new File('/usr/share/jenkins/dockerRegistryUser')?.text ?: "changeme"
@@ -146,9 +159,9 @@ mavenSettings.text = mavenSettings.text
 
 println "Updating gradle properties with docker registry data"
 gradleProperties.text = gradleProperties.text
-    .replace("dockeruser", dockerRegistryUser)
-    .replace("dockerpass", dockerRegistryPass)
-    .replace("docker@email.com", dockerRegistryEmail)
+	.replace("dockeruser", dockerRegistryUser)
+	.replace("dockerpass", dockerRegistryPass)
+	.replace("docker@email.com", dockerRegistryEmail)
 
 println "Adding MySQL credentials"
 boolean mySqlCredsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {

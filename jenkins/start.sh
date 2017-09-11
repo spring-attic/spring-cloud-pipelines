@@ -5,12 +5,14 @@ if [[ $# < 3 ]] ; then
     echo "1 - git username with access to the forked repos"
     echo "2 - git password of that user"
     echo "3 - org where the forked repos lay"
-    echo "4 - (for k8gs) docker registry organization - you can leave an empty value"
-    echo "5 - (for k8gs) docker registry username - you can leave an empty value"
-    echo "6 - (for k8gs) docker registry password - you can leave an empty value"
-    echo "7 - (for k8gs) docker registry email - you can leave an empty value"
+    echo "4 - (for k8s) docker registry organization - you can leave an empty value"
+    echo "5 - (for k8s) docker registry username - you can leave an empty value"
+    echo "6 - (for k8s) docker registry password - you can leave an empty value"
+    echo "7 - (for k8s) docker registry email - you can leave an empty value"
     echo "8 - (optional) external ip (for example Docker Machine if you're using one)"
-    echo "Example: ./start.sh user pass forkedOrg 192.168.99.100"
+    echo "Example: ./start.sh user pass forkedOrg dockerOrg dockerUser dockerPass dockerEmail"
+    echo "Example: ./start.sh user pass forkedOrg dockerOrg dockerUser dockerPass dockerEmail 192.168.99.100"
+    echo "Example: ./start.sh user pass forkedOrg '' '' '' '' 192.168.99.100"
     exit 0
 fi
 
@@ -39,6 +41,6 @@ cp ~/.minikube/ca.crt seed/k8s/ || echo "Failed to copy Kubernetes certificate a
 cp ~/.minikube/apiserver.crt seed/k8s/ || echo "Failed to copy Kubernetes client certificate file"
 cp ~/.minikube/apiserver.key seed/k8s/ || echo "Failed to copy Kubernetes client key file"
 
-#docker-compose build --no-cache
-docker-compose build
+docker-compose build --no-cache
+#docker-compose build
 docker-compose up -d
