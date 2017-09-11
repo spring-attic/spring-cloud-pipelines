@@ -139,7 +139,7 @@ function appSystemProps() {
         systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitMqName}:5672"
     fi
     if [[ "${mySqlName}" != "" && "${mySqlName}" != "null" ]]; then
-        systemProps="${systemProps} jdbc:mysql://${mySqlName}/${mySqlDatabase}?autoReconnect=true&useSSL=false"
+        systemProps="${systemProps} -Dspring.datasource.url=jdbc:mysql://${mySqlName}/${mySqlDatabase}"
     fi
     echo "${systemProps}"
 }
