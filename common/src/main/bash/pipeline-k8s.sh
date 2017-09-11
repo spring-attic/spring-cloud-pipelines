@@ -98,7 +98,7 @@ function deployService() {
       PREVIOUS_IFS="${IFS}"
       IFS=${coordinatesSeparator} read -r STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<< "${serviceCoordinates}"
       IFS="${PREVIOUS_IFS}"
-      PARSED_STUBRUNNER_USE_CLASSPATH="$( echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
+      PARSED_STUBRUNNER_USE_CLASSPATH="$( echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
       STUBRUNNER_USE_CLASSPATH=$( if [[ "${PARSED_STUBRUNNER_USE_CLASSPATH}" == "null" ]] ; then echo "false"; else echo "${PARSED_STUBRUNNER_USE_CLASSPATH}" ; fi )
       deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${serviceName}"
       ;;
@@ -110,11 +110,19 @@ function deployService() {
 }
 
 function eurekaName() {
-    echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/'
+    echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/'
 }
 
 function rabbitMqName() {
-    echo ${PARSED_YAML} | jq --arg x ${LOWER_CASE_ENV} '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/'
+    echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/'
+}
+
+function mySqlName() {
+    echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .name' | sed 's/^"\(.*\)"$/\1/'
+}
+
+function mySqlDatabase() {
+    echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .database' | sed 's/^"\(.*\)"$/\1/'
 }
 
 function appSystemProps() {
@@ -122,11 +130,16 @@ function appSystemProps() {
     # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
     local eurekaName="$( eurekaName )"
     local rabbitMqName="$( rabbitMqName )"
+    local mySqlName="$( mySqlName )"
+    local mySqlDatabase="$( mySqlDatabase )"
     if [[ "${eurekaName}" != "" && "${eurekaName}" != "null" ]]; then
         systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
     fi
     if [[ "${rabbitMqName}" != "" && "${rabbitMqName}" != "null" ]]; then
         systemProps="${systemProps} -DSPRING_RABBITMQ_ADDRESSES=${rabbitMqName}:5672"
+    fi
+    if [[ "${mySqlName}" != "" && "${mySqlName}" != "null" ]]; then
+        systemProps="${systemProps} -DMYSQL_HOST=${mySqlName} -DMYSQL_DB=${mySqlDatabase}"
     fi
     echo "${systemProps}"
 }
@@ -438,14 +451,10 @@ function isAppRunning() {
     local waitTime=5
     local retries=50
     local running=1
-    # TODO: Why the hell I can't access /health on some services but can access other endpoints????
-    local primaryHealthEndpoint="health"
-    local secondaryHealthEndpoint="info"
+    local healthEndpoint="health"
     for i in $( seq 1 "${retries}" ); do
         sleep "${waitTime}"
-        # TODO: Adding secondary health endpoint cause for some reason sometimes you can't access /health
-        curl -m 5 "${host}:${port}/${primaryHealthEndpoint}" && running=0 && break ||
-            curl -m 5 "${host}:${port}/${secondaryHealthEndpoint}" && running=0 && break
+        curl -m 5 "${host}:${port}/${healthEndpoint}" && running=0 && break
         echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
     done
     if [[ "${running}" == 1 ]]; then
