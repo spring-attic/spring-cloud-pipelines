@@ -163,7 +163,7 @@ function deployServices() {
         fi
     # retrieve the space separated type, name and coordinates
     done <<< "$( echo "${PARSED_YAML}" | \
-                 jq -r --arg x "${ENVIRONMENT}" '.[$x | ascii_downcase].services[] | "\(.type) \(.name) \(.coordinates)"' )"
+                 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"' )"
 }
 
 # Converts YAML to JSON - uses ruby
@@ -179,6 +179,11 @@ function toLowerCase() {
 # CURRENTLY WE ONLY SUPPORT CF AS PAAS OUT OF THE BOX
 PAAS_TYPE="${PAAS_TYPE:-cf}"
 export PAAS_TYPE
+# Not every linux distribution comes with installation of JQ that is new enough
+# to have the asci_downcase method. That's why we're using the global env variable
+# At some point we'll deprecate this and use what JQ provides
+LOWERCASE_ENV="$( toLowerCase "${ENVIRONMENT}" )"
+export LOWERCASE_ENV
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"
