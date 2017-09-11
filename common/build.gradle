@@ -8,28 +8,23 @@ sourceSets {
     }
 }
 
-import org.gradle.internal.os.OperatingSystem;
-
-task installShellcheckIfMissing(type: Exec) {
-    boolean mac = OperatingSystem.current().isMacOsX()
-    boolean linux = OperatingSystem.current().isLinux()
-    boolean shellcheckInstalled = false
+Closure isShellcheckInstalled = { ->
     try {
         "shellcheck -V".execute()
-        shellcheckInstalled = true
+        return true
     } catch (IOException e) {
     }
+    return false
+}
+
+task installShellcheckIfMissing(type: Exec) {
+    boolean shellcheckInstalled = isShellcheckInstalled()
     if (shellcheckInstalled) {
         commandLine "echo", "Shellcheck installed - continuing"
-    } else if (linux) {
+    } else {
         println "Shellcheck is missing. Will install it. You'll be prompted for your sudo password"
         commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
     }
-    else if (mac) {
-        println "Shellcheck is missing. Will install it. You'll be prompted for your sudo password"
-        commandLine "brew", "install", "shellcheck"
-    }
-    else throw new IllegalStateException("Unsupported OS")
 }
 
 task shellcheck {
@@ -37,7 +32,17 @@ task shellcheck {
         sourceSets*.resources.srcDirs*.each { srcDir ->
             fileTree(relativePath(srcDir)).include('**/*.sh').each { File script ->
                 exec {
-                    commandLine "shellcheck", script
+                    boolean shellcheckInstalled = isShellcheckInstalled()
+                    String pathToShellcheck = "shellcheck"
+                    if (!shellcheckInstalled) {
+                        boolean fileCopied = new File("/usr/bin/shellcheck").exists()
+                        if (fileCopied) {
+                            pathToShellcheck = "/usr/bin/shellcheck"
+                        } else {
+                            pathToShellcheck = new File(project("common").buildDir, "shellcheck-latest/shellcheck").path
+                        }
+                    }
+                    commandLine pathToShellcheck, script
                 }
             }
         }
