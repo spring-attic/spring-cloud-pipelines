@@ -8,12 +8,41 @@ sourceSets {
     }
 }
 
+import org.gradle.internal.os.OperatingSystem;
+
+task installShellcheckIfMissing(type: Exec) {
+    boolean mac = OperatingSystem.current().isMacOsX()
+    boolean linux = OperatingSystem.current().isLinux()
+    boolean shellcheckInstalled = false
+    try {
+        "shellcheck -V".execute()
+        shellcheckInstalled = true
+    } catch (IOException e) {
+    }
+    if (shellcheckInstalled) {
+        commandLine "echo", "Shellcheck installed - continuing"
+    } else if (linux) {
+        println "Shellcheck is missing. Will install it. You'll be prompted for your sudo password"
+        commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
+    }
+    else if (mac) {
+        println "Shellcheck is missing. Will install it. You'll be prompted for your sudo password"
+        commandLine "brew", "install", "shellcheck"
+    }
+    else throw new IllegalStateException("Unsupported OS")
+}
+
 task shellcheck {
-    sourceSets*.resources.srcDirs*.each { srcDir ->
-        fileTree(relativePath(srcDir)).include('**/*.sh').each { File script ->
-            exec {
-                commandLine "shellcheck", script
+    doLast {
+        sourceSets*.resources.srcDirs*.each { srcDir ->
+            fileTree(relativePath(srcDir)).include('**/*.sh').each { File script ->
+                exec {
+                    commandLine "shellcheck", script
+                }
             }
         }
     }
 }
+
+shellcheck.dependsOn("installShellcheckIfMissing")
+build.dependsOn("shellcheck")
