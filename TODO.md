@@ -11,7 +11,9 @@ the URL of Kubernetes cluster and search for the `NodePort`
 
 - Add if / else for minikube
 - Fix the health check to check the status?
-- Publish jars to artifactory cause they are needed for API compatibility
+- Add shellcheck for k8s
+- Store K8S YAMLs as artifacts
+- Ensure that the docker specific properties get passed to Maven / Gradle builds
 
 ### K8S
 
