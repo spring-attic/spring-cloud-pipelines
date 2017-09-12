@@ -5,10 +5,13 @@ function logInToPaas() {
     local redownloadInfra="${REDOWNLOAD_INFRA}"
     local ca="PAAS_${ENVIRONMENT}_CA"
     local k8sCa="${!ca}"
+    export KUBERNETES_CERTS_CA_FILE="${k8sClientCert}"
     local clientCert="PAAS_${ENVIRONMENT}_CLIENT_CERT"
     local k8sClientCert="${!clientCert}"
+    export KUBERNETES_CERTS_CLIENT_FILE="${k8sClientCert}"
     local clientKey="PAAS_${ENVIRONMENT}_CLIENT_KEY"
     local k8sClientKey="${!clientKey}"
+    export KUBERNETES_CERTS_CLIENT_KEY_FILE="${k8sClientCert}"
     local clusterName="PAAS_${ENVIRONMENT}_CLUSTER_NAME"
     local k8sClusterName="${!clusterName}"
     local clusterUser="PAAS_${ENVIRONMENT}_CLUSTER_USERNAME"
@@ -18,6 +21,7 @@ function logInToPaas() {
     export K8S_CONTEXT="${k8sSystemName}"
     local api="PAAS_${ENVIRONMENT}_API_URL"
     local apiUrl="${!api:-192.168.99.100:8443}"
+    export KUBERNETES_MASTER="${apiUrl}"
     local CLI_INSTALLED="$( kubectl version || echo "false" )"
     local CLI_DOWNLOADED="$( test -r kubectl && echo "true" || echo "false" )"
     echo "CLI Installed? [${CLI_INSTALLED}], CLI Downloaded? [${CLI_DOWNLOADED}]"
@@ -625,6 +629,7 @@ __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export LOWER_CASE_ENV=$( lowerCaseEnv )
 export PAAS_NAMESPACE_VAR="PAAS_${ENVIRONMENT}_NAMESPACE"
 [[ -z "${PAAS_NAMESPACE}" ]] && PAAS_NAMESPACE="${!PAAS_NAMESPACE_VAR}"
+export KUBERNETES_NAMESPACE="${PAAS_NAMESPACE}"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 [[ -f "${__ROOT}/projectType/pipeline-jvm.sh" ]] && source "${__ROOT}/projectType/pipeline-jvm.sh" || \
