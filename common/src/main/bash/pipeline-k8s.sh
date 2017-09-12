@@ -159,9 +159,10 @@ function deployRabbitMq() {
         local originalDeploymentFile="${__ROOT}/k8s/rabbitmq.yml"
         local originalServiceFile="${__ROOT}/k8s/rabbitmq-service.yml"
         local outputDirectory="$( outputFolder )/k8s"
+        rm -rf "${outputDirectory}"
         mkdir -p "${outputDirectory}"
-        yes | cp -rf ${originalDeploymentFile} ${outputDirectory}
-        yes | cp -rf ${originalServiceFile} ${outputDirectory}
+        cp ${originalDeploymentFile} ${outputDirectory}
+        cp ${originalServiceFile} ${outputDirectory}
         local deploymentFile="${outputDirectory}/rabbitmq.yml"
         local serviceFile="${outputDirectory}/rabbitmq-service.yml"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
@@ -227,9 +228,10 @@ function deployMySql() {
         local originalDeploymentFile="${__ROOT}/k8s/mysql.yml"
         local originalServiceFile="${__ROOT}/k8s/mysql-service.yml"
         local outputDirectory="$( outputFolder )/k8s"
+        rm -rf "${outputDirectory}"
         mkdir -p "${outputDirectory}"
-        yes | cp -rf ${originalDeploymentFile} ${outputDirectory}
-        yes | cp -rf ${originalServiceFile} ${outputDirectory}
+        cp ${originalDeploymentFile} ${outputDirectory}
+        cp ${originalServiceFile} ${outputDirectory}
         local deploymentFile="${outputDirectory}/mysql.yml"
         local serviceFile="${outputDirectory}/mysql-service.yml"
         local mySqlDatabase
@@ -275,9 +277,10 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
     local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    yes | cp -rf ${originalDeploymentFile} ${outputDirectory}
-    yes | cp -rf ${originalServiceFile} ${outputDirectory}
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
     local systemProps="$( appSystemProps )"
@@ -303,9 +306,10 @@ function deployAndRestartAppWithNameForE2ETests() {
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
     local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    yes | cp -rf ${originalDeploymentFile} ${outputDirectory}
-    yes | cp -rf ${originalServiceFile} ${outputDirectory}
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
@@ -346,9 +350,10 @@ function deployEureka() {
     local originalDeploymentFile="${__ROOT}/k8s/eureka.yml"
     local originalServiceFile="${__ROOT}/k8s/eureka-service.yml"
     local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    yes | cp -rf ${originalDeploymentFile} ${outputDirectory}
-    yes | cp -rf ${originalServiceFile} ${outputDirectory}
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
     local deploymentFile="${outputDirectory}/eureka.yml"
     local serviceFile="${outputDirectory}/eureka-service.yml"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
@@ -381,10 +386,11 @@ function deployStubRunnerBoot() {
     echo "Found following stub runner ids [${prop}]"
     local originalDeploymentFile="${__ROOT}/k8s/stubrunner.yml"
     local originalServiceFile="${__ROOT}/k8s/stubrunner-service.yml"
-    local outputDirectory="$( outputFolder )/k8s/"
+    local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    yes | cp -rf ${originalDeploymentFile} ${outputDirectory}
-    yes | cp -rf ${originalServiceFile} ${outputDirectory}
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
     local deploymentFile="${outputDirectory}/stubrunner.yml"
     local serviceFile="${outputDirectory}/stubrunner-service.yml"
     if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
@@ -554,9 +560,10 @@ function performGreenDeploymentOfTestedApplication() {
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
     local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    yes | cp -rf ${originalDeploymentFile} ${outputDirectory}
-    yes | cp -rf ${originalServiceFile} ${outputDirectory}
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
     local changedAppName="$( escapeValueForDns ${appName}-${PIPELINE_VERSION} )"
