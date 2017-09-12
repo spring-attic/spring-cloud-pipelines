@@ -57,6 +57,8 @@ function runSmokeTests() {
     local applicationHost="${APPLICATION_URL}"
     local stubrunnerHost="${STUBRUNNER_URL}"
     echo "Running smoke tests"
+    echo "Application URL is [${applicationHost}]"
+    echo "Stubrunner URL is [${stubrunnerHost}]"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
         # shellcheck disable=SC2086
@@ -72,6 +74,7 @@ function runE2eTests() {
     local applicationUrl
     applicationUrl="$( retrieveApplicationUrl | tail -1 )"
     echo "Running e2e tests"
+    echo "Application URL is [${applicationUrl}]"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
         # shellcheck disable=SC2086
