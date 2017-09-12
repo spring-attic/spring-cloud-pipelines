@@ -234,12 +234,14 @@ function deployMySql() {
         cp ${originalServiceFile} ${outputDirectory}
         local deploymentFile="${outputDirectory}/mysql.yml"
         local serviceFile="${outputDirectory}/mysql-service.yml"
+        local mySqlDatabase
+        mySqlDatabase="$( mySqlDatabase )"
         echo "Generating secret with name [${secretName}]"
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${secretName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${secretName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
         substituteVariables "secretName" "${secretName}" "${deploymentFile}"
-        substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
+        substituteVariables "mysqlDatabase" "${mySqlDatabase}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
             deleteAppByFile "${deploymentFile}"
@@ -373,7 +375,6 @@ function escapeValueForSed() {
 
 function deployStubRunnerBoot() {
     local imageName="${1}"
-    # TODO: Add passing of properties to docker images
     local repoWithJars="${2}"
     local rabbitName="${3}.${PAAS_NAMESPACE}"
     local eurekaName="${4}.${PAAS_NAMESPACE}"
