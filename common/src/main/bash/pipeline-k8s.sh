@@ -382,11 +382,12 @@ function deployStubRunnerBoot() {
     local fileExists="true"
     local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
     echo "Deploying Stub Runner. Options - image name [${imageName}], app name [${stubRunnerName}]"
-    local prop="$( retrieveStubRunnerIds )"
-    echo "Found following stub runner ids [${prop}]"
+    local stubrunnerIds="$( retrieveStubRunnerIds )"
+    echo "Found following stub runner ids [${stubrunnerIds}]"
     local originalDeploymentFile="${__ROOT}/k8s/stubrunner.yml"
     local originalServiceFile="${__ROOT}/k8s/stubrunner-service.yml"
     local outputDirectory="$( outputFolder )/k8s"
+    local systemProps=""
     rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp ${originalDeploymentFile} ${outputDirectory}
@@ -394,16 +395,15 @@ function deployStubRunnerBoot() {
     local deploymentFile="${outputDirectory}/stubrunner.yml"
     local serviceFile="${outputDirectory}/stubrunner-service.yml"
     if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
-        substituteVariables "repoWithJars" "${repoWithJars}" "${deploymentFile}"
-    else
-        substituteVariables "repoWithJars" "" "${deploymentFile}"
+        systemProps="${systemProps} -Dstubrunner.repositoryRoot=${repoWithJars}"
     fi
     substituteVariables "appName" "${stubRunnerName}" "${deploymentFile}"
     substituteVariables "stubrunnerImg" "${imageName}" "${deploymentFile}"
+    substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "rabbitAppName" "${rabbitName}" "${deploymentFile}"
     substituteVariables "eurekaAppName" "${eurekaName}" "${deploymentFile}"
-    if [[ "${prop}" != "" ]]; then
-        substituteVariables "stubrunnerIds" "${prop}" "${deploymentFile}"
+    if [[ "${stubrunnerIds}" != "" ]]; then
+        substituteVariables "stubrunnerIds" "${stubrunnerIds}" "${deploymentFile}"
     else
         substituteVariables "stubrunnerIds" "" "${deploymentFile}"
     fi

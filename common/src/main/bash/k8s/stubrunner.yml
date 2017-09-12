@@ -23,8 +23,8 @@ spec:
             value: "http://{{eurekaAppName}}:8761/eureka/"
           - name: STUBRUNNER_IDS
             value: "{{stubrunnerIds}}"
-          - name: STUBRUNNER_REPOSITORY_ROOT
-            value: "{{repoWithJars}}"
+          - name: SYSTEM_PROPS
+            value: "{{systemProps}}"
           - name: SPRING_PROFILES_ACTIVE
             value: "kubernetes"
           livenessProbe:
