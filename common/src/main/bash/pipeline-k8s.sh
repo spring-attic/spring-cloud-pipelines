@@ -440,8 +440,6 @@ function prepareForSmokeTests() {
     export kubHost=$( hostFromApi "${PAAS_TEST_API_URL}" )
     export APPLICATION_URL="${kubHost}:${applicationPort}"
     export STUBRUNNER_URL="${kubHost}:${stubrunnerPort}"
-    echo "Application URL [${APPLICATION_URL}]"
-    echo "StubRunner URL [${STUBRUNNER_URL}]"
 }
 
 function portFromKubernetes() {
