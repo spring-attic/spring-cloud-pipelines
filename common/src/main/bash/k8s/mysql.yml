@@ -17,17 +17,17 @@ spec:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{appName}}
+              name: {{secretName}}
               key: rootpassword
         - name: MYSQL_USER
           valueFrom:
             secretKeyRef:
-              name: {{appName}}
+              name: {{secretName}}
               key: username
         - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{appName}}
+              name: {{secretName}}
               key: password
         - name: MYSQL_DATABASE
           value: {{mysqlDatabase}}

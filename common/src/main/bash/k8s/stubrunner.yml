@@ -27,15 +27,15 @@ spec:
             value: "{{repoWithJars}}"
           - name: SPRING_PROFILES_ACTIVE
             value: "kubernetes"
-#          livenessProbe:
-#            httpGet:
-#              path: /health
-#              port: 8080
-#            initialDelaySeconds: 120
-#            periodSeconds: 10
-#          readinessProbe:
-#            httpGet:
-#              path: /health
-#              port: 8080
-#            initialDelaySeconds: 120
-#            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8050
+            initialDelaySeconds: 120
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8050
+            initialDelaySeconds: 120
+            periodSeconds: 10

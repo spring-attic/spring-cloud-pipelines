@@ -219,8 +219,11 @@ function deleteMySql() {
 
 function deployMySql() {
     local serviceName="${1:-mysql-github}"
+    local secretName
+    secretName="mysql-$( retrieveAppName )"
     echo "Waiting for MySQL to start"
-    local foundApp=`kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
+    local foundApp
+    foundApp="$( findAppByName "${serviceName}" )"
     if [[ "${foundApp}" == "" ]]; then
         local originalDeploymentFile="${__ROOT}/k8s/mysql.yml"
         local originalServiceFile="${__ROOT}/k8s/mysql-service.yml"
@@ -232,9 +235,10 @@ function deployMySql() {
         local deploymentFile="${outputDirectory}/mysql.yml"
         local serviceFile="${outputDirectory}/mysql-service.yml"
         echo "Generating secret with name [${serviceName}]"
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${serviceName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${secretName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${secretName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
+        substituteVariables "secretName" "${secretName}" "${deploymentFile}"
         substituteVariables "mysqlDatabase" "${MYSQL_DATABASE}" "${deploymentFile}"
         substituteVariables "appName" "${serviceName}" "${serviceFile}"
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
@@ -246,6 +250,12 @@ function deployMySql() {
     else
         echo "Service [${serviceName}] already started"
     fi
+}
+
+function findAppByName() {
+    local serviceName
+    serviceName="${1}"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pods -o wide -l app="${serviceName}" | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'
 }
 
 function deployAndRestartAppWithName() {
