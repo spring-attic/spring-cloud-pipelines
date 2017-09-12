@@ -159,7 +159,6 @@ function deployRabbitMq() {
         local originalDeploymentFile="${__ROOT}/k8s/rabbitmq.yml"
         local originalServiceFile="${__ROOT}/k8s/rabbitmq-service.yml"
         local outputDirectory="$( outputFolder )/k8s"
-        rm -rf "${outputDirectory}"
         mkdir -p "${outputDirectory}"
         yes | cp -rf ${originalDeploymentFile} ${outputDirectory}
         yes | cp -rf ${originalServiceFile} ${outputDirectory}
@@ -228,7 +227,6 @@ function deployMySql() {
         local originalDeploymentFile="${__ROOT}/k8s/mysql.yml"
         local originalServiceFile="${__ROOT}/k8s/mysql-service.yml"
         local outputDirectory="$( outputFolder )/k8s"
-        rm -rf "${outputDirectory}"
         mkdir -p "${outputDirectory}"
         yes | cp -rf ${originalDeploymentFile} ${outputDirectory}
         yes | cp -rf ${originalServiceFile} ${outputDirectory}
