@@ -153,29 +153,30 @@ function deleteService() {
 
 function deployRabbitMq() {
     local serviceName="${1:-rabbitmq-github}"
-    echo "Waiting for RabbitMQ to start"
-    local foundApp=`kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pods -o wide -l app=${serviceName} | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'`
-    if [[ "${foundApp}" == "" ]]; then
-        local originalDeploymentFile="${__ROOT}/k8s/rabbitmq.yml"
-        local originalServiceFile="${__ROOT}/k8s/rabbitmq-service.yml"
-        local outputDirectory="$( outputFolder )/k8s"
-        rm -rf "${outputDirectory}"
-        mkdir -p "${outputDirectory}"
-        cp ${originalDeploymentFile} ${outputDirectory}
-        cp ${originalServiceFile} ${outputDirectory}
-        local deploymentFile="${outputDirectory}/rabbitmq.yml"
-        local serviceFile="${outputDirectory}/rabbitmq-service.yml"
-        substituteVariables "appName" "${serviceName}" "${deploymentFile}"
-        substituteVariables "appName" "${serviceName}" "${serviceFile}"
-        if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-            deleteAppByFile "${deploymentFile}"
-            deleteAppByFile "${serviceFile}"
-        fi
-        replaceApp "${deploymentFile}"
-        replaceApp "${serviceFile}"
-    else
-        echo "Service [${serviceName}] already started"
+    local objectDeployed
+    objectDeployed="$( objectDeployed "service" "${serviceName}" )"
+    if [[ "${ENVIRONMENT}" == "STAGE" && "${objectDeployed}" == "true" ]]; then
+        echo "Service [${serviceName}] already deployed. Won't redeploy for stage"
+        return
     fi
+    echo "Waiting for RabbitMQ to start"
+    local originalDeploymentFile="${__ROOT}/k8s/rabbitmq.yml"
+    local originalServiceFile="${__ROOT}/k8s/rabbitmq-service.yml"
+    local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
+    mkdir -p "${outputDirectory}"
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
+    local deploymentFile="${outputDirectory}/rabbitmq.yml"
+    local serviceFile="${outputDirectory}/rabbitmq-service.yml"
+    substituteVariables "appName" "${serviceName}" "${deploymentFile}"
+    substituteVariables "appName" "${serviceName}" "${serviceFile}"
+    if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+        deleteAppByFile "${deploymentFile}"
+        deleteAppByFile "${serviceFile}"
+    fi
+    replaceApp "${deploymentFile}"
+    replaceApp "${serviceFile}"
 }
 
 function deployApp() {
@@ -219,39 +220,39 @@ function deleteMySql() {
 
 function deployMySql() {
     local serviceName="${1:-mysql-github}"
+    local objectDeployed
+    objectDeployed="$( objectDeployed "service" "${serviceName}" )"
+    if [[ "${ENVIRONMENT}" == "STAGE" && "${objectDeployed}" == "true" ]]; then
+        echo "Service [${serviceName}] already deployed. Won't redeploy for stage"
+        return
+    fi
     local secretName
     secretName="mysql-$( retrieveAppName )"
     echo "Waiting for MySQL to start"
-    local foundApp
-    foundApp="$( findAppByName "${serviceName}" )"
-    if [[ "${foundApp}" == "" ]]; then
-        local originalDeploymentFile="${__ROOT}/k8s/mysql.yml"
-        local originalServiceFile="${__ROOT}/k8s/mysql-service.yml"
-        local outputDirectory="$( outputFolder )/k8s"
-        rm -rf "${outputDirectory}"
-        mkdir -p "${outputDirectory}"
-        cp ${originalDeploymentFile} ${outputDirectory}
-        cp ${originalServiceFile} ${outputDirectory}
-        local deploymentFile="${outputDirectory}/mysql.yml"
-        local serviceFile="${outputDirectory}/mysql-service.yml"
-        local mySqlDatabase
-        mySqlDatabase="$( mySqlDatabase )"
-        echo "Generating secret with name [${secretName}]"
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${secretName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${secretName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
-        substituteVariables "appName" "${serviceName}" "${deploymentFile}"
-        substituteVariables "secretName" "${secretName}" "${deploymentFile}"
-        substituteVariables "mysqlDatabase" "${mySqlDatabase}" "${deploymentFile}"
-        substituteVariables "appName" "${serviceName}" "${serviceFile}"
-        if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-            deleteAppByFile "${deploymentFile}"
-            deleteAppByFile "${serviceFile}"
-        fi
-        replaceApp "${deploymentFile}"
-        replaceApp "${serviceFile}"
-    else
-        echo "Service [${serviceName}] already started"
+    local originalDeploymentFile="${__ROOT}/k8s/mysql.yml"
+    local originalServiceFile="${__ROOT}/k8s/mysql-service.yml"
+    local outputDirectory="$( outputFolder )/k8s"
+    rm -rf "${outputDirectory}"
+    mkdir -p "${outputDirectory}"
+    cp ${originalDeploymentFile} ${outputDirectory}
+    cp ${originalServiceFile} ${outputDirectory}
+    local deploymentFile="${outputDirectory}/mysql.yml"
+    local serviceFile="${outputDirectory}/mysql-service.yml"
+    local mySqlDatabase
+    mySqlDatabase="$( mySqlDatabase )"
+    echo "Generating secret with name [${secretName}]"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${secretName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${secretName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
+    substituteVariables "appName" "${serviceName}" "${deploymentFile}"
+    substituteVariables "secretName" "${secretName}" "${deploymentFile}"
+    substituteVariables "mysqlDatabase" "${mySqlDatabase}" "${deploymentFile}"
+    substituteVariables "appName" "${serviceName}" "${serviceFile}"
+    if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+        deleteAppByFile "${deploymentFile}"
+        deleteAppByFile "${serviceFile}"
     fi
+    replaceApp "${deploymentFile}"
+    replaceApp "${serviceFile}"
 }
 
 function findAppByName() {
@@ -346,6 +347,12 @@ function deleteAppInstance() {
 function deployEureka() {
     local imageName="${1}"
     local appName="${2}"
+    local objectDeployed
+    objectDeployed="$( objectDeployed "service" "${appName}" )"
+    if [[ "${ENVIRONMENT}" == "STAGE" && "${objectDeployed}" == "true" ]]; then
+        echo "Service [${appName}] already deployed. Won't redeploy for stage"
+        return
+    fi
     echo "Deploying Eureka. Options - image name [${imageName}], app name [${appName}], env [${ENVIRONMENT}]"
     local originalDeploymentFile="${__ROOT}/k8s/eureka.yml"
     local originalServiceFile="${__ROOT}/k8s/eureka-service.yml"
