@@ -31,11 +31,11 @@ spec:
             httpGet:
               path: /health
               port: 8050
-            initialDelaySeconds: 120
+            initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /health
               port: 8050
-            initialDelaySeconds: 120
+            initialDelaySeconds: 30
             periodSeconds: 10

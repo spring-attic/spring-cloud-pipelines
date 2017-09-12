@@ -234,7 +234,7 @@ function deployMySql() {
         cp ${originalServiceFile} ${outputDirectory}
         local deploymentFile="${outputDirectory}/mysql.yml"
         local serviceFile="${outputDirectory}/mysql-service.yml"
-        echo "Generating secret with name [${serviceName}]"
+        echo "Generating secret with name [${secretName}]"
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${secretName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${secretName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
         substituteVariables "appName" "${serviceName}" "${deploymentFile}"
