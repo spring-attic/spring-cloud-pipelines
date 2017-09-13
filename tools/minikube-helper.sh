@@ -20,7 +20,7 @@ function createNamespace() {
 
 function copyK8sYamls() {
     mkdir -p "${FOLDER}build"
-    cp ${ROOT_FOLDER}common/src/main/bash/k8s/*.* ${FOLDER}build/
+    cp "${ROOT_FOLDER}common/src/main/bash/k8s/*.*" "${FOLDER}build/"
 }
 
 function system {
@@ -37,11 +37,13 @@ SYSTEM=$( system )
 
 [[ $# -eq 1 ]] || usage
 
-export ROOT_FOLDER="`pwd`../"
-export FOLDER="`pwd`/"
+export ROOT_FOLDER
+ROOT_FOLDER="$( pwd )../"
+export FOLDER
+FOLDER="$( pwd )/"
 if [ -d "tools" ]; then
-    FOLDER="`pwd`/tools/"
-    ROOT_FOLDER="`pwd`/"
+    FOLDER="$( pwd )/tools/"
+    ROOT_FOLDER="$( pwd )/"
 fi
 
 export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -49,6 +51,7 @@ export PAAS_PROD_API_URL="192.168.99.100:8443"
 export ENVIRONMENT="PROD"
 export PAAS_TYPE="k8s"
 
+# shellcheck source=/dev/null
 source ${ROOT_FOLDER}common/src/main/bash/pipeline.sh
 
 # Overridden functions
@@ -70,13 +73,13 @@ export -f mySqlDatabase
 
 case $1 in
 	download-kubectl)
-        curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/${SYSTEM}/amd64/kubectl
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/${SYSTEM}/amd64/kubectl"
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/kubectl
         ;;
 
 	download-minikube)
-		curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-${SYSTEM}-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+		curl -Lo minikube "https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-${SYSTEM}-amd64" && chmod +x minikube && sudo mv minikube /usr/local/bin/
 		;;
 
 	delete-all-apps)
@@ -108,9 +111,12 @@ case $1 in
 		copyK8sYamls
 		deployService "rabbitmq" "github-rabbitmq" "scpipelines/github-analytics-stub-runner-boot-classpath-stubs:latest"
 		deployService "eureka" "github-eureka" "scpipelines/github-eureka:latest"
-		export MYSQL_USER=username
-		export MYSQL_PASSWORD=password
-		export MYSQL_ROOT_PASSWORD=rootpassword
+		export MYSQL_USER
+		MYSQL_USER=username
+		export MYSQL_PASSWORD
+		MYSQL_PASSWORD=password
+		export MYSQL_ROOT_PASSWORD
+		MYSQL_ROOT_PASSWORD=rootpassword
 		deployService "mysql" "mysql-github-analytics"
 		;;
 

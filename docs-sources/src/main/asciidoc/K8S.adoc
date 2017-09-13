@@ -2,8 +2,19 @@
 
 === CLI Installation
 
-First you'll need to install the `kubectl` CLI. To do that check out
-https://kubernetes.io/docs/tasks/tools/install-kubectl/[this page].
+First you'll need to install the `kubectl` CLI.
+
+==== Script Installation
+
+You can use the `tools/minikube-helper.sh` script to install `kubectl`. Just call
+
+```bash
+$ ./tools/minikube-helper download-kubectl
+```
+
+and then the `kubectl` will get downloaded
+
+==== Manual Installation
 
 Example for OSX
 
@@ -21,9 +32,23 @@ $ chmod +x ./kubectl
 $ sudo mv ./kubectl /usr/local/bin/kubectl
 ```
 
+Check out https://kubernetes.io/docs/tasks/tools/install-kubectl/[this page] for more information.
+
 === Install Minikube
 
-Check out https://github.com/kubernetes/minikube/releases[this page] for more info on the installation.
+We need a cluster of Kubernetes. The best choice will be https://github.com/kubernetes/minikube[Minikube].
+
+==== Script Installation
+
+You can use the `tools/minikube-helper.sh` script to install `Minikube`. Just call
+
+```bash
+$ ./tools/minikube-helper download-minikube
+```
+
+and then the `Minikube` cluster will get downloaded
+
+==== Manual Installation
 
 Example for OSX
 
@@ -40,6 +65,7 @@ $ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/min
 ```
 
 Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like to add minikube to your path manually.
+Check out https://github.com/kubernetes/minikube/releases[this page] for more info on the installation.
 
 === Run Minikube
 
@@ -47,7 +73,13 @@ Just type in `minikube start` to start Kubernetes on your local box.
 
 To add the dashboard just execute `minikube dashboard`
 
-=== Certificates and workers
+=== Certificates and Workers
+
+==== Minikube Certificates and Workers
+
+By default if you install Minikube all the certificates get
+
+==== Manual Certificates and Workers Setup
 
 To target a given Kubernetes instance one needs to pass around Certificate Authority
 key and also user keys.
