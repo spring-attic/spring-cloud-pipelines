@@ -51,10 +51,22 @@ export PAAS_TYPE="k8s"
 
 source ${ROOT_FOLDER}common/src/main/bash/pipeline.sh
 
+# Overridden functions
+
 function outputFolder() {
     echo "${ROOT_FOLDER}common/build"
 }
 export -f outputFolder
+
+function retrieveAppName() {
+    echo "github-analytics"
+}
+export -f retrieveAppName
+
+function mySqlDatabase() {
+    echo "github"
+}
+export -f mySqlDatabase
 
 case $1 in
 	download-kubectl)
@@ -96,6 +108,10 @@ case $1 in
 		copyK8sYamls
 		deployService "rabbitmq" "github-rabbitmq" "scpipelines/github-analytics-stub-runner-boot-classpath-stubs:latest"
 		deployService "eureka" "github-eureka" "scpipelines/github-eureka:latest"
+		export MYSQL_USER=username
+		export MYSQL_PASSWORD=password
+		export MYSQL_ROOT_PASSWORD=rootpassword
+		deployService "mysql" "mysql-github-analytics"
 		;;
 
     *)
