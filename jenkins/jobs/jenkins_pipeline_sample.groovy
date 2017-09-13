@@ -200,6 +200,9 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 				}
+				extensions {
+					wipeOutWorkspace()
+				}
 			}
 		}
 		steps {
@@ -211,6 +214,13 @@ parsedRepos.each {
 		''')
 		}
 		publishers {
+			// remove::start[K8S]
+			archiveArtifacts {
+				pattern("**/build/**/k8s/*.yml")
+				pattern("**/target/**/k8s/*.yml")
+				allowEmpty()
+			}
+			// end::start[K8S]
 			downstreamParameterized {
 				trigger("${projectName}-test-env-test") {
 					parameters {
@@ -320,6 +330,13 @@ parsedRepos.each {
 		''')
 			}
 			publishers {
+				// remove::start[K8S]
+				archiveArtifacts {
+					pattern("**/build/**/k8s/*.yml")
+					pattern("**/target/**/k8s/*.yml")
+					allowEmpty()
+				}
+				// end::start[K8S]
 				downstreamParameterized {
 					trigger("${projectName}-test-env-rollback-test") {
 						triggerWithNoParameters()
@@ -444,6 +461,9 @@ parsedRepos.each {
 						url(fullGitRepo)
 						branch('dev/${PIPELINE_VERSION}')
 					}
+					extensions {
+						wipeOutWorkspace()
+					}
 				}
 			}
 			steps {
@@ -455,6 +475,13 @@ parsedRepos.each {
 		''')
 			}
 			publishers {
+				// remove::start[K8S]
+				archiveArtifacts {
+					pattern("**/build/**/k8s/*.yml")
+					pattern("**/target/**/k8s/*.yml")
+					allowEmpty()
+				}
+				// end::start[K8S]
 				if (autoStage) {
 					downstreamParameterized {
 						trigger("${projectName}-stage-env-test") {
@@ -562,6 +589,9 @@ parsedRepos.each {
 					branch('dev/${PIPELINE_VERSION}')
 					credentials(gitCredentials)
 				}
+				extensions {
+					wipeOutWorkspace()
+				}
 			}
 		}
 		configure { def project ->
@@ -580,6 +610,13 @@ parsedRepos.each {
 		''')
 		}
 		publishers {
+			// remove::start[K8S]
+			archiveArtifacts {
+				pattern("**/build/**/k8s/*.yml")
+				pattern("**/target/**/k8s/*.yml")
+				allowEmpty()
+			}
+			// end::start[K8S]
 			buildPipelineTrigger("${projectName}-prod-env-complete") {
 				parameters {
 					currentBuild()
@@ -621,6 +658,9 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 					credentials(gitCredentials)
+				}
+				extensions {
+					wipeOutWorkspace()
 				}
 			}
 		}

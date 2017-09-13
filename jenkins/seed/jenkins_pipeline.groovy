@@ -122,6 +122,7 @@ factory.job('jenkins-pipeline-k8s-seed') {
             booleanParam('ROLLBACK_STEP_REQUIRED', true, 'Should rollback step be present')
             booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
             stringParam('PAAS_TYPE', 'k8s', "Which PAAS do you want to choose")
+            booleanParam('MINIKUBE_KUBERNETES', true, 'Will you connect to Minikube?')
 
             stringParam('DOCKER_REGISTRY_ORGANIZATION', 'scpipelines', 'URL to Kubernetes cluster for test env')
             stringParam('PAAS_TEST_API_URL', '192.168.99.100:8443', 'URL to Kubernetes cluster for test env')

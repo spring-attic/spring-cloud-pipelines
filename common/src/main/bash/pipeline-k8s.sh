@@ -180,7 +180,6 @@ function deployRabbitMq() {
     local originalServiceFile="${__ROOT}/k8s/rabbitmq-service.yml"
     local outputDirectory
     outputDirectory="$( outputFolder )/k8s"
-    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp "${originalDeploymentFile}" "${outputDirectory}"
     cp "${originalServiceFile}" "${outputDirectory}"
@@ -251,7 +250,6 @@ function deployMySql() {
     local originalServiceFile="${__ROOT}/k8s/mysql-service.yml"
     local outputDirectory
     outputDirectory="$( outputFolder )/k8s"
-    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp "${originalDeploymentFile}" "${outputDirectory}"
     cp "${originalServiceFile}" "${outputDirectory}"
@@ -299,7 +297,6 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local originalServiceFile="service.yml"
     local outputDirectory
     outputDirectory="$( outputFolder )/k8s"
-    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp "${originalDeploymentFile}" "${outputDirectory}"
     cp "${originalServiceFile}" "${outputDirectory}"
@@ -330,7 +327,6 @@ function deployAndRestartAppWithNameForE2ETests() {
     local originalServiceFile="service.yml"
     local outputDirectory
     outputDirectory="$( outputFolder )/k8s"
-    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp "${originalDeploymentFile}" "${outputDirectory}"
     cp "${originalServiceFile}" "${outputDirectory}"
@@ -382,7 +378,6 @@ function deployEureka() {
     local originalServiceFile="${__ROOT}/k8s/eureka-service.yml"
     local outputDirectory
     outputDirectory="$( outputFolder )/k8s"
-    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp "${originalDeploymentFile}" "${outputDirectory}"
     cp "${originalServiceFile}" "${outputDirectory}"
@@ -421,7 +416,6 @@ function deployStubRunnerBoot() {
     local outputDirectory
     outputDirectory="$( outputFolder )/k8s"
     local systemProps=""
-    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp "${originalDeploymentFile}" "${outputDirectory}"
     cp "${originalServiceFile}" "${outputDirectory}"
@@ -608,7 +602,6 @@ function performGreenDeploymentOfTestedApplication() {
     local originalServiceFile="service.yml"
     local outputDirectory
     outputDirectory="$( outputFolder )/k8s"
-    rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
     cp "${originalDeploymentFile}" "${outputDirectory}"
     cp "${originalServiceFile}" "${outputDirectory}"
