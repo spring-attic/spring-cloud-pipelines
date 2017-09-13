@@ -838,16 +838,7 @@ You can also execute the `./tools/pcfdev-helper.sh delete-routes`
 Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
 setup. Check out <<settings,this section of the docs and update your `settings.xml`>>.
 
-== Jenkins DSL Pipeline
-
-[[jenkins]] The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
-
-All in all there are the following projects taking part in the whole `microservice setup` for this demo.
-
-- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
-- https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
-- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
-- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+== Jenkins DSL Pipeline (Common)
 
 === Project setup
 
@@ -865,6 +856,7 @@ All in all there are the following projects taking part in the whole `microservi
 │   ├── gradle.properties
 │   ├── init.groovy
 │   ├── jenkins_pipeline.groovy
+│   ├── k8s
 │   └── settings.xml
 └── src
     ├── main
@@ -884,35 +876,50 @@ In the `jobs` folder you have all the seed jobs that will generate pipelines.
 In the `seed` folder you have the `init.groovy` file which is executed when Jenkins starts.
 That way we can configure most of Jenkins options for you (adding credentials, JDK etc.).
 `jenkins_pipeline.groovy` contains logic to build a seed job (that way you don't have to even click that
-job - we generate it for you).
+job - we generate it for you). Under the `k8s` folder there are all the configuration
+files required for deployment to a Kubernetes cluster.
 
 In the `src` folder you have production and test classes needed for you to build your own pipeline.
 Currently we have tests only cause the whole logic resides in the `jenkins_pipeline_sample` file.
 
+[[jenkins-dsl-pipeline-cf]]
+== Jenkins DSL Pipeline (Cloud Foundry)
+
+[[jenkins]] The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+
+All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+
+- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
+- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
+- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+
+[[step-by-step-cf]]
 === Step by step
 
 This is a guide for Jenkins JOB Dsl based pipeline.
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
-- <<jenkins_fork,Fork repos>>
-- <<jenkins_start,Start Jenkins and Artifactory>>
-- <<jenkins_deploy,Deploy infra to Artifactory>>
-- <<jenkins_pcfdev,Start PCF Dev (if you don't want to use an existing one)>>
-- <<jenkins_seed,Run the seed job>>
-- <<jenkins_pipeline,Run the `github-webhook` pipeline>>
+- <<jenkins-fork-cf,Fork repos>>
+- <<jenkins-start-cf,Start Jenkins and Artifactory>>
+- <<jenkins-deploy-cf,Deploy infra to Artifactory>>
+- <<jenkins-pcfdev-cf,Start PCF Dev (if you don't want to use an existing one)>>
+- <<jenkins-seed-cf,Run the seed job>>
+- <<jenkins-pipeline-cf,Run the `github-webhook` pipeline>>
 
 Below you can find <<optional,optional>> steps needed to be taken when you want to customize the pipeline
 
 - <<env,Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
 just check out the section on how to update the URL to Artifactory)>>
-- <<jenkins_settings,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
-- <<jenkins_misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
-- <<jenkins_credentials,Setup Jenkins credentials>>
+- <<jenkins-settings-cf,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
+- <<jenkins-misc-cf,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
+- <<jenkins-credentials-cf,Setup Jenkins credentials>>
 
+[[fork-repos-cf]]
 ==== Fork repos
 
-[[jenkins_fork]] There are 4 apps that are composing the pipeline
+[[jenkins-fork-cf]] There are 4 apps that are composing the pipeline
 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
@@ -924,9 +931,10 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
+[[start-jenkins-cf]]
 ==== Start Jenkins and Artifactory
 
-[[jenkins_start]] Jenkins + Artifactory can be ran locally. To do that just execute the
+[[jenkins-start-cf]] Jenkins + Artifactory can be ran locally. To do that just execute the
 `start.sh` script from this repo.
 
 [source,bash]
@@ -942,9 +950,10 @@ any manual work on the Jenkins side. In the above parameters, the third paramete
 could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
 contain your GitHub org in which you have the forked repos.
 
+[[deploy-infra-cf]]
 ===== Deploy the infra JARs to Artifactory
 
-[[jenkins_deploy]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+[[jenkins-deploy-cf]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
 
 [source,bash]
 ----
@@ -956,15 +965,16 @@ cd spring-cloud-pipelines/
 As a result both `eureka` and `stub runner` repos will be cloned, built
 and uploaded to Artifactory.
 
+[[start-pcf-dev-cf]]
 ==== Start PCF Dev
 
 TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 The only thing you have to do is to set up spaces.
 
 WARNING: It's more than likely that you'll run out of resources when you reach stage step.
-Don't worry! Keep calm and <<resources,clear some apps from PCF Dev and continue>>.
+Don't worry! Keep calm and <<jenkins-cf-resources,clear some apps from PCF Dev and continue>>.
 
-[[jenkins_pcfdev]] You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
+[[jenkins-pcfdev-cf]] You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
 
 The default credentials when using PCF Dev are:
 
@@ -1001,9 +1011,10 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 
 You can also execute the `./tools/pcfdev-helper.sh setup-spaces` to do this.
 
+[[run-seed-job-cf]]
 ==== Run the seed job
 
-[[jenkins_seed]] We already create the seed job for you but you'll have to run it. When you do
+[[jenkins-seed-cf]] We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -1032,9 +1043,10 @@ image::{jenkins-root-docs}/seed.png[caption="Step 3: ", title="Provide the `REPO
 
 image::{jenkins-root-docs}/seed_built.png[caption="Step 4: ", title="This is how the results of seed should look like"]
 
+[[run-github-webhook-cf]]
 ==== Run the `github-webhook` pipeline
 
-[[jenkins_pipeline]] We already create the seed job for you but you'll have to run it. When you do
+[[jenkins-pipeline-cf]] We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -1089,6 +1101,7 @@ image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 5: ", title="The 
 {nbsp}
 {nbsp}
 
+[[declarative-pipeline-cf]]
 === Declarative pipeline & Blue Ocean
 
 You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
@@ -1145,11 +1158,13 @@ pretty fast. You can check out this https://issues.jenkins-ci.org/browse/JENKINS
 and this http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
 for more information.
 
+[[optional-steps-cf]]
 === Optional steps
 
 [[jenkins_optional]] All the steps below are not necessary to run the demo. They are needed only
 when you want to do some custom changes.
 
+[[deploying-infra-cf]]
 ==== Deploying infra jars to a different location
 
 It's enough to set the `ARTIFACTORY_URL` environmental variable before
@@ -1162,12 +1177,13 @@ cd spring-cloud-pipelines/
 ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
 ----
 
+[[setup-settings-xml-cf]]
 ==== Setup settings.xml for Maven deployment
 
 TIP: If you want to use the default connection to the Docker version
 of Artifactory you can skip this step
 
-[[jenkins_settings]] So that `./mvnw deploy` works with Artifactory from Docker we're
+[[jenkins-settings-cf]] So that `./mvnw deploy` works with Artifactory from Docker we're
 already copying the missing `settings.xml` file for you. It looks like this:
 
 [source,xml]
@@ -1182,6 +1198,7 @@ already copying the missing `settings.xml` file for you. It looks like this:
 If you want to use your own version of Artifactory / Nexus you have to update
 the file (it's in `seed/settings.xml`).
 
+[[setup-jenkins-env-vars-cf]]
 ==== Setup Jenkins env vars
 
 [[jenkins_env]] If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
@@ -1199,6 +1216,7 @@ IMPORTANT: If you're choosing the global envs, you *HAVE* to remove the other ap
 (e.g. if you set the global env for `REPOS`, please remove that property in the
 seed job
 
+[[setup-seed-props-cf]]
 ===== Seed properties
 
 Click on the seed job and pick `Build with parameters`. Then as presented in the screen below (you'll have far more properties to set) just modify the `REPOS` property by providing the comma separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.
@@ -1213,6 +1231,7 @@ image::{jenkins-root-docs}/seed.png[]
 
 In the screenshot we could parametrize the `REPOS` and `REPO_WITH_BINARIES` params.
 
+[[global-envs-cf]]
 ===== Global envs
 
 IMPORTANT: This section is presented only for informational purposes - for the sake of demo you can skip it
@@ -1224,6 +1243,7 @@ Example screen:
 
 image::{jenkins-root-docs}/env_vars.png[]
 
+[[all-env-vars-cf]]
 ===== All env vars
 
 The env vars that are used in all of the jobs are as follows:
@@ -1256,6 +1276,7 @@ The env vars that are used in all of the jobs are as follows:
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
+[[git-email-cf]]
 ==== Set Git email / user
 
 Since our pipeline is setting the git user / name explicitly for the build step
@@ -1283,6 +1304,7 @@ image::{jenkins-root-docs}/git.png[caption="Step 3: ", title="Fill out Git user 
 {nbsp}
 {nbsp}
 
+[[jenkins-credentials-cf]]
 ==== Jenkins Credentials
 
 In your scripts we reference the credentials via IDs. These are the defaults for credentials
@@ -1300,9 +1322,10 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 If you already have in your system a credential to for example tag a repo
 you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
 
+[[jenkins-credentials-github-cf]]
 ===== Add Jenkins credentials for GitHub
 
-[[jenkins_credentials]] The scripts will need to access the credential in order to tag the repo.
+[[jenkins-credentials-cf]] The scripts will need to access the credential in order to tag the repo.
 
 You have to set credentials with id: `git`.
 
@@ -1332,36 +1355,9 @@ image::{jenkins-root-docs}/credentials_example.png[caption="Step 4: ", title="Fi
 {nbsp}
 {nbsp}
 
-==== Enable Groovy Token Macro Processing
-
-With scripted that but if you needed to this manually then this is how to do it:
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
-
-=== Docker Image
-
-If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
-have an image you can pull and use on https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/[DockerHub].
-The `latest` tag corresponds to the latest snapshot build.  You can also find tags
-corresponding to stable releases that you can use as well.
-
 === FAQ
 
 [[jenkins_faq]]
-
 ==== Pipeline version contains ${PIPELINE_VERSION}
 
 You can check the Jenkins logs and you'll see
@@ -1456,22 +1452,6 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 in Bash scripts. That way, in the majority of cases, you could change only the bash
 scripts without changing the whole pipeline.
 
-==== I ran out of resources!!
-
-[jenkins_resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
- solve it is to kill some apps from test / stage env. To achieve that just call
-
-[source,bash]
-----
-cf target -o pcfdev-org -s pcfdev-test
-cf stop github-webhook
-cf stop github-eureka
-cf stop stubrunner
-----
-
-You can also execute `./tools/pcfdev-helper.sh kill-all-apps` that will remove all demo-related apps
-deployed to PCF dev.
-
 ==== The rollback step fails due to missing JAR ?!
 
 [[jenkins_tags]] You must have pushed some tags and have removed the Artifactory volume that
@@ -1518,6 +1498,26 @@ image::{jenkins-root-docs}/jdk.png[caption="Step 4: ", title="Fill out JDK Insta
 
 And that's it!
 
+[[groovy-token-macro]]
+==== Enable Groovy Token Macro Processing
+
+With scripted that but if you needed to this manually then this is how to do it:
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
+
 ===== I want deployment to stage and prod be automatic
 
 No problem, just set the property / env var to true
@@ -1552,6 +1552,49 @@ When you get sth like this:
 
 most likely you've passed a wrong password. Check the <<jenkins_credentials,credentials>> section
 on how to update your credentials.
+
+==== I'm unauthorized to deploy infrastructure jars
+
+Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
+setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml`>>.
+
+==== Signing Artifacts
+
+In some cases it may be required that when performing a release that the artifacts be signed
+before pushing them to the repository.
+To do this you will need to import your GPG keys into the Docker image running Jenkins.
+This can be done by placing a file called `public.key` containing your public key
+and a file called `private.key` containing your private key in the `seed` directory.
+These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
+
+=== How to build it
+
+`./gradlew clean build`
+
+WARNING: The ran test only checks if your scripts compile.
+
+=== How to work with Jenkins Job DSL plugin
+
+Check out the https://github.com/jenkinsci/job-dsl-plugin/wiki/Tutorial---Using-the-Jenkins-Job-DSL[tutorial].
+Provide the link to this repository in your Jenkins installation.
+
+WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
+ for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).
+==== I ran out of resources!!
+
+[jenkins-cf-resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
+ solve it is to kill some apps from test / stage env. To achieve that just call
+
+[source,bash]
+----
+cf target -o pcfdev-org -s pcfdev-test
+cf stop github-webhook
+cf stop github-eureka
+cf stop stubrunner
+----
+
+You can also execute `./tools/pcfdev-helper.sh kill-all-apps` that will remove all demo-related apps
+deployed to PCF dev.
 
 ==== Deploying to test / stage / prod fails - error finding space
 
@@ -1596,34 +1639,233 @@ yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
 
 You can also execute the `./tools/pcfdev-helper.sh delete-routes`
+[[jenkins-dsl-pipeline-k8s]]
+== Jenkins DSL Pipeline (Kubernetes)
 
-==== I'm unauthorized to deploy infrastructure jars
+[[jenkins]] The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
 
-Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
-setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml`>>.
+All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
-==== Signing Artifacts
+- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
+- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
+- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
 
-In some cases it may be required that when performing a release that the artifacts be signed
-before pushing them to the repository.
-To do this you will need to import your GPG keys into the Docker image running Jenkins.
-This can be done by placing a file called `public.key` containing your public key
-and a file called `private.key` containing your private key in the `seed` directory.
-These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
+[[step-by-step-k8s]]
+=== Step by step
 
-=== How to build it
+This is a guide for Jenkins JOB Dsl based pipeline.
 
-`./gradlew clean build`
+If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
-WARNING: The ran test only checks if your scripts compile.
+- <<jenkins-fork-k8s,Fork repos>>
+- <<jenkins-start-k8s,Start Jenkins and Artifactory>>
+- <<jenkins-deploy-k8s,Deploy infra to Artifactory>>
+- <<jenkins-minikube-k8s,Start Minikube (if you don't want to use an existing one)>>
+- <<jenkins-seed-k8s,Run the seed job>>
+- <<jenkins-pipeline-k8s,Run the `github-webhook` pipeline>>
 
-=== How to work with Jenkins Job DSL plugin
+Below you can find <<optional,optional>> steps needed to be taken when you want to customize the pipeline
 
-Check out the https://github.com/jenkinsci/job-dsl-plugin/wiki/Tutorial---Using-the-Jenkins-Job-DSL[tutorial].
-Provide the link to this repository in your Jenkins installation.
+- <<env,Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
+just check out the section on how to update the URL to Artifactory)>>
+- <<jenkins-settings-k8s,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
+- <<jenkins-misc-k8s,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
+- <<jenkins-credentials-k8s,Setup Jenkins credentials>>
 
-WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
- for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).
+[[fork-repos-k8s]]
+==== Fork repos
+
+[[jenkins-fork-k8s]] There are 4 apps that are composing the pipeline
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-classpath-stubs[Github Stub Runner Boot]
+
+You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+
+[[start-jenkins-k8s]]
+==== Start Jenkins and Artifactory
+
+[[jenkins-start-k8s]] Jenkins + Artifactory can be ran locally. To do that just execute the
+`start.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/jenkins
+./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg yourDockerRegistryOrganization yourDockerRegistryUsername yourDockerRegistryPassword yourDockerRegistryEmail
+----
+Then Jenkins will be running on port `8080` and Artifactory `8081`.
+The provided parameters will be passed as env variables to Jenkins VM
+and credentials will be set in your set. That way you don't have to do
+any manual work on the Jenkins side. In the above parameters, the third parameter
+could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
+contain your GitHub org in which you have the forked repos.
+
+You need to pass the credentials for the Docker organization (by default we will
+search for the Docker images at Docker Hub) so that the pipeline will be able
+to push images to your org.
+
+[[deploy-infra-k8s]]
+===== Deploy the infra JARs to Artifactory
+
+[[jenkins-deploy-k8s]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+./tools/deploy-infra-k8s.sh
+----
+
+As a result both `eureka` and `stub runner` repos will be cloned, built,
+uploaded to Artifactory and their docker images will be built.
+
+IMPORTANT: Your local Docker process will be reused by the Jenkins instance running
+in Docker. That's why you don't have to push these images to Docker Hub. On the
+other hand if you run this sample in a remote Kubernetes cluster the driver
+will not be shared by the Jenkins workers so you can consider pushing these
+Docker images to Docker Hub too.
+
+==== Kubernetes CLI Installation
+
+First you'll need to install the `kubectl` CLI.
+
+[[kubernetes-cli-script]]
+===== Script Installation
+
+You can use the `tools/minikube-helper.sh` script to install `kubectl`. Just call
+
+```bash
+$ ./tools/minikube-helper download-kubectl
+```
+
+and then the `kubectl` will get downloaded
+
+[[kubernetes-cli-manual]]
+==== Manual Installation
+
+Example for OSX
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+```
+
+Example for Linux
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+```
+
+Check out https://kubernetes.io/docs/tasks/tools/install-kubectl/[this page] for more information.
+
+[[start-minikube-k8s]]
+==== Kubernetes Cluster setup
+
+We need a cluster of Kubernetes. The best choice will be https://github.com/kubernetes/minikube[Minikube].
+
+TIP: You can skip this step if you have Kubernetes cluster installed and don't
+want to use Minikube The only thing you have to do is to set up spaces.
+
+WARNING: It's more than likely that you'll run out of resources when you reach stage step.
+Don't worry! Keep calm and <<jenkins-resources-k8s,clear some apps from Minikube and continue>>.
+
+[[kubernetes-minikube-script]]
+===== Script Installation
+
+You can use the `tools/minikube-helper.sh` script to install `Minikube`. Just call
+
+```bash
+$ ./tools/minikube-helper download-minikube
+```
+
+and then the `Minikube` cluster will get downloaded
+
+[[kubernetes-minikube-manual]]
+===== Manual Installation
+
+Example for OSX
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-darwin-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like to add minikube to your path manually.
+
+Example for Linux
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like to add minikube to your path manually.
+Check out https://github.com/kubernetes/minikube/releases[this page] for more info on the installation.
+
+==== Run Minikube
+
+Just type in `minikube start` to start Kubernetes on your local box.
+
+To add the dashboard just execute `minikube dashboard`
+
+==== Certificates and Workers
+
+===== Minikube Certificates and Workers
+
+By default if you install Minikube all the certificates get installed in your
+`~/.minikube` folder. Your `kubectl` configuration under `~/.kube/config` will also
+get updated to use Minikube.
+
+===== Manual Certificates and Workers Setup
+
+IMPORTANT: If you just want to run the default, demo setup you can skip this section
+
+To target a given Kubernetes instance one needs to pass around Certificate Authority
+key and also user keys.
+
+You can read more about the instructions on how to generate those keys https://coreos.com/kubernetes/docs/latest/openssl.html[here].
+ Generally speaking if you have a Kubernetes installation (e.g. `minikube`) this step
+ has already been done for you. Time to reuse those keys on the workers.
+
+Extracted from the https://coreos.com/kubernetes/docs/latest/configure-kubectl.html[official docs].
+
+Configure kubectl to connect to the target cluster using the following commands, replacing several values as indicated:
+
+- Replace `${MASTER_HOST}` with the master node address or name used in previous steps
+- Replace `${CA_CERT}` with the absolute path to the ca.pem created in previous steps
+- Replace `${ADMIN_KEY}` with the absolute path to the admin-key.pem created in previous steps
+- Replace `${ADMIN_CERT}` with the absolute path to the admin.pem created in previous steps
+
+```
+$ kubectl config set-cluster default-cluster --server=https://${MASTER_HOST} --certificate-authority=${CA_CERT}
+$ kubectl config set-credentials default-admin --certificate-authority=${CA_CERT} --client-key=${ADMIN_KEY} --client-certificate=${ADMIN_CERT}
+$ kubectl config set-context default-system --cluster=default-cluster --user=default-admin
+$ kubectl config use-context default-system
+```
+
+==== Generate Minikube namespaces
+
+With the running Minikube cluster we need to generate namespaces. Just execute the
+`./tools/minikube-helper.sh setup-namespaces` to do this.
+
+// TODO: write the rest
+
+[[docker-image-cf]]
+=== Docker Image
+
+If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
+have an image you can pull and use on https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/[DockerHub].
+The `latest` tag corresponds to the latest snapshot build.  You can also find tags
+corresponding to stable releases that you can use as well.
+
 
 == The demo setup
 
