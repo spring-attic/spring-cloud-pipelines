@@ -45,11 +45,3 @@ Currently we have tests only cause the whole logic resides in the `jenkins_pipel
 include::CF_JENKINS.adoc[]
 include::K8S_JENKINS.adoc[]
 
-[[docker-image-cf]]
-=== Docker Image
-
-If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
-have an image you can pull and use on https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/[DockerHub].
-The `latest` tag corresponds to the latest snapshot build.  You can also find tags
-corresponding to stable releases that you can use as well.
-
