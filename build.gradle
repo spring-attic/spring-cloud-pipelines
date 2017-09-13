@@ -1,9 +1,9 @@
 buildscript {
-	repositories { jcenter() }
+    repositories { jcenter() }
 
-	dependencies {
-		classpath 'com.github.jruby-gradle:jruby-gradle-plugin:1.5.0'
-	}
+    dependencies {
+        classpath 'com.github.jruby-gradle:jruby-gradle-plugin:1.5.0'
+    }
 }
 
 apply plugin: "com.github.jruby-gradle.base"
@@ -11,7 +11,7 @@ apply plugin: "com.github.jruby-gradle.base"
 import com.github.jrubygradle.JRubyExec
 
 dependencies {
-	jrubyExec "rubygems:asciidoctor:1.5.4"
+    jrubyExec "rubygems:asciidoctor:1.5.4"
 }
 
 repositories {
@@ -23,30 +23,42 @@ jruby {
     defaultRepositories false
 }
 
-task generateMainReadme(type: JRubyExec) {
-	script "${projectDir}/tools/coalesce-readme.rb"
-	scriptArgs "-i ${projectDir}/docs/README.adoc", "-o ${projectDir}/README.adoc"
-}
-
 task generateJenkinsReadme(type: JRubyExec) {
-	script "${projectDir}/tools/coalesce-readme.rb"
-	scriptArgs "-i ${projectDir}/docs/JENKINS.adoc", "-o ${projectDir}/jenkins/README.adoc"
+    script "${projectDir}/tools/coalesce-readme.rb"
+    scriptArgs "-i ${projectDir}/docs-sources/src/main/asciidoc/JENKINS.adoc", "-o ${projectDir}/jenkins/README.adoc"
 }
 
 task generateConcourseReadme(type: JRubyExec) {
-	script "${projectDir}/tools/coalesce-readme.rb"
-	scriptArgs "-i ${projectDir}/docs/CONCOURSE.adoc", "-o ${projectDir}/concourse/README.adoc"
+    script "${projectDir}/tools/coalesce-readme.rb"
+    scriptArgs "-i ${projectDir}/docs-sources/src/main/asciidoc/CONCOURSE.adoc", "-o ${projectDir}/concourse/README.adoc"
 }
 
-task generateIndex(type: JRubyExec, dependsOn: ["generateMainReadme", "generateJenkinsReadme", "generateConcourseReadme"]) {
-	script "${projectDir}/tools/generate-index.rb"
-	scriptArgs "${projectDir}/docs/spring-cloud-pipelines.adoc"
+task generateIndex(dependsOn: ["generateJenkinsReadme", "generateConcourseReadme"]) {
+    doLast {
+        exec {
+            workingDir project(":docs-sources").projectDir.path
+            commandLine "./mvnw", "clean", "install", "-Pdocs"
+        }
+    }
 }
 
-task generateReadme(dependsOn: ["generateIndex"]) {
-	description = "Creates documentation for the project"
+task copyJekyll(type: Copy) {
+    from new File(project(":docs-sources").projectDir, "src/main/jekyll").path
+    into project(":docs").projectDir.path
+}
+
+task copyGeneratedSources(type: Copy) {
+    dependsOn(["generateIndex"])
+    from(new File(project(":docs-sources").projectDir, "target/generated-docs").path) {
+        exclude "spring-cloud-pipelines.xml"
+    }
+    into project(":docs").projectDir.path
+}
+
+task generateDocs(dependsOn: ["copyJekyll", "copyGeneratedSources"]) {
+    description = "Creates documentation for the project"
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '3.5'
+    gradleVersion = '3.5'
 }

@@ -1,9 +1,0 @@
-:jenkins-root-docs: img/jenkins
-:concourse-root-docs: img/concourse
-:intro-root-docs: img/intro
-:demo-root-docs: img/demo
-:toc: left
-:toclevels: 8
-:nofooter:
-
-include::DOCS.adoc[]

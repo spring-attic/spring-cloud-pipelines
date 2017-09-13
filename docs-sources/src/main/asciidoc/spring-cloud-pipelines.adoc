@@ -1,0 +1,11 @@
+:branch: master
+:jenkins-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/jenkins
+:concourse-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/concourse
+:intro-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/intro
+:demo-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/demo
+:toc: left
+:toclevels: 8
+:nofooter:
+:sectlinks: true
+
+include::DOCS.adoc[]
