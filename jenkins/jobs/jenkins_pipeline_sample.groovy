@@ -181,7 +181,9 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
+                // TODO: CF related
 				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+                // TODO: What to do about this?
 				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
 				usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 			}
