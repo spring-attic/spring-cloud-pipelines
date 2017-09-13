@@ -9,6 +9,10 @@ machine:
     _JAVA_OPTIONS: "-Xms512m -Xmx1024m"
     GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
     TERM: dumb
+checkout:
+  post:
+    - git submodule sync --recursive
+    - git submodule update --recursive --init
 test:
   override:
     - ./gradlew clean build

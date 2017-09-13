@@ -8,9 +8,11 @@ inputs:
   - name: tools
   - name: repo
   - name: version
-  - name: m2
 outputs:
   - name: out
+caches:
+  - path: gradle
+  - path: maven
 run:
   path: /bin/bash
   args:

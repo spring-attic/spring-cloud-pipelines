@@ -20,11 +20,6 @@ resources:
     uri: ((tools-scripts-url))
     branch: ((tools-branch))
 
-- name: m2
-  type: docker-image
-  source:
-    repository: springcloud/spring-pipeline-m2
-
 jobs:
 - name: generate-version
   public: true
@@ -48,7 +43,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -71,7 +65,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -89,7 +82,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -109,7 +101,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -128,7 +119,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -148,7 +138,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -167,7 +156,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -187,7 +175,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -206,7 +193,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -231,7 +217,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: m2
     - get: version
       resource: version
       passed:
@@ -249,7 +234,6 @@ common-params: &common-params
   BUILD_OPTIONS: ((build-options))
   GIT_EMAIL: ((git-email))
   GIT_NAME: ((git-name))
-  M2_REPO: ((maven-local-dir))
   M2_SETTINGS_REPO_ID: ((m2-settings-repo-id))
   M2_SETTINGS_REPO_PASSWORD: ((m2-settings-repo-password))
   M2_SETTINGS_REPO_USERNAME: ((m2-settings-repo-username))
