@@ -42,13 +42,18 @@ task generateIndex(dependsOn: ["generateJenkinsReadme", "generateConcourseReadme
     }
 }
 
+task cleanDocs(type: Delete) {
+    delete project(":docs").projectDir.path
+}
+
 task copyJekyll(type: Copy) {
+    dependsOn(["cleanDocs"])
     from new File(project(":docs-sources").projectDir, "src/main/jekyll").path
     into project(":docs").projectDir.path
 }
 
 task copyGeneratedSources(type: Copy) {
-    dependsOn(["generateIndex"])
+    dependsOn(["cleanDocs", "generateIndex"])
     from(new File(project(":docs-sources").projectDir, "target/generated-docs").path) {
         exclude "spring-cloud-pipelines.xml"
     }
