@@ -37,6 +37,11 @@ factory.job('jenkins-pipeline-cf-seed') {
                 github('spring-cloud/spring-cloud-pipelines')
             }
             branch('${TOOLS_BRANCH}')
+            extensions {
+                submoduleOptions {
+                    recursive()
+                }
+            }
         }
     }
     wrappers {
@@ -100,6 +105,11 @@ factory.job('jenkins-pipeline-k8s-seed') {
                 github('spring-cloud/spring-cloud-pipelines')
             }
             branch('${TOOLS_BRANCH}')
+            extensions {
+                submoduleOptions {
+                    recursive()
+                }
+            }
         }
     }
     wrappers {
