@@ -1,46 +1,54 @@
 #!/bin/bash
 
+[[ -z $DEBUG ]] || set -o xtrace
+
+set -o errexit
+set -o errtrace
+set -o nounset
+set -o pipefail
+
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 function usage {
-	echo "usage: $0: <download-shellcheck>"
-	exit 1
+    echo "usage: $0: <download-shellcheck|download-bats>"
+    exit 1
 }
 
-function system {
-	unameOut="$(uname -s)"
-	case "${unameOut}" in
-		Linux*)	 machine=linux;;
-		Darwin*)	machine=darwin;;
-		*)		  echo "Unsupported system" && exit 1
-	esac
-	echo ${machine}
-}
-
-
-SYSTEM=$( system )
-
-[[ $# -eq 1 ]] || usage
-
-export ROOT_FOLDER="`pwd`../"
-export FOLDER="`pwd`/"
-if [ -d "tools" ]; then
-	FOLDER="`pwd`/tools/"
-	ROOT_FOLDER="`pwd`/"
+if [[ $# -ne 1 ]]; then
+    usage
 fi
 
 case $1 in
-	download-shellcheck)
-		if [[ "${SYSTEM}" == "linux" ]]; then
-		# Download
-		wget -P "${FOLDER}/build/" https://storage.googleapis.com/shellcheck/shellcheck-latest.linux.x86_64.tar.xz
-		# Extract
-		tar xvf "${FOLDER}/build/shellcheck-latest.linux.x86_64.tar.xz" -C "${FOLDER}/build"
-		# Make it globally available
-		sudo cp "${FOLDER}/build/shellcheck-latest/shellcheck" /usr/bin/shellcheck || echo "Failed to copy shellcheck"
-		elif [[ "${SYSTEM}" == "darwin" ]]; then
-			brew install shellcheck
-		fi
-		;;
-	*)
-		usage
-		;;
+    download-shellcheck)
+        if [[ "${OSTYPE}" == linux* ]]; then
+            SHELLCHECK_ARCHIVE="shellcheck-latest.linux.x86_64.tar.xz"
+            SHELLCHECK_ARCHIVE_SHA512SUM="53ee4adc1d53d3689b9b7b815e6a0dc6022d1a4fe594f96a43742076659b6a3e483335ccd38367fcbd2b73ecf55dae1958cd989a6e2875e68dabbbc3c89084fd"
+            if [[ -x "${ROOT_DIR}/../common/build/shellcheck-latest/shellcheck" ]]; then
+                echo "shellcheck already downloaded - skipping..."
+                exit 0
+            fi
+            wget -P "${ROOT_DIR}/../common/build/" \
+                "https://storage.googleapis.com/shellcheck/${SHELLCHECK_ARCHIVE}"
+            pushd "${ROOT_DIR}/../common/build/"
+            echo "${SHELLCHECK_ARCHIVE_SHA512SUM} ${SHELLCHECK_ARCHIVE}" | sha512sum -c -
+            tar xvf "${SHELLCHECK_ARCHIVE}"
+            rm -vf -- "${SHELLCHECK_ARCHIVE}"
+            popd
+        else
+            echo "It seems that automatic installation is not supported on your platform."
+            echo "Please install shellcheck manually:"
+            echo "    https://github.com/koalaman/shellcheck#installing"
+            exit 1
+        fi
+        ;;
+    download-bats)
+        if [[ -x "${ROOT_DIR}/../common/build/bats/bin/bats" ]]; then
+            echo "bats already downloaded - skipping..."
+            exit 0
+        fi
+        git clone https://github.com/sstephenson/bats.git "${ROOT_DIR}/../common/build/bats"
+        ;;
+    *)
+        usage
+        ;;
 esac

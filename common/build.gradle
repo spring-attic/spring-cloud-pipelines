@@ -8,9 +8,9 @@ sourceSets {
     }
 }
 
-Closure isShellcheckInstalled = { ->
+Closure isCommandAvailable = { String cmd ->
     try {
-        "shellcheck -V".execute()
+        cmd.execute()
         return true
     } catch (IOException e) {
     }
@@ -18,30 +18,35 @@ Closure isShellcheckInstalled = { ->
 }
 
 task installShellcheckIfMissing(type: Exec) {
-    boolean shellcheckInstalled = isShellcheckInstalled()
+    boolean shellcheckInstalled = isCommandAvailable("shellcheck -V")
     if (shellcheckInstalled) {
         commandLine "echo", "Shellcheck installed - continuing"
     } else {
-        println "Shellcheck is missing. Will install it. You'll be prompted for your sudo password"
+        println "Shellcheck is missing. Will install it."
         commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
+    }
+}
+
+task installBatsIfMissing(type: Exec) {
+    boolean batsInstalled = isCommandAvailable("bats -v")
+    if (batsInstalled) {
+        commandLine "echo", "Bats installed - continuing"
+    } else {
+        println "Bats is missing. Will try to install it."
+        commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-bats"
     }
 }
 
 task shellcheck {
     doLast {
+        boolean shellcheckInstalled = isCommandAvailable("shellcheck -V")
+        String pathToShellcheck = "shellcheck"
+        if (!shellcheckInstalled) {
+            pathToShellcheck = new File(project(":common").buildDir, "shellcheck-latest/shellcheck").path
+        }
         sourceSets*.resources.srcDirs*.each { srcDir ->
             fileTree(relativePath(srcDir)).include('**/*.sh').each { File script ->
                 exec {
-                    boolean shellcheckInstalled = isShellcheckInstalled()
-                    String pathToShellcheck = "shellcheck"
-                    if (!shellcheckInstalled) {
-                        boolean fileCopied = new File("/usr/bin/shellcheck").exists()
-                        if (fileCopied) {
-                            pathToShellcheck = "/usr/bin/shellcheck"
-                        } else {
-                            pathToShellcheck = new File(project(":common").buildDir, "shellcheck-latest/shellcheck").path
-                        }
-                    }
                     commandLine pathToShellcheck, script
                 }
             }
@@ -49,5 +54,20 @@ task shellcheck {
     }
 }
 
+task bats {
+    doLast {
+        boolean batsInstalled = isCommandAvailable("bats -v")
+        String pathToBats = "bats"
+        if (!batsInstalled) {
+            pathToBats = new File(project(":common").buildDir, "bats/bin/bats").path
+        }
+        exec {
+            commandLine pathToBats, 'src/test/bats'
+        }
+    }
+}
+
 shellcheck.dependsOn("installShellcheckIfMissing")
 build.dependsOn("shellcheck")
+bats.dependsOn("installBatsIfMissing")
+build.dependsOn("bats")
