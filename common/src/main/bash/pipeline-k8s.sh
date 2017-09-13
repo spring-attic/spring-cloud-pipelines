@@ -17,37 +17,38 @@ function logInToPaas() {
     local k8sSystemName="${!systemName}"
     local api="PAAS_${ENVIRONMENT}_API_URL"
     local apiUrl="${!api:-192.168.99.100:8443}"
-    local CLI_INSTALLED="$( kubectl version || echo "false" )"
-    local CLI_DOWNLOADED="$( test -r kubectl && echo "true" || echo "false" )"
-    echo "CLI Installed? [${CLI_INSTALLED}], CLI Downloaded? [${CLI_DOWNLOADED}]"
-    if [[ ${CLI_INSTALLED} == "false" && (${CLI_DOWNLOADED} == "false" || ${CLI_DOWNLOADED} == "true" && ${redownloadInfra} == "true") ]]; then
+    local cliInstalled
+    cliInstalled="$( kubectl version || echo "false" )"
+    local cliDownloaded
+    cliDownloaded="$( test -r kubectl && echo "true" || echo "false" )"
+    echo "CLI Installed? [${cliInstalled}], CLI Downloaded? [${cliDownloaded}]"
+    if [[ ${cliInstalled} == "false" && (${cliDownloaded} == "false" || ${cliDownloaded} == "true" && ${redownloadInfra} == "true") ]]; then
         echo "Downloading CLI"
-        curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl --fail
-        local CLI_DOWNLOADED="true"
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl" --fail
+        local cliDownloaded="true"
     else
         echo "CLI is already installed or was already downloaded but the flag to redownload was disabled"
     fi
 
-    if [[ ${CLI_DOWNLOADED} == "true" ]]; then
+    if [[ ${cliDownloaded} == "true" ]]; then
         echo "Adding CLI to PATH"
-        PATH=${PATH}:`pwd`
+        PATH="${PATH}:$( pwd )"
         chmod +x kubectl
     fi
 
     echo "Logging in to Kubernetes API [${apiUrl}], with cluster name [${k8sClusterName}] and user [${k8sClusterUser}]"
-    kubectl config set-cluster ${k8sClusterName} --server=https://${apiUrl} --certificate-authority=${k8sCa}
-    kubectl config set-credentials ${k8sClusterUser} --certificate-authority=${k8sCa} --client-key=${k8sClientKey} --client-certificate=${k8sClientCert}
-    kubectl config set-context ${k8sSystemName} --cluster=${k8sClusterName} --user=${k8sClusterUser}
-    kubectl config use-context ${k8sSystemName}
+    kubectl config set-cluster "${k8sClusterName}" --server="https://${apiUrl}" --certificate-authority="${k8sCa}"
+    kubectl config set-credentials "${k8sClusterUser}" --certificate-authority="${k8sCa}" --client-key="${k8sClientKey}" --client-certificate="${k8sClientCert}"
+    kubectl config set-context "${k8sSystemName}" --cluster="${k8sClusterName}" --user="${k8sClusterUser}"
+    kubectl config use-context "${k8sSystemName}"
 
     echo "CLI version"
     kubectl version
 }
 
 function testDeploy() {
-    # TODO: Consider making it less JVM specific
-    local projectGroupId=$( retrieveGroupId )
-    local appName=$( retrieveAppName )
+    local appName
+    appName=$( retrieveAppName )
     # Log in to PaaS to start deployment
     logInToPaas
 
@@ -58,24 +59,29 @@ function testDeploy() {
 }
 
 function testRollbackDeploy() {
-    rm -rf ${OUTPUT_FOLDER}/test.properties
+    rm -rf "${OUTPUT_FOLDER}/test.properties"
     local latestProdTag="${1}"
-    local appName=$( retrieveAppName )
-    LATEST_PROD_VERSION=${latestProdTag#prod/}
-    echo "Last prod version equals ${LATEST_PROD_VERSION}"
+    local appName
+    appName=$( retrieveAppName )
+    local latestProdVersion
+    latestProdVersion="${latestProdTag#prod/}"
+    echo "Last prod version equals ${latestProdVersion}"
     logInToPaas
     parsePipelineDescriptor
 
-    deployAndRestartAppWithNameForSmokeTests "${appName}" "${LATEST_PROD_VERSION}"
+    deployAndRestartAppWithNameForSmokeTests "${appName}" "${latestProdVersion}"
 
     # Adding latest prod tag
-    echo "LATEST_PROD_TAG=${latestProdTag}" >> ${OUTPUT_FOLDER}/test.properties
+    echo "LATEST_PROD_TAG=${latestProdTag}" >> "${OUTPUT_FOLDER}/test.properties"
 }
 
 function deployService() {
-    local serviceType=$( toLowerCase "${1}" )
-    local serviceName="${2}"
-    local serviceCoordinates=$( if [[ "${3}" == "null" ]] ; then echo ""; else echo "${3}" ; fi )
+    local serviceType
+    serviceType="$( toLowerCase "${1}" )"
+    local serviceName
+    serviceName="${2}"
+    local serviceCoordinates
+    serviceCoordinates="$( if [[ "${3}" == "null" ]] ; then echo ""; else echo "${3}" ; fi )"
     local coordinatesSeparator=":"
     echo "Will deploy service with type [${serviceType}] name [${serviceName}] and coordinates [${serviceCoordinates}]"
     case ${serviceType} in
@@ -86,20 +92,26 @@ function deployService() {
       deployMySql "${serviceName}"
       ;;
     eureka)
-      PREVIOUS_IFS="${IFS}"
+      local previousIfs
+      previousIfs="${IFS}"
       IFS=${coordinatesSeparator} read -r EUREKA_ARTIFACT_ID EUREKA_VERSION <<< "${serviceCoordinates}"
-      IFS="${PREVIOUS_IFS}"
+      IFS="${previousIfs}"
       deployEureka "${EUREKA_ARTIFACT_ID}:${EUREKA_VERSION}" "${serviceName}"
       ;;
     stubrunner)
-      UNIQUE_EUREKA_NAME="$( eurekaName )"
-      UNIQUE_RABBIT_NAME="$( rabbitMqName )"
-      PREVIOUS_IFS="${IFS}"
+      local uniqueEurekaName
+      uniqueEurekaName="$( eurekaName )"
+      local uniqueRabbitName
+      uniqueRabbitName="$( rabbitMqName )"
+      local previousIfs
+      previousIfs="${IFS}"
       IFS=${coordinatesSeparator} read -r STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<< "${serviceCoordinates}"
-      IFS="${PREVIOUS_IFS}"
-      PARSED_STUBRUNNER_USE_CLASSPATH="$( echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
-      STUBRUNNER_USE_CLASSPATH=$( if [[ "${PARSED_STUBRUNNER_USE_CLASSPATH}" == "null" ]] ; then echo "false"; else echo "${PARSED_STUBRUNNER_USE_CLASSPATH}" ; fi )
-      deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${serviceName}"
+      IFS="${previousIfs}"
+      local parsedStubRunnerUseClasspath
+      parsedStubRunnerUseClasspath="$( echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/' )"
+      local stubRunnerUseClasspath
+      stubRunnerUseClasspath=$( if [[ "${parsedStubRunnerUseClasspath}" == "null" ]] ; then echo "false"; else echo "${parsedStubRunnerUseClasspath}" ; fi )
+      deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${uniqueRabbitName}" "${uniqueEurekaName}" "${serviceName}"
       ;;
     *)
       echo "Unknown service [${serviceType}]"
@@ -125,12 +137,17 @@ function mySqlDatabase() {
 }
 
 function appSystemProps() {
-    local systemProps=""
+    local systemProps
+    systemProps=""
     # TODO: Not every system needs Eureka or Rabbit. But we need to bind this somehow...
-    local eurekaName="$( eurekaName )"
-    local rabbitMqName="$( rabbitMqName )"
-    local mySqlName="$( mySqlName )"
-    local mySqlDatabase="$( mySqlDatabase )"
+    local eurekaName
+    eurekaName="$( eurekaName )"
+    local rabbitMqName
+    rabbitMqName="$( rabbitMqName )"
+    local mySqlName
+    mySqlName="$( mySqlName )"
+    local mySqlDatabase
+    mySqlDatabase="$( mySqlDatabase )"
     if [[ "${eurekaName}" != "" && "${eurekaName}" != "null" ]]; then
         systemProps="${systemProps} -Deureka.client.serviceUrl.defaultZone=http://${eurekaName}:8761/eureka"
     fi
@@ -147,7 +164,7 @@ function deleteService() {
     local serviceType="${1}"
     local serviceName="${2}"
     echo "Deleting all mysql related services with name [${serviceName}]"
-    deleteAppByName ${serviceName}
+    deleteAppByName "${serviceName}"
 }
 
 function deployRabbitMq() {
@@ -161,11 +178,12 @@ function deployRabbitMq() {
     echo "Waiting for RabbitMQ to start"
     local originalDeploymentFile="${__ROOT}/k8s/rabbitmq.yml"
     local originalServiceFile="${__ROOT}/k8s/rabbitmq-service.yml"
-    local outputDirectory="$( outputFolder )/k8s"
+    local outputDirectory
+    outputDirectory="$( outputFolder )/k8s"
     rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    cp ${originalDeploymentFile} ${outputDirectory}
-    cp ${originalServiceFile} ${outputDirectory}
+    cp "${originalDeploymentFile}" "${outputDirectory}"
+    cp "${originalServiceFile}" "${outputDirectory}"
     local deploymentFile="${outputDirectory}/rabbitmq.yml"
     local serviceFile="${outputDirectory}/rabbitmq-service.yml"
     substituteVariables "appName" "${serviceName}" "${deploymentFile}"
@@ -199,22 +217,23 @@ function deleteAppByName() {
 
 function deleteAppByFile() {
     local file="${1}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete -f ${file} || echo "Failed to delete app by [${file}] file. Continuing with the script"
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete -f "${file}" || echo "Failed to delete app by [${file}] file. Continuing with the script"
 }
 
 function substituteVariables() {
     local variableName="${1}"
     local substitution="${2}"
     local fileName="${3}"
-    local escapedSubstitution=$( escapeValueForSed "${substitution}" )
+    local escapedSubstitution
+    escapedSubstitution=$( escapeValueForSed "${substitution}" )
     #echo "Changing [${variableName}] -> [${escapedSubstitution}] for file [${fileName}]"
-    sed -i "s/{{${variableName}}}/${escapedSubstitution}/" ${fileName}
+    sed -i "s/{{${variableName}}}/${escapedSubstitution}/" "${fileName}"
 }
 
 function deleteMySql() {
     local serviceName="${1:-mysql-github}"
     echo "Deleting all mysql related services with name [${serviceName}]"
-    deleteAppByName ${serviceName}
+    deleteAppByName "${serviceName}"
 }
 
 function deployMySql() {
@@ -230,11 +249,12 @@ function deployMySql() {
     echo "Waiting for MySQL to start"
     local originalDeploymentFile="${__ROOT}/k8s/mysql.yml"
     local originalServiceFile="${__ROOT}/k8s/mysql-service.yml"
-    local outputDirectory="$( outputFolder )/k8s"
+    local outputDirectory
+    outputDirectory="$( outputFolder )/k8s"
     rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    cp ${originalDeploymentFile} ${outputDirectory}
-    cp ${originalServiceFile} ${outputDirectory}
+    cp "${originalDeploymentFile}" "${outputDirectory}"
+    cp "${originalServiceFile}" "${outputDirectory}"
     local deploymentFile="${outputDirectory}/mysql.yml"
     local serviceFile="${outputDirectory}/mysql-service.yml"
     local mySqlDatabase
@@ -273,18 +293,20 @@ function deployAndRestartAppWithNameForSmokeTests() {
     local appName="${1}"
     local version="${2}"
     local profiles="smoke,kubernetes"
-    local lowerCaseAppName=$( toLowerCase "${appName}" )
+    local lowerCaseAppName
+    lowerCaseAppName=$( toLowerCase "${appName}" )
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
-    local outputDirectory="$( outputFolder )/k8s"
+    local outputDirectory
+    outputDirectory="$( outputFolder )/k8s"
     rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    cp ${originalDeploymentFile} ${outputDirectory}
-    cp ${originalServiceFile} ${outputDirectory}
+    cp "${originalDeploymentFile}" "${outputDirectory}"
+    cp "${originalServiceFile}" "${outputDirectory}"
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
-    local systemProps="$( appSystemProps )"
-    systemProps="-Dspring.profiles.active=${profiles} ${systemProps}"
+    local systemProps
+    systemProps="-Dspring.profiles.active=${profiles} $( appSystemProps )"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
     substituteVariables "version" "${version}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
@@ -302,14 +324,16 @@ function deployAndRestartAppWithNameForSmokeTests() {
 function deployAndRestartAppWithNameForE2ETests() {
     local appName="${1}"
     local profiles="e2e,kubernetes"
-    local lowerCaseAppName=$( toLowerCase "${appName}" )
+    local lowerCaseAppName
+    lowerCaseAppName=$( toLowerCase "${appName}" )
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
-    local outputDirectory="$( outputFolder )/k8s"
+    local outputDirectory
+    outputDirectory="$( outputFolder )/k8s"
     rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    cp ${originalDeploymentFile} ${outputDirectory}
-    cp ${originalServiceFile} ${outputDirectory}
+    cp "${originalDeploymentFile}" "${outputDirectory}"
+    cp "${originalServiceFile}" "${outputDirectory}"
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
     local systemProps="-Dspring.profiles.active=${profiles}"
@@ -338,7 +362,8 @@ function lowerCaseEnv() {
 
 function deleteAppInstance() {
     local serviceName="${1}"
-    local lowerCaseAppName=$( toLowerCase "${serviceName}" )
+    local lowerCaseAppName
+    lowerCaseAppName=$( toLowerCase "${serviceName}" )
     echo "Deleting application [${lowerCaseAppName}]"
     deleteAppByName "${lowerCaseAppName}"
 }
@@ -355,11 +380,12 @@ function deployEureka() {
     echo "Deploying Eureka. Options - image name [${imageName}], app name [${appName}], env [${ENVIRONMENT}]"
     local originalDeploymentFile="${__ROOT}/k8s/eureka.yml"
     local originalServiceFile="${__ROOT}/k8s/eureka-service.yml"
-    local outputDirectory="$( outputFolder )/k8s"
+    local outputDirectory
+    outputDirectory="$( outputFolder )/k8s"
     rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    cp ${originalDeploymentFile} ${outputDirectory}
-    cp ${originalServiceFile} ${outputDirectory}
+    cp "${originalDeploymentFile}" "${outputDirectory}"
+    cp "${originalServiceFile}" "${outputDirectory}"
     local deploymentFile="${outputDirectory}/eureka.yml"
     local serviceFile="${outputDirectory}/eureka-service.yml"
     substituteVariables "appName" "${appName}" "${deploymentFile}"
@@ -385,19 +411,20 @@ function deployStubRunnerBoot() {
     local rabbitName="${3}.${PAAS_NAMESPACE}"
     local eurekaName="${4}.${PAAS_NAMESPACE}"
     local stubRunnerName="${5:-stubrunner}"
-    local fileExists="true"
-    local stubRunnerUseClasspath="${STUBRUNNER_USE_CLASSPATH:-false}"
+    local stubRunnerUseClasspath="${stubRunnerUseClasspath:-false}"
     echo "Deploying Stub Runner. Options - image name [${imageName}], app name [${stubRunnerName}]"
-    local stubrunnerIds="$( retrieveStubRunnerIds )"
+    local stubrunnerIds
+    stubrunnerIds="$( retrieveStubRunnerIds )"
     echo "Found following stub runner ids [${stubrunnerIds}]"
     local originalDeploymentFile="${__ROOT}/k8s/stubrunner.yml"
     local originalServiceFile="${__ROOT}/k8s/stubrunner-service.yml"
-    local outputDirectory="$( outputFolder )/k8s"
+    local outputDirectory
+    outputDirectory="$( outputFolder )/k8s"
     local systemProps=""
     rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    cp ${originalDeploymentFile} ${outputDirectory}
-    cp ${originalServiceFile} ${outputDirectory}
+    cp "${originalDeploymentFile}" "${outputDirectory}"
+    cp "${originalServiceFile}" "${outputDirectory}"
     local deploymentFile="${outputDirectory}/stubrunner.yml"
     local serviceFile="${outputDirectory}/stubrunner-service.yml"
     if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
@@ -425,38 +452,48 @@ function deployStubRunnerBoot() {
 
 function prepareForSmokeTests() {
     echo "Retrieving group and artifact id - it can take a while..."
-    local appName=$( retrieveAppName )
+    local appName
+    appName="$( retrieveAppName )"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
     # TODO: Maybe this has to be changed somehow
-    local applicationPort=$( portFromKubernetes "${appName}" )
-    local stubrunnerAppName="stubrunner-${appName}"
-    local stubrunnerPort=$( portFromKubernetes "${stubrunnerAppName}" )
-    export kubHost=$( hostFromApi "${PAAS_TEST_API_URL}" )
+    local applicationPort
+    applicationPort="$( portFromKubernetes "${appName}" )"
+    local stubrunnerAppName
+    stubrunnerAppName="stubrunner-${appName}"
+    local stubrunnerPort
+    stubrunnerPort="$( portFromKubernetes "${stubrunnerAppName}" )"
+    export kubHost
+    kubHost="$( hostFromApi "${PAAS_TEST_API_URL}" )"
     export APPLICATION_URL="${kubHost}:${applicationPort}"
     export STUBRUNNER_URL="${kubHost}:${stubrunnerPort}"
 }
 
 function portFromKubernetes() {
     local appName="${1}"
-    echo `kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc ${appName} -o jsonpath='{.spec.ports[0].nodePort}'`
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc "${appName}" -o jsonpath='{.spec.ports[0].nodePort}'
 }
 
 function waitForAppToStart() {
     local appName="${1}"
     local apiUrlVar="PAAS_${ENVIRONMENT}_API_URL"
     local apiUrl="${!apiUrlVar}"
-    local port=$( portFromKubernetes "${appName}" )
-    local kubHost=$( hostFromApi "${apiUrl}" )
+    local port
+    port="$( portFromKubernetes "${appName}" )"
+    local kubHost
+    kubHost="$( hostFromApi "${apiUrl}" )"
     isAppRunning "${kubHost}" "${port}"
 }
 
 function retrieveApplicationUrl() {
-    local appName=$( retrieveAppName )
+    local appName
+    appName="$( retrieveAppName )"
     local apiUrlVar="PAAS_${ENVIRONMENT}_API_URL"
     local apiUrl="${!apiUrlVar}"
-    local port=$( portFromKubernetes "${appName}" )
-    local kubHost=$( hostFromApi "${apiUrl}" )
+    local port
+    port="$( portFromKubernetes "${appName}" )"
+    local kubHost
+    kubHost="$( hostFromApi "${apiUrl}" )"
     echo "${kubHost}:${port}"
 }
 
@@ -476,7 +513,8 @@ function isAppRunning() {
         echo "App failed to start"
         exit 1
     fi
-    echo -e "\nApp started successfully!"
+    echo ""
+    echo "App started successfully!"
 }
 
 function hostFromApi() {
@@ -484,7 +522,7 @@ function hostFromApi() {
     local string
     local id
     IFS=':' read -r id string <<< "${api}"
-    echo "$id"
+    echo "${id}"
 }
 
 function readTestPropertiesFromFile() {
@@ -496,7 +534,7 @@ function readTestPropertiesFromFile() {
       echo "${fileLocation} found."
       while IFS='=' read -r key value
       do
-        key=$(echo ${key} | tr '.' '_')
+        key="$(echo "${key}" | tr '.' '_')"
         eval "${key}='${value}'"
       done < "${fileLocation}"
     else
@@ -515,7 +553,8 @@ function label() {
 function objectDeployed() {
     local appType="${1}"
     local appName="${2}"
-    local result=$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get "${appType}" "${appName}" --ignore-not-found=true )
+    local result
+    result="$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get "${appType}" "${appName}" --ignore-not-found=true )"
     if [[ "${result}" != "" ]]; then
         echo "true"
     else
@@ -524,9 +563,8 @@ function objectDeployed() {
 }
 
 function stageDeploy() {
-    # TODO: Consider making it less JVM specific
-    local projectGroupId=$( retrieveGroupId )
-    local appName=$( retrieveAppName )
+    local appName
+    appName="$( retrieveAppName )"
     # Log in to PaaS to start deployment
     logInToPaas
 
@@ -538,18 +576,22 @@ function stageDeploy() {
 
 function prepareForE2eTests() {
     echo "Retrieving group and artifact id - it can take a while..."
-    local appName=$( retrieveAppName )
+    local appName
+    appName="$( retrieveAppName )"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
-    local applicationPort=$( portFromKubernetes "${appName}" )
-    export kubHost=$( hostFromApi "${PAAS_STAGE_API_URL}" )
+    local applicationPort
+    applicationPort="$( portFromKubernetes "${appName}" )"
+    export kubHost
+    kubHost="$( hostFromApi "${PAAS_STAGE_API_URL}" )"
     export APPLICATION_URL="${kubHost}:${applicationPort}"
     echo "Application URL [${APPLICATION_URL}]"
 }
 
 function performGreenDeployment() {
     # TODO: Consider making it less JVM specific
-    local appName=$( retrieveAppName )
+    local appName
+    appName="$( retrieveAppName )"
     # Log in to PaaS to start deployment
     logInToPaas
 
@@ -559,18 +601,21 @@ function performGreenDeployment() {
 
 function performGreenDeploymentOfTestedApplication() {
     local appName="${1}"
-    local lowerCaseAppName=$( toLowerCase "${appName}" )
+    local lowerCaseAppName
+    lowerCaseAppName=$( toLowerCase "${appName}" )
     local profiles="kubernetes"
     local originalDeploymentFile="deployment.yml"
     local originalServiceFile="service.yml"
-    local outputDirectory="$( outputFolder )/k8s"
+    local outputDirectory
+    outputDirectory="$( outputFolder )/k8s"
     rm -rf "${outputDirectory}"
     mkdir -p "${outputDirectory}"
-    cp ${originalDeploymentFile} ${outputDirectory}
-    cp ${originalServiceFile} ${outputDirectory}
+    cp "${originalDeploymentFile}" "${outputDirectory}"
+    cp "${originalServiceFile}" "${outputDirectory}"
     local deploymentFile="${outputDirectory}/deployment.yml"
     local serviceFile="${outputDirectory}/service.yml"
-    local changedAppName="$( escapeValueForDns ${appName}-${PIPELINE_VERSION} )"
+    local changedAppName
+    changedAppName="$( escapeValueForDns "${appName}-${PIPELINE_VERSION}" )"
     echo "Will name the application [${changedAppName}]"
     local systemProps="-Dspring.profiles.active=${profiles}"
     substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
@@ -582,7 +627,8 @@ function performGreenDeploymentOfTestedApplication() {
     substituteVariables "systemProps" "${systemProps}" "${deploymentFile}"
     substituteVariables "appName" "${appName}" "${serviceFile}"
     deployApp "${deploymentFile}"
-    local serviceDeployed="$( objectDeployed "service" ${appName} )"
+    local serviceDeployed
+    serviceDeployed="$( objectDeployed "service" "${appName}" )"
     echo "Service already deployed? [${serviceDeployed}]"
     if [[ "${serviceDeployed}" == "false" ]]; then
         deployApp "${serviceFile}"
@@ -591,17 +637,21 @@ function performGreenDeploymentOfTestedApplication() {
 }
 
 function escapeValueForDns() {
-    local sed="$(sed -e 's/\./-/g;s/_/-/g' <<< "$1")"
-    local lowerCaseSed="$( toLowerCase ${sed} )"
+    local sed
+    sed="$(sed -e 's/\./-/g;s/_/-/g' <<< "$1")"
+    local lowerCaseSed
+    lowerCaseSed="$( toLowerCase "${sed}" )"
     echo "${lowerCaseSed}"
 }
 
 function deleteBlueInstance() {
-    local appName=$( retrieveAppName )
+    local appName
+    appName="$( retrieveAppName )"
     # Log in to CF to start deployment
     logInToPaas
     # find the oldest version and remove it
-    local oldestDeployment="$( oldestDeployment "${appName}" )"
+    local oldestDeployment
+    oldestDeployment="$( oldestDeployment "${appName}" )"
     if [[ "${oldestDeployment}" != "" ]]; then
         echo "Deleting deployment with name [${oldestDeployment}]"
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${oldestDeployment}"
@@ -612,18 +662,23 @@ function deleteBlueInstance() {
 
 function oldestDeployment() {
     local appName="${1}"
-    local changedAppName="$( escapeValueForDns ${appName}-${PIPELINE_VERSION} )"
-    local deployedApps="$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}" )"
-    local oldestDeployment="$( echo "${deployedApps}" | sort | head -n 1 )"
+    local changedAppName
+    changedAppName="$( escapeValueForDns "${appName}-${PIPELINE_VERSION}" )"
+    local deployedApps
+    deployedApps="$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}" )"
+    local oldestDeployment
+    oldestDeployment="$( echo "${deployedApps}" | sort | head -n 1 )"
     echo "${oldestDeployment}"
 }
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export LOWER_CASE_ENV=$( lowerCaseEnv )
+export LOWER_CASE_ENV
+LOWER_CASE_ENV="$( lowerCaseEnv )"
 export PAAS_NAMESPACE_VAR="PAAS_${ENVIRONMENT}_NAMESPACE"
 [[ -z "${PAAS_NAMESPACE}" ]] && PAAS_NAMESPACE="${!PAAS_NAMESPACE_VAR}"
 export KUBERNETES_NAMESPACE="${PAAS_NAMESPACE}"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
+# shellcheck source=/dev/null
 [[ -f "${__ROOT}/projectType/pipeline-jvm.sh" ]] && source "${__ROOT}/projectType/pipeline-jvm.sh" || \
     echo "No projectType/pipeline-jvm.sh found"
