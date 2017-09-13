@@ -58,11 +58,14 @@ task bats {
     doLast {
         boolean batsInstalled = isCommandAvailable("bats -v")
         String pathToBats = "bats"
+        String outputTapFile = project(":common").buildDir.path + "/bats.tap"
         if (!batsInstalled) {
             pathToBats = new File(project(":common").buildDir, "bats/bin/bats").path
         }
         exec {
-            commandLine pathToBats, 'src/test/bats'
+            standardOutput = new org.apache.tools.ant.util.TeeOutputStream(
+                new FileOutputStream(outputTapFile), System.out);
+            commandLine pathToBats, '-t', 'src/test/bats'
         }
     }
 }
