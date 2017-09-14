@@ -2,7 +2,13 @@ import javaposse.jobdsl.dsl.DslFactory
 
 DslFactory factory = this
 
+// remove::start[CF]
 String repos = 'https://github.com/marcingrzejszczak/github-analytics,https://github.com/marcingrzejszczak/github-webhook'
+// remove::end[CF]
+
+// remove::start[K8S]
+String kubernetesRepos = 'https://github.com/marcingrzejszczak/github-analytics-kubernetes,https://github.com/marcingrzejszczak/github-webhook-kubernetes'
+// remove::end[K8S]
 
 // meta-seed
 factory.job('meta-seed') {
@@ -12,6 +18,11 @@ factory.job('meta-seed') {
                 github('spring-cloud/spring-cloud-pipelines')
             }
             branch('${TOOLS_BRANCH}')
+            extensions {
+                submoduleOptions {
+                    recursive()
+                }
+            }
         }
     }
     steps {
@@ -25,6 +36,11 @@ factory.job('meta-seed') {
             additionalClasspath([
                     'jenkins/src/main/groovy', 'jenkins/src/main/resources'
             ].join("\n"))
+        }
+    }
+    wrappers {
+        parameters {
+            stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
         }
     }
 }
@@ -115,7 +131,7 @@ factory.job('jenkins-pipeline-k8s-seed') {
     wrappers {
         parameters {
             // Common
-            stringParam('REPOS', repos,
+            stringParam('REPOS', kubernetesRepos,
                     "Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
                             "first provide the name and separate the url with \$ sign")
             stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
