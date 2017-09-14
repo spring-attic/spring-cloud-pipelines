@@ -28,6 +28,9 @@ ext {
         }
         return false
     }
+    isShellcheckDownloaded = {
+        new File(project.rootProject.buildDir, "shellcheck-latest/shellcheck").exists()
+    }
 }
 
 subprojects {
@@ -35,12 +38,12 @@ subprojects {
 
     task installShellcheckIfMissing {
         doLast {
-            boolean shellcheckInstalled = isCommandAvailable("shellcheck -V")
+            boolean shellcheckInstalled = isCommandAvailable("shellcheck -V") || isShellcheckDownloaded()
             exec {
                 if (shellcheckInstalled) {
                     commandLine "echo", "Shellcheck installed - continuing"
                 } else {
-                    println "Shellcheck is missing. Will install it."
+                    logger.lifecycle("Shellcheck is missing. Will install it.")
                     commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
                 }
             }
@@ -62,6 +65,14 @@ subprojects {
                         commandLine pathToShellcheck, script
                     }
                 }
+            }
+        }
+    }
+
+    task initalizeSubModules() {
+        doLast {
+            exec {
+                commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "initialize-submodules"
             }
         }
     }

@@ -8,13 +8,17 @@ sourceSets {
     }
 }
 
-task installBatsIfMissing(type: Exec) {
-    boolean batsInstalled = isCommandAvailable("bats -v")
-    if (batsInstalled) {
-        commandLine "echo", "Bats installed - continuing"
-    } else {
-        println "Bats is missing. Will try to install it."
-        commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-bats"
+task installBatsIfMissing() {
+    doLast {
+        boolean batsInstalled = isCommandAvailable("bats -v")
+        exec {
+            if (batsInstalled) {
+                commandLine "echo", "Bats installed - continuing"
+            } else {
+                logger.lifecycle("Bats is missing. Will try to install it.")
+                commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-bats"
+            }
+        }
     }
 }
 
@@ -34,5 +38,6 @@ task bats {
     }
 }
 
+installBatsIfMissing.dependsOn("initalizeSubModules")
 bats.dependsOn("installBatsIfMissing")
 build.dependsOn("bats")
