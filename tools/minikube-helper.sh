@@ -20,7 +20,7 @@ function createNamespace() {
 
 function copyK8sYamls() {
     mkdir -p "${FOLDER}build"
-    cp "${ROOT_FOLDER}common/src/main/bash/k8s/*.*" "${FOLDER}build/"
+    cp "${ROOT_FOLDER}"common/src/main/bash/k8s/*.* "${FOLDER}build/"
 }
 
 function system {
