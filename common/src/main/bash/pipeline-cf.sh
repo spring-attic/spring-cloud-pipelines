@@ -364,7 +364,7 @@ function prepareForSmokeTests() {
     echo "Latest production tag [${LATEST_PROD_TAG}]"
 }
 
-function prepareForE2ETests() {
+function prepareForE2eTests() {
     logInToPaas
 
     export APPLICATION_URL

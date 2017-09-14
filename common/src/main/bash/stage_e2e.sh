@@ -10,5 +10,5 @@ export ENVIRONMENT=STAGE
 [[ -f "${__DIR}/pipeline.sh" ]] && source "${__DIR}/pipeline.sh" || \
     echo "No pipeline.sh found"
 
-prepareForE2ETests
+prepareForE2eTests
 runE2eTests

@@ -464,7 +464,7 @@ function prepareForSmokeTests() {
     export STUBRUNNER_URL="${stubRunnerUrl}:${stubrunnerPort}"
 }
 
-function prepareForE2ETests() {
+function prepareForE2eTests() {
     echo "Retrieving group and artifact id - it can take a while..."
     local appName
     appName="$( retrieveAppName )"
@@ -481,7 +481,8 @@ function applicationUrl() {
     local appName="${1}"
     if [[ "${KUBERNETES_MINIKUBE}" == "true" ]]; then
         local apiUrlProp="PAAS_${ENVIRONMENT}_API_URL"
-        echo "${!apiUrlProp}"
+        # host:port -> host
+        echo "${!apiUrlProp}" | awk -F/ '{print $3}' | awk -F: '{print $1}'
     else
         echo "${appName}"
     fi
@@ -595,20 +596,6 @@ function stageDeploy() {
 
     # deploy app
     deployAndRestartAppWithNameForE2ETests "${appName}"
-}
-
-function prepareForE2eTests() {
-    echo "Retrieving group and artifact id - it can take a while..."
-    local appName
-    appName="$( retrieveAppName )"
-    mkdir -p "${OUTPUT_FOLDER}"
-    logInToPaas
-    local applicationPort
-    applicationPort="$( portFromKubernetes "${appName}" )"
-    export kubHost
-    kubHost="$( hostFromApi "${PAAS_STAGE_API_URL}" )"
-    export APPLICATION_URL="${kubHost}:${applicationPort}"
-    echo "Application URL [${APPLICATION_URL}]"
 }
 
 function performGreenDeployment() {
