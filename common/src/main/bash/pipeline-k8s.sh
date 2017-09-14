@@ -482,7 +482,7 @@ function applicationUrl() {
     if [[ "${KUBERNETES_MINIKUBE}" == "true" ]]; then
         local apiUrlProp="PAAS_${ENVIRONMENT}_API_URL"
         # host:port -> host
-        echo "${!apiUrlProp}" | awk -F/ '{print $3}' | awk -F: '{print $1}'
+        echo "${!apiUrlProp}" | awk -F/ '{print $2}' | awk -F: '{print $1}'
     else
         echo "${appName}"
     fi
