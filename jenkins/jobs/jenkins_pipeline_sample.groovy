@@ -737,6 +737,7 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "PAAS_TEST_NAMESPACE")
 		setIfPresent(envs, variables, "PAAS_STAGE_NAMESPACE")
 		setIfPresent(envs, variables, "PAAS_PROD_NAMESPACE")
+		setIfPresent(envs, variables, "KUBERNETES_MINIKUBE")
 		// remove::end[K8S]
 		println "Will analyze the following variables psased to the seed job \n\n${variables}"
 		println "Will set the following env vars to the generated jobs \n\n${envs}"
