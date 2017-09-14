@@ -89,21 +89,19 @@ function retrieveStubRunnerIds() {
 }
 
 function runSmokeTests() {
-    local applicationHost="${APPLICATION_URL}"
-    local stubrunnerHost="${STUBRUNNER_URL}"
+    local applicationUrl="${APPLICATION_URL}"
+    local stubrunnerUrl="${STUBRUNNER_URL}"
     echo "Running smoke tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
+        ./mvnw clean install -Psmoke -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
+        ./mvnw clean install -Psmoke -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
     fi
 }
 
 function runE2eTests() {
-    # Retrieves Application URL
-    local applicationUrl
-    applicationUrl="$( retrieveApplicationUrl | tail -1 )"
+    local applicationUrl="${APPLICATION_URL}"
     echo "Running e2e tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then

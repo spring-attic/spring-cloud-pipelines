@@ -450,22 +450,51 @@ function prepareForSmokeTests() {
     appName="$( retrieveAppName )"
     mkdir -p "${OUTPUT_FOLDER}"
     logInToPaas
-    # TODO: Maybe this has to be changed somehow
     local applicationPort
     applicationPort="$( portFromKubernetes "${appName}" )"
     local stubrunnerAppName
     stubrunnerAppName="stubrunner-${appName}"
     local stubrunnerPort
     stubrunnerPort="$( portFromKubernetes "${stubrunnerAppName}" )"
-    export kubHost
-    kubHost="$( hostFromApi "${PAAS_TEST_API_URL}" )"
-    export APPLICATION_URL="${kubHost}:${applicationPort}"
-    export STUBRUNNER_URL="${kubHost}:${stubrunnerPort}"
+    local applicationUrl
+    applicationUrl="$( applicationUrl "${appName}" )"
+    local stubRunnerUrl
+    stubRunnerUrl="$( applicationUrl "${stubrunnerAppName}" )"
+    export APPLICATION_URL="${applicationUrl}:${applicationPort}"
+    export STUBRUNNER_URL="${stubRunnerUrl}:${stubrunnerPort}"
+}
+
+function prepareForE2ETests() {
+    echo "Retrieving group and artifact id - it can take a while..."
+    local appName
+    appName="$( retrieveAppName )"
+    mkdir -p "${OUTPUT_FOLDER}"
+    logInToPaas
+    local applicationPort
+    applicationPort="$( portFromKubernetes "${appName}" )"
+    local applicationUrl
+    applicationUrl="$( applicationUrl "${appName}" )"
+    export APPLICATION_URL="${applicationUrl}:${applicationPort}"
+}
+
+function applicationUrl() {
+    local appName="${1}"
+    if [[ "${KUBERNETES_MINIKUBE}" == "true" ]]; then
+        local apiUrlProp="PAAS_${ENVIRONMENT}_API_URL"
+        echo "${!apiUrlProp}"
+    else
+        echo "${appName}"
+    fi
 }
 
 function portFromKubernetes() {
     local appName="${1}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc "${appName}" -o jsonpath='{.spec.ports[0].nodePort}'
+    if [[ "${KUBERNETES_MINIKUBE}" == "true" ]]; then
+        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc "${appName}" -o jsonpath='{.spec.ports[0].nodePort}'
+    else
+        //TODO: Retrieve port from cluster
+        echo ""
+    fi
 }
 
 function waitForAppToStart() {

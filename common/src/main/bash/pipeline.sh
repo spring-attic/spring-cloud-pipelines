@@ -50,8 +50,13 @@ function stageDeploy() {
     exit 1
 }
 
+function prepareForE2ETests() {
+    echo "Prepares environment for smoke tests. Logs in to PAAS etc."
+    exit 1
+}
+
 function runE2eTests() {
-    echo "Executes end to end tests"
+    echo "Executes end to end tests. Profits from env vars set by 'prepareForE2ETests'"
     exit 1
 }
 

@@ -364,6 +364,14 @@ function prepareForSmokeTests() {
     echo "Latest production tag [${LATEST_PROD_TAG}]"
 }
 
+function prepareForE2ETests() {
+    logInToPaas
+
+    export APPLICATION_URL
+    APPLICATION_URL="$( retrieveApplicationUrl | tail -1 )"
+    echo "Application URL [${APPLICATION_URL}]"
+}
+
 # shellcheck disable=SC2120
 function readTestPropertiesFromFile() {
     local fileLocation="${1:-${OUTPUT_FOLDER}/test.properties}"
