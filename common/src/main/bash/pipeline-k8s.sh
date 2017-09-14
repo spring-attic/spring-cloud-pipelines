@@ -492,7 +492,7 @@ function portFromKubernetes() {
     if [[ "${KUBERNETES_MINIKUBE}" == "true" ]]; then
         kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc "${appName}" -o jsonpath='{.spec.ports[0].nodePort}'
     else
-        //TODO: Retrieve port from cluster
+        # TODO: Retrieve port from cluster
         echo ""
     fi
 }
