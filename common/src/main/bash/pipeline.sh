@@ -108,7 +108,7 @@ function extractVersionFromProdTag() {
 # Checks for existence of pipeline.yaml file that contains types and names of the
 # services required to be deployed for the given environment
 function pipelineDescriptorExists() {
-    if [ -f "pipeline.yml" ]
+    if [ -f "sc-pipelines.yml" ]
     then
         echo "true"
     else
@@ -144,7 +144,7 @@ function serviceExists() {
 
 # Sets the environment variable with contents of the parsed pipeline descriptor
 function parsePipelineDescriptor() {
-  PARSED_YAML=$( yaml2json "pipeline.yml" )
+  PARSED_YAML=$( yaml2json "sc-pipelines.yml" )
   export PARSED_YAML
 }
 
@@ -158,7 +158,7 @@ function deployServices() {
         return
     fi
 
-  parsePipelineDescriptor
+ 	parsePipelineDescriptor
 
     while read -r serviceType serviceName serviceCoordinates; do
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then

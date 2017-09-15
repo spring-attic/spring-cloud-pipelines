@@ -20,7 +20,7 @@ setup() {
 
 @test "yaml2json should convert valid YAML file to JSON" {
 	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
-	run yaml2json "${BATS_TEST_DIRNAME}/fixtures/pipeline.yml"
+	run yaml2json "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml"
 	assert_success
 }
 
