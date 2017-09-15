@@ -15,7 +15,7 @@ checkout:
     - git submodule update --recursive --init
 test:
   override:
-    - ./gradlew clean build
+    - ./gradlew clean build --stacktrace
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/.*-reports/.*" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;

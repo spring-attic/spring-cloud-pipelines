@@ -26,6 +26,9 @@ String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src
 // TODO: Automate customization of this value
 String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines"
 String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
+// TODO: K8S - consider parametrization
+String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: "mysql-root"
+String mySqlCredential = binding.variables["MYSQL_CREDENTIAL_ID"] ?: "mysql"
 
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
@@ -55,9 +58,7 @@ parsedRepos.each {
 		}
 		wrappers {
 			deliveryPipelineVersion(pipelineVersion, true)
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -127,9 +128,7 @@ parsedRepos.each {
 		}
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
@@ -180,11 +179,13 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Deploy to test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
+                // TODO: CF related
 				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+                // TODO: What to do about this?
+				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
+				usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 			}
 			timestamps()
 			colorizeOutput()
@@ -201,6 +202,9 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 				}
+				extensions {
+					wipeOutWorkspace()
+				}
 			}
 		}
 		steps {
@@ -212,6 +216,13 @@ parsedRepos.each {
 		''')
 		}
 		publishers {
+			// remove::start[K8S]
+			archiveArtifacts {
+				pattern("**/build/**/k8s/*.yml")
+				pattern("**/target/**/k8s/*.yml")
+				allowEmpty()
+			}
+			// end::start[K8S]
 			downstreamParameterized {
 				trigger("${projectName}-test-env-test") {
 					parameters {
@@ -227,9 +238,7 @@ parsedRepos.each {
 		deliveryPipelineConfiguration('Test', 'Tests on test')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 			}
@@ -323,6 +332,13 @@ parsedRepos.each {
 		''')
 			}
 			publishers {
+				// remove::start[K8S]
+				archiveArtifacts {
+					pattern("**/build/**/k8s/*.yml")
+					pattern("**/target/**/k8s/*.yml")
+					allowEmpty()
+				}
+				// end::start[K8S]
 				downstreamParameterized {
 					trigger("${projectName}-test-env-rollback-test") {
 						triggerWithNoParameters()
@@ -429,6 +445,8 @@ parsedRepos.each {
 				}
 				credentialsBinding {
 					usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
+					usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
+					usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 				}
 				timestamps()
 				colorizeOutput()
@@ -445,6 +463,9 @@ parsedRepos.each {
 						url(fullGitRepo)
 						branch('dev/${PIPELINE_VERSION}')
 					}
+					extensions {
+						wipeOutWorkspace()
+					}
 				}
 			}
 			steps {
@@ -456,6 +477,13 @@ parsedRepos.each {
 		''')
 			}
 			publishers {
+				// remove::start[K8S]
+				archiveArtifacts {
+					pattern("**/build/**/k8s/*.yml")
+					pattern("**/target/**/k8s/*.yml")
+					allowEmpty()
+				}
+				// end::start[K8S]
 				if (autoStage) {
 					downstreamParameterized {
 						trigger("${projectName}-stage-env-test") {
@@ -540,11 +568,11 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
+				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
+				usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 			}
 			timestamps()
 			colorizeOutput()
@@ -562,6 +590,9 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 					credentials(gitCredentials)
+				}
+				extensions {
+					wipeOutWorkspace()
 				}
 			}
 		}
@@ -581,6 +612,13 @@ parsedRepos.each {
 		''')
 		}
 		publishers {
+			// remove::start[K8S]
+			archiveArtifacts {
+				pattern("**/build/**/k8s/*.yml")
+				pattern("**/target/**/k8s/*.yml")
+				allowEmpty()
+			}
+			// end::start[K8S]
 			buildPipelineTrigger("${projectName}-prod-env-complete") {
 				parameters {
 					currentBuild()
@@ -602,9 +640,7 @@ parsedRepos.each {
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()
-			environmentVariables {
-				environmentVariables(defaults.defaultEnvVars)
-			}
+			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
 			}
@@ -624,6 +660,9 @@ parsedRepos.each {
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
 					credentials(gitCredentials)
+				}
+				extensions {
+					wipeOutWorkspace()
 				}
 			}
 		}
@@ -654,22 +693,60 @@ class PipelineDefaults {
 
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
 		Map<String, String> envs = [:]
-		envs['PAAS_TEST_API_URL'] = variables['PAAS_TEST_API_URL'] ?: 'api.local.pcfdev.io'
-		envs['PAAS_STAGE_API_URL'] = variables['PAAS_STAGE_API_URL'] ?: 'api.local.pcfdev.io'
-		envs['PAAS_PROD_API_URL'] = variables['PAAS_PROD_API_URL'] ?: 'api.local.pcfdev.io'
-		envs['PAAS_TEST_ORG'] = variables['PAAS_TEST_ORG'] ?: 'pcfdev-org'
-		envs['PAAS_TEST_SPACE'] = variables['PAAS_TEST_SPACE'] ?: 'pfcdev-test'
-		envs['PAAS_STAGE_ORG'] = variables['PAAS_STAGE_ORG'] ?: 'pcfdev-org'
-		envs['PAAS_STAGE_SPACE'] = variables['PAAS_STAGE_SPACE'] ?: 'pfcdev-stage'
-		envs['PAAS_PROD_ORG'] = variables['PAAS_PROD_ORG'] ?: 'pcfdev-org'
-		envs['PAAS_PROD_SPACE'] = variables['PAAS_PROD_SPACE'] ?: 'pfcdev-prod'
-		envs['PAAS_HOSTNAME_UUID'] = variables['PAAS_HOSTNAME_UUID'] ?: ''
-		envs['M2_SETTINGS_REPO_ID'] = variables['M2_SETTINGS_REPO_ID'] ?: 'artifactory-local'
-		envs['REPO_WITH_BINARIES'] = variables['REPO_WITH_BINARIES'] ?: 'http://artifactory:8081/artifactory/libs-release-local'
-		envs['APP_MEMORY_LIMIT'] = variables['APP_MEMORY_LIMIT'] ?: '256m'
-		envs['JAVA_BUILDPACK_URL'] = variables['JAVA_BUILDPACK_URL'] ?: 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1'
-		envs['PAAS_TYPE'] = variables['PAAS_TYPE'] ?: 'cf'
+		setIfPresent(envs, variables, "PAAS_TYPE")
+		setIfPresent(envs, variables, "TOOLS_BRANCH")
+		setIfPresent(envs, variables, "M2_SETTINGS_REPO_ID")
+		setIfPresent(envs, variables, "REPO_WITH_BINARIES")
+		// remove::start[CF]
+		setIfPresent(envs, variables, "PAAS_TEST_API_URL")
+		setIfPresent(envs, variables, "PAAS_STAGE_API_URL")
+		setIfPresent(envs, variables, "PAAS_PROD_API_URL")
+		setIfPresent(envs, variables, "PAAS_TEST_ORG")
+		setIfPresent(envs, variables, "PAAS_TEST_SPACE")
+		setIfPresent(envs, variables, "PAAS_STAGE_ORG")
+		setIfPresent(envs, variables, "PAAS_STAGE_SPACE")
+		setIfPresent(envs, variables, "PAAS_PROD_ORG")
+		setIfPresent(envs, variables, "PAAS_PROD_SPACE")
+		setIfPresent(envs, variables, "PAAS_HOSTNAME_UUID")
+		setIfPresent(envs, variables, "APP_MEMORY_LIMIT")
+		setIfPresent(envs, variables, "JAVA_BUILDPACK_URL")
+		// remove::end[CF]
+		// remove::start[K8S]
+		setIfPresent(envs, variables, "DOCKER_REGISTRY_ORGANIZATION")
+		setIfPresent(envs, variables, "PAAS_TEST_API_URL")
+		setIfPresent(envs, variables, "PAAS_STAGE_API_URL")
+		setIfPresent(envs, variables, "PAAS_PROD_API_URL")
+		setIfPresent(envs, variables, "PAAS_TEST_CA")
+		setIfPresent(envs, variables, "PAAS_STAGE_CA")
+		setIfPresent(envs, variables, "PAAS_PROD_CA")
+		setIfPresent(envs, variables, "PAAS_TEST_CLIENT_CERT")
+		setIfPresent(envs, variables, "PAAS_STAGE_CLIENT_CERT")
+		setIfPresent(envs, variables, "PAAS_PROD_CLIENT_CERT")
+		setIfPresent(envs, variables, "PAAS_TEST_CLIENT_KEY")
+		setIfPresent(envs, variables, "PAAS_STAGE_CLIENT_KEY")
+		setIfPresent(envs, variables, "PAAS_PROD_CLIENT_KEY")
+		setIfPresent(envs, variables, "PAAS_TEST_CLUSTER_NAME")
+		setIfPresent(envs, variables, "PAAS_STAGE_CLUSTER_NAME")
+		setIfPresent(envs, variables, "PAAS_PROD_CLUSTER_NAME")
+		setIfPresent(envs, variables, "PAAS_TEST_CLUSTER_USERNAME")
+		setIfPresent(envs, variables, "PAAS_STAGE_CLUSTER_USERNAME")
+		setIfPresent(envs, variables, "PAAS_PROD_CLUSTER_USERNAME")
+		setIfPresent(envs, variables, "PAAS_TEST_SYSTEM_NAME")
+		setIfPresent(envs, variables, "PAAS_STAGE_SYSTEM_NAME")
+		setIfPresent(envs, variables, "PAAS_PROD_SYSTEM_NAME")
+		setIfPresent(envs, variables, "PAAS_TEST_NAMESPACE")
+		setIfPresent(envs, variables, "PAAS_STAGE_NAMESPACE")
+		setIfPresent(envs, variables, "PAAS_PROD_NAMESPACE")
+		setIfPresent(envs, variables, "KUBERNETES_MINIKUBE")
+		// remove::end[K8S]
+		println "Will analyze the following variables psased to the seed job \n\n${variables}"
+		println "Will set the following env vars to the generated jobs \n\n${envs}"
 		return envs
 	}
 
+	private static void setIfPresent(Map<String, String> envs, Map<String, String> variables, String prop) {
+		if (variables[prop]) {
+			envs[prop] = variables[prop]
+		}
+	}
 }

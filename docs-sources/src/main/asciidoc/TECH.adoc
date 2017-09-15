@@ -1,4 +1,4 @@
-== How to build it
+== Building the project
 
 === Prerequisites
 
@@ -62,7 +62,7 @@ To generate readme just run
 ./gradlew generateDocs
 ----
 
-== Releasing
+== Releasing the project
 
 === Publishing A Docker Image
 

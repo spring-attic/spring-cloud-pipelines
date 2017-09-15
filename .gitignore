@@ -20,7 +20,7 @@ build
 target
 out
 
-# Vim 
+# Vim
 [._]*.s[a-v][a-z]
 [._]*.sw[a-p]
 [._]s[a-v][a-z]
@@ -28,3 +28,6 @@ out
 Session.vim
 .netrwhist
 *~
+
+*.crt
+*.key

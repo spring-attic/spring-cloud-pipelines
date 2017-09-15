@@ -21,143 +21,6 @@ This project tries to solve the following problems:
 A common way of running, configuring and deploying applications lowers support costs
 and time needed by new developers to blend in when they change projects.
 
-== The opinionated pipeline
-
-This repo contains an *opinionated pipeline* to deploy a Spring Cloud based microservice.
-We've taken the following opinionated decisions:
-
-- application built using Maven or Gradle wrappers
-- application deployment to Cloud Foundry
-- For Maven:
-    * usage of Maven Wrapper
-    * artifacts deployment by `./mvnw clean deploy`
-    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
-    * `repo.with.binaries` - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * `distribution.management.release.id` - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in `settings.xml`
-    * `distribution.management.release.url` - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * running API compatibility tests via the `apicompatibility` Maven profile
-    * `latest.production.version` - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
-    * running smoke tests on a deployed app via the `smoke` Maven profile
-    * running end to end tests on a deployed app via the `e2e` Maven profile
-- For Gradle (in the `github-analytics` application check the `gradle/pipeline.gradle` file):
-    * usage of Gradlew Wrapper
-    * `deploy` task for artifacts deployment
-    * `REPO_WITH_BINARIES` - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_USERNAME` - (Injected by the pipeline) Username used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_PASSWORD` - (Injected by the pipeline) Password used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * running API compatibility tests via the `apiCompatibility` task
-    * `latestProductionVersion` - (Injected by the pipeline) property will contain the latest production version for the repo (retrieved from Git tags)
-    * running smoke tests on a deployed app via the `smoke` task
-    * running end to end tests on a deployed app via the `e2e` task
-    * `groupId` task to retrieve group id
-    * `artifactId` task to retrieve artifact id
-    * `currentVersion` task to retrieve the current version
-    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
-
-This is the initial approach that can be easily changed since all the core
-deployment logic is done in a form of Bash scripts.
-
-You can go through the setup of the demo environment for
-
-- <<concourse, Concourse>>
-- <<jenkins, Jenkins using Jenkins Job DSL plugin>>
-
-Each of these setups are available under the folders `jenkins` and
-`concourse` respectively.
-
-=== CI Server worker prerequisites
-
-Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
-that needs to be installed on a CI server worker for the build to pass
-
-[source,bash]
-----
- apt-get -y install \
-    bash \
-    git \
-    tar \
-    zip \
-    curl \
-    ruby \
-    wget \
-    unzip \
-    python \
-    jq
-----
-
-=== Pipeline descriptor
-
-Each application can contain a file called `sc-pipelines.yml` with the following structure:
-
-[source,yaml]
-----
-lowercaseEnvironmentName1:
-    services:
-        - type: service1Type
-          name: service1Name
-          coordinates: value
-        - type: service2Type
-          name: service2Name
-          key: value
-lowercaseEnvironmentName2:
-    services:
-        - type: service3Type
-          name: service3Name
-          coordinates: value
-        - type: service4Type
-          name: service4Name
-          key: value
-----
-
-For a given environment we declare a list of infrastructure services that we
-want to have deployed. Services have
-
-    - `type` (example: `eureka`, `mysql`, `rabbitmq`, `stubrunner`) - this value gets
-    then applied to the `deployService` Bash function
-    - `name` - name of the service to get deployed
-    - `coordinates` - coordinate that allows you to fetch the binary of the service.
-      Examples: It can be a maven coordinate `groupid:artifactid:version`,
-       docker image `organization/nameOfImage`, etc.
-    - arbitrary key value pairs - you can customize the services as you wish
-
-The `stubrunner` type can also have the `useClasspath` flag turned on to `true`
-or `false`.
-
-Example:
-
-[source,yaml]
-----
-test:
-  services:
-    - type: rabbitmq
-      name: rabbitmq-github-webhook
-    - type: mysql
-      name: mysql-github-webhook
-    - type: eureka
-      name: eureka-github-webhook
-      coordinates: com.example.eureka:github-eureka:0.0.1.M1
-    - type: stubrunner
-      name: stubrunner-github-webhook
-      coordinates: com.example.eureka:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
-      useClasspath: true
-stage:
-  services:
-    - type: rabbitmq
-      name: rabbitmq-github
-    - type: mysql
-      name: mysql-github
-    - type: eureka
-      name: github-eureka
-      coordinates: com.example.eureka:github-eureka:0.0.1.M1
-----
-
-When the deployment to test or deployment to stage occurs, Spring Cloud Pipelines
-will:
-
-    - for `test` environment, delete existing services and redeploy the ones from the list
-    - for `stage` environment, if the service is not available it will get deployed. Otherwise
-    nothing will happen
-
 == Introduction
 
 In the following section we will describe in more depth the rationale
@@ -350,30 +213,134 @@ The general view behind this deployment pipeline is to:
 Obviously the pipeline could have been split to more steps but it seems that all of the aforementioned
  actions comprise nicely in our opinionated proposal.
 
-==== Opinionated implementation
+=== CI Server worker prerequisites
+
+Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
+that needs to be installed on a CI server worker for the build to pass.
+
+TIP: In the demo setup all of these libraries are already installed.
+
+[source,bash]
+----
+ apt-get -y install \
+    bash \
+    git \
+    tar \
+    zip \
+    curl \
+    ruby \
+    wget \
+    unzip \
+    python \
+    jq
+----
+
+IMPORTANT: In the Jenkins case you will also need `bats` and `shellcheck`. They are not
+presented in the list since the installed versions by Linux distributions might be old.
+That's why this project's Gradle tasks will download latest versions of both libraries
+for you.
+
+=== Pipeline descriptor
+
+Each application can contain a file called `sc-pipelines.yml` with the following structure:
+
+[source,yaml]
+----
+lowercaseEnvironmentName1:
+    services:
+        - type: service1Type
+          name: service1Name
+          coordinates: value
+        - type: service2Type
+          name: service2Name
+          key: value
+lowercaseEnvironmentName2:
+    services:
+        - type: service3Type
+          name: service3Name
+          coordinates: value
+        - type: service4Type
+          name: service4Name
+          key: value
+----
+
+For a given environment we declare a list of infrastructure services that we
+want to have deployed. Services have
+
+    - `type` (example: `eureka`, `mysql`, `rabbitmq`, `stubrunner`) - this value gets
+    then applied to the `deployService` Bash function
+        - *[KUBERNETES]* for `mysql` you can pass the database name via the `database`
+        property
+    - `name` - name of the service to get deployed
+    - `coordinates` - coordinate that allows you to fetch the binary of the service.
+      Examples: It can be a maven coordinate `groupid:artifactid:version`,
+       docker image `organization/nameOfImage`, etc.
+    - arbitrary key value pairs - you can customize the services as you wish
+
+The `stubrunner` type can also have the `useClasspath` flag turned on to `true`
+or `false`.
+
+Example:
+
+[source,yaml]
+----
+test:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github-webhook
+    - type: mysql
+      name: mysql-github-webhook
+    - type: eureka
+      name: eureka-github-webhook
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+    - type: stubrunner
+      name: stubrunner-github-webhook
+      coordinates: com.example.eureka:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
+      useClasspath: true
+stage:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github
+    - type: mysql
+      name: mysql-github
+    - type: eureka
+      name: github-eureka
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+----
+
+When the deployment to test or deployment to stage occurs, Spring Cloud Pipelines
+will:
+
+    - for `test` environment, delete existing services and redeploy the ones from the list
+    - for `stage` environment, if the service is not available it will get deployed. Otherwise
+    nothing will happen
+
+== Opinionated implementation
 
 For the demo purposes we're providing Docker Compose setup with Artifactory and Concourse / Jenkins tools.
-Regardless of the picked CD application for the pipeline to pass one needs a Cloud Foundry instance (for example
-https://run.pivotal.io/[Pivotal Web Services] or https://pivotal.io/pcf-dev[PCF Dev]) and the
-infrastructure applications deployed to the JAR hosting application (for the demo we're providing Artifactory).
-The infrastructure applications are `Eureka` for Service Discovery and `Stub Runner Boot` for running
-Spring Cloud Contract stubs.
+Regardless of the picked CD application for the pipeline to pass one needs either
+
+- *[CLOUD FOUNDRY]* a Cloud Foundry instance (for example https://run.pivotal.io/[Pivotal Web Services] or https://pivotal.io/pcf-dev[PCF Dev])
+- *[KUBERNETES]* a Kubernetes cluster (for example https://github.com/kubernetes/minikube[Minikube])
+- the infrastructure applications deployed to the JAR hosting application (for the demo we're providing Artifactory).
+    - `Eureka` for Service Discovery
+    - `Stub Runner Boot` for running Spring Cloud Contract stubs.
 
 TIP: In the demos we're showing you how to first build the `github-webhook` project. That's because
 the `github-analytics` needs the stubs of `github-webhook` to pass the tests. Below you'll find
 references to `github-analytics` project since it contains more interesting pieces as far as testing
 is concerned.
 
-===== Build
+=== Build
 
 image::{intro-root-docs}/build.png[title="Build and upload artifacts"]
 
 In this step we're generating a version of the pipeline, next we're
- running unit, integration and contract tests. Finally we're publishing
-2 artifacts to Artifactory / Nexus:
+ running unit, integration and contract tests. Finally we're:
 
-- a fat jar of the application
-- a Spring Cloud Contract jar containing stubs of the application
+- publishing a fat jar of the application
+- publishing a Spring Cloud Contract jar containing stubs of the application
+- *[KUBERNETES]* uploading a Docker image of the application
 
 During this phase we're executing a `Maven` build using Maven Wrapper or a `Gradle` build using Gradle Wrapper
 , with unit and integration tests. We're also *tagging* the repository with `dev/${version}` format. That way in each
@@ -388,19 +355,22 @@ Once the artifact got built we're running API compatibility check.
 is fulfilling the HTTP / messaging contracts that the current production deployment
 has defined (we're checking backward compatibility of the API)
 
-===== Test
+=== Test
 
 image::{intro-root-docs}/test.png[title="Smoke test and rollback test on test environment"]
 
 Here we're
 
-- starting a RabbitMQ service in Cloud Foundry
-- deploying `Eureka` infrastructure application to Cloud Foundry
-- downloading the fat jar from Nexus and we're uploading it to Cloud Foundry. We want the application
-to run in isolation (be surrounded by stubs). Currently due to port constraints in Cloud Foundry
+- starting a RabbitMQ service in PaaS
+- deploying `Eureka` infrastructure application to PaaS
+- downloading the fat jar from Nexus and we're uploading it to PaaS. We want the application
+to run in isolation (be surrounded by stubs).
+
+TIP: Currently due to port constraints in Cloud Foundry
 we cannot run multiple stubbed HTTP services in the cloud so to fix this issue we're running
 the application with `smoke` Spring profile on which you can stub out all HTTP calls to return
 a mocked response
+
 - if the application is using a database then it gets upgraded at this point via Flyway, Liquibase
 or any other tool once the application gets started
 - from the project's Maven or Gradle build we're extracting `stubrunner.ids` property that contains
@@ -410,64 +380,154 @@ or any other tool once the application gets started
 we'll have a running application in Cloud Foundry that will download all the necessary stubs
 of our application
 - from the checked out code we're running the tests available under the `smoke` profile. In the
-case of https://github.com/spring-cloud-samples/github-analytics/[GitHub Analytics] application
-we're triggering a message from the https://github.com/spring-cloud-samples/github-webhook[GitHub Webhook]
+case of `GitHub Analytics` application we're triggering a message from the `GitHub Webhook`
 application's stub, that is sent via RabbitMQ to GitHub Analytics. Then we're checking if
-message count has increased. You can check those tests https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/smoke/IntegrationTests.java[here].
+message count has increased.
 - once the tests pass we're searching for the last production release. Once the application
 is deployed to production we're tagging it with `prod/${version}` tag. If there is no such tag
 (there was no production release) there will be no rollback tests executed. If there was
 a production release the tests will get executed.
 - assuming that there was a production release we're checking out the code corresponding to that
-release (we're checking out the tag), we're downloading the appropriate fat jar and we're uploading
-it to Cloud Foundry. *IMPORTANT* the _old_ jar is running against the *NEW* version of the database.
+release (we're checking out the tag), we're downloading the appropriate artifact (either JAR for Cloud Foundry
+or Docker image for Kubernetes) and we're uploading
+it to PaaS. *IMPORTANT* the _old_ artifact is running against the *NEW* version of the database.
 - we're running the _old_ `smoke` tests against the freshly deployed application surrounded by stubs.
 If those tests pass then we have a high probability that the application is backwards compatible
 - the default behaviour is that after all of those steps the user can manually click to deploy the
 application to a stage environment
 
-===== Stage
+=== Stage
 
 image::{intro-root-docs}/stage.png[title="End to end tests on stage environment"]
 
 Here we're
 
-- starting a RabbitMQ service in Cloud Foundry
-- deploying `Eureka` infrastructure application to Cloud Foundry
-- downloading the fat jar from Nexus and we're uploading it to Cloud Foundry.
+- starting a RabbitMQ service in PaaS
+- deploying `Eureka` infrastructure application to PaaS
+- downloading the artifact (either JAR for Cloud Foundry or Docker image for Kubernetes)
+from and we're uploading it to PaaS.
 
 Next we have a manual step in which:
 
 - from the checked out code we're running the tests available under the `e2e` profile. In the
-case of https://github.com/spring-cloud-samples/github-analytics/[GitHub Analytics] application
-we're sending a HTTP message to GitHub Analytic's endpoint. Then we're checking if
-the received message count has increased. You can check those tests https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/e2e/E2eTests.java[here].
+case of `GitHub Analytics` application we're sending a HTTP message to GitHub Analytic's endpoint. Then we're checking if
+the received message count has increased.
 
 The step is manual by default due to the fact that stage environment is often shared between
 teams and some preparations on databases / infrastructure have to take place before running the tests.
 Ideally these step should be fully automatic.
 
-===== Prod
+=== Prod
 
 image::{intro-root-docs}/prod.png[title="Deployment to production"]
 
 The step to deploy to production is manual but ideally it should be automatic.
 
+IMPORTANT: This step does deployment to production. On production you would assume
+that you have the infrastructure running. That's why before you run this step you
+must execute a script that will provision the services on the production environment.
+For `Cloud Foundry` just call `tools/pcfdev-helper.sh setup-prod-infra` and
+for Kubernetes `tools/minikube-helper.sh setup-prod-infra`
+
 Here we're
 
-- starting a RabbitMQ service in Cloud Foundry (only for the demo to pass - you should provision
-the prod environment in a different way)
-- deploying `Eureka` infrastructure application to Cloud Foundry (only for the demo to pass - you should provision
-the prod environment in a different way)
 - tagging the Git repo with `prod/${version}` tag
-- downloading the fat jar from Nexus
-- we're doing Blue Green deployment on Cloud Foundry
-     - we're renaming the current instance of the app e.g. `fooService` to `fooService-venerable`
-     - we're deploying the new instance of the app under the `fooService` name
-     - now two instances of the same application are running on production
+- downloading the application artifact (either JAR for Cloud Foundry or Docker image for Kubernetes)
+- we're doing Blue Green deployment:
+    - for Cloud Foundry
+        * we're renaming the current instance of the app e.g. `fooService` to `fooService-venerable`
+        * we're deploying the new instance of the app under the `fooService` name
+        * now two instances of the same application are running on production
+    - for Kubernetes
+        * we're deploying a service with the name of the app e.g. `fooService`
+        * we're doing a deployment with the name of the app with version suffix (with the name escaped
+         to fulfill the DNS name requirements) e.g. `fooService-1-0-0-M1-123-456-VERSION`
+        * all deployments of the same application have the same label `name` equal to app name e.g. `fooService`
+        * the service is routing the traffic basing on the `name` label selector
+        * now two instances of the same application are running on production
 - in the `Complete switch over` which is a manual step
-    - we're deleting the old instance
-    - remember to run this step only after you have confirmed that both instances are working fine!
+    * we're deleting the old instance
+    * remember to run this step only after you have confirmed that both instances are working fine!
+
+== Project opinions
+
+In this section we will go through the assumptions we've made in the project
+structure and project properties.
+
+=== CF project opinions
+
+We've taken the following opinionated decisions for a Cloud Foundry based project:
+
+- application built using Maven or Gradle wrappers
+- application deployment to Cloud Foundry
+- For Maven (https://github.com/spring-cloud-samples/github-webhook[example project]):
+    * usage of Maven Wrapper
+    * `settings.xml` contains all the credentials to push code to Artifactory
+    * artifacts deployment by `./mvnw clean deploy`
+    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * `repo.with.binaries` property - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `distribution.management.release.id` property - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in `settings.xml`
+    * `distribution.management.release.url` property - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * running API compatibility tests via the `apicompatibility` Maven profile
+    * `latest.production.version` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
+    * running smoke tests on a deployed app via the `smoke` Maven profile
+    * running end to end tests on a deployed app via the `e2e` Maven profile
+- For Gradle  (https://github.com/spring-cloud-samples/github-analytics[example project] check the `gradle/pipeline.gradle` file):
+    * usage of Gradlew Wrapper
+    * `deploy` task for artifacts deployment
+    * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_USERNAME` env var - (Taken from `gradle.properties`) Username used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_PASSWORD` env var - (Taken from `gradle.properties`) Password used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * running API compatibility tests via the `apiCompatibility` task
+    * `latestProductionVersion` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
+    * running smoke tests on a deployed app via the `smoke` task
+    * running end to end tests on a deployed app via the `e2e` task
+    * `groupId` task to retrieve group id
+    * `artifactId` task to retrieve artifact id
+    * `currentVersion` task to retrieve the current version
+    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
+
+=== Kubernetes project opinions
+
+We've taken the following opinionated decisions for a Cloud Foundry based project:
+
+- application built using Maven or Gradle wrappers
+- application deployment to Kubernetes
+- The produced Java Docker image needs to allow passing of system properties via `SYSTEM_PROPS` env variable
+- For Maven (https://github.com/spring-cloud-samples/github-webhook-kubernetes[example project]):
+    * usage of Maven Wrapper
+    * `settings.xml` contains all the credentials to push code to Artifactory and Docker repository
+    * artifacts and Docker image deployment by `./mvnw clean deploy`
+    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * `repo.with.binaries` property - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `distribution.management.release.id` property - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in `settings.xml`
+    * `distribution.management.release.url` property - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `deployment.yml` contains the Kubernetes deployment descriptor
+    * `service.yml` contains the Kubernetes service descriptor
+    * running API compatibility tests via the `apicompatibility` Maven profile
+    * `latest.production.version` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
+    * running smoke tests on a deployed app via the `smoke` Maven profile
+    * running end to end tests on a deployed app via the `e2e` Maven profile
+- For Gradle  (https://github.com/spring-cloud-samples/github-analytics-kubernetes[example project] check the `gradle/pipeline.gradle` file):
+    * usage of Gradlew Wrapper
+    * `deploy` task for artifacts deployment
+    * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_USERNAME` env var - (Taken from `gradle.properties`) Username used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_PASSWORD` env var - (Taken from `gradle.properties`) Password used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `DOCKER_URL` env var - (Overridable - defaults to DockerHub) URL of the Docker registry
+    * `DOCKER_USERNAME` env var - (Taken from `gradle.properties`) Username used to send the the Docker image
+    * `DOCKER_PASSWORD` env var - (Taken from `gradle.properties`) Password used to send the the Docker image
+    * `DOCKER_EMAIL` env var - (Taken from `gradle.properties`) Email used to send the the Docker image
+    * `deployment.yml` contains the Kubernetes deployment descriptor
+    * `service.yml` contains the Kubernetes service descriptor
+    * running API compatibility tests via the `apiCompatibility` task
+    * `latestProductionVersion` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
+    * running smoke tests on a deployed app via the `smoke` task
+    * running end to end tests on a deployed app via the `e2e` task
+    * `groupId` task to retrieve group id
+    * `artifactId` task to retrieve artifact id
+    * `currentVersion` task to retrieve the current version
+    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
 
 == Concourse Pipeline [[concourse]]
 
@@ -838,16 +898,10 @@ You can also execute the `./tools/pcfdev-helper.sh delete-routes`
 Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
 setup. Check out <<settings,this section of the docs and update your `settings.xml`>>.
 
-== Jenkins DSL Pipeline
+== Jenkins Pipeline (Common)
 
-[[jenkins]] The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
-
-All in all there are the following projects taking part in the whole `microservice setup` for this demo.
-
-- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
-- https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
-- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
-- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+In this section we will present the common setup of Jenkins for any platform.
+We will also provide answers to most frequently asked questions.
 
 === Project setup
 
@@ -865,6 +919,7 @@ All in all there are the following projects taking part in the whole `microservi
 │   ├── gradle.properties
 │   ├── init.groovy
 │   ├── jenkins_pipeline.groovy
+│   ├── k8s
 │   └── settings.xml
 └── src
     ├── main
@@ -884,35 +939,212 @@ In the `jobs` folder you have all the seed jobs that will generate pipelines.
 In the `seed` folder you have the `init.groovy` file which is executed when Jenkins starts.
 That way we can configure most of Jenkins options for you (adding credentials, JDK etc.).
 `jenkins_pipeline.groovy` contains logic to build a seed job (that way you don't have to even click that
-job - we generate it for you).
+job - we generate it for you). Under the `k8s` folder there are all the configuration
+files required for deployment to a Kubernetes cluster.
 
 In the `src` folder you have production and test classes needed for you to build your own pipeline.
 Currently we have tests only cause the whole logic resides in the `jenkins_pipeline_sample` file.
 
+=== Optional customization steps
+
+[[jenkins_optional]] All the steps below are not necessary to run the demo. They are needed only
+when you want to do some custom changes.
+
+[[deploying-infra]]
+==== Deploying infra jars to a different location
+
+It's enough to set the `ARTIFACTORY_URL` environmental variable before
+executing `tools/deploy-infra.sh`. Example for deploying to Artifactory at IP `192.168.99.100`
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
+----
+
+[[setup-settings-xml]]
+==== Setup settings.xml for Maven deployment
+
+TIP: If you want to use the default connection to the Docker version
+of Artifactory you can skip this step
+
+[[jenkins-settings]] So that `./mvnw deploy` works with Artifactory from Docker we're
+already copying the missing `settings.xml` file for you. It looks more or less like this:
+
+[source,xml]
+----
+<server>
+  <id>artifactory-local</id>
+  <username>admin</username>
+  <password>password</password>
+</server>
+----
+
+If you want to use your own version of Artifactory / Nexus you have to update
+the file (it's in `seed/settings.xml`).
+
+[[setup-jenkins-env-vars]]
+==== Setup Jenkins env vars
+
+[[jenkins_env]] If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
+That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.
+
+You can do it in the following ways:
+
+- globally via Jenkins global env vars (then when you run the seed that variable will be taken into consideration and proper pipelines will get built)
+- modify the seed job parameters (you'll have to modify the seed job configuration and change the `REPOS` property)
+- provide the repos parameter when running the seed job
+
+For the sake of simplicity let's go with the *last* option.
+
+IMPORTANT: If you're choosing the global envs, you *HAVE* to remove the other approach
+(e.g. if you set the global env for `REPOS`, please remove that property in the
+seed job
+
+[[setup-seed-props]]
+===== Seed properties
+
+Click on the seed job and pick `Build with parameters`. Then as presented in the screen below (you'll have far more properties to set) just modify the `REPOS` property by providing the comma separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.
+
+TIP: This is very useful when the repos you want to build differ. E.g. use
+different JDK. Then some seeds can set the `JDK_VERSION` param to one version
+of Java installation and the others to another one.
+
+Example screen:
+
+image::{jenkins-root-docs}/seed.png[]
+
+In the screenshot we could parametrize the `REPOS` and `REPO_WITH_BINARIES` params.
+
+[[global-envs]]
+===== Global envs
+
+IMPORTANT: This section is presented only for informational purposes - for the sake of demo you can skip it
+
+You can add env vars (go to configure Jenkins -> Global Properties) for the following
+ properties (example with defaults for PCF Dev):
+
+Example screen:
+
+image::{jenkins-root-docs}/env_vars.png[]
+
+[[git-email]]
+==== Set Git email / user
+
+Since our pipeline is setting the git user / name explicitly for the build step
+ you'd have to go to `Configure` of the build step and modify the Git name / email.
+ If you want to set it globally you'll have to remove the section from the build
+ step and follow these steps to set it globally.
+
+You can set Git email / user globally like this:
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/git.png[caption="Step 3: ", title="Fill out Git user information"]
+
+{nbsp}
+{nbsp}
+
+
+[[jenkins-credentials-github]]
+===== Add Jenkins credentials for GitHub
+
+[[jenkins-credentials]] The scripts will need to access the credential in order to tag the repo.
+
+You have to set credentials with id: `git`.
+
+Below you can find instructions on how to set a credential (e.g. for Cloud Foundry `cf-test` credential but
+remember to provide the one with id `git`).
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/credentials_system.png[caption="Step 1: ", title="Click 'Credentials, System'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/credentials_global.png[caption="Step 2: ", title="Click 'Global Credentials'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/credentials_add.png[caption="Step 3: ", title="Click 'Add credentials'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/credentials_example.png[caption="Step 4: ", title="Fill out the user / password and provide the `git` credential ID (in this example `cf-test`)"]
+
+{nbsp}
+{nbsp}
+
+=== Testing Jenkins scripts
+
+`./gradlew clean build`
+
+WARNING: The ran test only checks if your scripts compile.
+
+=== How to work with Jenkins Job DSL plugin
+
+Check out the https://github.com/jenkinsci/job-dsl-plugin/wiki/Tutorial---Using-the-Jenkins-Job-DSL[tutorial].
+Provide the link to this repository in your Jenkins installation.
+
+WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
+ for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).
+
+=== Docker Image
+
+If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
+have an image you can pull and use on https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/[DockerHub].
+The `latest` tag corresponds to the latest snapshot build.  You can also find tags
+corresponding to stable releases that you can use as well.
+
+[[jenkins-pipeline-cf]]
+== Jenkins Pipeline (Cloud Foundry)
+
+IMPORTANT: In this chapter we assume that you perform deployment of your application
+to Cloud Foundry PaaS
+
+[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+
+All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+
+- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
+- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
+- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+
+[[step-by-step-cf]]
 === Step by step
 
 This is a guide for Jenkins JOB Dsl based pipeline.
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
-- <<jenkins_fork,Fork repos>>
-- <<jenkins_start,Start Jenkins and Artifactory>>
-- <<jenkins_deploy,Deploy infra to Artifactory>>
-- <<jenkins_pcfdev,Start PCF Dev (if you don't want to use an existing one)>>
-- <<jenkins_seed,Run the seed job>>
-- <<jenkins_pipeline,Run the `github-webhook` pipeline>>
+- <<jenkins-fork-cf,Fork repos>>
+- <<jenkins-start-cf,Start Jenkins and Artifactory>>
+- <<jenkins-deploy-cf,Deploy infra to Artifactory>>
+- <<jenkins-pcfdev-cf,Start PCF Dev (if you don't want to use an existing one)>>
+- <<jenkins-seed-cf,Run the seed job>>
+- <<jenkins-pipeline-cf,Run the `github-webhook` pipeline>>
 
-Below you can find <<optional,optional>> steps needed to be taken when you want to customize the pipeline
-
-- <<env,Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
-just check out the section on how to update the URL to Artifactory)>>
-- <<jenkins_settings,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
-- <<jenkins_misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
-- <<jenkins_credentials,Setup Jenkins credentials>>
-
+[[fork-repos-cf]]
 ==== Fork repos
 
-[[jenkins_fork]] There are 4 apps that are composing the pipeline
+[[jenkins-fork-cf]] There are 4 apps that are composing the pipeline
 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
@@ -924,9 +1156,10 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
+[[start-jenkins-cf]]
 ==== Start Jenkins and Artifactory
 
-[[jenkins_start]] Jenkins + Artifactory can be ran locally. To do that just execute the
+[[jenkins-start-cf]] Jenkins + Artifactory can be ran locally. To do that just execute the
 `start.sh` script from this repo.
 
 [source,bash]
@@ -942,9 +1175,10 @@ any manual work on the Jenkins side. In the above parameters, the third paramete
 could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
 contain your GitHub org in which you have the forked repos.
 
+[[deploy-infra-cf]]
 ===== Deploy the infra JARs to Artifactory
 
-[[jenkins_deploy]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+[[jenkins-deploy-cf]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
 
 [source,bash]
 ----
@@ -956,15 +1190,16 @@ cd spring-cloud-pipelines/
 As a result both `eureka` and `stub runner` repos will be cloned, built
 and uploaded to Artifactory.
 
+[[start-pcf-dev-cf]]
 ==== Start PCF Dev
 
 TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 The only thing you have to do is to set up spaces.
 
 WARNING: It's more than likely that you'll run out of resources when you reach stage step.
-Don't worry! Keep calm and <<resources,clear some apps from PCF Dev and continue>>.
+Don't worry! Keep calm and <<jenkins-cf-resources,clear some apps from PCF Dev and continue>>.
 
-[[jenkins_pcfdev]] You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
+[[jenkins-pcfdev-cf]] You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
 
 The default credentials when using PCF Dev are:
 
@@ -1001,9 +1236,10 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 
 You can also execute the `./tools/pcfdev-helper.sh setup-spaces` to do this.
 
+[[jenkins-seed-cf]]
 ==== Run the seed job
 
-[[jenkins_seed]] We already create the seed job for you but you'll have to run it. When you do
+We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -1025,16 +1261,17 @@ image::{jenkins-root-docs}/seed_run.png[caption="Step 2: ", title="Click the 'Bu
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/seed.png[caption="Step 3: ", title="Provide the `REPOS` parameter with URLs of your forks (you'll have more properties than the ones in the screenshot)"]
+image::{jenkins-root-docs}/seed.png[caption="Step 3: ", title="The `REPOS` parameter should already contain your forked repos (you'll have more properties than the ones in the screenshot)"]
 
 {nbsp}
 {nbsp}
 
 image::{jenkins-root-docs}/seed_built.png[caption="Step 4: ", title="This is how the results of seed should look like"]
 
+[[jenkins-pipeline-cf]]
 ==== Run the `github-webhook` pipeline
 
-[[jenkins_pipeline]] We already create the seed job for you but you'll have to run it. When you do
+We already create the seed job for you but you'll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the
@@ -1056,15 +1293,6 @@ image::{jenkins-root-docs}/pipeline_run.png[caption="Step 2: ", title="Run the p
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/pipeline_run_props.png[caption="Step 3: ", title="You can set some properties (just click 'Build' to proceed) "]
-
-{nbsp}
-{nbsp}
-
-IMPORTANT: Most likely your 1st build will suddenly hang for 10 minutes. If you rerun it
-again it should work after 2-3 minutes. My guess is that it's related to Docker Compose
-so sorry for this unfortunate situation.
-
 IMPORTANT: If your build fails on the *deploy previous version to stage* due to missing jar,
 that means that you've forgotten to clear the tags in your repo. Typically that's due to the fact that
 you've removed the Artifactory volume with deployed JAR whereas a tag in the repo is still pointing there.
@@ -1073,7 +1301,7 @@ you've removed the Artifactory volume with deployed JAR whereas a tag in the rep
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 4: ", title="Click the manual step to go to stage (remember about killing the apps on test env). To do this click the *ARROW* next to the job name"]
+image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 3: ", title="Click the manual step to go to stage (remember about killing the apps on test env). To do this click the *ARROW* next to the job name"]
 
 {nbsp}
 {nbsp}
@@ -1084,11 +1312,12 @@ environment it's good to kill all apps on test. <<faq,Check out the FAQ section 
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 5: ", title="The full pipeline should look like this"]
+image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 4: ", title="The full pipeline should look like this"]
 
 {nbsp}
 {nbsp}
 
+[[declarative-pipeline-cf]]
 === Declarative pipeline & Blue Ocean
 
 You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
@@ -1145,85 +1374,13 @@ pretty fast. You can check out this https://issues.jenkins-ci.org/browse/JENKINS
 and this http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
 for more information.
 
-=== Optional steps
+[[optional-steps-cf]]
+=== Jenkins Cloud Foundry customization
 
-[[jenkins_optional]] All the steps below are not necessary to run the demo. They are needed only
+ All the steps below are not necessary to run the demo. They are needed only
 when you want to do some custom changes.
 
-==== Deploying infra jars to a different location
-
-It's enough to set the `ARTIFACTORY_URL` environmental variable before
-executing `tools/deploy-infra.sh`. Example for deploying to Artifactory at IP `192.168.99.100`
-
-[source,bash]
-----
-git clone https://github.com/spring-cloud/spring-cloud-pipelines
-cd spring-cloud-pipelines/
-ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
-----
-
-==== Setup settings.xml for Maven deployment
-
-TIP: If you want to use the default connection to the Docker version
-of Artifactory you can skip this step
-
-[[jenkins_settings]] So that `./mvnw deploy` works with Artifactory from Docker we're
-already copying the missing `settings.xml` file for you. It looks like this:
-
-[source,xml]
-----
-<server>
-  <id>artifactory-local</id>
-  <username>admin</username>
-  <password>password</password>
-</server>
-----
-
-If you want to use your own version of Artifactory / Nexus you have to update
-the file (it's in `seed/settings.xml`).
-
-==== Setup Jenkins env vars
-
-[[jenkins_env]] If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
-That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.
-
-You can do it in the following ways:
-
-- globally via Jenkins global env vars (then when you run the seed that variable will be taken into consideration and proper pipelines will get built)
-- modify the seed job parameters (you'll have to modify the seed job configuration and change the `REPOS` property)
-- provide the repos parameter when running the seed job
-
-For the sake of simplicity let's go with the *last* option.
-
-IMPORTANT: If you're choosing the global envs, you *HAVE* to remove the other approach
-(e.g. if you set the global env for `REPOS`, please remove that property in the
-seed job
-
-===== Seed properties
-
-Click on the seed job and pick `Build with parameters`. Then as presented in the screen below (you'll have far more properties to set) just modify the `REPOS` property by providing the comma separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.
-
-TIP: This is very useful when the repos you want to build differ. E.g. use
-different JDK. Then some seeds can set the `JDK_VERSION` param to one version
-of Java installation and the others to another one.
-
-Example screen:
-
-image::{jenkins-root-docs}/seed.png[]
-
-In the screenshot we could parametrize the `REPOS` and `REPO_WITH_BINARIES` params.
-
-===== Global envs
-
-IMPORTANT: This section is presented only for informational purposes - for the sake of demo you can skip it
-
-You can add env vars (go to configure Jenkins -> Global Properties) for the following
- properties (the defaults are for PCF Dev):
-
-Example screen:
-
-image::{jenkins-root-docs}/env_vars.png[]
-
+[[all-env-vars-cf]]
 ===== All env vars
 
 The env vars that are used in all of the jobs are as follows:
@@ -1256,33 +1413,7 @@ The env vars that are used in all of the jobs are as follows:
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
-==== Set Git email / user
-
-Since our pipeline is setting the git user / name explicitly for the build step
- you'd have to go to `Configure` of the build step and modify the Git name / email.
- If you want to set it globally you'll have to remove the section from the build
- step and follow these steps to set it globally.
-
-You can set Git email / user globally like this:
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/git.png[caption="Step 3: ", title="Fill out Git user information"]
-
-{nbsp}
-{nbsp}
-
+[[jenkins-credentials-cf]]
 ==== Jenkins Credentials
 
 In your scripts we reference the credentials via IDs. These are the defaults for credentials
@@ -1300,69 +1431,416 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 If you already have in your system a credential to for example tag a repo
 you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
 
-===== Add Jenkins credentials for GitHub
 
-[[jenkins_credentials]] The scripts will need to access the credential in order to tag the repo.
+[[jenkins-pipeline-k8s]]
+== Jenkins Pipeline (Kubernetes)
 
-You have to set credentials with id: `git`.
+IMPORTANT: In this chapter we assume that you perform deployment of your application
+to Kubernetes PaaS
 
-Below you can find instructions on how to set a credential (e.g. for `cf-test` credential but
-remember to provide the one with id `git`).
+[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+
+All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+
+- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
+- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
+- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+
+[[step-by-step-k8s]]
+=== Step by step
+
+This is a guide for Jenkins JOB Dsl based pipeline.
+
+If you want to just run the demo as far as possible using PCF Dev and Docker Compose
+
+- <<jenkins-fork-k8s,Fork repos>>
+- <<jenkins-start-k8s,Start Jenkins and Artifactory>>
+- <<jenkins-deploy-k8s,Deploy infra to Artifactory>>
+- <<jenkins-minikube-k8s,Start Minikube (if you don't want to use an existing one)>>
+- <<jenkins-seed-k8s,Run the seed job>>
+- <<jenkins-pipeline-k8s,Run the `github-webhook` pipeline>>
+
+[[fork-repos-k8s]]
+==== Fork repos
+
+[[jenkins-fork-k8s]] There are 4 apps that are composing the pipeline
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-classpath-stubs[Github Stub Runner Boot]
+
+You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+
+[[start-jenkins-k8s]]
+==== Start Jenkins and Artifactory
+
+[[jenkins-start-k8s]] Jenkins + Artifactory can be ran locally. To do that just execute the
+`start.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/jenkins
+./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg yourDockerRegistryOrganization yourDockerRegistryUsername yourDockerRegistryPassword yourDockerRegistryEmail
+----
+Then Jenkins will be running on port `8080` and Artifactory `8081`.
+The provided parameters will be passed as env variables to Jenkins VM
+and credentials will be set in your set. That way you don't have to do
+any manual work on the Jenkins side. In the above parameters, the third parameter
+could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
+contain your GitHub org in which you have the forked repos.
+
+You need to pass the credentials for the Docker organization (by default we will
+search for the Docker images at Docker Hub) so that the pipeline will be able
+to push images to your org.
+
+[[deploy-infra-k8s]]
+===== Deploy the infra JARs to Artifactory
+
+[[jenkins-deploy-k8s]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+./tools/deploy-infra-k8s.sh
+----
+
+As a result both `eureka` and `stub runner` repos will be cloned, built,
+uploaded to Artifactory and their docker images will be built.
+
+IMPORTANT: Your local Docker process will be reused by the Jenkins instance running
+in Docker. That's why you don't have to push these images to Docker Hub. On the
+other hand if you run this sample in a remote Kubernetes cluster the driver
+will not be shared by the Jenkins workers so you can consider pushing these
+Docker images to Docker Hub too.
+
+==== Kubernetes CLI Installation
+
+First you'll need to install the `kubectl` CLI.
+
+[[kubernetes-cli-script]]
+===== Script Installation
+
+You can use the `tools/minikube-helper.sh` script to install `kubectl`. Just call
+
+```bash
+$ ./tools/minikube-helper download-kubectl
+```
+
+and then the `kubectl` will get downloaded
+
+[[kubernetes-cli-manual]]
+==== Manual Installation
+
+Example for OSX
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+```
+
+Example for Linux
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+```
+
+Check out https://kubernetes.io/docs/tasks/tools/install-kubectl/[this page] for more information.
+
+[[start-minikube-k8s]]
+==== Kubernetes Cluster setup
+
+We need a cluster of Kubernetes. The best choice will be https://github.com/kubernetes/minikube[Minikube].
+
+TIP: You can skip this step if you have Kubernetes cluster installed and don't
+want to use Minikube The only thing you have to do is to set up spaces.
+
+WARNING: It's more than likely that you'll run out of resources when you reach stage step.
+Don't worry! Keep calm and <<jenkins-resources-k8s,clear some apps from Minikube and continue>>.
+
+[[kubernetes-minikube-script]]
+===== Script Installation
+
+You can use the `tools/minikube-helper.sh` script to install `Minikube`. Just call
+
+```bash
+$ ./tools/minikube-helper download-minikube
+```
+
+and then the `Minikube` cluster will get downloaded
+
+[[kubernetes-minikube-manual]]
+===== Manual Installation
+
+Example for OSX
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-darwin-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like to add minikube to your path manually.
+
+Example for Linux
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like to add minikube to your path manually.
+Check out https://github.com/kubernetes/minikube/releases[this page] for more info on the installation.
+
+==== Run Minikube
+
+Just type in `minikube start` to start Kubernetes on your local box.
+
+To add the dashboard just execute `minikube dashboard`
+
+==== Certificates and Workers
+
+===== Minikube Certificates and Workers
+
+By default if you install Minikube all the certificates get installed in your
+`~/.minikube` folder. Your `kubectl` configuration under `~/.kube/config` will also
+get updated to use Minikube.
+
+===== Manual Certificates and Workers Setup
+
+IMPORTANT: If you just want to run the default, demo setup you can skip this section
+
+To target a given Kubernetes instance one needs to pass around Certificate Authority
+key and also user keys.
+
+You can read more about the instructions on how to generate those keys https://coreos.com/kubernetes/docs/latest/openssl.html[here].
+ Generally speaking if you have a Kubernetes installation (e.g. `minikube`) this step
+ has already been done for you. Time to reuse those keys on the workers.
+
+Extracted from the https://coreos.com/kubernetes/docs/latest/configure-kubectl.html[official docs].
+
+Configure kubectl to connect to the target cluster using the following commands, replacing several values as indicated:
+
+- Replace `${MASTER_HOST}` with the master node address or name used in previous steps
+- Replace `${CA_CERT}` with the absolute path to the `ca.pem` created in previous steps
+- Replace `${ADMIN_KEY}` with the absolute path to the `admin-key.pem` created in previous steps
+- Replace `${ADMIN_CERT}` with the absolute path to the `admin.pem` created in previous steps
+
+```
+$ kubectl config set-cluster default-cluster --server=https://${MASTER_HOST} --certificate-authority=${CA_CERT}
+$ kubectl config set-credentials default-admin --certificate-authority=${CA_CERT} --client-key=${ADMIN_KEY} --client-certificate=${ADMIN_CERT}
+$ kubectl config set-context default-system --cluster=default-cluster --user=default-admin
+$ kubectl config use-context default-system
+```
+
+==== Generate Minikube namespaces
+
+With the running Minikube cluster we need to generate namespaces. Just execute the
+`./tools/minikube-helper.sh setup-namespaces` to do this.
+
+[[jenkins-seed-k8s]]
+==== Run the seed job
+
+We already create the seed job for you but you'll have to run it. When you do
+run it you have to provide some properties. By default we create a seed that
+has all the properties options, but you can delete most of it. If you
+set the properties as global env variables you have to remove them from the
+seed.
+
+Anyways, to run the demo just provide in the `REPOS` var the comma separated
+ list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics'.
 
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/credentials_system.png[caption="Step 1: ", title="Click 'Credentials, System'"]
+image::{jenkins-root-docs}/seed_click.png[caption="Step 1: ", title="Click the 'jenkins-pipeline-seed' job"]
 
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/credentials_global.png[caption="Step 2: ", title="Click 'Global Credentials'"]
+image::{jenkins-root-docs}/seed_run.png[caption="Step 2: ", title="Click the 'Build with parameters'"]
 
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/credentials_add.png[caption="Step 3: ", title="Click 'Add credentials'"]
+image::{jenkins-root-docs}/seed.png[caption="Step 3: ", title="The `REPOS` parameter should already contain your forked repos (you'll have more properties than the ones in the screenshot)"]
 
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/credentials_example.png[caption="Step 4: ", title="Fill out the user / password and provide the `git` credential ID (in this example `cf-test`)"]
+image::{jenkins-root-docs}/seed_built.png[caption="Step 4: ", title="This is how the results of seed should look like"]
+
+[[jenkins-pipeline-k8s]]
+==== Run the `github-webhook` pipeline
+
+We already create the seed job for you but you'll have to run it. When you do
+run it you have to provide some properties. By default we create a seed that
+has all the properties options, but you can delete most of it. If you
+set the properties as global env variables you have to remove them from the
+seed.
+
+Anyways, to run the demo just provide in the `REPOS` var the comma separated
+ list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics`.
 
 {nbsp}
 {nbsp}
 
-==== Enable Groovy Token Macro Processing
-
-With scripted that but if you needed to this manually then this is how to do it:
+image::{jenkins-root-docs}/seed_views.png[caption="Step 1: ", title="Click the 'github-webhook' view"]
 
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+image::{jenkins-root-docs}/pipeline_run.png[caption="Step 2: ", title="Run the pipeline"]
 
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
+IMPORTANT: If your build fails on the *deploy previous version to stage* due to missing jar,
+that means that you've forgotten to clear the tags in your repo. Typically that's due to the fact that
+you've removed the Artifactory volume with deployed JAR whereas a tag in the repo is still pointing there.
+<<tags,Check out this section on how to remove the tag.>>
 
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
+image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 3: ", title="Click the manual step to go to stage (remember about killing the apps on test env). To do this click the *ARROW* next to the job name"]
 
-=== Docker Image
+{nbsp}
+{nbsp}
 
-If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
-have an image you can pull and use on https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/[DockerHub].
-The `latest` tag corresponds to the latest snapshot build.  You can also find tags
-corresponding to stable releases that you can use as well.
+IMPORTANT: Most likely you will run out of memory so when reaching the stage
+environment it's good to kill all apps on test. <<faq,Check out the FAQ section for more details>>!
 
-=== FAQ
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 4: ", title="The full pipeline should look like this"]
+
+{nbsp}
+{nbsp}
+
+[[declarative-pipeline-k8s]]
+=== Declarative pipeline & Blue Ocean
+
+You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
+https://jenkins.io/projects/blueocean/[Blue Ocean UI]. Here is a step by step guide to run a pipeline via
+this approach.
+
+The Blue Ocean UI is available under the `blue/` URL. E.g. for Docker Machine based setup `http://192.168.99.100:8080/blue`.
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_1.png[caption="Step 1: ", title="Open Blue Ocean UI and click on `github-webhook-declarative-pipeline`"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_2.png[caption="Step 2: ", title="Your first run will look like this. Click `Run` button"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_3.png[caption="Step 3: ", title="Enter parameters required for the build and click `run`"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_4.png[caption="Step 4: ", title="A list of pipelines will be shown. Click your first run."]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_5.png[caption="Step 5: ", title="State if you want to go to production or not and click `Proceed`"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_6.png[caption="Step 6: ", title="The build is in progress..."]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_7.png[caption="Step 7: ", title="The pipeline is done!"]
+
+{nbsp}
+{nbsp}
+
+
+IMPORTANT: There is no possibility of restarting pipeline from specific stage, after failure. Please
+check out this https://issues.jenkins-ci.org/browse/JENKINS-33846[issue] for more information
+
+WARNING: Currently there is no way to introduce manual steps in a performant way. Jenkins is
+blocking an executor when manual step is required. That means that you'll run out of executors
+pretty fast. You can check out this https://issues.jenkins-ci.org/browse/JENKINS-36235[issue] for
+and this http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
+for more information.
+
+[[optional-steps-k8s]]
+=== Jenkins Kubernetes customization
+
+ All the steps below are not necessary to run the demo. They are needed only
+when you want to do some custom changes.
+
+[[all-env-vars-k8s]]
+===== All env vars
+
+The env vars that are used in all of the jobs are as follows:
+
+[frame="topbot",options="header,footer"]
+|======================
+|Property Name  | Property Description | Default value
+|DOCKER_REGISTRY_ORGANIZATION | Name of the docker organization to which Docker images should be deployed | scpipelines
+|PAAS_TEST_API_URL | URL of the API of the Kubernetes cluster for test environment | 192.168.99.100:8443
+|PAAS_STAGE_API_URL | URL of the API of the Kubernetes cluster for stage environment  | 192.168.99.100:8443
+|PAAS_PROD_API_URL | URL of the API of the Kubernetes cluster for prod environment | 192.168.99.100:8443
+|PAAS_TEST_CA | Path to the certificate authority for test environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_STAGE_CA | Path to the certificate authority for stage environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_PROD_CA | Path to the certificate authority for prod environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_TEST_CLIENT_CERT | Path to the client certificate for test environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_STAGE_CLIENT_CERT | Path to the client certificate for stage environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_PROD_CLIENT_CERT | Path to the client certificate for prod environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_TEST_CLIENT_KEY | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_STAGE_CLIENT_KEY | Path to the client key for stage environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_PROD_CLIENT_KEY | Path to the client key for prod environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_TEST_CLUSTER_NAME | Name of the cluster for test environment | minikube
+|PAAS_STAGE_CLUSTER_NAME | Name of the cluster for stage environment | minikube
+|PAAS_PROD_CLUSTER_NAME | Name of the cluster for prod environment | minikube
+|PAAS_TEST_CLUSTER_USERNAME | Name of the user for test environment | minikube
+|PAAS_STAGE_CLUSTER_USERNAME | Name of the user for stage environment | minikube
+|PAAS_PROD_CLUSTER_USERNAME | Name of the user for prod environment | minikube
+|PAAS_TEST_SYSTEM_NAME | Name of the system for test environment | minikube
+|PAAS_STAGE_SYSTEM_NAME | Name of the system for stage environment | minikube
+|PAAS_PROD_SYSTEM_NAME | Name of the system for prod environment | minikube
+|PAAS_TEST_NAMESPACE | Namespace for test environment | sc-pipelines-test
+|PAAS_STAGE_NAMESPACE | Namespace for stage environment | sc-pipelines-stage
+|PAAS_PROD_NAMESPACE | Namespace for prod environment | sc-pipelines-prod
+|KUBERNETES_MINIKUBE | Will you connect to Minikube? | true
+|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
+|JDK_VERSION | The name of the JDK installation | jdk8
+|PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
+|GIT_EMAIL | The email used by Git to tag repo | email@example.com
+|GIT_NAME | The name used by Git to tag repo | Pivo Tal
+|AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
+|AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
+|ROLLBACK_STEP_REQUIRED | Should rollback step be present | true
+|DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
+|BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
+|======================
+
+== FAQ
+
+Below you can find the answers to most frequently asked questions.
 
 [[jenkins_faq]]
-
-==== Pipeline version contains ${PIPELINE_VERSION}
+=== Pipeline version contains ${PIPELINE_VERSION}
 
 You can check the Jenkins logs and you'll see
 
@@ -1378,7 +1856,7 @@ WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pip
 To fix it you have to do exactly what the warning suggests... Also ensure that the `Groovy token macro processing`
 checkbox is set.
 
-==== Pipeline version is not passed to the build
+=== Pipeline version is not passed to the build
 
 You can see that the Jenkins version is properly set but in the build version is still snapshot and
 the `echo "${PIPELINE_VERSION}"` doesn't print anything.
@@ -1396,7 +1874,7 @@ WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pip
 
 To fix it you have to do exactly what the warning suggests...
 
-==== The build times out with `pipeline.sh` info
+=== The build times out with `pipeline.sh` info
 
 Docker compose, docker compose, docker compose... The problem is that for some reason, only in Docker, the execution of
 Java hangs. But it hangs randomly and only the first time you try to execute the pipeline.
@@ -1406,7 +1884,7 @@ it will pass for any subsequent build.
 
 Another thing that you can try is to run it with plain Docker. Maybe that will help.
 
-==== Can I use the pipeline for some other repos?
+=== Can I use the pipeline for some other repos?
 
 Sure! you can pass `REPOS` variable with comma separated list of
 `project_name$project_url` format. If you don't provide the PROJECT_NAME the
@@ -1425,7 +1903,7 @@ E.g. for `REPOS` equal to:
 will result in the creation of pipelines with root names `foo` for `github-analytics`
 and `bar` for `github-webhook`.
 
-==== Will this work for ANY project out of the box?
+=== Will this work for ANY project out of the box?
 
 Not really. This is an `opinionated pipeline` that's why we took some
 opinionated decisions like:
@@ -1450,29 +1928,13 @@ opinionated decisions like:
 
 This is the initial approach that can be easily changed in the future.
 
-==== Can I modify this to reuse in my project?
+=== Can I modify this to reuse in my project?
 
 Sure! It's open-source! The important thing is that the core part of the logic is written
 in Bash scripts. That way, in the majority of cases, you could change only the bash
 scripts without changing the whole pipeline.
 
-==== I ran out of resources!!
-
-[jenkins_resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
- solve it is to kill some apps from test / stage env. To achieve that just call
-
-[source,bash]
-----
-cf target -o pcfdev-org -s pcfdev-test
-cf stop github-webhook
-cf stop github-eureka
-cf stop stubrunner
-----
-
-You can also execute `./tools/pcfdev-helper.sh kill-all-apps` that will remove all demo-related apps
-deployed to PCF dev.
-
-==== The rollback step fails due to missing JAR ?!
+=== The rollback step fails due to missing JAR ?!
 
 [[jenkins_tags]] You must have pushed some tags and have removed the Artifactory volume that
 contained them. To fix this, just remove the tags
@@ -1482,7 +1944,7 @@ contained them. To fix this, just remove the tags
 git tag -l | xargs -n 1 git push --delete origin
 ----
 
-==== I want to provide a different JDK version
+=== I want to provide a different JDK version
 
 - by default we assume that you have jdk with id `jdk8` configured
 - if you want a different one just override `JDK_VERSION` env var and point to the proper one
@@ -1518,14 +1980,34 @@ image::{jenkins-root-docs}/jdk.png[caption="Step 4: ", title="Fill out JDK Insta
 
 And that's it!
 
-===== I want deployment to stage and prod be automatic
+[[groovy-token-macro]]
+=== Enable Groovy Token Macro Processing
+
+With scripted that but if you needed to this manually then this is how to do it:
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
+
+==== I want deployment to stage and prod be automatic
 
 No problem, just set the property / env var to true
 
 - `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage
 - `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod
 
-==== I can't tag the repo!
+=== I can't tag the repo!
 
 When you get sth like this:
 
@@ -1553,7 +2035,37 @@ When you get sth like this:
 most likely you've passed a wrong password. Check the <<jenkins_credentials,credentials>> section
 on how to update your credentials.
 
-==== Deploying to test / stage / prod fails - error finding space
+=== I'm unauthorized to deploy infrastructure jars
+
+Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
+setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml`>>.
+
+=== Signing Artifacts
+
+In some cases it may be required that when performing a release that the artifacts be signed
+before pushing them to the repository.
+To do this you will need to import your GPG keys into the Docker image running Jenkins.
+This can be done by placing a file called `public.key` containing your public key
+and a file called `private.key` containing your private key in the `seed` directory.
+These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
+
+=== I ran out of resources!! (Cloud Foundry)
+
+[jenkins-cf-resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
+ solve it is to kill some apps from test / stage env. To achieve that just call
+
+[source,bash]
+----
+cf target -o pcfdev-org -s pcfdev-test
+cf stop github-webhook
+cf stop github-eureka
+cf stop stubrunner
+----
+
+You can also execute `./tools/pcfdev-helper.sh kill-all-apps` that will remove all demo-related apps
+deployed to PCF dev.
+
+=== Deploying to test / stage / prod fails - error finding space (Cloud Foundry)
 
 If you receive a similar exception:
 
@@ -1570,7 +2082,7 @@ If you receive a similar exception:
 
 It means that you've forgotten to <<jenkins_pcfdev,create the spaces>> in your PCF Dev installation.
 
-==== The route is already in use
+=== The route is already in use (Cloud Foundry)
 
 If you play around with Jenkins / Concourse you might end up with the routes occupied
 
@@ -1597,35 +2109,7 @@ yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 
 You can also execute the `./tools/pcfdev-helper.sh delete-routes`
 
-==== I'm unauthorized to deploy infrastructure jars
-
-Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
-setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml`>>.
-
-==== Signing Artifacts
-
-In some cases it may be required that when performing a release that the artifacts be signed
-before pushing them to the repository.
-To do this you will need to import your GPG keys into the Docker image running Jenkins.
-This can be done by placing a file called `public.key` containing your public key
-and a file called `private.key` containing your private key in the `seed` directory.
-These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
-
-=== How to build it
-
-`./gradlew clean build`
-
-WARNING: The ran test only checks if your scripts compile.
-
-=== How to work with Jenkins Job DSL plugin
-
-Check out the https://github.com/jenkinsci/job-dsl-plugin/wiki/Tutorial---Using-the-Jenkins-Job-DSL[tutorial].
-Provide the link to this repository in your Jenkins installation.
-
-WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
- for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).
-
-== The demo setup
+== The demo setup (Cloud Foundry)
 
 https://github.com/spring-cloud-samples/github-webhook/[Github webhook code]
 
@@ -1657,7 +2141,6 @@ image::{demo-root-docs}/demo_alerting.png[caption="Alerting over metrics: ", tit
 
 Let's assume that if we go below the threshold of X issues then an alert should be
 sent to Slack.
-
 
 === Deploying production applications to PCF Dev
 
@@ -1749,7 +2232,61 @@ The demo is using Grafana Dashboard with ID `2471`.
 
 A deployed version for the Spring Cloud Pipelines demo is available https://sc-pipelines-grafana.cfapps.io/[here]
 
-== How to build it
+== The demo setup (Kubernetes)
+
+https://github.com/spring-cloud-samples/github-webhook-kubernetes/[Github webhook code]
+
+https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github analytics code]
+
+image::{demo-root-docs}/demo.png[caption="The overview of the demo: ", title="Github Webhook listens to HTTP calls and sends a message to Github Analytics"]
+
+{nbsp}
+{nbsp}
+
+For the demo scenario we have two applications. `Github Analytics` and `Github Webhook`.
+Let's imagine a case where Github is emitting events via HTTP. `Github Webhook` has
+an API that could register to such hooks and receive those messages. Once this happens
+ `Github Webhook` sends a message by RabbitMQ to a channel. `Github Analytics` is
+ listening to those messages and stores them in a MySQL database.
+
+image::{demo-root-docs}/demo_metrics.png[caption="Gathering metrics: ", title="Github Analytics exposes metrics that are polled by Prometheus"]
+
+{nbsp}
+{nbsp}
+
+`Github Analytics` has its KPIs (Key Performance Indicators) monitored. In the case
+of that application the KPI is number of issues.
+
+image::{demo-root-docs}/demo_alerting.png[caption="Alerting over metrics: ", title="Grafana alerts Slack over Prometheus metrics"]
+
+{nbsp}
+{nbsp}
+
+Let's assume that if we go below the threshold of X issues then an alert should be
+sent to Slack.
+
+=== Deploying production applications to Minikube
+
+In the real world scenario we wouldn't want to automatically provision services like
+RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
+production is provisioned manually (using automated solutions). In our case, before
+you deploy to production you can provision the `sc-pipelines-prod` namespace using the
+ `minikube-helper.sh`. Just call
+
+[source,bash]
+----
+$ ./minikube-helper.sh setup-prod-infra
+----
+
+=== Running Prometheus on Kubernetes
+
+//TODO: Add this
+
+=== Running Grafana on Kubernetes
+
+//TODO: Add this
+
+== Building the project
 
 === Prerequisites
 
@@ -1813,7 +2350,7 @@ To generate readme just run
 ./gradlew generateDocs
 ----
 
-== Releasing
+== Releasing the project
 
 === Publishing A Docker Image
 

@@ -54,31 +54,29 @@ function retrieveStubRunnerIds() {
 }
 
 function runSmokeTests() {
-    local applicationHost="${APPLICATION_URL}"
-    local stubrunnerHost="${STUBRUNNER_URL}"
+    local applicationUrl="${APPLICATION_URL}"
+    local stubrunnerUrl="${STUBRUNNER_URL}"
     echo "Running smoke tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
         # shellcheck disable=SC2086
-        ./gradlew smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
+        ./gradlew smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
         # shellcheck disable=SC2086
-        ./gradlew smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
+        ./gradlew smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
     fi
 }
 
 function runE2eTests() {
-    # Retrieves Application URL
-    retrieveApplicationUrl
-    local applicationHost="${APPLICATION_URL}"
+    local applicationUrl="${APPLICATION_URL}"
     echo "Running e2e tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
         # shellcheck disable=SC2086
-        ./gradlew e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
+        ./gradlew e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
         # shellcheck disable=SC2086
-        ./gradlew e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS}
+        ./gradlew e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
     fi
 }
 

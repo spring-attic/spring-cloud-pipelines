@@ -19,6 +19,70 @@ repositories {
     maven { url "http://rubygems-proxy.torquebox.org/releases/" }
 }
 
+ext {
+    isCommandAvailable = { String cmd ->
+        try {
+            cmd.execute()
+            return true
+        } catch (IOException e) {
+        }
+        return false
+    }
+    isShellcheckDownloaded = {
+        new File(project.rootProject.buildDir, "shellcheck-latest/shellcheck").exists()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    task installShellcheckIfMissing {
+        doLast {
+            boolean shellcheckInstalled = isCommandAvailable("shellcheck -V") || isShellcheckDownloaded()
+            exec {
+                if (shellcheckInstalled) {
+                    commandLine "echo", "Shellcheck installed - continuing"
+                } else {
+                    logger.lifecycle("Shellcheck is missing. Will install it.")
+                    commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
+                }
+            }
+        }
+    }
+
+    task shellcheck {
+        doLast {
+            boolean shellcheckInstalled = isCommandAvailable("shellcheck -V")
+            String pathToShellcheck = "shellcheck"
+            if (!shellcheckInstalled) {
+                pathToShellcheck = new File(project.rootProject.buildDir, "shellcheck-latest/shellcheck").path
+            }
+            sourceSets*.resources.srcDirs*.each { srcDir ->
+                fileTree(relativePath(srcDir))
+                    .include('**/*.sh')
+                    .each { File script ->
+                    exec {
+                        commandLine pathToShellcheck, script
+                    }
+                }
+            }
+        }
+    }
+
+    task initalizeSubModules() {
+        doLast {
+            exec {
+                commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "initialize-submodules"
+            }
+        }
+    }
+
+    shellcheck.dependsOn("installShellcheckIfMissing")
+    build.dependsOn("shellcheck")
+}
+
+// DOCUMENTATION -- start
+
 jruby {
     defaultRepositories false
 }
@@ -63,6 +127,8 @@ task copyGeneratedSources(type: Copy) {
 task generateDocs(dependsOn: ["copyJekyll", "copyGeneratedSources"]) {
     description = "Creates documentation for the project"
 }
+
+// DOCUMENTATION -- end
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.5'

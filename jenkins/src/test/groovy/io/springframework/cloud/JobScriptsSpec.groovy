@@ -65,7 +65,7 @@ class JobScriptsSpec extends Specification {
 		noExceptionThrown()
 
 		and:
-		scripts.jobs.collect { it.jobName } == ["jenkins-pipeline-seed"]
+		scripts.jobs.collect { it.jobName }.containsAll(["jenkins-pipeline-cf-seed", "jenkins-pipeline-k8s-seed"])
 	}
 
 	static List<File> getJobFiles() {

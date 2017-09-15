@@ -10,7 +10,7 @@ set -o pipefail
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 function usage {
-    echo "usage: $0: <download-shellcheck|download-bats>"
+    echo "usage: $0: <download-shellcheck|download-bats|initialize-submodules>"
     exit 1
 }
 
@@ -27,9 +27,9 @@ case $1 in
                 echo "shellcheck already downloaded - skipping..."
                 exit 0
             fi
-            wget -P "${ROOT_DIR}/../common/build/" \
+            wget -P "${ROOT_DIR}/../build/" \
                 "https://storage.googleapis.com/shellcheck/${SHELLCHECK_ARCHIVE}"
-            pushd "${ROOT_DIR}/../common/build/"
+            pushd "${ROOT_DIR}/../build/"
             echo "${SHELLCHECK_ARCHIVE_SHA512SUM} ${SHELLCHECK_ARCHIVE}" | sha512sum -c -
             tar xvf "${SHELLCHECK_ARCHIVE}"
             rm -vf -- "${SHELLCHECK_ARCHIVE}"
@@ -47,6 +47,15 @@ case $1 in
             exit 0
         fi
         git clone https://github.com/sstephenson/bats.git "${ROOT_DIR}/../common/build/bats"
+        ;;
+    initialize-submodules)
+        files="$( ls "${ROOT_DIR}/../common/src/test/bats/test_helper/bats-assert/" || echo "" )"
+        if [ ! -z "${files}" ]; then
+            echo "Submodules already initialized";
+        else
+            git submodule init
+            git submodule update
+        fi
         ;;
     *)
         usage

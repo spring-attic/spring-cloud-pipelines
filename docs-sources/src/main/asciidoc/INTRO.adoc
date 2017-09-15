@@ -190,121 +190,104 @@ The general view behind this deployment pipeline is to:
 Obviously the pipeline could have been split to more steps but it seems that all of the aforementioned
  actions comprise nicely in our opinionated proposal.
 
-==== Opinionated implementation
+=== CI Server worker prerequisites
 
-For the demo purposes we're providing Docker Compose setup with Artifactory and Concourse / Jenkins tools.
-Regardless of the picked CD application for the pipeline to pass one needs a Cloud Foundry instance (for example
-https://run.pivotal.io/[Pivotal Web Services] or https://pivotal.io/pcf-dev[PCF Dev]) and the
-infrastructure applications deployed to the JAR hosting application (for the demo we're providing Artifactory).
-The infrastructure applications are `Eureka` for Service Discovery and `Stub Runner Boot` for running
-Spring Cloud Contract stubs.
+Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
+that needs to be installed on a CI server worker for the build to pass.
 
-TIP: In the demos we're showing you how to first build the `github-webhook` project. That's because
-the `github-analytics` needs the stubs of `github-webhook` to pass the tests. Below you'll find
-references to `github-analytics` project since it contains more interesting pieces as far as testing
-is concerned.
+TIP: In the demo setup all of these libraries are already installed.
 
-===== Build
+[source,bash]
+----
+ apt-get -y install \
+    bash \
+    git \
+    tar \
+    zip \
+    curl \
+    ruby \
+    wget \
+    unzip \
+    python \
+    jq
+----
 
-image::{intro-root-docs}/build.png[title="Build and upload artifacts"]
+IMPORTANT: In the Jenkins case you will also need `bats` and `shellcheck`. They are not
+presented in the list since the installed versions by Linux distributions might be old.
+That's why this project's Gradle tasks will download latest versions of both libraries
+for you.
 
-In this step we're generating a version of the pipeline, next we're
- running unit, integration and contract tests. Finally we're publishing
-2 artifacts to Artifactory / Nexus:
+=== Pipeline descriptor
 
-- a fat jar of the application
-- a Spring Cloud Contract jar containing stubs of the application
+Each application can contain a file called `sc-pipelines.yml` with the following structure:
 
-During this phase we're executing a `Maven` build using Maven Wrapper or a `Gradle` build using Gradle Wrapper
-, with unit and integration tests. We're also *tagging* the repository with `dev/${version}` format. That way in each
-subsequent step of the pipeline we're able to retrieve the tagged version. Also we know
-exactly which version of the pipeline corresponds to which Git hash.
+[source,yaml]
+----
+lowercaseEnvironmentName1:
+    services:
+        - type: service1Type
+          name: service1Name
+          coordinates: value
+        - type: service2Type
+          name: service2Name
+          key: value
+lowercaseEnvironmentName2:
+    services:
+        - type: service3Type
+          name: service3Name
+          coordinates: value
+        - type: service4Type
+          name: service4Name
+          key: value
+----
 
-Once the artifact got built we're running API compatibility check.
+For a given environment we declare a list of infrastructure services that we
+want to have deployed. Services have
 
-- we're searching for the latest production deployment
-- we're retrieving the contracts that were used by that deployment
-- from the contracts we're generating API tests to see if the current implementation
-is fulfilling the HTTP / messaging contracts that the current production deployment
-has defined (we're checking backward compatibility of the API)
+    - `type` (example: `eureka`, `mysql`, `rabbitmq`, `stubrunner`) - this value gets
+    then applied to the `deployService` Bash function
+        - *[KUBERNETES]* for `mysql` you can pass the database name via the `database`
+        property
+    - `name` - name of the service to get deployed
+    - `coordinates` - coordinate that allows you to fetch the binary of the service.
+      Examples: It can be a maven coordinate `groupid:artifactid:version`,
+       docker image `organization/nameOfImage`, etc.
+    - arbitrary key value pairs - you can customize the services as you wish
 
-===== Test
+The `stubrunner` type can also have the `useClasspath` flag turned on to `true`
+or `false`.
 
-image::{intro-root-docs}/test.png[title="Smoke test and rollback test on test environment"]
+Example:
 
-Here we're
+[source,yaml]
+----
+test:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github-webhook
+    - type: mysql
+      name: mysql-github-webhook
+    - type: eureka
+      name: eureka-github-webhook
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+    - type: stubrunner
+      name: stubrunner-github-webhook
+      coordinates: com.example.eureka:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
+      useClasspath: true
+stage:
+  services:
+    - type: rabbitmq
+      name: rabbitmq-github
+    - type: mysql
+      name: mysql-github
+    - type: eureka
+      name: github-eureka
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+----
 
-- starting a RabbitMQ service in Cloud Foundry
-- deploying `Eureka` infrastructure application to Cloud Foundry
-- downloading the fat jar from Nexus and we're uploading it to Cloud Foundry. We want the application
-to run in isolation (be surrounded by stubs). Currently due to port constraints in Cloud Foundry
-we cannot run multiple stubbed HTTP services in the cloud so to fix this issue we're running
-the application with `smoke` Spring profile on which you can stub out all HTTP calls to return
-a mocked response
-- if the application is using a database then it gets upgraded at this point via Flyway, Liquibase
-or any other tool once the application gets started
-- from the project's Maven or Gradle build we're extracting `stubrunner.ids` property that contains
- all the `groupId:artifactId:version:classifier` notation of dependant projects for which
- the stubs should be downloaded.
-- then we're uploading `Stub Runner Boot` and pass the extracted `stubrunner.ids` to it. That way
-we'll have a running application in Cloud Foundry that will download all the necessary stubs
-of our application
-- from the checked out code we're running the tests available under the `smoke` profile. In the
-case of https://github.com/spring-cloud-samples/github-analytics/[GitHub Analytics] application
-we're triggering a message from the https://github.com/spring-cloud-samples/github-webhook[GitHub Webhook]
-application's stub, that is sent via RabbitMQ to GitHub Analytics. Then we're checking if
-message count has increased. You can check those tests https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/smoke/IntegrationTests.java[here].
-- once the tests pass we're searching for the last production release. Once the application
-is deployed to production we're tagging it with `prod/${version}` tag. If there is no such tag
-(there was no production release) there will be no rollback tests executed. If there was
-a production release the tests will get executed.
-- assuming that there was a production release we're checking out the code corresponding to that
-release (we're checking out the tag), we're downloading the appropriate fat jar and we're uploading
-it to Cloud Foundry. *IMPORTANT* the _old_ jar is running against the *NEW* version of the database.
-- we're running the _old_ `smoke` tests against the freshly deployed application surrounded by stubs.
-If those tests pass then we have a high probability that the application is backwards compatible
-- the default behaviour is that after all of those steps the user can manually click to deploy the
-application to a stage environment
+When the deployment to test or deployment to stage occurs, Spring Cloud Pipelines
+will:
 
-===== Stage
-
-image::{intro-root-docs}/stage.png[title="End to end tests on stage environment"]
-
-Here we're
-
-- starting a RabbitMQ service in Cloud Foundry
-- deploying `Eureka` infrastructure application to Cloud Foundry
-- downloading the fat jar from Nexus and we're uploading it to Cloud Foundry.
-
-Next we have a manual step in which:
-
-- from the checked out code we're running the tests available under the `e2e` profile. In the
-case of https://github.com/spring-cloud-samples/github-analytics/[GitHub Analytics] application
-we're sending a HTTP message to GitHub Analytic's endpoint. Then we're checking if
-the received message count has increased. You can check those tests https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/e2e/E2eTests.java[here].
-
-The step is manual by default due to the fact that stage environment is often shared between
-teams and some preparations on databases / infrastructure have to take place before running the tests.
-Ideally these step should be fully automatic.
-
-===== Prod
-
-image::{intro-root-docs}/prod.png[title="Deployment to production"]
-
-The step to deploy to production is manual but ideally it should be automatic.
-
-Here we're
-
-- starting a RabbitMQ service in Cloud Foundry (only for the demo to pass - you should provision
-the prod environment in a different way)
-- deploying `Eureka` infrastructure application to Cloud Foundry (only for the demo to pass - you should provision
-the prod environment in a different way)
-- tagging the Git repo with `prod/${version}` tag
-- downloading the fat jar from Nexus
-- we're doing Blue Green deployment on Cloud Foundry
-     - we're renaming the current instance of the app e.g. `fooService` to `fooService-venerable`
-     - we're deploying the new instance of the app under the `fooService` name
-     - now two instances of the same application are running on production
-- in the `Complete switch over` which is a manual step
-    - we're deleting the old instance
-    - remember to run this step only after you have confirmed that both instances are working fine!
+    - for `test` environment, delete existing services and redeploy the ones from the list
+    - for `stage` environment, if the service is not available it will get deployed. Otherwise
+    nothing will happen

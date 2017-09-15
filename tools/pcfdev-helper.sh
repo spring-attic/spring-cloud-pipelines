@@ -161,7 +161,7 @@ case $1 in
 		pcfdev_login
 		cf target -s pcfdev-prod
 
-		POTENTIAL_DOCKER_HOST="$( echo "$DOCKER_HOST" | cut -d ":" -f 2 | cut -d "/" -f 3 )"
+		POTENTIAL_DOCKER_HOST="$( echo "${DOCKER_HOST}" | cut -d ":" -f 2 | cut -d "/" -f 3 )"
 		if [[ -z "${POTENTIAL_DOCKER_HOST}" ]]; then
 			POTENTIAL_DOCKER_HOST="localhost"
 		fi
@@ -179,7 +179,7 @@ case $1 in
 		curl "${ARTIFACTORY_URL}/com/example/eureka/github-eureka/0.0.1.M1/github-eureka-0.0.1.M1.jar" -o "build/eureka.jar" --fail
 		echo "Deploying eureka"
 		cf push "github-eureka" -p "build/eureka.jar" -n "github-eureka" -b "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" -m "256m" -i 1 --no-manifest --no-start
-		APPLICATION_DOMAIN=`cf apps | grep github-eureka | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1`
+		APPLICATION_DOMAIN="$( cf apps | grep github-eureka | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 )"
 		JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
 		cf set-env "github-eureka" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"
 		cf set-env "github-eureka" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'

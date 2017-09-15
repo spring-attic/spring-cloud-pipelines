@@ -2,7 +2,8 @@
 set -e
 
 # It takes ages on Docker to run the app without this
-export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom"
+# Also we want to disable the progress indicator for downloaded jars
+export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
 
 function downloadAppBinary() {
     local repoWithJars="${1}"

@@ -50,8 +50,13 @@ function stageDeploy() {
     exit 1
 }
 
+function prepareForE2eTests() {
+    echo "Prepares environment for smoke tests. Logs in to PAAS etc."
+    exit 1
+}
+
 function runE2eTests() {
-    echo "Executes end to end tests"
+    echo "Executes end to end tests. Profits from env vars set by 'prepareForE2eTests'"
     exit 1
 }
 
@@ -137,6 +142,12 @@ function serviceExists() {
     exit 1
 }
 
+# Sets the environment variable with contents of the parsed pipeline descriptor
+function parsePipelineDescriptor() {
+  PARSED_YAML=$( yaml2json "sc-pipelines.yml" )
+  export PARSED_YAML
+}
+
 # Deploys services assuming that pipeline descriptor exists
 # For TEST environment first deletes, then deploys services
 # For other environments only deploys a service if it wasn't there.
@@ -147,8 +158,7 @@ function deployServices() {
         return
     fi
 
-    PARSED_YAML=$( yaml2json "sc-pipelines.yml" )
-    export PARSED_YAML
+ 	parsePipelineDescriptor
 
     while read -r serviceType serviceName serviceCoordinates; do
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
@@ -176,7 +186,6 @@ function toLowerCase() {
     echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
-# CURRENTLY WE ONLY SUPPORT CF AS PAAS OUT OF THE BOX
 PAAS_TYPE="${PAAS_TYPE:-cf}"
 export PAAS_TYPE
 # Not every linux distribution comes with installation of JQ that is new enough

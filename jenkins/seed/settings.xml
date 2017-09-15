@@ -6,5 +6,13 @@
 			<username>admin</username>
 			<password>password</password>
 		</server>
+		<server>
+			<id>docker-repo</id>
+			<username>dockeruser</username>
+			<password>dockerpass</password>
+			<configuration>
+				<email>docker@email.com</email>
+			</configuration>
+		</server>
 	</servers>
 </settings>

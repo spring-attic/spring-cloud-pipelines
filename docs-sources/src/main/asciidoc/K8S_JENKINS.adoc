@@ -1,0 +1,279 @@
+[[jenkins-pipeline-k8s]]
+== Jenkins Pipeline (Kubernetes)
+
+IMPORTANT: In this chapter we assume that you perform deployment of your application
+to Kubernetes PaaS
+
+[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+
+All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+
+- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
+- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
+- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+
+[[step-by-step-k8s]]
+=== Step by step
+
+This is a guide for Jenkins JOB Dsl based pipeline.
+
+If you want to just run the demo as far as possible using PCF Dev and Docker Compose
+
+- <<jenkins-fork-k8s,Fork repos>>
+- <<jenkins-start-k8s,Start Jenkins and Artifactory>>
+- <<jenkins-deploy-k8s,Deploy infra to Artifactory>>
+- <<jenkins-minikube-k8s,Start Minikube (if you don't want to use an existing one)>>
+- <<jenkins-seed-k8s,Run the seed job>>
+- <<jenkins-pipeline-k8s,Run the `github-webhook` pipeline>>
+
+[[fork-repos-k8s]]
+==== Fork repos
+
+[[jenkins-fork-k8s]] There are 4 apps that are composing the pipeline
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-classpath-stubs[Github Stub Runner Boot]
+
+You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+
+[[start-jenkins-k8s]]
+==== Start Jenkins and Artifactory
+
+[[jenkins-start-k8s]] Jenkins + Artifactory can be ran locally. To do that just execute the
+`start.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/jenkins
+./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg yourDockerRegistryOrganization yourDockerRegistryUsername yourDockerRegistryPassword yourDockerRegistryEmail
+----
+Then Jenkins will be running on port `8080` and Artifactory `8081`.
+The provided parameters will be passed as env variables to Jenkins VM
+and credentials will be set in your set. That way you don't have to do
+any manual work on the Jenkins side. In the above parameters, the third parameter
+could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
+contain your GitHub org in which you have the forked repos.
+
+You need to pass the credentials for the Docker organization (by default we will
+search for the Docker images at Docker Hub) so that the pipeline will be able
+to push images to your org.
+
+[[deploy-infra-k8s]]
+===== Deploy the infra JARs to Artifactory
+
+[[jenkins-deploy-k8s]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+./tools/deploy-infra-k8s.sh
+----
+
+As a result both `eureka` and `stub runner` repos will be cloned, built,
+uploaded to Artifactory and their docker images will be built.
+
+IMPORTANT: Your local Docker process will be reused by the Jenkins instance running
+in Docker. That's why you don't have to push these images to Docker Hub. On the
+other hand if you run this sample in a remote Kubernetes cluster the driver
+will not be shared by the Jenkins workers so you can consider pushing these
+Docker images to Docker Hub too.
+
+==== Kubernetes CLI Installation
+
+First you'll need to install the `kubectl` CLI.
+
+[[kubernetes-cli-script]]
+===== Script Installation
+
+You can use the `tools/minikube-helper.sh` script to install `kubectl`. Just call
+
+```bash
+$ ./tools/minikube-helper download-kubectl
+```
+
+and then the `kubectl` will get downloaded
+
+[[kubernetes-cli-manual]]
+==== Manual Installation
+
+Example for OSX
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+```
+
+Example for Linux
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+```
+
+Check out https://kubernetes.io/docs/tasks/tools/install-kubectl/[this page] for more information.
+
+[[start-minikube-k8s]]
+==== Kubernetes Cluster setup
+
+We need a cluster of Kubernetes. The best choice will be https://github.com/kubernetes/minikube[Minikube].
+
+TIP: You can skip this step if you have Kubernetes cluster installed and don't
+want to use Minikube The only thing you have to do is to set up spaces.
+
+WARNING: It's more than likely that you'll run out of resources when you reach stage step.
+Don't worry! Keep calm and <<jenkins-resources-k8s,clear some apps from Minikube and continue>>.
+
+[[kubernetes-minikube-script]]
+===== Script Installation
+
+You can use the `tools/minikube-helper.sh` script to install `Minikube`. Just call
+
+```bash
+$ ./tools/minikube-helper download-minikube
+```
+
+and then the `Minikube` cluster will get downloaded
+
+[[kubernetes-minikube-manual]]
+===== Manual Installation
+
+Example for OSX
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-darwin-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like to add minikube to your path manually.
+
+Example for Linux
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like to add minikube to your path manually.
+Check out https://github.com/kubernetes/minikube/releases[this page] for more info on the installation.
+
+==== Run Minikube
+
+Just type in `minikube start` to start Kubernetes on your local box.
+
+To add the dashboard just execute `minikube dashboard`
+
+==== Certificates and Workers
+
+===== Minikube Certificates and Workers
+
+By default if you install Minikube all the certificates get installed in your
+`~/.minikube` folder. Your `kubectl` configuration under `~/.kube/config` will also
+get updated to use Minikube.
+
+===== Manual Certificates and Workers Setup
+
+IMPORTANT: If you just want to run the default, demo setup you can skip this section
+
+To target a given Kubernetes instance one needs to pass around Certificate Authority
+key and also user keys.
+
+You can read more about the instructions on how to generate those keys https://coreos.com/kubernetes/docs/latest/openssl.html[here].
+ Generally speaking if you have a Kubernetes installation (e.g. `minikube`) this step
+ has already been done for you. Time to reuse those keys on the workers.
+
+Extracted from the https://coreos.com/kubernetes/docs/latest/configure-kubectl.html[official docs].
+
+Configure kubectl to connect to the target cluster using the following commands, replacing several values as indicated:
+
+- Replace `${MASTER_HOST}` with the master node address or name used in previous steps
+- Replace `${CA_CERT}` with the absolute path to the `ca.pem` created in previous steps
+- Replace `${ADMIN_KEY}` with the absolute path to the `admin-key.pem` created in previous steps
+- Replace `${ADMIN_CERT}` with the absolute path to the `admin.pem` created in previous steps
+
+```
+$ kubectl config set-cluster default-cluster --server=https://${MASTER_HOST} --certificate-authority=${CA_CERT}
+$ kubectl config set-credentials default-admin --certificate-authority=${CA_CERT} --client-key=${ADMIN_KEY} --client-certificate=${ADMIN_CERT}
+$ kubectl config set-context default-system --cluster=default-cluster --user=default-admin
+$ kubectl config use-context default-system
+```
+
+==== Generate Minikube namespaces
+
+With the running Minikube cluster we need to generate namespaces. Just execute the
+`./tools/minikube-helper.sh setup-namespaces` to do this.
+
+[[jenkins-seed-k8s]]
+==== Run the seed job
+
+include::JENKINS_RUN_SEED.adoc[]
+
+[[jenkins-pipeline-k8s]]
+==== Run the `github-webhook` pipeline
+
+include::JENKINS_RUN_PIPELINE.adoc[]
+
+[[declarative-pipeline-k8s]]
+=== Declarative pipeline & Blue Ocean
+
+include::JENKINS_BLUE_OCEAN.adoc[]
+
+[[optional-steps-k8s]]
+=== Jenkins Kubernetes customization
+
+ All the steps below are not necessary to run the demo. They are needed only
+when you want to do some custom changes.
+
+[[all-env-vars-k8s]]
+===== All env vars
+
+The env vars that are used in all of the jobs are as follows:
+
+[frame="topbot",options="header,footer"]
+|======================
+|Property Name  | Property Description | Default value
+|DOCKER_REGISTRY_ORGANIZATION | Name of the docker organization to which Docker images should be deployed | scpipelines
+|PAAS_TEST_API_URL | URL of the API of the Kubernetes cluster for test environment | 192.168.99.100:8443
+|PAAS_STAGE_API_URL | URL of the API of the Kubernetes cluster for stage environment  | 192.168.99.100:8443
+|PAAS_PROD_API_URL | URL of the API of the Kubernetes cluster for prod environment | 192.168.99.100:8443
+|PAAS_TEST_CA | Path to the certificate authority for test environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_STAGE_CA | Path to the certificate authority for stage environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_PROD_CA | Path to the certificate authority for prod environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_TEST_CLIENT_CERT | Path to the client certificate for test environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_STAGE_CLIENT_CERT | Path to the client certificate for stage environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_PROD_CLIENT_CERT | Path to the client certificate for prod environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_TEST_CLIENT_KEY | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_STAGE_CLIENT_KEY | Path to the client key for stage environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_PROD_CLIENT_KEY | Path to the client key for prod environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_TEST_CLUSTER_NAME | Name of the cluster for test environment | minikube
+|PAAS_STAGE_CLUSTER_NAME | Name of the cluster for stage environment | minikube
+|PAAS_PROD_CLUSTER_NAME | Name of the cluster for prod environment | minikube
+|PAAS_TEST_CLUSTER_USERNAME | Name of the user for test environment | minikube
+|PAAS_STAGE_CLUSTER_USERNAME | Name of the user for stage environment | minikube
+|PAAS_PROD_CLUSTER_USERNAME | Name of the user for prod environment | minikube
+|PAAS_TEST_SYSTEM_NAME | Name of the system for test environment | minikube
+|PAAS_STAGE_SYSTEM_NAME | Name of the system for stage environment | minikube
+|PAAS_PROD_SYSTEM_NAME | Name of the system for prod environment | minikube
+|PAAS_TEST_NAMESPACE | Namespace for test environment | sc-pipelines-test
+|PAAS_STAGE_NAMESPACE | Namespace for stage environment | sc-pipelines-stage
+|PAAS_PROD_NAMESPACE | Namespace for prod environment | sc-pipelines-prod
+|KUBERNETES_MINIKUBE | Will you connect to Minikube? | true
+|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
+|JDK_VERSION | The name of the JDK installation | jdk8
+|PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
+|GIT_EMAIL | The email used by Git to tag repo | email@example.com
+|GIT_NAME | The name used by Git to tag repo | Pivo Tal
+|AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
+|AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
+|ROLLBACK_STEP_REQUIRED | Should rollback step be present | true
+|DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
+|BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
+|======================

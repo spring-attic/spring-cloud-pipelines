@@ -8,47 +8,15 @@ sourceSets {
     }
 }
 
-Closure isCommandAvailable = { String cmd ->
-    try {
-        cmd.execute()
-        return true
-    } catch (IOException e) {
-    }
-    return false
-}
-
-task installShellcheckIfMissing(type: Exec) {
-    boolean shellcheckInstalled = isCommandAvailable("shellcheck -V")
-    if (shellcheckInstalled) {
-        commandLine "echo", "Shellcheck installed - continuing"
-    } else {
-        println "Shellcheck is missing. Will install it."
-        commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
-    }
-}
-
-task installBatsIfMissing(type: Exec) {
-    boolean batsInstalled = isCommandAvailable("bats -v")
-    if (batsInstalled) {
-        commandLine "echo", "Bats installed - continuing"
-    } else {
-        println "Bats is missing. Will try to install it."
-        commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-bats"
-    }
-}
-
-task shellcheck {
+task installBatsIfMissing() {
     doLast {
-        boolean shellcheckInstalled = isCommandAvailable("shellcheck -V")
-        String pathToShellcheck = "shellcheck"
-        if (!shellcheckInstalled) {
-            pathToShellcheck = new File(project(":common").buildDir, "shellcheck-latest/shellcheck").path
-        }
-        sourceSets*.resources.srcDirs*.each { srcDir ->
-            fileTree(relativePath(srcDir)).include('**/*.sh').each { File script ->
-                exec {
-                    commandLine pathToShellcheck, script
-                }
+        boolean batsInstalled = isCommandAvailable("bats -v")
+        exec {
+            if (batsInstalled) {
+                commandLine "echo", "Bats installed - continuing"
+            } else {
+                logger.lifecycle("Bats is missing. Will try to install it.")
+                commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-bats"
             }
         }
     }
@@ -70,7 +38,6 @@ task bats {
     }
 }
 
-shellcheck.dependsOn("installShellcheckIfMissing")
-build.dependsOn("shellcheck")
+installBatsIfMissing.dependsOn("initalizeSubModules")
 bats.dependsOn("installBatsIfMissing")
 build.dependsOn("bats")

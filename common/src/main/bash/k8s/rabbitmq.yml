@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    name: {{appName}}
+  name: {{appName}}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: {{appName}}
+    spec:
+      containers:
+      - image: rabbitmq
+        name: {{appName}}
+        ports:
+        - containerPort: 5672
+        resources:
+          limits:
+            cpu: 100m

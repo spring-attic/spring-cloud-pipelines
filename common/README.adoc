@@ -9,6 +9,10 @@ The logic behind the deployment pipeline is written using Bash scripts.
 .
 ├── build_and_upload.sh
 ├── build_api_compatibility_check.sh
+├── k8s (kubernetes related configuration)
+│   ├── eureka.yml
+│   ├── ...
+│   └── stubrunner-service.yml
 ├── pipeline-cf.sh
 ├── pipeline.sh
 ├── prod_complete.sh

@@ -6,6 +6,10 @@ services:
       args:
         gituser: "${PIPELINE_GIT_USERNAME}"
         gitpass: "${PIPELINE_GIT_PASSWORD}"
+        dockerRegistryOrg: "${DOCKER_REGISTRY_ORGANIZATION}"
+        dockerRegistryUser: "${DOCKER_REGISTRY_USERNAME}"
+        dockerRegistryPass: "${DOCKER_REGISTRY_PASSWORD}"
+        dockerRegistryEmail: "${DOCKER_REGISTRY_EMAIL}"
     environment:
       FORKED_ORG: "${FORKED_ORG}"
       EXTERNAL_IP: "${EXTERNAL_IP}"
@@ -13,7 +17,9 @@ services:
       - "50000:50000"
       - "8080:8080"
     volumes:
-      - /var/jenkins_home
+      - /var/jenkins_home:/var/jenkins_home
+      - /var/jenkins_root:/root/
+      - /var/run/docker.sock:/var/run/docker.sock
     links:
       - artifactory
   artifactory:

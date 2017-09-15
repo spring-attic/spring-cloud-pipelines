@@ -10,7 +10,6 @@ if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
     fi
 fi
 
-
 function build() {
     echo "Additional Build Options [${BUILD_OPTIONS}]"
 
@@ -72,7 +71,7 @@ function retrieveGroupId() {
 }
 
 function retrieveAppName() {
-    { 
+    {
         ruby -r rexml/document \
               -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml \
         || ./mvnw ${BUILD_OPTIONS} org.apache.maven.plugins:maven-help-plugin:2.2:evaluate \
@@ -90,27 +89,25 @@ function retrieveStubRunnerIds() {
 }
 
 function runSmokeTests() {
-    local applicationHost="${APPLICATION_URL}"
-    local stubrunnerHost="${STUBRUNNER_URL}"
+    local applicationUrl="${APPLICATION_URL}"
+    local stubrunnerUrl="${STUBRUNNER_URL}"
     echo "Running smoke tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
+        ./mvnw clean install -Psmoke -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
-        ./mvnw clean install -Psmoke -Dapplication.url="${applicationHost}" -Dstubrunner.url="${stubrunnerHost}" ${BUILD_OPTIONS}
+        ./mvnw clean install -Psmoke -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
     fi
 }
 
 function runE2eTests() {
-    # Retrieves Application URL
-    retrieveApplicationUrl
-    local applicationHost="${APPLICATION_URL}"
+    local applicationUrl="${APPLICATION_URL}"
     echo "Running e2e tests"
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
-        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
+        ./mvnw clean install -Pe2e -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
-        ./mvnw clean install -Pe2e -Dapplication.url="${applicationHost}" ${BUILD_OPTIONS}
+        ./mvnw clean install -Pe2e -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
     fi
 }
 
