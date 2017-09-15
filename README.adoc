@@ -1251,7 +1251,7 @@ Anyways, to run the demo just provide in the `REPOS` var the comma separated
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/seed_click.png[caption="Step 1: ", title="Click the 'jenkins-pipeline-seed' job"]
+image::{jenkins-root-docs}/seed_click.png[caption="Step 1: ", title="Click the 'jenkins-pipeline-seed-cf' job for Cloud Foundry and `jenkins-pipeline-seed-k8s` for Kubernetes"]
 
 {nbsp}
 {nbsp}
@@ -1659,7 +1659,7 @@ Anyways, to run the demo just provide in the `REPOS` var the comma separated
 {nbsp}
 {nbsp}
 
-image::{jenkins-root-docs}/seed_click.png[caption="Step 1: ", title="Click the 'jenkins-pipeline-seed' job"]
+image::{jenkins-root-docs}/seed_click.png[caption="Step 1: ", title="Click the 'jenkins-pipeline-seed-cf' job for Cloud Foundry and `jenkins-pipeline-seed-k8s` for Kubernetes"]
 
 {nbsp}
 {nbsp}
