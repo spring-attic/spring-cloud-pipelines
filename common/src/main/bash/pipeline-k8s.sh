@@ -219,6 +219,17 @@ function deleteAppByFile() {
     kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete -f "${file}" || echo "Failed to delete app by [${file}] file. Continuing with the script"
 }
 
+function system {
+    local unameOut
+    unameOut="$(uname -s)"
+    case "${unameOut}" in
+        Linux*)     machine=linux;;
+        Darwin*)    machine=darwin;;
+        *)          echo "Unsupported system" && exit 1
+    esac
+    echo "${machine}"
+}
+
 function substituteVariables() {
     local variableName="${1}"
     local substitution="${2}"
@@ -226,7 +237,11 @@ function substituteVariables() {
     local escapedSubstitution
     escapedSubstitution=$( escapeValueForSed "${substitution}" )
     #echo "Changing [${variableName}] -> [${escapedSubstitution}] for file [${fileName}]"
-    sed -i "" "s/{{${variableName}}}/${escapedSubstitution}/" "${fileName}"
+    if [[ "${SYSTEM}" == "darwin" ]]; then
+        sed -i "" "s/{{${variableName}}}/${escapedSubstitution}/" "${fileName}"
+    else
+        sed -i "s/{{${variableName}}}/${escapedSubstitution}/" "${fileName}"
+    fi
 }
 
 function deleteMySql() {
@@ -686,6 +701,7 @@ LOWER_CASE_ENV="$( lowerCaseEnv )"
 export PAAS_NAMESPACE_VAR="PAAS_${ENVIRONMENT}_NAMESPACE"
 [[ -z "${PAAS_NAMESPACE}" ]] && PAAS_NAMESPACE="${!PAAS_NAMESPACE_VAR}"
 export KUBERNETES_NAMESPACE="${PAAS_NAMESPACE}"
+export SYSTEM="$( system )"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 # shellcheck source=/dev/null
