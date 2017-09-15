@@ -82,7 +82,7 @@ that needs to be installed on a CI server worker for the build to pass
 
 === Pipeline descriptor
 
-Each application can contain a file called `pipeline.yml` with the following structure:
+Each application can contain a file called `sc-pipelines.yml` with the following structure:
 
 [source,yaml]
 ----

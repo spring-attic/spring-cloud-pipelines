@@ -18,7 +18,7 @@ that needs to be installed on a CI server worker for the build to pass</p><pre c
     wget \
     unzip \
     python \
-    jq</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_pipeline_descriptor" href="#_pipeline_descriptor"></a>1.2&nbsp;Pipeline descriptor</h2></div></div></div><p>Each application can contain a file called <code class="literal">pipeline.yml</code> with the following structure:</p><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">lowercaseEnvironmentName1</span>:
+    jq</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_pipeline_descriptor" href="#_pipeline_descriptor"></a>1.2&nbsp;Pipeline descriptor</h2></div></div></div><p>Each application can contain a file called <code class="literal">sc-pipelines.yml</code> with the following structure:</p><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">lowercaseEnvironmentName1</span>:
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    services</span>:
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">        - type</span>: service1Type
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          name</span>: service1Name
