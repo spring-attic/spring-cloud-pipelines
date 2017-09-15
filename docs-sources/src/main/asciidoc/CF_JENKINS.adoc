@@ -1,7 +1,10 @@
-[[jenkins-dsl-pipeline-cf]]
-== Jenkins DSL Pipeline (Cloud Foundry)
+[[jenkins-pipeline-cf]]
+== Jenkins Pipeline (Cloud Foundry)
 
-[[jenkins]] The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+IMPORTANT: In this chapter we assume that you perform deployment of your application
+to Cloud Foundry PaaS
+
+[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
@@ -23,14 +26,6 @@ If you want to just run the demo as far as possible using PCF Dev and Docker Com
 - <<jenkins-pcfdev-cf,Start PCF Dev (if you don't want to use an existing one)>>
 - <<jenkins-seed-cf,Run the seed job>>
 - <<jenkins-pipeline-cf,Run the `github-webhook` pipeline>>
-
-Below you can find <<optional,optional>> steps needed to be taken when you want to customize the pipeline
-
-- <<env,Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
-just check out the section on how to update the URL to Artifactory)>>
-- <<jenkins-settings-cf,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
-- <<jenkins-misc-cf,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
-- <<jenkins-credentials-cf,Setup Jenkins credentials>>
 
 [[fork-repos-cf]]
 ==== Fork repos
@@ -127,237 +122,26 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 
 You can also execute the `./tools/pcfdev-helper.sh setup-spaces` to do this.
 
-[[run-seed-job-cf]]
+[[jenkins-seed-cf]]
 ==== Run the seed job
 
-[[jenkins-seed-cf]] We already create the seed job for you but you'll have to run it. When you do
-run it you have to provide some properties. By default we create a seed that
-has all the properties options, but you can delete most of it. If you
-set the properties as global env variables you have to remove them from the
-seed.
+include::JENKINS_RUN_SEED.adoc[]
 
-Anyways, to run the demo just provide in the `REPOS` var the comma separated
- list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics'.
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/seed_click.png[caption="Step 1: ", title="Click the 'jenkins-pipeline-seed' job"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/seed_run.png[caption="Step 2: ", title="Click the 'Build with parameters'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/seed.png[caption="Step 3: ", title="Provide the `REPOS` parameter with URLs of your forks (you'll have more properties than the ones in the screenshot)"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/seed_built.png[caption="Step 4: ", title="This is how the results of seed should look like"]
-
-[[run-github-webhook-cf]]
+[[jenkins-pipeline-cf]]
 ==== Run the `github-webhook` pipeline
 
-[[jenkins-pipeline-cf]] We already create the seed job for you but you'll have to run it. When you do
-run it you have to provide some properties. By default we create a seed that
-has all the properties options, but you can delete most of it. If you
-set the properties as global env variables you have to remove them from the
-seed.
-
-Anyways, to run the demo just provide in the `REPOS` var the comma separated
- list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics`.
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/seed_views.png[caption="Step 1: ", title="Click the 'github-webhook' view"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/pipeline_run.png[caption="Step 2: ", title="Run the pipeline"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/pipeline_run_props.png[caption="Step 3: ", title="You can set some properties (just click 'Build' to proceed) "]
-
-{nbsp}
-{nbsp}
-
-IMPORTANT: Most likely your 1st build will suddenly hang for 10 minutes. If you rerun it
-again it should work after 2-3 minutes. My guess is that it's related to Docker Compose
-so sorry for this unfortunate situation.
-
-IMPORTANT: If your build fails on the *deploy previous version to stage* due to missing jar,
-that means that you've forgotten to clear the tags in your repo. Typically that's due to the fact that
-you've removed the Artifactory volume with deployed JAR whereas a tag in the repo is still pointing there.
-<<tags,Check out this section on how to remove the tag.>>
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 4: ", title="Click the manual step to go to stage (remember about killing the apps on test env). To do this click the *ARROW* next to the job name"]
-
-{nbsp}
-{nbsp}
-
-IMPORTANT: Most likely you will run out of memory so when reaching the stage
-environment it's good to kill all apps on test. <<faq,Check out the FAQ section for more details>>!
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 5: ", title="The full pipeline should look like this"]
-
-{nbsp}
-{nbsp}
+include::JENKINS_RUN_PIPELINE.adoc[]
 
 [[declarative-pipeline-cf]]
 === Declarative pipeline & Blue Ocean
 
-You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
-https://jenkins.io/projects/blueocean/[Blue Ocean UI]. Here is a step by step guide to run a pipeline via
-this approach.
-
-The Blue Ocean UI is available under the `blue/` URL. E.g. for Docker Machine based setup `http://192.168.99.100:8080/blue`.
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/blue_1.png[caption="Step 1: ", title="Open Blue Ocean UI and click on `github-webhook-declarative-pipeline`"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/blue_2.png[caption="Step 2: ", title="Your first run will look like this. Click `Run` button"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/blue_3.png[caption="Step 3: ", title="Enter parameters required for the build and click `run`"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/blue_4.png[caption="Step 4: ", title="A list of pipelines will be shown. Click your first run."]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/blue_5.png[caption="Step 5: ", title="State if you want to go to production or not and click `Proceed`"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/blue_6.png[caption="Step 6: ", title="The build is in progress..."]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/blue_7.png[caption="Step 7: ", title="The pipeline is done!"]
-
-{nbsp}
-{nbsp}
-
-
-IMPORTANT: There is no possibility of restarting pipeline from specific stage, after failure. Please
-check out this https://issues.jenkins-ci.org/browse/JENKINS-33846[issue] for more information
-
-WARNING: Currently there is no way to introduce manual steps in a performant way. Jenkins is
-blocking an executor when manual step is required. That means that you'll run out of executors
-pretty fast. You can check out this https://issues.jenkins-ci.org/browse/JENKINS-36235[issue] for
-and this http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
-for more information.
+include::JENKINS_BLUE_OCEAN.adoc[]
 
 [[optional-steps-cf]]
-=== Optional steps
+=== Jenkins Cloud Foundry customization
 
-[[jenkins_optional]] All the steps below are not necessary to run the demo. They are needed only
+ All the steps below are not necessary to run the demo. They are needed only
 when you want to do some custom changes.
-
-[[deploying-infra-cf]]
-==== Deploying infra jars to a different location
-
-It's enough to set the `ARTIFACTORY_URL` environmental variable before
-executing `tools/deploy-infra.sh`. Example for deploying to Artifactory at IP `192.168.99.100`
-
-[source,bash]
-----
-git clone https://github.com/spring-cloud/spring-cloud-pipelines
-cd spring-cloud-pipelines/
-ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
-----
-
-[[setup-settings-xml-cf]]
-==== Setup settings.xml for Maven deployment
-
-TIP: If you want to use the default connection to the Docker version
-of Artifactory you can skip this step
-
-[[jenkins-settings-cf]] So that `./mvnw deploy` works with Artifactory from Docker we're
-already copying the missing `settings.xml` file for you. It looks like this:
-
-[source,xml]
-----
-<server>
-  <id>artifactory-local</id>
-  <username>admin</username>
-  <password>password</password>
-</server>
-----
-
-If you want to use your own version of Artifactory / Nexus you have to update
-the file (it's in `seed/settings.xml`).
-
-[[setup-jenkins-env-vars-cf]]
-==== Setup Jenkins env vars
-
-[[jenkins_env]] If you want to only play around with the demo that we've prepared you have to set *ONE* variable which is the `REPOS` variable.
-That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.
-
-You can do it in the following ways:
-
-- globally via Jenkins global env vars (then when you run the seed that variable will be taken into consideration and proper pipelines will get built)
-- modify the seed job parameters (you'll have to modify the seed job configuration and change the `REPOS` property)
-- provide the repos parameter when running the seed job
-
-For the sake of simplicity let's go with the *last* option.
-
-IMPORTANT: If you're choosing the global envs, you *HAVE* to remove the other approach
-(e.g. if you set the global env for `REPOS`, please remove that property in the
-seed job
-
-[[setup-seed-props-cf]]
-===== Seed properties
-
-Click on the seed job and pick `Build with parameters`. Then as presented in the screen below (you'll have far more properties to set) just modify the `REPOS` property by providing the comma separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.
-
-TIP: This is very useful when the repos you want to build differ. E.g. use
-different JDK. Then some seeds can set the `JDK_VERSION` param to one version
-of Java installation and the others to another one.
-
-Example screen:
-
-image::{jenkins-root-docs}/seed.png[]
-
-In the screenshot we could parametrize the `REPOS` and `REPO_WITH_BINARIES` params.
-
-[[global-envs-cf]]
-===== Global envs
-
-IMPORTANT: This section is presented only for informational purposes - for the sake of demo you can skip it
-
-You can add env vars (go to configure Jenkins -> Global Properties) for the following
- properties (the defaults are for PCF Dev):
-
-Example screen:
-
-image::{jenkins-root-docs}/env_vars.png[]
 
 [[all-env-vars-cf]]
 ===== All env vars
@@ -392,34 +176,6 @@ The env vars that are used in all of the jobs are as follows:
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
-[[git-email-cf]]
-==== Set Git email / user
-
-Since our pipeline is setting the git user / name explicitly for the build step
- you'd have to go to `Configure` of the build step and modify the Git name / email.
- If you want to set it globally you'll have to remove the section from the build
- step and follow these steps to set it globally.
-
-You can set Git email / user globally like this:
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/git.png[caption="Step 3: ", title="Fill out Git user information"]
-
-{nbsp}
-{nbsp}
-
 [[jenkins-credentials-cf]]
 ==== Jenkins Credentials
 
@@ -438,38 +194,3 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 If you already have in your system a credential to for example tag a repo
 you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
 
-[[jenkins-credentials-github-cf]]
-===== Add Jenkins credentials for GitHub
-
-[[jenkins-credentials-cf]] The scripts will need to access the credential in order to tag the repo.
-
-You have to set credentials with id: `git`.
-
-Below you can find instructions on how to set a credential (e.g. for `cf-test` credential but
-remember to provide the one with id `git`).
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/credentials_system.png[caption="Step 1: ", title="Click 'Credentials, System'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/credentials_global.png[caption="Step 2: ", title="Click 'Global Credentials'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/credentials_add.png[caption="Step 3: ", title="Click 'Add credentials'"]
-
-{nbsp}
-{nbsp}
-
-image::{jenkins-root-docs}/credentials_example.png[caption="Step 4: ", title="Fill out the user / password and provide the `git` credential ID (in this example `cf-test`)"]
-
-{nbsp}
-{nbsp}
-
-include::JENKINS_FAQ.adoc[]
-include::CF_JENKINS_FAQ.adoc[]

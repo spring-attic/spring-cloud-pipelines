@@ -1,4 +1,4 @@
-==== I ran out of resources!!
+=== I ran out of resources!! (Cloud Foundry)
 
 [jenkins-cf-resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
@@ -14,7 +14,7 @@ cf stop stubrunner
 You can also execute `./tools/pcfdev-helper.sh kill-all-apps` that will remove all demo-related apps
 deployed to PCF dev.
 
-==== Deploying to test / stage / prod fails - error finding space
+=== Deploying to test / stage / prod fails - error finding space (Cloud Foundry)
 
 If you receive a similar exception:
 
@@ -31,7 +31,7 @@ If you receive a similar exception:
 
 It means that you've forgotten to <<jenkins_pcfdev,create the spaces>> in your PCF Dev installation.
 
-==== The route is already in use
+=== The route is already in use (Cloud Foundry)
 
 If you play around with Jenkins / Concourse you might end up with the routes occupied
 

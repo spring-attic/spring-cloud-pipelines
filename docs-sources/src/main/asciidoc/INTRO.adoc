@@ -193,7 +193,9 @@ Obviously the pipeline could have been split to more steps but it seems that all
 === CI Server worker prerequisites
 
 Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
-that needs to be installed on a CI server worker for the build to pass
+that needs to be installed on a CI server worker for the build to pass.
+
+TIP: In the demo setup all of these libraries are already installed.
 
 [source,bash]
 ----
@@ -209,6 +211,11 @@ that needs to be installed on a CI server worker for the build to pass
     python \
     jq
 ----
+
+IMPORTANT: In the Jenkins case you will also need `bats` and `shellcheck`. They are not
+presented in the list since the installed versions by Linux distributions might be old.
+That's why this project's Gradle tasks will download latest versions of both libraries
+for you.
 
 === Pipeline descriptor
 
@@ -239,6 +246,8 @@ want to have deployed. Services have
 
     - `type` (example: `eureka`, `mysql`, `rabbitmq`, `stubrunner`) - this value gets
     then applied to the `deployService` Bash function
+        - *[KUBERNETES]* for `mysql` you can pass the database name via the `database`
+        property
     - `name` - name of the service to get deployed
     - `coordinates` - coordinate that allows you to fetch the binary of the service.
       Examples: It can be a maven coordinate `groupid:artifactid:version`,

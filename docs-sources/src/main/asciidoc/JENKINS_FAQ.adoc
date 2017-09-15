@@ -1,7 +1,9 @@
-=== FAQ
+== FAQ
+
+Below you can find the answers to most frequently asked questions.
 
 [[jenkins_faq]]
-==== Pipeline version contains ${PIPELINE_VERSION}
+=== Pipeline version contains ${PIPELINE_VERSION}
 
 You can check the Jenkins logs and you'll see
 
@@ -17,7 +19,7 @@ WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pip
 To fix it you have to do exactly what the warning suggests... Also ensure that the `Groovy token macro processing`
 checkbox is set.
 
-==== Pipeline version is not passed to the build
+=== Pipeline version is not passed to the build
 
 You can see that the Jenkins version is properly set but in the build version is still snapshot and
 the `echo "${PIPELINE_VERSION}"` doesn't print anything.
@@ -35,7 +37,7 @@ WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pip
 
 To fix it you have to do exactly what the warning suggests...
 
-==== The build times out with `pipeline.sh` info
+=== The build times out with `pipeline.sh` info
 
 Docker compose, docker compose, docker compose... The problem is that for some reason, only in Docker, the execution of
 Java hangs. But it hangs randomly and only the first time you try to execute the pipeline.
@@ -45,7 +47,7 @@ it will pass for any subsequent build.
 
 Another thing that you can try is to run it with plain Docker. Maybe that will help.
 
-==== Can I use the pipeline for some other repos?
+=== Can I use the pipeline for some other repos?
 
 Sure! you can pass `REPOS` variable with comma separated list of
 `project_name$project_url` format. If you don't provide the PROJECT_NAME the
@@ -64,7 +66,7 @@ E.g. for `REPOS` equal to:
 will result in the creation of pipelines with root names `foo` for `github-analytics`
 and `bar` for `github-webhook`.
 
-==== Will this work for ANY project out of the box?
+=== Will this work for ANY project out of the box?
 
 Not really. This is an `opinionated pipeline` that's why we took some
 opinionated decisions like:
@@ -89,13 +91,13 @@ opinionated decisions like:
 
 This is the initial approach that can be easily changed in the future.
 
-==== Can I modify this to reuse in my project?
+=== Can I modify this to reuse in my project?
 
 Sure! It's open-source! The important thing is that the core part of the logic is written
 in Bash scripts. That way, in the majority of cases, you could change only the bash
 scripts without changing the whole pipeline.
 
-==== The rollback step fails due to missing JAR ?!
+=== The rollback step fails due to missing JAR ?!
 
 [[jenkins_tags]] You must have pushed some tags and have removed the Artifactory volume that
 contained them. To fix this, just remove the tags
@@ -105,7 +107,7 @@ contained them. To fix this, just remove the tags
 git tag -l | xargs -n 1 git push --delete origin
 ----
 
-==== I want to provide a different JDK version
+=== I want to provide a different JDK version
 
 - by default we assume that you have jdk with id `jdk8` configured
 - if you want a different one just override `JDK_VERSION` env var and point to the proper one
@@ -142,7 +144,7 @@ image::{jenkins-root-docs}/jdk.png[caption="Step 4: ", title="Fill out JDK Insta
 And that's it!
 
 [[groovy-token-macro]]
-==== Enable Groovy Token Macro Processing
+=== Enable Groovy Token Macro Processing
 
 With scripted that but if you needed to this manually then this is how to do it:
 
@@ -161,14 +163,14 @@ image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click
 
 image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
-===== I want deployment to stage and prod be automatic
+==== I want deployment to stage and prod be automatic
 
 No problem, just set the property / env var to true
 
 - `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage
 - `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod
 
-==== I can't tag the repo!
+=== I can't tag the repo!
 
 When you get sth like this:
 
@@ -196,12 +198,12 @@ When you get sth like this:
 most likely you've passed a wrong password. Check the <<jenkins_credentials,credentials>> section
 on how to update your credentials.
 
-==== I'm unauthorized to deploy infrastructure jars
+=== I'm unauthorized to deploy infrastructure jars
 
 Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
 setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml`>>.
 
-==== Signing Artifacts
+=== Signing Artifacts
 
 In some cases it may be required that when performing a release that the artifacts be signed
 before pushing them to the repository.
@@ -209,24 +211,3 @@ To do this you will need to import your GPG keys into the Docker image running J
 This can be done by placing a file called `public.key` containing your public key
 and a file called `private.key` containing your private key in the `seed` directory.
 These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
-
-=== How to build it
-
-`./gradlew clean build`
-
-WARNING: The ran test only checks if your scripts compile.
-
-=== How to work with Jenkins Job DSL plugin
-
-Check out the https://github.com/jenkinsci/job-dsl-plugin/wiki/Tutorial---Using-the-Jenkins-Job-DSL[tutorial].
-Provide the link to this repository in your Jenkins installation.
-
-WARNING: Remember that views can be overridden that's why the suggestion is to contain in one script all the logic needed to build a view
- for a single project (check out that `spring_cloud_views.groovy` is building all the `spring-cloud` views).
-
-=== Docker Image
-
-If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
-have an image you can pull and use on https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/[DockerHub].
-The `latest` tag corresponds to the latest snapshot build.  You can also find tags
-corresponding to stable releases that you can use as well.

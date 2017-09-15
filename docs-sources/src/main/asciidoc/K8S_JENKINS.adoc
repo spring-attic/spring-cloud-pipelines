@@ -1,7 +1,10 @@
-[[jenkins-dsl-pipeline-k8s]]
-== Jenkins DSL Pipeline (Kubernetes)
+[[jenkins-pipeline-k8s]]
+== Jenkins Pipeline (Kubernetes)
 
-[[jenkins]] The repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+IMPORTANT: In this chapter we assume that you perform deployment of your application
+to Kubernetes PaaS
+
+[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
@@ -23,14 +26,6 @@ If you want to just run the demo as far as possible using PCF Dev and Docker Com
 - <<jenkins-minikube-k8s,Start Minikube (if you don't want to use an existing one)>>
 - <<jenkins-seed-k8s,Run the seed job>>
 - <<jenkins-pipeline-k8s,Run the `github-webhook` pipeline>>
-
-Below you can find <<optional,optional>> steps needed to be taken when you want to customize the pipeline
-
-- <<env,Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
-just check out the section on how to update the URL to Artifactory)>>
-- <<jenkins-settings-k8s,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
-- <<jenkins-misc-k8s,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
-- <<jenkins-credentials-k8s,Setup Jenkins credentials>>
 
 [[fork-repos-k8s]]
 ==== Fork repos
@@ -199,9 +194,9 @@ Extracted from the https://coreos.com/kubernetes/docs/latest/configure-kubectl.h
 Configure kubectl to connect to the target cluster using the following commands, replacing several values as indicated:
 
 - Replace `${MASTER_HOST}` with the master node address or name used in previous steps
-- Replace `${CA_CERT}` with the absolute path to the ca.pem created in previous steps
-- Replace `${ADMIN_KEY}` with the absolute path to the admin-key.pem created in previous steps
-- Replace `${ADMIN_CERT}` with the absolute path to the admin.pem created in previous steps
+- Replace `${CA_CERT}` with the absolute path to the `ca.pem` created in previous steps
+- Replace `${ADMIN_KEY}` with the absolute path to the `admin-key.pem` created in previous steps
+- Replace `${ADMIN_CERT}` with the absolute path to the `admin.pem` created in previous steps
 
 ```
 $ kubectl config set-cluster default-cluster --server=https://${MASTER_HOST} --certificate-authority=${CA_CERT}
@@ -215,4 +210,70 @@ $ kubectl config use-context default-system
 With the running Minikube cluster we need to generate namespaces. Just execute the
 `./tools/minikube-helper.sh setup-namespaces` to do this.
 
-// TODO: write the rest
+[[jenkins-seed-k8s]]
+==== Run the seed job
+
+include::JENKINS_RUN_SEED.adoc[]
+
+[[jenkins-pipeline-k8s]]
+==== Run the `github-webhook` pipeline
+
+include::JENKINS_RUN_PIPELINE.adoc[]
+
+[[declarative-pipeline-k8s]]
+=== Declarative pipeline & Blue Ocean
+
+include::JENKINS_BLUE_OCEAN.adoc[]
+
+[[optional-steps-k8s]]
+=== Jenkins Kubernetes customization
+
+ All the steps below are not necessary to run the demo. They are needed only
+when you want to do some custom changes.
+
+[[all-env-vars-k8s]]
+===== All env vars
+
+The env vars that are used in all of the jobs are as follows:
+
+[frame="topbot",options="header,footer"]
+|======================
+|Property Name  | Property Description | Default value
+|DOCKER_REGISTRY_ORGANIZATION | Name of the docker organization to which Docker images should be deployed | scpipelines
+|PAAS_TEST_API_URL | URL of the API of the Kubernetes cluster for test environment | 192.168.99.100:8443
+|PAAS_STAGE_API_URL | URL of the API of the Kubernetes cluster for stage environment  | 192.168.99.100:8443
+|PAAS_PROD_API_URL | URL of the API of the Kubernetes cluster for prod environment | 192.168.99.100:8443
+|PAAS_TEST_CA | Path to the certificate authority for test environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_STAGE_CA | Path to the certificate authority for stage environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_PROD_CA | Path to the certificate authority for prod environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_TEST_CLIENT_CERT | Path to the client certificate for test environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_STAGE_CLIENT_CERT | Path to the client certificate for stage environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_PROD_CLIENT_CERT | Path to the client certificate for prod environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_TEST_CLIENT_KEY | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_STAGE_CLIENT_KEY | Path to the client key for stage environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_PROD_CLIENT_KEY | Path to the client key for prod environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_TEST_CLUSTER_NAME | Name of the cluster for test environment | minikube
+|PAAS_STAGE_CLUSTER_NAME | Name of the cluster for stage environment | minikube
+|PAAS_PROD_CLUSTER_NAME | Name of the cluster for prod environment | minikube
+|PAAS_TEST_CLUSTER_USERNAME | Name of the user for test environment | minikube
+|PAAS_STAGE_CLUSTER_USERNAME | Name of the user for stage environment | minikube
+|PAAS_PROD_CLUSTER_USERNAME | Name of the user for prod environment | minikube
+|PAAS_TEST_SYSTEM_NAME | Name of the system for test environment | minikube
+|PAAS_STAGE_SYSTEM_NAME | Name of the system for stage environment | minikube
+|PAAS_PROD_SYSTEM_NAME | Name of the system for prod environment | minikube
+|PAAS_TEST_NAMESPACE | Namespace for test environment | sc-pipelines-test
+|PAAS_STAGE_NAMESPACE | Namespace for stage environment | sc-pipelines-stage
+|PAAS_PROD_NAMESPACE | Namespace for prod environment | sc-pipelines-prod
+|KUBERNETES_MINIKUBE | Will you connect to Minikube? | true
+|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
+|JDK_VERSION | The name of the JDK installation | jdk8
+|PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
+|GIT_EMAIL | The email used by Git to tag repo | email@example.com
+|GIT_NAME | The name used by Git to tag repo | Pivo Tal
+|AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
+|AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
+|ROLLBACK_STEP_REQUIRED | Should rollback step be present | true
+|DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
+|BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
+|======================

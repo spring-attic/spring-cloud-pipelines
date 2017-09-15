@@ -1,0 +1,45 @@
+We already create the seed job for you but you'll have to run it. When you do
+run it you have to provide some properties. By default we create a seed that
+has all the properties options, but you can delete most of it. If you
+set the properties as global env variables you have to remove them from the
+seed.
+
+Anyways, to run the demo just provide in the `REPOS` var the comma separated
+ list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics`.
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/seed_views.png[caption="Step 1: ", title="Click the 'github-webhook' view"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/pipeline_run.png[caption="Step 2: ", title="Run the pipeline"]
+
+{nbsp}
+{nbsp}
+
+IMPORTANT: If your build fails on the *deploy previous version to stage* due to missing jar,
+that means that you've forgotten to clear the tags in your repo. Typically that's due to the fact that
+you've removed the Artifactory volume with deployed JAR whereas a tag in the repo is still pointing there.
+<<tags,Check out this section on how to remove the tag.>>
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 3: ", title="Click the manual step to go to stage (remember about killing the apps on test env). To do this click the *ARROW* next to the job name"]
+
+{nbsp}
+{nbsp}
+
+IMPORTANT: Most likely you will run out of memory so when reaching the stage
+environment it's good to kill all apps on test. <<faq,Check out the FAQ section for more details>>!
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 4: ", title="The full pipeline should look like this"]
+
+{nbsp}
+{nbsp}

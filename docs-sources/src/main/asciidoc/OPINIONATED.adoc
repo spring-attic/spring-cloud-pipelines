@@ -106,10 +106,11 @@ image::{intro-root-docs}/prod.png[title="Deployment to production"]
 
 The step to deploy to production is manual but ideally it should be automatic.
 
-IMPORTANT: Before you run this step you must execute a script that will provision
-the services on the production environment. For `Cloud Foundry` just call
-`tools/pcfdev-helper.sh setup-prod-infra` and for Kubernetes
-`tools/minikube-helper.sh setup-prod-infra`
+IMPORTANT: This step does deployment to production. On production you would assume
+that you have the infrastructure running. That's why before you run this step you
+must execute a script that will provision the services on the production environment.
+For `Cloud Foundry` just call `tools/pcfdev-helper.sh setup-prod-infra` and
+for Kubernetes `tools/minikube-helper.sh setup-prod-infra`
 
 Here we're
 
@@ -122,13 +123,14 @@ Here we're
         * now two instances of the same application are running on production
     - for Kubernetes
         * we're deploying a service with the name of the app e.g. `fooService`
-        * we're doing a deployment with the name of the app with version suffix e.g. `fooService-1-0-0-M1-123-456-VERSION`
+        * we're doing a deployment with the name of the app with version suffix (with the name escaped
+         to fulfill the DNS name requirements) e.g. `fooService-1-0-0-M1-123-456-VERSION`
         * all deployments of the same application have the same label `name` equal to app name e.g. `fooService`
         * the service is routing the traffic basing on the `name` label selector
         * now two instances of the same application are running on production
 - in the `Complete switch over` which is a manual step
-    - we're deleting the old instance
-    - remember to run this step only after you have confirmed that both instances are working fine!
+    * we're deleting the old instance
+    * remember to run this step only after you have confirmed that both instances are working fine!
 
 == Project opinions
 
