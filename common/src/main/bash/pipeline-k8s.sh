@@ -226,7 +226,7 @@ function substituteVariables() {
     local escapedSubstitution
     escapedSubstitution=$( escapeValueForSed "${substitution}" )
     #echo "Changing [${variableName}] -> [${escapedSubstitution}] for file [${fileName}]"
-    sed -i "s/{{${variableName}}}/${escapedSubstitution}/" "${fileName}"
+    sed -i "" "s/{{${variableName}}}/${escapedSubstitution}/" "${fileName}"
 }
 
 function deleteMySql() {
