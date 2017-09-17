@@ -39,7 +39,7 @@ ext {
             String cmd = shellcheckFile.path + " -V"
             Process p = cmd.execute()
             p.consumeProcessOutput(os, os)
-            p.waitFor(1L, TimeUnit.SECONDS)
+            p.waitFor(2L, TimeUnit.SECONDS)
             output = os.toString()
         }
         project.logger.lifecycle("Checking if shellcheck version is [${shellcheckVersionWithoutPrefix}]")
