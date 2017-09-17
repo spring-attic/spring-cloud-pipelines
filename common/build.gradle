@@ -32,7 +32,7 @@ task bats {
         }
         exec {
             standardOutput = new org.apache.tools.ant.util.TeeOutputStream(
-                new FileOutputStream(outputTapFile), System.out);
+                new FileOutputStream(outputTapFile), System.out)
             commandLine pathToBats, '-t', 'src/test/bats'
         }
     }

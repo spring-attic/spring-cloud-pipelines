@@ -10,6 +10,8 @@ apply plugin: "com.github.jruby-gradle.base"
 
 import com.github.jrubygradle.JRubyExec
 
+import java.util.concurrent.TimeUnit
+
 dependencies {
     jrubyExec "rubygems:asciidoctor:1.5.4"
 }
@@ -20,6 +22,8 @@ repositories {
 }
 
 ext {
+    shellcheckFile = new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck")
+    shellcheckVersionWithoutPrefix = "${shellcheckVersion}".startsWith("v") ? "${shellcheckVersion}".substring(1) : "${shellcheckVersion}"
     isCommandAvailable = { String cmd ->
         try {
             cmd.execute()
@@ -28,8 +32,22 @@ ext {
         }
         return false
     }
+
+    assertShellcheckVersion = {
+        String output = ""
+        new ByteArrayOutputStream().withStream { os ->
+            String cmd = shellcheckFile.path + " -V"
+            Process p = cmd.execute()
+            p.consumeProcessOutput(os, os)
+            p.waitFor(1L, TimeUnit.SECONDS)
+            output = os.toString()
+        }
+        project.logger.lifecycle("Checking if shellcheck version is [${shellcheckVersionWithoutPrefix}]")
+        assert output.contains("version: ${shellcheckVersionWithoutPrefix}")
+    }
+
     isShellcheckDownloaded = {
-        new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck").exists()
+        shellcheckFile.exists()
     }
 }
 
@@ -41,7 +59,8 @@ subprojects {
             boolean shellcheckInstalled = isCommandAvailable("shellcheck -V") || isShellcheckDownloaded()
             exec {
                 if (shellcheckInstalled) {
-                    commandLine "echo", "Shellcheck installed - continuing"
+                    assertShellcheckVersion()
+                    commandLine "echo", "Shellcheck installed in version [${shellcheckVersionWithoutPrefix}] - continuing"
                 } else {
                     logger.lifecycle("Shellcheck is missing. Will install it.")
                     commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
