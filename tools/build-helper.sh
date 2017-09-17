@@ -21,8 +21,8 @@ fi
 case $1 in
     download-shellcheck)
         if [[ "${OSTYPE}" == linux* ]]; then
-            SHELLCHECK_ARCHIVE="shellcheck-latest.linux.x86_64.tar.xz"
-            SHELLCHECK_ARCHIVE_SHA512SUM="53ee4adc1d53d3689b9b7b815e6a0dc6022d1a4fe594f96a43742076659b6a3e483335ccd38367fcbd2b73ecf55dae1958cd989a6e2875e68dabbbc3c89084fd"
+            SHELLCHECK_ARCHIVE="shellcheck-v0.4.6.linux.x86_64.tar.xz"
+            SHELLCHECK_ARCHIVE_SHA512SUM="d9ac3e4fb2383b2d6862415e8052459ce24fd5402806b9ce739990d5c1cccebe4121288df29de32dcef5daa115874ddf7f9730de256bf134ee11cd9704aaa64c"
             if [[ -x "${ROOT_DIR}/../common/build/shellcheck-latest/shellcheck" ]]; then
                 echo "shellcheck already downloaded - skipping..."
                 exit 0
