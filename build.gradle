@@ -29,7 +29,7 @@ ext {
         return false
     }
     isShellcheckDownloaded = {
-        new File(project.rootProject.buildDir, "shellcheck-latest/shellcheck").exists()
+        new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck").exists()
     }
 }
 
@@ -55,7 +55,7 @@ subprojects {
             boolean shellcheckInstalled = isCommandAvailable("shellcheck -V")
             String pathToShellcheck = "shellcheck"
             if (!shellcheckInstalled) {
-                pathToShellcheck = new File(project.rootProject.buildDir, "shellcheck-latest/shellcheck").path
+                pathToShellcheck = new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck").path
             }
             sourceSets*.resources.srcDirs*.each { srcDir ->
                 fileTree(relativePath(srcDir))
