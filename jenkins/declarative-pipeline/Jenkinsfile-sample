@@ -64,6 +64,18 @@ pipeline {
 						env.GIT_PASSWORD = PASS
 					}
 
+					withCredentials([string(credentialsId: env.PAAS_TEST_CLIENT_TOKEN_ID, variable: 'TOKEN')]) {
+						env.PAAS_TEST_CLIENT_TOKEN = TOKEN
+					}
+
+					withCredentials([string(credentialsId: env.PAAS_STAGE_CLIENT_TOKEN_ID, variable: 'TOKEN')]) {
+						env.PAAS_STAGE_CLIENT_TOKEN = TOKEN
+					}
+
+					withCredentials([string(credentialsId: env.PAAS_PROD_CLIENT_TOKEN_ID, variable: 'TOKEN')]) {
+						env.PAAS_PROD_CLIENT_TOKEN = TOKEN
+					}
+
 					env.DEPLOY_TO_PROD = input message: '', parameters: [
 						choice(
 							name: 'Deploy to prod?',

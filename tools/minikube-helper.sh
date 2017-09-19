@@ -2,7 +2,7 @@
 
 function usage {
 	echo "usage: $0: <download-kubectl|download-minikube|delete-all-apps|delete-all-test-apps|\
-delete-all-stage-apps|delete-all-prod-apps|setup-namespaces|setup-prod-infra>"
+delete-all-stage-apps|delete-all-prod-apps|setup-namespaces|setup-prod-infra|setup-tools-infra>"
 	exit 1
 }
 
@@ -16,6 +16,19 @@ function createNamespace() {
     cp "${folder}k8s/namespace.yml" "${folder}build/namespace.yml"
     substituteVariables "name" "${namespaceName}" "${folder}build/namespace.yml"
     kubectl create -f "${folder}build/namespace.yml"
+}
+
+function createApplication() {
+    local appName="${1}"
+    local namespaceName="${2:sc-pipelines-prod}"
+    local folder=""
+    if [ -d "tools" ]; then
+        folder="tools/"
+    fi
+    kubectl delete -f "${folder}k8s/${appName}.yml" --namespace="${namespaceName}" --ignore-not-found
+    kubectl create -f "${folder}k8s/${appName}.yml" --namespace="${namespaceName}" --validate=false
+    kubectl delete -f "${folder}k8s/${appName}-service.yml" --namespace="${namespaceName}" --ignore-not-found
+    kubectl create -f "${folder}k8s/${appName}-service.yml" --namespace="${namespaceName}" --validate=false
 }
 
 function copyK8sYamls() {
@@ -71,6 +84,11 @@ function mySqlDatabase() {
 }
 export -f mySqlDatabase
 
+function waitForAppToStart() {
+    echo "not waiting for the app to start"
+}
+export -f waitForAppToStart
+
 case $1 in
 	download-kubectl)
         curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/${SYSTEM}/amd64/kubectl"
@@ -118,6 +136,11 @@ case $1 in
 		export MYSQL_ROOT_PASSWORD
 		MYSQL_ROOT_PASSWORD=rootpassword
 		deployService "mysql" "mysql-github-analytics"
+		;;
+
+	setup-tools-infra)
+		createApplication "artifactory"
+		createApplication "jenkins"
 		;;
 
     *)

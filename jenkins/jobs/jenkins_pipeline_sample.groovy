@@ -13,9 +13,16 @@ String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].j
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
 String repoWithBinariesCredentials = binding.variables["REPO_WITH_BINARIES_CREDENTIALS_ID"] ?: "repo-with-binaries"
 String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
+// remove::start[CF]
 String cfTestCredentialId = binding.variables["PAAS_TEST_CREDENTIAL_ID"] ?: "cf-test"
 String cfStageCredentialId = binding.variables["PAAS_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
 String cfProdCredentialId = binding.variables["PAAS_PROD_CREDENTIAL_ID"] ?: "cf-prod"
+// remove::end[CF]
+// remove::start[K8S]
+String k8sTestTokenCredentialId= binding.variables["PAAS_TEST_CLIENT_TOKEN_ID"] ?: ""
+String k8sStageTokenCredentialId= binding.variables["PAAS_STAGE_CLIENT_TOKEN_ID"] ?: ""
+String k8sProdTokenCredentialId= binding.variables["PAAS_PROD_CLIENT_TOKEN_ID"] ?: ""
+// remove::end[K8S]
 String gitEmail = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
 String gitName = binding.variables["GIT_NAME"] ?: "Pivo Tal"
 boolean autoStage = binding.variables["AUTO_DEPLOY_TO_STAGE"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_STAGE"])
@@ -27,8 +34,10 @@ String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src
 String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines"
 String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
 // TODO: K8S - consider parametrization
+// remove::start[K8S]
 String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: "mysql-root"
 String mySqlCredential = binding.variables["MYSQL_CREDENTIAL_ID"] ?: "mysql"
+// remove::end[K8S]
 
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
@@ -181,11 +190,16 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
-                // TODO: CF related
+				// remove::start[CF]
+				// TODO: CF related
 				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
-                // TODO: What to do about this?
+				// remove::end[CF]
+				// remove::start[K8S]
+				// TODO: What to do about this?
 				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
 				usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
+				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+				// remove::end[K8S]
 			}
 			timestamps()
 			colorizeOutput()
@@ -240,7 +254,12 @@ parsedRepos.each {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
+				// remove::start[CF]
 				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+				// remove::end[CF]
+				// remove::start[K8S]
+				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+				// remove::end[K8S]
 			}
 			timestamps()
 			colorizeOutput()
@@ -304,7 +323,12 @@ parsedRepos.each {
 					environmentVariables(defaults.defaultEnvVars)
 				}
 				credentialsBinding {
+					// remove::start[CF]
 					usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+					// remove::end[CF]
+					// remove::start[K8S]
+					if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+					// remove::end[K8S]
 				}
 				timeout {
 					noActivity(300)
@@ -358,7 +382,12 @@ parsedRepos.each {
 					environmentVariables(defaults.defaultEnvVars)
 				}
 				credentialsBinding {
+					// remove::start[CF]
 					usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+					// remove::end[CF]
+					// remove::start[K8S]
+					if(k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
+					// remove::end[K8S]
 				}
 				parameters {
 					stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
@@ -444,9 +473,14 @@ parsedRepos.each {
 					environmentVariables(defaults.defaultEnvVars)
 				}
 				credentialsBinding {
+					// remove::start[CF]
 					usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
 					usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
 					usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
+					// remove::end[CF]
+					// remove::start[K8S]
+					if(k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
+					// remove::end[K8S]
 				}
 				timestamps()
 				colorizeOutput()
@@ -511,7 +545,12 @@ parsedRepos.each {
 					environmentVariables(defaults.defaultEnvVars)
 				}
 				credentialsBinding {
+					// remove::start[CF]
 					usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
+					// remove::end[CF]
+					// remove::start[K8S]
+					if(k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
+					// remove::end[K8S]
 				}
 				timestamps()
 				colorizeOutput()
@@ -570,9 +609,12 @@ parsedRepos.each {
 			maskPasswords()
 			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
+				// remove::start[CF]
 				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
-				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
-				usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
+				// remove::end[CF]
+				// remove::start[K8S]
+				if(k8sProdTokenCredentialId) string("TOKEN", k8sProdTokenCredentialId)
+				// remove::end[K8S]
 			}
 			timestamps()
 			colorizeOutput()
@@ -642,7 +684,12 @@ parsedRepos.each {
 			maskPasswords()
 			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
+				// remove::start[CF]
 				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
+				// remove::end[CF]
+				// remove::start[K8S]
+				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+				// remove::end[K8S]
 			}
 			timestamps()
 			colorizeOutput()

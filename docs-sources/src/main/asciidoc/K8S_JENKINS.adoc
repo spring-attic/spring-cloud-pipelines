@@ -228,7 +228,7 @@ include::JENKINS_BLUE_OCEAN.adoc[]
 [[optional-steps-k8s]]
 === Jenkins Kubernetes customization
 
- All the steps below are not necessary to run the demo. They are needed only
+IMPORTANT: All the steps below are not necessary to run the demo. They are needed only
 when you want to do some custom changes.
 
 [[all-env-vars-k8s]]
@@ -251,7 +251,10 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_PROD_CLIENT_CERT | Path to the client certificate for prod environment | /usr/share/jenkins/cert/apiserver.crt
 |PAAS_TEST_CLIENT_KEY | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
 |PAAS_STAGE_CLIENT_KEY | Path to the client key for stage environment | /usr/share/jenkins/cert/apiserver.key
-|PAAS_PROD_CLIENT_KEY | Path to the client key for prod environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_PROD_CLIENT_KEY | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_TEST_CLIENT_TOKEN_ID | Access token for test environment |
+|PAAS_STAGE_CLIENT_TOKEN_ID | Access token for test environment |
+|PAAS_PROD_CLIENT_TOKEN_ID | Access token for test environment |
 |PAAS_TEST_CLUSTER_NAME | Name of the cluster for test environment | minikube
 |PAAS_STAGE_CLUSTER_NAME | Name of the cluster for stage environment | minikube
 |PAAS_PROD_CLUSTER_NAME | Name of the cluster for prod environment | minikube
@@ -277,3 +280,100 @@ The env vars that are used in all of the jobs are as follows:
 |DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
+
+=== Connecting to a Kubo cluster
+
+In this section a description of steps required to deploy Jenkins and
+Artifactory to a Kubernetes cluster deployed via Kubo.
+
+TIP: To see the dashboard just do `kubectl proxy` and access `localhost:8081/ui`
+
+- Log in to the cluster
+- Deploy Jenkins and Artifactory to the cluster (`./tools/minikube-helper.sh setup-tools-infra`)
+- Go to `Credentials`, click `System` and `Global credentials`
+
+image::{jenkins-root-docs}/kubo_credentials.png[caption="Click `Global credentials`"]
+
+- Update `git` credential
+
+image::{jenkins-root-docs}/kubo_update_git.png[caption="Update the `git` credentials with your data"]
+
+- Add `k8s-token` credential with the `token`
+
+image::{jenkins-root-docs}/kubo_token.png[caption="Add the `k8s-token` text credential with the k8s access `token`"]
+
+- Click `Manage Jenkins` and pick `Script Console`
+
+image::{jenkins-root-docs}/kubo_script_console_1.png[caption="Pick the `Script Console`"]
+
+- Update `settings.xml` and `gradle.properties` with this script
+```groovy
+// insert your DockerHub username
+String username="dockeruser"
+// insert your DockerHub password
+String password="dockerpass"
+// insert your DockerHub email
+String email="docker@email.com"
+new File("/root/.m2/settings.xml").text = """
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<servers>
+		<server>
+			<id>artifactory-local</id>
+			<username>admin</username>
+			<password>password</password>
+		</server>
+		<server>
+			<id>docker-repo</id>
+            <username>${username}</username>
+            <password>${password}</password>
+			<configuration>
+                 <email>${email}</email>
+			</configuration>
+		</server>
+	</servers>
+</settings>
+"""
+new File("/root/.gradle/gradle.properties").text="""
+M2_SETTINGS_REPO_USERNAME=admin
+M2_SETTINGS_REPO_PASSWORD=password
+DOCKER_USERNAME=${username}
+DOCKER_PASSWORD=${password}
+DOCKER_EMAIL=${email}
+"""
+println "Done!"
+```
+image::{jenkins-root-docs}/kubo_script_console_2.png[caption="Run the script to update credentials"]
+- Run the `jenkins-pipeline-k8s-seed` seed job and fill it out with the following data
+* Put your `KUBERNETES_API:KUBERNETES_PORT` data here
+** `PAAS_TEST_API_URL`
+** `PAAS_STAGE_API_URL`
+** `PAAS_PROD_API_URL`
+* Put `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt` data here
+** `PAAS_TEST_CA`
+** `PAAS_STAGE_CA`
+** `PAAS_PROD_CA`
+* Uncheck the `Kubernetes Minikube` value
+* Clear the following ones
+** `PAAS_TEST_CLIENT_CERT`
+** `PAAS_STAGE_CLIENT_CERT`
+** `PAAS_PROD_CLIENT_CERT`
+** `PAAS_TEST_CLIENT_KEY`
+** `PAAS_STAGE_CLIENT_KEY`
+** `PAAS_PROD_CLIENT_KEY`
+* Set `k8s-token` value to these ids
+** `PAAS_TEST_CLIENT_TOKEN_ID`
+** `PAAS_STAGE_CLIENT_TOKEN_ID`
+** `PAAS_PROD_CLIENT_TOKEN_ID`
+* Set the cluster name to these values
+** `PAAS_TEST_CLUSTER_NAME`
+** `PAAS_STAGE_CLUSTER_NAME`
+** `PAAS_PROD_CLUSTER_NAME`
+* Set the system name to these values
+** `PAAS_TEST_SYSTEM_NAME`
+** `PAAS_STAGE_SYSTEM_NAME`
+** `PAAS_PROD_SYSTEM_NAME`
+
+image::{jenkins-root-docs}/pks_seed.png[caption="Example of a filled out seed job"]
+
+- Run the pipeline
