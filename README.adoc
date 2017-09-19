@@ -1785,7 +1785,7 @@ for more information.
 [[optional-steps-k8s]]
 === Jenkins Kubernetes customization
 
- All the steps below are not necessary to run the demo. They are needed only
+IMPORTANT: All the steps below are not necessary to run the demo. They are needed only
 when you want to do some custom changes.
 
 [[all-env-vars-k8s]]
