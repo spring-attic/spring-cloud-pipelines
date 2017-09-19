@@ -107,6 +107,2859 @@ $(addBlockSwitches);
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p><strong>Build</strong> environment is a machine where the building of the application takes place.
+It&#8217;s a CI / CD tool worker.</p>
+</div>
+<div class="paragraph">
+<p><strong>Test</strong> is an environment where you can deploy an application to test it. It doesn’t
+resemble production, we can&#8217;t be sure of it&#8217;s state (which application is deployed there
+and in which version). It can be used by multiple teams at the same time.</p>
+</div>
+<div class="paragraph">
+<p><strong>Stage</strong> is an environment that does resemble production. Most likely applications
+ are deployed there in versions that correspond to those deployed to production.
+ Typically databases there are filled up with (obfuscated) production data. Most
+ often this environment is a single, shared one between many teams. In other
+ words in order to run some performance, user acceptance tests you have to block
+ and wait until the environment is free.</p>
+</div>
+<div class="paragraph">
+<p><strong>Prod</strong> is a production environment where we want our tested applications to be deployed
+for our customers.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tests">Tests</h3>
+<div class="paragraph">
+<p><strong>Unit tests</strong> - tests that are executed on the application during the build phase.
+No integrations with databases / HTTP server stubs etc. take place. Generally speaking your application should
+ have plenty of these to have fast feedback if your features are working fine.</p>
+</div>
+<div class="paragraph">
+<p><strong>Integration tests</strong> - tests that are executed on the built application during the build phase.
+Integrations with in memory databases / HTTP server stubs take place. According to the test
+pyramid, in most cases you should have not too many of these kind of tests.</p>
+</div>
+<div class="paragraph">
+<p><strong>Smoke tests</strong> - tests that are executed on a deployed application. The concept of these tests
+is to check the crucial parts of your application are working properly. If you have 100 features
+in your application but you gain most money from e.g. 5 features then you could write smoke tests
+ for those 5 features. As you can see we&#8217;re talking about smoke tests of an application, not of
+ the whole system. In our understanding inside the opinionated pipeline, these tests are
+ executed against an application that is surrounded with stubs.</p>
+</div>
+<div class="paragraph">
+<p><strong>End to end tests</strong> - tests that are executed on a system composing of multiple applications.
+The idea of these tests is to check if the tested feature works when the whole system is set up.
+Due to the fact that it takes a lot of time, effort, resources to maintain such an environment
+and that often those tests are unreliable (due to many different moving pieces like network
+database etc.) you should have a handful of those tests. Only for critical parts of your business.
+Since only production is the key verifier of whether your feature works, some companies
+don&#8217;t even want to do those and move directly to deployment to production. When your
+system contains KPI monitoring and alerting you can quickly react when your deployed application
+is not behaving properly.</p>
+</div>
+<div class="paragraph">
+<p><strong>Performance testing</strong> - tests executed on an application or set of applications
+to check if your system can handle big load of input. In case of our opinionated pipeline
+ these tests could be executed either on test (against stubbed environment) or
+  stage (against the whole system)</p>
+</div>
+<div class="sect3">
+<h4 id="_testing_against_stubs">Testing against stubs</h4>
+<div class="paragraph">
+<p>Before we go into details of the flow let&#8217;s take a look at the following example.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/monolith.png" alt="monolith">
+</div>
+<div class="title">Figure 3. Two monolithic applications deployed for end to end testing</div>
+</div>
+<div class="paragraph">
+<p>When having only a handful of applications, performing end to end testing is beneficial.
+From the operations perspective it&#8217;s maintainable for a finite number of deployed instances.
+From the developers perspective it&#8217;s nice to verify the whole flow in the system
+for a feature.</p>
+</div>
+<div class="paragraph">
+<p>In case of microservices the scale starts to be a problem:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/many_microservices.png" alt="many microservices">
+</div>
+<div class="title">Figure 4. Many microservices deployed in different versions</div>
+</div>
+<div class="paragraph">
+<p>The questions arise:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Should I queue deployments of microservices on one testing environment or should I have an environment per microservice?</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If I queue deployments people will have to wait for hours to have their tests ran - that can be a problem</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>To remove that issue I can have an environment per microservice</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Who will pay the bills (imagine 100 microservices - each having each own environment).</p>
+</li>
+<li>
+<p>Who will support each of those environments?</p>
+</li>
+<li>
+<p>Should we spawn a new environment each time we execute a new pipeline and then wrap it up or should we have
+them up and running for the whole day?</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>In which versions should I deploy the dependent microservices - development or production versions?</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If I have development versions then I can test my application against a feature that is not yet on production.
+That can lead to exceptions on production</p>
+</li>
+<li>
+<p>If I test against production versions then I&#8217;ll never be able to test against a feature under development
+anytime before deployment to production.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>One of the possibilities of tackling these problems is to&#8230;&#8203; not do end to end tests.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/stubbed_dependencies.png" alt="stubbed dependencies">
+</div>
+<div class="title">Figure 5. Execute tests on a deployed microservice on stubbed dependencies</div>
+</div>
+<div class="paragraph">
+<p>If we stub out all the dependencies of our application then most of the problems presented above
+disappear. There is no need to start and setup infrastructure required by the dependant
+microservices. That way the testing setup looks like this:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/stubbed_dependencies.png" alt="stubbed dependencies">
+</div>
+<div class="title">Figure 6. We&#8217;re testing microservices in isolation</div>
+</div>
+<div class="paragraph">
+<p>Such an approach to testing and deployment gives the following benefits
+(thanks to the usage of <a href="http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html">Spring Cloud Contract</a>):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>No need to deploy dependant services</p>
+</li>
+<li>
+<p>The stubs used for the tests ran on a deployed microservice are the same as those used during integration tests</p>
+</li>
+<li>
+<p>Those stubs have been tested against the application that produces them (check <a href="http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html">Spring Cloud Contract</a> for more information)</p>
+</li>
+<li>
+<p>We don&#8217;t have many slow tests running on a deployed application - thus the pipeline gets executed much faster</p>
+</li>
+<li>
+<p>We don&#8217;t have to queue deployments - we&#8217;re testing in isolation thus pipelines don&#8217;t interfere with each other</p>
+</li>
+<li>
+<p>We don&#8217;t have to spawn virtual machines each time for deployment purposes</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It brings however the following challenges:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>No end to end tests before production - you don&#8217;t have the full certainty that a feature is working</p>
+</li>
+<li>
+<p>First time the applications will talk in a real way will be on production</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Like every solution it has its benefits and drawbacks. The opinionated pipeline
+ allows you to configure whether you want to follow this flow or not.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_general_view">General view</h4>
+<div class="paragraph">
+<p>The general view behind this deployment pipeline is to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>test the application in isolation</p>
+</li>
+<li>
+<p>test the backwards compatibility of the application in order to roll it back if necessary</p>
+</li>
+<li>
+<p>allow testing of the packaged app in a deployed environment</p>
+</li>
+<li>
+<p>allow user acceptance tests / performance tests in a deployed environment</p>
+</li>
+<li>
+<p>allow deployment to production</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Obviously the pipeline could have been split to more steps but it seems that all of the aforementioned
+ actions comprise nicely in our opinionated proposal.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_opinionated_implementation">Opinionated implementation</h4>
+<div class="paragraph">
+<p>For the demo purposes we&#8217;re providing Docker Compose setup with Artifactory and Concourse / Jenkins tools.
+Regardless of the picked CD application for the pipeline to pass one needs a Cloud Foundry instance (for example
+<a href="https://run.pivotal.io/">Pivotal Web Services</a> or <a href="https://pivotal.io/pcf-dev">PCF Dev</a>) and the
+infrastructure applications deployed to the JAR hosting application (for the demo we&#8217;re providing Artifactory).
+The infrastructure applications are <code>Eureka</code> for Service Discovery and <code>Stub Runner Boot</code> for running
+Spring Cloud Contract stubs.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+In the demos we&#8217;re showing you how to first build the <code>github-webhook</code> project. That&#8217;s because
+the <code>github-analytics</code> needs the stubs of <code>github-webhook</code> to pass the tests. Below you&#8217;ll find
+references to <code>github-analytics</code> project since it contains more interesting pieces as far as testing
+is concerned.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_build">Build</h5>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/build.png" alt="build">
+</div>
+<div class="title">Figure 7. Build and upload artifacts</div>
+</div>
+<div class="paragraph">
+<p>In this step we&#8217;re generating a version of the pipeline, next we&#8217;re
+ running unit, integration and contract tests. Finally we&#8217;re publishing
+2 artifacts to Artifactory / Nexus:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>a fat jar of the application</p>
+</li>
+<li>
+<p>a Spring Cloud Contract jar containing stubs of the application</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>During this phase we&#8217;re executing a <code>Maven</code> build using Maven Wrapper or a <code>Gradle</code> build using Gradle Wrapper
+, with unit and integration tests. We&#8217;re also <strong>tagging</strong> the repository with <code>dev/${version}</code> format. That way in each
+subsequent step of the pipeline we&#8217;re able to retrieve the tagged version. Also we know
+exactly which version of the pipeline corresponds to which Git hash.</p>
+</div>
+<div class="paragraph">
+<p>Once the artifact got built we&#8217;re running API compatibility check.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>we&#8217;re searching for the latest production deployment</p>
+</li>
+<li>
+<p>we&#8217;re retrieving the contracts that were used by that deployment</p>
+</li>
+<li>
+<p>from the contracts we&#8217;re generating API tests to see if the current implementation
+is fulfilling the HTTP / messaging contracts that the current production deployment
+has defined (we&#8217;re checking backward compatibility of the API)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_test">Test</h5>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/test.png" alt="test">
+</div>
+<div class="title">Figure 8. Smoke test and rollback test on test environment</div>
+</div>
+<div class="paragraph">
+<p>Here we&#8217;re</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>starting a RabbitMQ service in Cloud Foundry</p>
+</li>
+<li>
+<p>deploying <code>Eureka</code> infrastructure application to Cloud Foundry</p>
+</li>
+<li>
+<p>downloading the fat jar from Nexus and we&#8217;re uploading it to Cloud Foundry. We want the application
+to run in isolation (be surrounded by stubs). Currently due to port constraints in Cloud Foundry
+we cannot run multiple stubbed HTTP services in the cloud so to fix this issue we&#8217;re running
+the application with <code>smoke</code> Spring profile on which you can stub out all HTTP calls to return
+a mocked response</p>
+</li>
+<li>
+<p>if the application is using a database then it gets upgraded at this point via Flyway, Liquibase
+or any other tool once the application gets started</p>
+</li>
+<li>
+<p>from the project&#8217;s Maven or Gradle build we&#8217;re extracting <code>stubrunner.ids</code> property that contains
+all the <code>groupId:artifactId:version:classifier</code> notation of dependant projects for which
+the stubs should be downloaded.</p>
+</li>
+<li>
+<p>then we&#8217;re uploading <code>Stub Runner Boot</code> and pass the extracted <code>stubrunner.ids</code> to it. That way
+we&#8217;ll have a running application in Cloud Foundry that will download all the necessary stubs
+of our application</p>
+</li>
+<li>
+<p>from the checked out code we&#8217;re running the tests available under the <code>smoke</code> profile. In the
+case of <a href="https://github.com/spring-cloud-samples/github-analytics/">GitHub Analytics</a> application
+we&#8217;re triggering a message from the <a href="https://github.com/spring-cloud-samples/github-webhook">GitHub Webhook</a>
+application&#8217;s stub, that is sent via RabbitMQ to GitHub Analytics. Then we&#8217;re checking if
+message count has increased. You can check those tests <a href="https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/smoke/IntegrationTests.java">here</a>.</p>
+</li>
+<li>
+<p>once the tests pass we&#8217;re searching for the last production release. Once the application
+is deployed to production we&#8217;re tagging it with <code>prod/${version}</code> tag. If there is no such tag
+(there was no production release) there will be no rollback tests executed. If there was
+a production release the tests will get executed.</p>
+</li>
+<li>
+<p>assuming that there was a production release we&#8217;re checking out the code corresponding to that
+release (we&#8217;re checking out the tag), we&#8217;re downloading the appropriate fat jar and we&#8217;re uploading
+it to Cloud Foundry. <strong>IMPORTANT</strong> the <em>old</em> jar is running against the <strong>NEW</strong> version of the database.</p>
+</li>
+<li>
+<p>we&#8217;re running the <em>old</em> <code>smoke</code> tests against the freshly deployed application surrounded by stubs.
+If those tests pass then we have a high probability that the application is backwards compatible</p>
+</li>
+<li>
+<p>the default behaviour is that after all of those steps the user can manually click to deploy the
+application to a stage environment</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_stage">Stage</h5>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/stage.png" alt="stage">
+</div>
+<div class="title">Figure 9. End to end tests on stage environment</div>
+</div>
+<div class="paragraph">
+<p>Here we&#8217;re</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>starting a RabbitMQ service in Cloud Foundry</p>
+</li>
+<li>
+<p>deploying <code>Eureka</code> infrastructure application to Cloud Foundry</p>
+</li>
+<li>
+<p>downloading the fat jar from Nexus and we&#8217;re uploading it to Cloud Foundry.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Next we have a manual step in which:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>from the checked out code we&#8217;re running the tests available under the <code>e2e</code> profile. In the
+case of <a href="https://github.com/spring-cloud-samples/github-analytics/">GitHub Analytics</a> application
+we&#8217;re sending a HTTP message to GitHub Analytic&#8217;s endpoint. Then we&#8217;re checking if
+the received message count has increased. You can check those tests <a href="https://github.com/spring-cloud-samples/github-analytics/blob/master/src/test/java/e2e/E2eTests.java">here</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The step is manual by default due to the fact that stage environment is often shared between
+teams and some preparations on databases / infrastructure have to take place before running the tests.
+Ideally these step should be fully automatic.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_prod">Prod</h5>
+<div class="imageblock">
+<div class="content">
+<img src="img/intro/prod.png" alt="prod">
+</div>
+<div class="title">Figure 10. Deployment to production</div>
+</div>
+<div class="paragraph">
+<p>The step to deploy to production is manual but ideally it should be automatic.</p>
+</div>
+<div class="paragraph">
+<p>Here we&#8217;re</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>starting a RabbitMQ service in Cloud Foundry (only for the demo to pass - you should provision
+the prod environment in a different way)</p>
+</li>
+<li>
+<p>deploying <code>Eureka</code> infrastructure application to Cloud Foundry (only for the demo to pass - you should provision
+the prod environment in a different way)</p>
+</li>
+<li>
+<p>tagging the Git repo with <code>prod/${version}</code> tag</p>
+</li>
+<li>
+<p>downloading the fat jar from Nexus</p>
+</li>
+<li>
+<p>we&#8217;re doing Blue Green deployment on Cloud Foundry</p>
+</li>
+<li>
+<p>we&#8217;re renaming the current instance of the app e.g. <code>fooService</code> to <code>fooService-venerable</code></p>
+</li>
+<li>
+<p>we&#8217;re deploying the new instance of the app under the <code>fooService</code> name</p>
+</li>
+<li>
+<p>now two instances of the same application are running on production</p>
+</li>
+<li>
+<p>in the <code>Complete switch over</code> which is a manual step</p>
+</li>
+<li>
+<p>we&#8217;re deleting the old instance</p>
+</li>
+<li>
+<p>remember to run this step only after you have confirmed that both instances are working fine!</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="concourse">Concourse Pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The repository contains an opinionated pipeline that will build and deploy  - <a href="https://github.com/spring-cloud-samples/github-webhook">Github Webhook</a> application.</p>
+</div>
+<div class="paragraph">
+<p>All in all there are the following projects taking part in the whole <code>microservice setup</code> for this demo.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics">Github-Analytics</a> - the app that has a REST endpoint and uses messaging. Our business application.</p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-webhook">Github Webhook</a> - project that emits messages that are used by Github Analytics. Our business application.</p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-eureka">Eureka</a> - simple Eureka Server. This is an infrastructure application.</p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot">Github Analytics Stub Runner Boot</a> - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_step_by_step">Step by step</h3>
+<div class="paragraph">
+<p>If you want to just run the demo as far as possible using PCF Dev and Docker Compose</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#fork">Fork repos</a></p>
+</li>
+<li>
+<p><a href="#start">Start Concourse and Artifactory</a></p>
+</li>
+<li>
+<p><a href="#deploy">Deploy infra to Artifactory</a></p>
+</li>
+<li>
+<p><a href="#pcfdev">Start PCF Dev (if you don&#8217;t want to use an existing one)</a></p>
+</li>
+<li>
+<p><a href="#fly">Setup the <code>fly</code> CLI</a></p>
+</li>
+<li>
+<p><a href="#creds">Setup your <code>credentials.yml</code></a></p>
+</li>
+<li>
+<p><a href="#seed">Run the seed job</a></p>
+</li>
+<li>
+<p><a href="#pipeline">Run the <code>github-webhook</code> pipeline</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Below you can find <a href="#optional">optional</a> steps needed to be taken when you want to customize the pipeline</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#env">Setup Jenkins env vars (if you want to use the demo defaults and you&#8217;re using Docker Machine
+just check out the section on how to update the URL to Artifactory)</a></p>
+</li>
+<li>
+<p><a href="#settings">Add <code>settings.xml</code> for Jenkins' master (you can skip this if you want to use our defaults)</a></p>
+</li>
+<li>
+<p><a href="#misc">Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)</a></p>
+</li>
+<li>
+<p><a href="#credentials">Setup Jenkins credentials</a></p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_fork_repos">Fork repos</h4>
+<div class="paragraph">
+<p><a id="fork"></a> There are 4 apps that are composing the pipeline</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-webhook">Github Webhook</a></p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics/">Github Analytics</a></p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-eureka">Github Eureka</a></p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot">Github Stub Runner Boot</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You need to fork only these. That&#8217;s because only then will your user be able to tag and push the tag to repo.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-webhook">Github Webhook</a></p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics/">Github Analytics</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_start_concourse_and_artifactory">Start Concourse and Artifactory</h4>
+<div class="paragraph">
+<p><a id="start"></a> Concourse + Artifactory can be run locally. To do that just execute the
+<code>start.sh</code> script from this repo.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/concourse
+./setup_docker_compose.sh
+./start.sh 192.168.99.100</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>setup_docker_compose.sh</code> script should be executed once only to allow
+generation of keys.</p>
+</div>
+<div class="paragraph">
+<p>The <code>192.168.99.100</code> param is an example of an external URL of Concourse
+(equal to Docker-Machine ip in this example).</p>
+</div>
+<div class="paragraph">
+<p>Then Concourse will be running on port <code>8080</code> and Artifactory <code>8081</code>.</p>
+</div>
+<div class="sect4">
+<h5 id="_deploy_the_infra_jars_to_artifactory">Deploy the infra JARs to Artifactory</h5>
+<div class="paragraph">
+<p><a id="deploy"></a> When Artifactory is running, just execute the <code>tools/deploy-infra.sh</code> script from this repo.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+./tools/deploy-infra.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As a result both <code>eureka</code> and <code>stub runner</code> repos will be cloned, built
+and uploaded to Artifactory.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_start_pcf_dev">Start PCF Dev</h4>
+<div class="paragraph">
+<p><a id="pcfdev"></a> TIP: You can skip this step if you have CF installed and don&#8217;t want to use PCF Dev
+The only thing you have to do is to set up spaces.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+It&#8217;s more than likely that you&#8217;ll run out of resources when you reach stage step.
+Don&#8217;t worry! Keep calm and <a href="#resources">clear some apps from PCF Dev and continue</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You have to download and start PCF Dev. <a href="https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev">A link how to do it is available here.</a></p>
+</div>
+<div class="paragraph">
+<p>The default credentials when using PCF Dev are:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">username: user
+password: pass
+email: user
+org: pcfdev-org
+space: pcfdev-space
+api: api.local.pcfdev.io</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can start the PCF dev like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">cf dev start</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll have to create 3 separate spaces (email admin, pass admin)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">cf login -a https://api.local.pcfdev.io --skip-ssl-validation -u admin -p admin -o pcfdev-org
+
+cf create-space pcfdev-test
+cf set-space-role user pcfdev-org pcfdev-test SpaceDeveloper
+cf create-space pcfdev-stage
+cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
+cf create-space pcfdev-prod
+cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also execute the <code>./tools/pcfdev-helper.sh setup-spaces</code> to do this.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_setup_the_code_fly_code_cli">Setup the <code>fly</code> CLI</h4>
+<div class="paragraph">
+<p><a id="fly"></a> If you go to Concourse website you should see sth like this:</p>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/running_concourse.png" alt="running concourse">
+</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="paragraph">
+<p>You can click one of the icons (depending on your OS) to download <code>fly</code>, which is the Concourse CLI. Once you&#8217;ve downloaded that (and maybe added to your PATH) you can run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">fly --version</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If <code>fly</code> is properly installed then it should print out the version.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_setup_your_code_credentials_yml_code">Setup your <code>credentials.yml</code></h4>
+<div class="paragraph">
+<p><a id="creds"></a> The repo comes with <code>credentials-sample.yml</code> which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file <code>credentials.yml</code> (the file is added to .gitignore so don&#8217;t worry that you&#8217;ll push it with your passwords) and edit it as you wish. For our demo jus setup:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>app-url</code> - url pointing to your forked <code>github-webhook</code> repo</p>
+</li>
+<li>
+<p><code>github-private-key</code> - your private key to clone / tag GitHub repos</p>
+</li>
+<li>
+<p><code>repo-with-binaries</code> - the IP is set to the defaults for Docker Machine. You should update it to point to your setup</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If you don&#8217;t have a Docker Machine just execute <code>./whats_my_ip.sh</code> script to
+get an external IP that you can pass to your <code>repo-with-binaries</code> instead of the default
+Docker Machine IP.</p>
+</div>
+<div class="paragraph">
+<p>Below you can see what environment variables are required by the scripts. To the right hand side you can see the default values for PCF Dev that we set in the <code>credentials-sample.yml</code>.</p>
+</div>
+<table class="tableblock frame-topbot grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property Name</th>
+<th class="tableblock halign-left valign-top">Property Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BUILD_OPTIONS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Additional options you would like to pass to the Maven / Gradle build</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for TEST env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for STAGE env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for PROD env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the test env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the test env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the stage env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the stage env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the prod env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the prod env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REPO_WITH_BINARIES</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL to repo with the deployed jars</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="http://192.168.99.100:8081/artifactory/libs-release-local" class="bare">http://192.168.99.100:8081/artifactory/libs-release-local</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">M2_SETTINGS_REPO_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The id of server from Maven settings.xml</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">artifactory-local</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_HOSTNAME_UUID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Additional suffix for the route. In a shared environment the default routes can be already taken</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">APP_MEMORY_LIMIT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">How much memory should be used by the infra apps (Eureka, Stub Runner etc.)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">256m</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JAVA_BUILDPACK_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the Java buildpack to be used by CF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" class="bare">https://github.com/cloudfoundry/java-buildpack.git#v3.8.1</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_build_the_pipeline">Build the pipeline</h4>
+<div class="paragraph">
+<p>Log in (e.g. for Concourse running at <code>192.168.99.100</code> - if you don&#8217;t provide any value then <code>localhost</code> is assumed). If you execute this script  (it assumes that either <code>fly</code> is on your <code>PATH</code> or it&#8217;s in the same folder as the script is):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">./login.sh 192.168.99.100</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next run the command to create the pipeline.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">./set_pipeline.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then you&#8217;ll create a <code>github-webhook</code> pipeline under the <code>docker</code> alias, using the provided <code>credentials.yml</code> file.
+You can override these values in exactly that order (e.g. <code>./set-pipeline.sh some-project another-target some-other-credentials.yml</code>)</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_run_the_code_github_webhook_code_pipeline">Run the <code>github-webhook</code> pipeline</h4>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/concourse_login.png" alt="concourse login">
+</div>
+<div class="title">Step 1: Click <code>Login</code></div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/concourse_team_main.png" alt="concourse team main">
+</div>
+<div class="title">Step 2: Pick <code>main</code> team</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/concourse_user_pass.png" alt="concourse user pass">
+</div>
+<div class="title">Step 3: Log in with <code>concourse</code> user and <code>changeme</code> password</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/concourse_pipeline.png" alt="concourse pipeline">
+</div>
+<div class="title">Step 4: Your screen should look more or less like this</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/start_pipeline.png" alt="start pipeline">
+</div>
+<div class="title">Step 5: Unpause the pipeline by clicking in the top lefr corner and then clicking the <code>play</code> button</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/generate_version.png" alt="generate version">
+</div>
+<div class="title">Step 6: Click 'generate-version'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/run_pipeline.png" alt="run pipeline">
+</div>
+<div class="title">Step 7: Click <code>+</code> sign to start a new build</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/concourse_pending.png" alt="concourse pending">
+</div>
+<div class="title">Step 8: The job is pending</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/job_running.png" alt="job running">
+</div>
+<div class="title">Step 9: Job is pending in the main screen</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/concourse/running_pipeline.png" alt="running pipeline">
+</div>
+<div class="title">Step 10: Job is running in the main screen</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_faq">FAQ</h3>
+<div class="sect3">
+<h4 id="faq">Can I use the pipeline for some other repos?</h4>
+<div class="paragraph">
+<p>Sure! Just change the <code>app-url</code> in <code>credentials.yml</code>!</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_will_this_work_for_any_project_out_of_the_box">Will this work for ANY project out of the box?</h4>
+<div class="paragraph">
+<p>Not really. This is an <code>opinionated pipeline</code> that&#8217;s why we took some
+opinionated decisions like:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka</p>
+</li>
+<li>
+<p>application deployment to Cloud Foundry</p>
+</li>
+<li>
+<p>For Maven:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>usage of Maven Wrapper</p>
+</li>
+<li>
+<p>artifacts deployment by <code>./mvnw clean deploy</code></p>
+</li>
+<li>
+<p><code>stubrunner.ids</code> property to retrieve list of collaborators for which stubs should be downloaded</p>
+</li>
+<li>
+<p>running smoke tests on a deployed app via the <code>smoke</code> Maven profile</p>
+</li>
+<li>
+<p>running end to end tests on a deployed app via the <code>e2e</code> Maven profile</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>For Gradle (in the <code>github-analytics</code> application check the <code>gradle/pipeline.gradle</code> file):</p>
+<div class="ulist">
+<ul>
+<li>
+<p>usage of Gradlew Wrapper</p>
+</li>
+<li>
+<p><code>deploy</code> task for artifacts deployment</p>
+</li>
+<li>
+<p>running smoke tests on a deployed app via the <code>smoke</code> task</p>
+</li>
+<li>
+<p>running end to end tests on a deployed app via the <code>e2e</code> task</p>
+</li>
+<li>
+<p><code>groupId</code> task to retrieve group id</p>
+</li>
+<li>
+<p><code>artifactId</code> task to retrieve artifact id</p>
+</li>
+<li>
+<p><code>currentVersion</code> task to retrieve the current version</p>
+</li>
+<li>
+<p><code>stubIds</code> task to retrieve list of collaborators for which stubs should be downloaded</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This is the initial approach that can be easily changed in the future.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_can_i_modify_this_to_reuse_in_my_project">Can I modify this to reuse in my project?</h4>
+<div class="paragraph">
+<p>Sure! It&#8217;s open-source! The important thing is that the core part of the logic is written in
+Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
+whole pipeline. <a href="https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash">You can check out the scripts here.</a></p>
+</div>
+<div class="paragraph">
+<p>Furthermore, if you only want to customize a particular function under <code>common/src/main/bash</code>, you can provide your own
+function under <code>common/src/main/bash/&lt;some custom identifier&gt;</code> where <code>&lt;some custom identifier&gt;</code> is equal to the value of
+the <code>CUSTOM_SCRIPT_IDENTIFIER</code> environment variable. For more on this technique, see
+<a href="../common/README.html#Override specific project type pipeline functions">Override specific project type pipeline functions</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_i_ran_out_of_resources">I ran out of resources!!</h4>
+<div class="paragraph">
+<p><a id="resources"></a> When deploying the app to stage or prod you can get an exception <code>Insufficient resources</code>. The way to
+ solve it is to kill some apps from test / stage env. To achieve that just call</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">cf target -o pcfdev-org -s pcfdev-test
+cf stop github-webhook
+cf stop github-eureka
+cf stop stubrunner</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also execute <code>./tools/pcfdev-helper.sh kill-all-apps</code> that will remove
+all demo-related apps deployed to PCF dev.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_rollback_step_fails_due_to_missing_jar">The rollback step fails due to missing JAR ?!</h4>
+<div class="paragraph">
+<p>You must have pushed some tags and have removed the Artifactory volume that
+contained them. To fix this, just remove the tags</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">git tag -l | xargs -n 1 git push --delete origin</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_can_i_see_the_output_of_a_job_from_the_terminal">Can I see the output of a job from the terminal?</h4>
+<div class="paragraph">
+<p>Yes! Assuming that pieline name is <code>github-webhook</code> and job name is <code>build-and-upload</code> you can running</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">fly watch --job github-webhook/build-and-upload -t docker</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_i_clicked_the_job_and_it_s_constantly_pending">I clicked the job and it&#8217;s constantly pending&#8230;&#8203;</h4>
+<div class="paragraph">
+<p>Don&#8217;t worry&#8230;&#8203; most likely you&#8217;ve just forgotten to click the <code>play</code> button to
+unpause the pipeline. Click to the top left, expand the list of pipelines and click
+the <code>play</code> button next to <code>github-webhook</code>.</p>
+</div>
+<div class="paragraph">
+<p>Another problem that might occur is that you need to have the <code>version</code> branch.
+Concourse will wait for the <code>version</code> branch to appear in your repo. So in order for
+the pipeline to start ensure that when doing some git operations you haven&#8217;t
+forgotten to create / copy the <code>version</code> branch too.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_route_is_already_in_use">The route is already in use</h4>
+<div class="paragraph">
+<p>If you play around with Jenkins / Concourse you might end up with the routes occupied</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">Using route github-webhook-test.local.pcfdev.io
+Binding github-webhook-test.local.pcfdev.io to github-webhook...
+FAILED
+The route github-webhook-test.local.pcfdev.io is already in use.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Just delete the routes</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">yes | cf delete-route local.pcfdev.io -n github-webhook-test
+yes | cf delete-route local.pcfdev.io -n github-eureka-test
+yes | cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n github-webhook-stage
+yes | cf delete-route local.pcfdev.io -n github-eureka-stage
+yes | cf delete-route local.pcfdev.io -n github-webhook-prod
+yes | cf delete-route local.pcfdev.io -n github-eureka-prod</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also execute the <code>./tools/pcfdev-helper.sh delete-routes</code></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_i_m_unauthorized_to_deploy_infrastructure_jars">I&#8217;m unauthorized to deploy infrastructure jars</h4>
+<div class="paragraph">
+<p>Most likely you&#8217;ve forgotten to update your local <code>settings.xml</code> with the Artifactory&#8217;s
+setup. Check out <a href="#settings">this section of the docs and update your <code>settings.xml</code></a>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_jenkins_dsl_pipeline">Jenkins DSL Pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="jenkins"></a> The repository contains job definitions and the opinionated setup pipeline using <a href="https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin">Jenkins Job Dsl plugin</a>. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.</p>
+</div>
+<div class="paragraph">
+<p>All in all there are the following projects taking part in the whole <code>microservice setup</code> for this demo.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics">Github-Analytics</a> - the app that has a REST endpoint and uses messaging. Our business application.</p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-webhook">Github Webhook</a> - project that emits messages that are used by Github Analytics. Our business application.</p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-eureka">Eureka</a> - simple Eureka Server. This is an infrastructure application.</p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot">Github Analytics Stub Runner Boot</a> - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_project_setup_2">Project setup</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">.
+├── declarative-pipeline
+│   └── Jenkinsfile-sample.groovy
+├── jobs
+│   ├── jenkins_pipeline_empty.groovy
+│   ├── jenkins_pipeline_jenkinsfile_empty.groovy
+│   ├── jenkins_pipeline_sample.groovy
+│   └── jenkins_pipeline_sample_view.groovy
+├── seed
+│   ├── gradle.properties
+│   ├── init.groovy
+│   ├── jenkins_pipeline.groovy
+│   └── settings.xml
+└── src
+    ├── main
+    └── test</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the <code>declarative-pipeline</code> you can find a definition of a <code>Jenkinsfile-sample.groovy</code> declarative
+pipeline. It&#8217;s used together with the Blueocean UI.</p>
+</div>
+<div class="paragraph">
+<p>In the <code>jobs</code> folder you have all the seed jobs that will generate pipelines.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>jenkins_pipeline_empty.groovy</code> - is a template of a pipeline with empty steps using the Jenkins Job DSL plugin</p>
+</li>
+<li>
+<p><code>jenkins_pipeline_jenkinsfile_empty.groovy</code> - is a template of a pipeline with empty steps using the Pipeline plugin</p>
+</li>
+<li>
+<p><code>jenkins_pipeline_sample.groovy</code> - is an opinionated implementation using the Jenkins Job DSL plugin</p>
+</li>
+<li>
+<p><code>jenkins_pipeline_sample_view.groovy</code> - builds the views for the pipelines</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the <code>seed</code> folder you have the <code>init.groovy</code> file which is executed when Jenkins starts.
+That way we can configure most of Jenkins options for you (adding credentials, JDK etc.).
+<code>jenkins_pipeline.groovy</code> contains logic to build a seed job (that way you don&#8217;t have to even click that
+job - we generate it for you).</p>
+</div>
+<div class="paragraph">
+<p>In the <code>src</code> folder you have production and test classes needed for you to build your own pipeline.
+Currently we have tests only cause the whole logic resides in the <code>jenkins_pipeline_sample</code> file.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_by_step_2">Step by step</h3>
+<div class="paragraph">
+<p>This is a guide for Jenkins JOB Dsl based pipeline.</p>
+</div>
+<div class="paragraph">
+<p>If you want to just run the demo as far as possible using PCF Dev and Docker Compose</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#jenkins_fork">Fork repos</a></p>
+</li>
+<li>
+<p><a href="#jenkins_start">Start Jenkins and Artifactory</a></p>
+</li>
+<li>
+<p><a href="#jenkins_deploy">Deploy infra to Artifactory</a></p>
+</li>
+<li>
+<p><a href="#jenkins_pcfdev">Start PCF Dev (if you don&#8217;t want to use an existing one)</a></p>
+</li>
+<li>
+<p><a href="#jenkins_seed">Run the seed job</a></p>
+</li>
+<li>
+<p><a href="#jenkins_pipeline">Run the <code>github-webhook</code> pipeline</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Below you can find <a href="#optional">optional</a> steps needed to be taken when you want to customize the pipeline</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#env">Setup Jenkins env vars (if you want to use the demo defaults and you&#8217;re using Docker Machine
+just check out the section on how to update the URL to Artifactory)</a></p>
+</li>
+<li>
+<p><a href="#jenkins_settings">Add <code>settings.xml</code> for Jenkins' master (you can skip this if you want to use our defaults)</a></p>
+</li>
+<li>
+<p><a href="#jenkins_misc">Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)</a></p>
+</li>
+<li>
+<p><a href="#jenkins_credentials">Setup Jenkins credentials</a></p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_fork_repos_2">Fork repos</h4>
+<div class="paragraph">
+<p><a id="jenkins_fork"></a> There are 4 apps that are composing the pipeline</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-webhook">Github Webhook</a></p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics/">Github Analytics</a></p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-eureka">Github Eureka</a></p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot">Github Stub Runner Boot</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You need to fork only these. That&#8217;s because only then will your user be able to tag and push the tag to repo.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-webhook">Github Webhook</a></p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud-samples/github-analytics/">Github Analytics</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_start_jenkins_and_artifactory">Start Jenkins and Artifactory</h4>
+<div class="paragraph">
+<p><a id="jenkins_start"></a> Jenkins + Artifactory can be ran locally. To do that just execute the
+<code>start.sh</code> script from this repo.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/jenkins
+./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then Jenkins will be running on port <code>8080</code> and Artifactory <code>8081</code>.
+The provided parameters will be passed as env variables to Jenkins VM
+and credentials will be set in your set. That way you don&#8217;t have to do
+any manual work on the Jenkins side. In the above parameters, the third parameter
+could be yourForkedGithubOrg or yourGithubUsername. Also the <code>REPOS</code> env variable will
+contain your GitHub org in which you have the forked repos.</p>
+</div>
+<div class="sect4">
+<h5 id="_deploy_the_infra_jars_to_artifactory_2">Deploy the infra JARs to Artifactory</h5>
+<div class="paragraph">
+<p><a id="jenkins_deploy"></a> When Artifactory is running, just execute the <code>tools/deploy-infra.sh</code> script from this repo.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+./tools/deploy-infra.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As a result both <code>eureka</code> and <code>stub runner</code> repos will be cloned, built
+and uploaded to Artifactory.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_start_pcf_dev_2">Start PCF Dev</h4>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+You can skip this step if you have CF installed and don&#8217;t want to use PCF Dev
+The only thing you have to do is to set up spaces.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+It&#8217;s more than likely that you&#8217;ll run out of resources when you reach stage step.
+Don&#8217;t worry! Keep calm and <a href="#resources">clear some apps from PCF Dev and continue</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><a id="jenkins_pcfdev"></a> You have to download and start PCF Dev. <a href="https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev">A link how to do it is available here.</a></p>
+</div>
+<div class="paragraph">
+<p>The default credentials when using PCF Dev are:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">username: user
+password: pass
+email: user
+org: pcfdev-org
+space: pcfdev-space
+api: api.local.pcfdev.io</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can start the PCF dev like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">cf dev start</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll have to create 3 separate spaces (email admin, pass admin)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">cf login -a https://api.local.pcfdev.io --skip-ssl-validation -u admin -p admin -o pcfdev-org
+
+cf create-space pcfdev-test
+cf set-space-role user pcfdev-org pcfdev-test SpaceDeveloper
+cf create-space pcfdev-stage
+cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
+cf create-space pcfdev-prod
+cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also execute the <code>./tools/pcfdev-helper.sh setup-spaces</code> to do this.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_run_the_seed_job">Run the seed job</h4>
+<div class="paragraph">
+<p><a id="jenkins_seed"></a> We already create the seed job for you but you&#8217;ll have to run it. When you do
+run it you have to provide some properties. By default we create a seed that
+has all the properties options, but you can delete most of it. If you
+set the properties as global env variables you have to remove them from the
+seed.</p>
+</div>
+<div class="paragraph">
+<p>Anyways, to run the demo just provide in the <code>REPOS</code> var the comma separated
+ list of URLs of the 2 aforementioned forks of <code>github-webhook</code> and `github-analytics'.</p>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/seed_click.png" alt="seed click">
+</div>
+<div class="title">Step 1: Click the 'jenkins-pipeline-seed' job</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/seed_run.png" alt="seed run">
+</div>
+<div class="title">Step 2: Click the 'Build with parameters'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/seed.png" alt="seed">
+</div>
+<div class="title">Step 3: Provide the <code>REPOS</code> parameter with URLs of your forks (you&#8217;ll have more properties than the ones in the screenshot)</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/seed_built.png" alt="seed built">
+</div>
+<div class="title">Step 4: This is how the results of seed should look like</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_run_the_code_github_webhook_code_pipeline_2">Run the <code>github-webhook</code> pipeline</h4>
+<div class="paragraph">
+<p><a id="jenkins_pipeline"></a> We already create the seed job for you but you&#8217;ll have to run it. When you do
+run it you have to provide some properties. By default we create a seed that
+has all the properties options, but you can delete most of it. If you
+set the properties as global env variables you have to remove them from the
+seed.</p>
+</div>
+<div class="paragraph">
+<p>Anyways, to run the demo just provide in the <code>REPOS</code> var the comma separated
+ list of URLs of the 2 aforementioned forks of <code>github-webhook</code> and <code>github-analytics</code>.</p>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/seed_views.png" alt="seed views">
+</div>
+<div class="title">Step 1: Click the 'github-webhook' view</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/pipeline_run.png" alt="pipeline run">
+</div>
+<div class="title">Step 2: Run the pipeline</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/pipeline_run_props.png" alt="pipeline run props">
+</div>
+<div class="title">Step 3: You can set some properties (just click 'Build' to proceed) </div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+Most likely your 1st build will suddenly hang for 10 minutes. If you rerun it
+again it should work after 2-3 minutes. My guess is that it&#8217;s related to Docker Compose
+so sorry for this unfortunate situation.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+If your build fails on the <strong>deploy previous version to stage</strong> due to missing jar,
+that means that you&#8217;ve forgotten to clear the tags in your repo. Typically that&#8217;s due to the fact that
+you&#8217;ve removed the Artifactory volume with deployed JAR whereas a tag in the repo is still pointing there.
+<a href="#tags">Check out this section on how to remove the tag.</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/pipeline_manual.png" alt="pipeline manual">
+</div>
+<div class="title">Step 4: Click the manual step to go to stage (remember about killing the apps on test env). To do this click the <strong>ARROW</strong> next to the job name</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+Most likely you will run out of memory so when reaching the stage
+environment it&#8217;s good to kill all apps on test. <a href="#faq">Check out the FAQ section for more details</a>!
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/pipeline_finished.png" alt="pipeline finished">
+</div>
+<div class="title">Step 5: The full pipeline should look like this</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_declarative_pipeline_blue_ocean">Declarative pipeline &amp; Blue Ocean</h3>
+<div class="paragraph">
+<p>You can also use the <a href="https://jenkins.io/doc/book/pipeline/syntax/">declarative pipeline</a> approach with the
+<a href="https://jenkins.io/projects/blueocean/">Blue Ocean UI</a>. Here is a step by step guide to run a pipeline via
+this approach.</p>
+</div>
+<div class="paragraph">
+<p>The Blue Ocean UI is available under the <code>blue/</code> URL. E.g. for Docker Machine based setup <code><a href="http://192.168.99.100:8080/blue" class="bare">http://192.168.99.100:8080/blue</a></code>.</p>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_1.png" alt="blue 1">
+</div>
+<div class="title">Step 1: Open Blue Ocean UI and click on <code>github-webhook-declarative-pipeline</code></div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_2.png" alt="blue 2">
+</div>
+<div class="title">Step 2: Your first run will look like this. Click <code>Run</code> button</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_3.png" alt="blue 3">
+</div>
+<div class="title">Step 3: Enter parameters required for the build and click <code>run</code></div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_4.png" alt="blue 4">
+</div>
+<div class="title">Step 4: A list of pipelines will be shown. Click your first run.</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_5.png" alt="blue 5">
+</div>
+<div class="title">Step 5: State if you want to go to production or not and click <code>Proceed</code></div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_6.png" alt="blue 6">
+</div>
+<div class="title">Step 6: The build is in progress&#8230;&#8203;</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/blue_7.png" alt="blue 7">
+</div>
+<div class="title">Step 7: The pipeline is done!</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+There is no possibility of restarting pipeline from specific stage, after failure. Please
+check out this <a href="https://issues.jenkins-ci.org/browse/JENKINS-33846">issue</a> for more information
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+Currently there is no way to introduce manual steps in a performant way. Jenkins is
+blocking an executor when manual step is required. That means that you&#8217;ll run out of executors
+pretty fast. You can check out this <a href="https://issues.jenkins-ci.org/browse/JENKINS-36235">issue</a> for
+and this <a href="http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei">StackOverflow question</a>
+for more information.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_optional_steps">Optional steps</h3>
+<div class="paragraph">
+<p><a id="jenkins_optional"></a> All the steps below are not necessary to run the demo. They are needed only
+when you want to do some custom changes.</p>
+</div>
+<div class="sect3">
+<h4 id="_deploying_infra_jars_to_a_different_location">Deploying infra jars to a different location</h4>
+<div class="paragraph">
+<p>It&#8217;s enough to set the <code>ARTIFACTORY_URL</code> environmental variable before
+executing <code>tools/deploy-infra.sh</code>. Example for deploying to Artifactory at IP <code>192.168.99.100</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_setup_settings_xml_for_maven_deployment">Setup settings.xml for Maven deployment</h4>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+If you want to use the default connection to the Docker version
+of Artifactory you can skip this step
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><a id="jenkins_settings"></a> So that <code>./mvnw deploy</code> works with Artifactory from Docker we&#8217;re
+already copying the missing <code>settings.xml</code> file for you. It looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-xml" data-lang="xml">&lt;server&gt;
+  &lt;id&gt;artifactory-local&lt;/id&gt;
+  &lt;username&gt;admin&lt;/username&gt;
+  &lt;password&gt;password&lt;/password&gt;
+&lt;/server&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you want to use your own version of Artifactory / Nexus you have to update
+the file (it&#8217;s in <code>seed/settings.xml</code>).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_setup_jenkins_env_vars">Setup Jenkins env vars</h4>
+<div class="paragraph">
+<p><a id="jenkins_env"></a> If you want to only play around with the demo that we&#8217;ve prepared you have to set <strong>ONE</strong> variable which is the <code>REPOS</code> variable.
+That variable needs to consists of comma separated list of URLs to repositories containing business apps. So you should pass your forked repos URLs.</p>
+</div>
+<div class="paragraph">
+<p>You can do it in the following ways:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>globally via Jenkins global env vars (then when you run the seed that variable will be taken into consideration and proper pipelines will get built)</p>
+</li>
+<li>
+<p>modify the seed job parameters (you&#8217;ll have to modify the seed job configuration and change the <code>REPOS</code> property)</p>
+</li>
+<li>
+<p>provide the repos parameter when running the seed job</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For the sake of simplicity let&#8217;s go with the <strong>last</strong> option.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+If you&#8217;re choosing the global envs, you <strong>HAVE</strong> to remove the other approach
+(e.g. if you set the global env for <code>REPOS</code>, please remove that property in the
+seed job
+</td>
+</tr>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_seed_properties">Seed properties</h5>
+<div class="paragraph">
+<p>Click on the seed job and pick <code>Build with parameters</code>. Then as presented in the screen below (you&#8217;ll have far more properties to set) just modify the <code>REPOS</code> property by providing the comma separated list of URLs to your forks. Whatever you set will be parsed by the seed job and passed to the generated Jenkins jobs.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+This is very useful when the repos you want to build differ. E.g. use
+different JDK. Then some seeds can set the <code>JDK_VERSION</code> param to one version
+of Java installation and the others to another one.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Example screen:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/seed.png" alt="seed">
+</div>
+</div>
+<div class="paragraph">
+<p>In the screenshot we could parametrize the <code>REPOS</code> and <code>REPO_WITH_BINARIES</code> params.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_global_envs">Global envs</h5>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+This section is presented only for informational purposes - for the sake of demo you can skip it
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You can add env vars (go to configure Jenkins &#8594; Global Properties) for the following
+ properties (the defaults are for PCF Dev):</p>
+</div>
+<div class="paragraph">
+<p>Example screen:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/env_vars.png" alt="env vars">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_all_env_vars">All env vars</h5>
+<div class="paragraph">
+<p>The env vars that are used in all of the jobs are as follows:</p>
+</div>
+<table class="tableblock frame-topbot grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property Name</th>
+<th class="tableblock halign-left valign-top">Property Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BUILD_OPTIONS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Additional options you would like to pass to the Maven / Gradle build</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for TEST env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for STAGE env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_API_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the CF Api for PROD env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">api.local.pcfdev.io</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the test env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the test env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the stage env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the stage env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_ORG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the org for the prod env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-org</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_SPACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the space for the prod env</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pcfdev-space</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REPO_WITH_BINARIES</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL to repo with the deployed jars</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="http://artifactory:8081/artifactory/libs-release-local" class="bare">http://artifactory:8081/artifactory/libs-release-local</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">M2_SETTINGS_REPO_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The id of server from Maven settings.xml</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">artifactory-local</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JDK_VERSION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The name of the JDK installation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jdk8</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PIPELINE_VERSION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">What should be the version of the pipeline (ultimately also version of the jar)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GIT_EMAIL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The email used by Git to tag repo</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="mailto:email@example.com">email@example.com</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GIT_NAME</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The name used by Git to tag repo</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pivo Tal</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_HOSTNAME_UUID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Additional suffix for the route. In a shared environment the default routes can be already taken</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AUTO_DEPLOY_TO_STAGE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Should deployment to stage be automatic</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AUTO_DEPLOY_TO_PROD</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Should deployment to prod be automatic</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROLLBACK_STEP_REQUIRED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Should rollback step be present</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DEPLOY_TO_STAGE_STEP_REQUIRED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Should deploy to stage step be present</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">APP_MEMORY_LIMIT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">How much memory should be used by the infra apps (Eureka, Stub Runner etc.)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">256m</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JAVA_BUILDPACK_URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The URL to the Java buildpack to be used by CF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" class="bare">https://github.com/cloudfoundry/java-buildpack.git#v3.8.1</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_git_email_user">Set Git email / user</h4>
+<div class="paragraph">
+<p>Since our pipeline is setting the git user / name explicitly for the build step
+ you&#8217;d have to go to <code>Configure</code> of the build step and modify the Git name / email.
+ If you want to set it globally you&#8217;ll have to remove the section from the build
+ step and follow these steps to set it globally.</p>
+</div>
+<div class="paragraph">
+<p>You can set Git email / user globally like this:</p>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/manage_jenkins.png" alt="manage jenkins">
+</div>
+<div class="title">Step 1: Click 'Manage Jenkins'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/configure_system.png" alt="configure system">
+</div>
+<div class="title">Step 2: Click 'Configure System'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/git.png" alt="git">
+</div>
+<div class="title">Step 3: Fill out Git user information</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_jenkins_credentials">Jenkins Credentials</h4>
+<div class="paragraph">
+<p>In your scripts we reference the credentials via IDs. These are the defaults for credentials</p>
+</div>
+<table class="tableblock frame-topbot grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property Name</th>
+<th class="tableblock halign-left valign-top">Property Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_PROD_CREDENTIAL_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Credential ID for CF Prod env access</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cf-prod</p></td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GIT_CREDENTIAL_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Credential ID used to tag a git repo</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">git</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REPO_WITH_BINARIES_CREDENTIALS_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Credential ID used for the repo with jars</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">repo-with-binaries</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_TEST_CREDENTIAL_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Credential ID for CF Test env access</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cf-test</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PAAS_STAGE_CREDENTIAL_ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Credential ID for CF Stage env access</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cf-stage</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>If you already have in your system a credential to for example tag a repo
+you can use it by passing the value of the property <code>GIT_CREDENTIAL_ID</code></p>
+</div>
+<div class="sect4">
+<h5 id="_add_jenkins_credentials_for_github">Add Jenkins credentials for GitHub</h5>
+<div class="paragraph">
+<p><a id="jenkins_credentials"></a> The scripts will need to access the credential in order to tag the repo.</p>
+</div>
+<div class="paragraph">
+<p>You have to set credentials with id: <code>git</code>.</p>
+</div>
+<div class="paragraph">
+<p>Below you can find instructions on how to set a credential (e.g. for <code>cf-test</code> credential but
+remember to provide the one with id <code>git</code>).</p>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/credentials_system.png" alt="credentials system">
+</div>
+<div class="title">Step 1: Click 'Credentials, System'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/credentials_global.png" alt="credentials global">
+</div>
+<div class="title">Step 2: Click 'Global Credentials'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/credentials_add.png" alt="credentials add">
+</div>
+<div class="title">Step 3: Click 'Add credentials'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/credentials_example.png" alt="credentials example">
+</div>
+<div class="title">Step 4: Fill out the user / password and provide the <code>git</code> credential ID (in this example <code>cf-test</code>)</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_enable_groovy_token_macro_processing">Enable Groovy Token Macro Processing</h4>
+<div class="paragraph">
+<p>With scripted that but if you needed to this manually then this is how to do it:</p>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/manage_jenkins.png" alt="manage jenkins">
+</div>
+<div class="title">Step 1: Click 'Manage Jenkins'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/configure_system.png" alt="configure system">
+</div>
+<div class="title">Step 2: Click 'Configure System'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/groovy_token.png" alt="groovy token">
+</div>
+<div class="title">Step 3: Click 'Allow token macro processing'</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_docker_image">Docker Image</h3>
+<div class="paragraph">
+<p>If you would like to run the pre-configured Jenkins image somewhere other than your local machine, we
+have an image you can pull and use on <a href="https://hub.docker.com/r/springcloud/spring-cloud-pipeline-jenkins/">DockerHub</a>.
+The <code>latest</code> tag corresponds to the latest snapshot build.  You can also find tags
+corresponding to stable releases that you can use as well.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_faq_2">FAQ</h3>
+<div class="sect3">
+<h4 id="jenkins_faq">Pipeline version contains ${PIPELINE_VERSION}</h4>
+<div class="paragraph">
+<p>You can check the Jenkins logs and you&#8217;ll see</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
+	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
+	to be injected as environment variables or
+	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
+	to whitelist specific parameter names, even though it represents a security breach</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To fix it you have to do exactly what the warning suggests&#8230;&#8203; Also ensure that the <code>Groovy token macro processing</code>
+checkbox is set.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_pipeline_version_is_not_passed_to_the_build">Pipeline version is not passed to the build</h4>
+<div class="paragraph">
+<p>You can see that the Jenkins version is properly set but in the build version is still snapshot and
+the <code>echo "${PIPELINE_VERSION}"</code> doesn&#8217;t print anything.</p>
+</div>
+<div class="paragraph">
+<p>You can check the Jenkins logs and you&#8217;ll see</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
+	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
+	to be injected as environment variables or
+	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
+	to whitelist specific parameter names, even though it represents a security breach</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To fix it you have to do exactly what the warning suggests&#8230;&#8203;</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_build_times_out_with_code_pipeline_sh_code_info">The build times out with <code>pipeline.sh</code> info</h4>
+<div class="paragraph">
+<p>Docker compose, docker compose, docker compose&#8230;&#8203; The problem is that for some reason, only in Docker, the execution of
+Java hangs. But it hangs randomly and only the first time you try to execute the pipeline.</p>
+</div>
+<div class="paragraph">
+<p>The solution to this is to run the pipeline again. If once it suddenly, magically passes then
+it will pass for any subsequent build.</p>
+</div>
+<div class="paragraph">
+<p>Another thing that you can try is to run it with plain Docker. Maybe that will help.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_can_i_use_the_pipeline_for_some_other_repos">Can I use the pipeline for some other repos?</h4>
+<div class="paragraph">
+<p>Sure! you can pass <code>REPOS</code> variable with comma separated list of
+<code>project_name$project_url</code> format. If you don&#8217;t provide the PROJECT_NAME the
+repo name will be extracted and used as the name of the project.</p>
+</div>
+<div class="paragraph">
+<p>E.g. for <code>REPOS</code> equal to:</p>
+</div>
+<div class="paragraph">
+<p><code><a href="https://github.com/spring-cloud-samples/github-analytics,https://github.com/spring-cloud-samples/github-webhook" class="bare">https://github.com/spring-cloud-samples/github-analytics,https://github.com/spring-cloud-samples/github-webhook</a></code></p>
+</div>
+<div class="paragraph">
+<p>will result in the creation of pipelines with root names <code>github-analytics</code> and <code>github-webhook</code>.</p>
+</div>
+<div class="paragraph">
+<p>E.g. for <code>REPOS</code> equal to:</p>
+</div>
+<div class="paragraph">
+<p><code>foo$https://github.com/spring-cloud-samples/github-analytics,bar$https://github.com/spring-cloud-samples/atom-feed</code></p>
+</div>
+<div class="paragraph">
+<p>will result in the creation of pipelines with root names <code>foo</code> for <code>github-analytics</code>
+and <code>bar</code> for <code>github-webhook</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_will_this_work_for_any_project_out_of_the_box_2">Will this work for ANY project out of the box?</h4>
+<div class="paragraph">
+<p>Not really. This is an <code>opinionated pipeline</code> that&#8217;s why we took some
+opinionated decisions like:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka</p>
+</li>
+<li>
+<p>application deployment to Cloud Foundry</p>
+</li>
+<li>
+<p>For Maven:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>usage of Maven Wrapper</p>
+</li>
+<li>
+<p>artifacts deployment by <code>./mvnw clean deploy</code></p>
+</li>
+<li>
+<p><code>stubrunner.ids</code> property to retrieve list of collaborators for which stubs should be downloaded</p>
+</li>
+<li>
+<p>running smoke tests on a deployed app via the <code>smoke</code> Maven profile</p>
+</li>
+<li>
+<p>running end to end tests on a deployed app via the <code>e2e</code> Maven profile</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>For Gradle (in the <code>github-analytics</code> application check the <code>gradle/pipeline.gradle</code> file):</p>
+<div class="ulist">
+<ul>
+<li>
+<p>usage of Gradlew Wrapper</p>
+</li>
+<li>
+<p><code>deploy</code> task for artifacts deployment</p>
+</li>
+<li>
+<p>running smoke tests on a deployed app via the <code>smoke</code> task</p>
+</li>
+<li>
+<p>running end to end tests on a deployed app via the <code>e2e</code> task</p>
+</li>
+<li>
+<p><code>groupId</code> task to retrieve group id</p>
+</li>
+<li>
+<p><code>artifactId</code> task to retrieve artifact id</p>
+</li>
+<li>
+<p><code>currentVersion</code> task to retrieve the current version</p>
+</li>
+<li>
+<p><code>stubIds</code> task to retrieve list of collaborators for which stubs should be downloaded</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This is the initial approach that can be easily changed in the future.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_can_i_modify_this_to_reuse_in_my_project_2">Can I modify this to reuse in my project?</h4>
+<div class="paragraph">
+<p>Sure! It&#8217;s open-source! The important thing is that the core part of the logic is written
+in Bash scripts. That way, in the majority of cases, you could change only the bash
+scripts without changing the whole pipeline.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_i_ran_out_of_resources_2">I ran out of resources!!</h4>
+<div class="paragraph">
+<p>[jenkins_resources]] When deploying the app to stage or prod you can get an exception <code>Insufficient resources</code>. The way to
+ solve it is to kill some apps from test / stage env. To achieve that just call</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">cf target -o pcfdev-org -s pcfdev-test
+cf stop github-webhook
+cf stop github-eureka
+cf stop stubrunner</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also execute <code>./tools/pcfdev-helper.sh kill-all-apps</code> that will remove all demo-related apps
+deployed to PCF dev.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_rollback_step_fails_due_to_missing_jar_2">The rollback step fails due to missing JAR ?!</h4>
+<div class="paragraph">
+<p><a id="jenkins_tags"></a> You must have pushed some tags and have removed the Artifactory volume that
+contained them. To fix this, just remove the tags</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">git tag -l | xargs -n 1 git push --delete origin</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_i_want_to_provide_a_different_jdk_version">I want to provide a different JDK version</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>by default we assume that you have jdk with id <code>jdk8</code> configured</p>
+</li>
+<li>
+<p>if you want a different one just override <code>JDK_VERSION</code> env var and point to the proper one</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+The docker image comes in with Java installed at <code>/usr/lib/jvm/java-8-openjdk-amd64</code>.
+You can go to <code>Global Tools</code> and create a JDK with <code>jdk8</code> id and JAVA_HOME
+ pointing to <code>/usr/lib/jvm/java-8-openjdk-amd64</code>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>To change the default one just follow these steps:</p>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/manage_jenkins.png" alt="manage jenkins">
+</div>
+<div class="title">Step 1: Click 'Manage Jenkins'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/global_tool.png" alt="global tool">
+</div>
+<div class="title">Step 2: Click 'Global Tool'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/jdk_installation.png" alt="jdk installation">
+</div>
+<div class="title">Step 3: Click 'JDK Installations'</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/jenkins/jdk.png" alt="jdk">
+</div>
+<div class="title">Step 4: Fill out JDK Installation with path to your JDK</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="paragraph">
+<p>And that&#8217;s it!</p>
+</div>
+<div class="sect4">
+<h5 id="_i_want_deployment_to_stage_and_prod_be_automatic">I want deployment to stage and prod be automatic</h5>
+<div class="paragraph">
+<p>No problem, just set the property / env var to true</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>AUTO_DEPLOY_TO_STAGE</code> to automatically deploy to stage</p>
+</li>
+<li>
+<p><code>AUTO_DEPLOY_TO_PROD</code> to automatically deploy to prod</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_i_can_t_tag_the_repo">I can&#8217;t tag the repo!</h4>
+<div class="paragraph">
+<p>When you get sth like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">19:01:44 stderr: remote: Invalid username or password.
+19:01:44 fatal: Authentication failed for 'https://github.com/marcingrzejszczak/github-webhook/'
+19:01:44
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1740)
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:1476)
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.access$300(CliGitAPIImpl.java:63)
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$8.execute(CliGitAPIImpl.java:1816)
+19:01:44 	at hudson.plugins.git.GitPublisher.perform(GitPublisher.java:295)
+19:01:44 	at hudson.tasks.BuildStepMonitor$3.perform(BuildStepMonitor.java:45)
+19:01:44 	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:779)
+19:01:44 	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:720)
+19:01:44 	at hudson.model.Build$BuildExecution.post2(Build.java:185)
+19:01:44 	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:665)
+19:01:44 	at hudson.model.Run.execute(Run.java:1745)
+19:01:44 	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+19:01:44 	at hudson.model.ResourceController.execute(ResourceController.java:98)
+19:01:44 	at hudson.model.Executor.run(Executor.java:404)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>most likely you&#8217;ve passed a wrong password. Check the <a href="#jenkins_credentials">credentials</a> section
+on how to update your credentials.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_deploying_to_test_stage_prod_fails_error_finding_space">Deploying to test / stage / prod fails - error finding space</h4>
+<div class="paragraph">
+<p>If you receive a similar exception:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">20:26:18 API endpoint:   https://api.local.pcfdev.io (API version: 2.58.0)
+20:26:18 User:           user
+20:26:18 Org:            pcfdev-org
+20:26:18 Space:          No space targeted, use 'cf target -s SPACE'
+20:26:18 FAILED
+20:26:18 Error finding space pcfdev-test
+20:26:18 Space pcfdev-test not found</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It means that you&#8217;ve forgotten to <a href="#jenkins_pcfdev">create the spaces</a> in your PCF Dev installation.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_route_is_already_in_use_2">The route is already in use</h4>
+<div class="paragraph">
+<p>If you play around with Jenkins / Concourse you might end up with the routes occupied</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">Using route github-webhook-test.local.pcfdev.io
+Binding github-webhook-test.local.pcfdev.io to github-webhook...
+FAILED
+The route github-webhook-test.local.pcfdev.io is already in use.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Just delete the routes</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">yes | cf delete-route local.pcfdev.io -n github-webhook-test
+yes | cf delete-route local.pcfdev.io -n github-eureka-test
+yes | cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n github-webhook-stage
+yes | cf delete-route local.pcfdev.io -n github-eureka-stage
+yes | cf delete-route local.pcfdev.io -n github-webhook-prod
+yes | cf delete-route local.pcfdev.io -n github-eureka-prod</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also execute the <code>./tools/pcfdev-helper.sh delete-routes</code></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_i_m_unauthorized_to_deploy_infrastructure_jars_2">I&#8217;m unauthorized to deploy infrastructure jars</h4>
+<div class="paragraph">
+<p>Most likely you&#8217;ve forgotten to update your local <code>settings.xml</code> with the Artifactory&#8217;s
+setup. Check out <a href="#jenkins_settings">this section of the docs and update your <code>settings.xml</code></a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_signing_artifacts">Signing Artifacts</h4>
+<div class="paragraph">
+<p>In some cases it may be required that when performing a release that the artifacts be signed
+before pushing them to the repository.
+To do this you will need to import your GPG keys into the Docker image running Jenkins.
+This can be done by placing a file called <code>public.key</code> containing your public key
+and a file called <code>private.key</code> containing your private key in the <code>seed</code> directory.
+These keys will be imported by the <code>init.groovy</code> script that is run when Jenkins starts.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_to_build_it">How to build it</h3>
+<div class="paragraph">
+<p><code>./gradlew clean build</code></p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+The ran test only checks if your scripts compile.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_to_work_with_jenkins_job_dsl_plugin">How to work with Jenkins Job DSL plugin</h3>
+<div class="paragraph">
+<p>Check out the <a href="https://github.com/jenkinsci/job-dsl-plugin/wiki/Tutorial---Using-the-Jenkins-Job-DSL">tutorial</a>.
+Provide the link to this repository in your Jenkins installation.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+Remember that views can be overridden that&#8217;s why the suggestion is to contain in one script all the logic needed to build a view
+ for a single project (check out that <code>spring_cloud_views.groovy</code> is building all the <code>spring-cloud</code> views).
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_demo_setup">The demo setup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://github.com/spring-cloud-samples/github-webhook/">Github webhook code</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/spring-cloud-samples/github-analytics/">Github analytics code</a></p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/demo/demo.png" alt="demo">
+</div>
+<div class="title">The overview of the demo: Github Webhook listens to HTTP calls and sends a message to Github Analytics</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="paragraph">
+<p>For the demo scenario we have two applications. <code>Github Analytics</code> and <code>Github Webhook</code>.
+Let&#8217;s imagine a case where Github is emitting events via HTTP. <code>Github Webhook</code> has
+an API that could register to such hooks and receive those messages. Once this happens
+ <code>Github Webhook</code> sends a message by RabbitMQ to a channel. <code>Github Analytics</code> is
+ listening to those messages and stores them in a MySQL database.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/demo/demo_metrics.png" alt="demo metrics">
+</div>
+<div class="title">Gathering metrics: Github Analytics exposes metrics that are polled by Prometheus</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="paragraph">
+<p><code>Github Analytics</code> has its KPIs (Key Performance Indicators) monitored. In the case
+of that application the KPI is number of issues.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/demo/demo_alerting.png" alt="demo alerting">
+</div>
+<div class="title">Alerting over metrics: Grafana alerts Slack over Prometheus metrics</div>
+</div>
+<div class="paragraph">
+<p>&#160;
+&#160;</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s assume that if we go below the threshold of X issues then an alert should be
+sent to Slack.</p>
+</div>
+<div class="sect2">
+<h3 id="_deploying_production_applications_to_pcf_dev">Deploying production applications to PCF Dev</h3>
+<div class="paragraph">
+<p>In the real world scenario we wouldn&#8217;t want to automatically provision services like
+RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
+production is provisioned manually (using automated solutions). In our case, before
+you deploy to production you can provision the <code>pcfdev-prod</code> space using the
+ <code>pcfdev-helper.sh</code>. Just call</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ ./pcfdev-helper.sh setup-prod-infra</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>What will happen is that the CF CLI will login to PCF Dev, target <code>pcfdev-prod</code> space,
+setup RabbitMQ (under <code>rabbitmq-github</code> name), MySQL (under <code>mysql-github-analytics</code> name)
+and Eureka (under <code>github-eureka</code> name).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_running_prometheus_on_cf">Running Prometheus on CF</h3>
+<div class="paragraph">
+<p>You can check out <a href="https://github.com/making/prometheus-on-PCF">Toshiaki Maki&#8217;s code</a> on how to automate Prometheus installation on CF.</p>
+</div>
+<div class="paragraph">
+<p>Go to <a href="https://prometheus.io/download/" class="bare">https://prometheus.io/download/</a> and download linux binary. Then call:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>cf push sc-pipelines-prometheus -b binary_buildpack -c './prometheus -web.listen-address=:8080' -m 64m</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Also <code>localhost:9090</code> in <code>prometheus.yml</code> should be <code>localhost:8080</code>.</p>
+</div>
+<div class="paragraph">
+<p>The file should look like this to work with the demo setup (change <code>github-analytics-sc-pipelines.cfapps.io</code>
+to your <code>github-analytics</code> installation).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-yml" data-lang="yml"># my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'codelab-monitor'
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first.rules"
+  # - "second.rules"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ['localhost:8080']
+
+  - job_name: 'demo-app'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    metrics_path: '/prometheus'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ['github-analytics-sc-pipelines.cfapps.io']</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A deployed version for the Spring Cloud Pipelines demo is available <a href="https://sc-pipelines-prometheus.cfapps.io/">here</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_running_grafana_on_cf">Running Grafana on CF</h3>
+<div class="paragraph">
+<p>You can check out <a href="https://github.com/making/cf-grafana">Toshiaki Maki&#8217;s code</a> on how to automate Prometheus installation on CF.</p>
+</div>
+<div class="paragraph">
+<p>Download tarball from <a href="https://grafana.com/grafana/download?platform=linux" class="bare">https://grafana.com/grafana/download?platform=linux</a>
+Next set <code>http_port = 8080</code> in <code>conf/default.ini</code>. Then call</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>cf push sc-pipelines-grafana -b binary_buildpack -c './bin/grafana-server web' -m 64m</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The demo is using Grafana Dashboard with ID <code>2471</code>.</p>
+</div>
+<div class="paragraph">
+<p>A deployed version for the Spring Cloud Pipelines demo is available <a href="https://sc-pipelines-grafana.cfapps.io/">here</a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_to_build_it_2">How to build it</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_build_and_test">Build and test</h3>
+<div class="paragraph">
+<p>You can execute</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">./gradlew clean build</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>to build and test the project.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_generate_readme">Generate readme</h3>
+<div class="paragraph">
+<p>To generate readme just run</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">./gradlew generateReadme</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_releasing">Releasing</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_publishing_a_docker_image">Publishing A Docker Image</h3>
+<div class="paragraph">
+<p>When doing a release you also need to push a Docker image to Dockerhub.
+From the project root, run the following commands replacing <code>&lt;version&gt;</code> with the
+version of the release.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">docker login
+docker build -t springcloud/spring-cloud-pipeline-jenkins:&lt;version&gt; ./jenkins
+docker push springcloud/spring-cloud-pipeline-jenkins:&lt;version&gt;</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
