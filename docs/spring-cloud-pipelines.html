@@ -2010,6 +2010,12 @@ opinionated decisions like:</p>
 Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
 whole pipeline. <a href="https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash">You can check out the scripts here.</a></p>
 </div>
+<div class="paragraph">
+<p>Furthermore, if you only want to customize a particular function under <code>common/src/main/bash</code>, you can provide your own
+function under <code>common/src/main/bash/&lt;some custom identifier&gt;</code> where <code>&lt;some custom identifier&gt;</code> is equal to the value of
+the <code>CUSTOM_SCRIPT_IDENTIFIER</code> environment variable. For more on this technique, see
+<a href="../common/README.html#Override specific project type pipeline functions">Override specific project type pipeline functions</a>.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_i_ran_out_of_resources">I ran out of resources!!</h4>
