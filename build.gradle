@@ -22,8 +22,7 @@ repositories {
 }
 
 ext {
-    shellcheckFile = new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck")
-    shellcheckVersionWithoutPrefix = "${shellcheckVersion}".startsWith("v") ? "${shellcheckVersion}".substring(1) : "${shellcheckVersion}"
+
     isCommandAvailable = { String cmd ->
         try {
             cmd.execute()
@@ -32,6 +31,15 @@ ext {
         }
         return false
     }
+
+    isShellcheckPresent = {
+        isCommandAvailable("shellcheck -V")
+    }
+
+    shellcheckFile = isShellcheckPresent() ? new File("shellcheck") :
+        new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck")
+
+    shellcheckVersionWithoutPrefix = "${shellcheckVersion}".startsWith("v") ? "${shellcheckVersion}".substring(1) : "${shellcheckVersion}"
 
     assertShellcheckVersion = {
         String output = ""
@@ -56,7 +64,7 @@ subprojects {
 
     task installShellcheckIfMissing {
         doLast {
-            boolean shellcheckInstalled = isCommandAvailable("shellcheck -V") || isShellcheckDownloaded()
+            boolean shellcheckInstalled = isShellcheckPresent() || isShellcheckDownloaded()
             exec {
                 if (shellcheckInstalled) {
                     assertShellcheckVersion()
@@ -79,6 +87,7 @@ subprojects {
             sourceSets*.resources.srcDirs*.each { srcDir ->
                 fileTree(relativePath(srcDir))
                     .include('**/*.sh')
+                    .exclude("**/build/**")
                     .each { File script ->
                     exec {
                         commandLine pathToShellcheck, script
