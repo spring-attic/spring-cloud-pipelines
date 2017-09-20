@@ -45,6 +45,7 @@ ext {
         String output = ""
         new ByteArrayOutputStream().withStream { os ->
             String cmd = shellcheckFile.path + " -V"
+            project.logger.lifecycle("Executing cmd [${cmd}]")
             Process p = cmd.execute()
             p.consumeProcessOutput(os, os)
             p.waitFor(5L, TimeUnit.SECONDS)
