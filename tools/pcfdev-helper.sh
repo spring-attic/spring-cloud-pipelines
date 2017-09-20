@@ -7,22 +7,53 @@ function usage {
 	exit 1
 }
 
-function pcfdev_login {
-	cf login -a https://api.local.pcfdev.io \
-		--skip-ssl-validation \
-		-u admin \
-		-p admin \
-		-o pcfdev-org \
-		-s pcfdev-test
+export REUSE_CF_LOGIN
+REUSE_CF_LOGIN="${REUSE_CF_LOGIN:-false}"
+export PAAS_TEST_ORG
+PAAS_TEST_ORG="${PAAS_TEST_ORG:-pcfdev-org}"
+export PAAS_STAGE_ORG
+PAAS_STAGE_ORG="${PAAS_STAGE_ORG:-pcfdev-org}"
+export PAAS_PROD_ORG
+PAAS_PROD_ORG="${PAAS_PROD_ORG:-pcfdev-org}"
+export PAAS_TEST_SPACE
+PAAS_TEST_SPACE="${PAAS_TEST_SPACE:-pcfdev-test}"
+export PAAS_STAGE_SPACE
+PAAS_STAGE_SPACE="${PAAS_STAGE_SPACE:-pcfdev-stage}"
+export PAAS_PROD_SPACE
+PAAS_PROD_SPACE="${PAAS_PROD_SPACE:-pcfdev-prod}"
+export APPLICATION_HOST
+APPLICATION_HOST="${APPLICATION_HOST:-local.pcfdev.io}"
+export CF_API_URL
+CF_API_URL="${CF_API_URL:-api.local.pcfdev.io}"
+export CF_USERNAME
+CF_USERNAME="${CF_USERNAME:-admin}"
+export CF_PASSWORD
+CF_PASSWORD="${CF_PASSWORD:-admin}"
+export CF_DEFAULT_ORG
+CF_DEFAULT_ORG="${CF_DEFAULT_ORG:-pcfdev-org}"
+export CF_DEFAULT_SPACE
+CF_DEFAULT_SPACE="${CF_DEFAULT_SPACE:-pcfdev-test}"
+
+function cf_login {
+    if [[ "${REUSE_CF_LOGIN}" == "true" ]]; then
+        echo "Reusing the current CF connection"
+    else
+        cf login -a "${CF_API_URL}" \
+            --skip-ssl-validation \
+            -u "${CF_USERNAME}" \
+            -p "${CF_PASSWORD}" \
+            -o "${CF_DEFAULT_ORG}" \
+            -s "${CF_DEFAULT_SPACE}"
+    fi
 }
 
 [[ $# -eq 1 ]] || usage
 
 case $1 in
 	kill-all-apps)
-		pcfdev_login
+		cf_login
 
-		cf target -o pcfdev-org -s pcfdev-test
+		cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
 		yes | cf stop github-webhook
 		yes | cf stop github-analytics
 		yes | cf stop eureka-github-webhook
@@ -31,12 +62,12 @@ case $1 in
 		yes | cf stop stubrunner-github-webhook
 		yes | cf stop stubrunner-github-analytics
 
-		cf target -o pcfdev-org -s pcfdev-stage
+		cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
 		yes | cf stop github-webhook
 		yes | cf stop github-analytics
 		yes | cf stop github-eureka
 
-		cf target -o pcfdev-org -s pcfdev-prod
+		cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
 		yes | cf stop github-webhook
 		yes | cf stop github-webhook-venerable
 		yes | cf stop github-analytics
@@ -45,9 +76,9 @@ case $1 in
 		;;
 
 	kill-all-prod-apps)
-		pcfdev_login
+		cf_login
 
-		cf target -o pcfdev-org -s pcfdev-prod
+		cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
 		yes | cf stop github-webhook
 		yes | cf stop github-webhook-venerable
 		yes | cf stop github-analytics
@@ -56,9 +87,9 @@ case $1 in
 		;;
 
 	delete-all-apps)
-		pcfdev_login
+		cf_login
 
-		cf target -o pcfdev-org -s pcfdev-test
+		cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
 		cf delete -f github-webhook
 		cf delete -f github-analytics
 		cf delete -f eureka-github-analytics
@@ -66,12 +97,12 @@ case $1 in
 		cf delete -f stubrunner-github-webhook
 		cf delete -f stubrunner-github-analytics
 
-		cf target -o pcfdev-org -s pcfdev-stage
+		cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
 		cf delete -f github-webhook
 		cf delete -f github-analytics
 		cf delete -f github-eureka
 
-		cf target -o pcfdev-org -s pcfdev-prod
+		cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
 		cf delete -f github-webhook
 		cf delete -f github-webhook-venerable
 		cf delete -f github-analytics
@@ -80,9 +111,9 @@ case $1 in
 		;;
 
 	delete-all-test-apps)
-		pcfdev_login
+		cf_login
 
-		cf target -o pcfdev-org -s pcfdev-test
+		cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
 		cf delete -f github-webhook
 		cf delete -f github-analytics
 		cf delete -f eureka-github-webhook
@@ -92,49 +123,49 @@ case $1 in
 		;;
 
 	delete-all-stage-apps)
-		pcfdev_login
+		cf_login
 
-		cf target -o pcfdev-org -s pcfdev-stage
+		cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
 		cf delete -f github-webhook
 		cf delete -f github-analytics
 		cf delete -f github-eureka
 		;;
 
 	delete-routes)
-		cf delete-route -f local.pcfdev.io -n github-webhook-test
-		cf delete-route -f local.pcfdev.io -n github-analytics-test
-		cf delete-route -f local.pcfdev.io -n eureka-github-webhook-test
-		cf delete-route -f local.pcfdev.io -n eureka-github-analytics-test
-		cf delete-route -f local.pcfdev.io -n stubrunner-test
-		cf delete-route -f local.pcfdev.io -n stubrunner-github-webhook-test
-		cf delete-route -f local.pcfdev.io -n stubrunner-github-analytics-test
-		cf delete-route -f local.pcfdev.io -n github-webhook-stage
-		cf delete-route -f local.pcfdev.io -n github-analytics-stage
-		cf delete-route -f local.pcfdev.io -n eureka-github-webhook-stage
-		cf delete-route -f local.pcfdev.io -n eureka-github-analytics-stage
-		cf delete-route -f local.pcfdev.io -n github-analytics
-		cf delete-route -f local.pcfdev.io -n github-webhook
-		cf delete-route -f local.pcfdev.io -n eureka-github-webhook
-		cf delete-route -f local.pcfdev.io -n eureka-github-analytics
+		cf delete-route -f "${APPLICATION_HOST}" -n github-webhook-test
+		cf delete-route -f "${APPLICATION_HOST}" -n github-analytics-test
+		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-webhook-test
+		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-analytics-test
+		cf delete-route -f "${APPLICATION_HOST}" -n stubrunner-test
+		cf delete-route -f "${APPLICATION_HOST}" -n stubrunner-github-webhook-test
+		cf delete-route -f "${APPLICATION_HOST}" -n stubrunner-github-analytics-test
+		cf delete-route -f "${APPLICATION_HOST}" -n github-webhook-stage
+		cf delete-route -f "${APPLICATION_HOST}" -n github-analytics-stage
+		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-webhook-stage
+		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-analytics-stage
+		cf delete-route -f "${APPLICATION_HOST}" -n github-analytics
+		cf delete-route -f "${APPLICATION_HOST}" -n github-webhook
+		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-webhook
+		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-analytics
 		;;
 
 	setup-spaces)
-		pcfdev_login
+		cf_login
 
-		cf create-space pcfdev-test
-		cf set-space-role user pcfdev-org pcfdev-test SpaceDeveloper
+		cf create-space "${PAAS_TEST_SPACE}"
+		cf set-space-role user pcfdev-org "${PAAS_TEST_SPACE}" SpaceDeveloper
 
-		cf create-space pcfdev-stage
-		cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
+		cf create-space "${PAAS_STAGE_SPACE}"
+		cf set-space-role user pcfdev-org "${PAAS_STAGE_SPACE}" SpaceDeveloper
 
-		cf create-space pcfdev-prod
-		cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
+		cf create-space "${PAAS_PROD_SPACE}"
+		cf set-space-role user pcfdev-org "${PAAS_PROD_SPACE}" SpaceDeveloper
 		;;
 
 	delete-all-services)
-		pcfdev_login
+		cf_login
 
-		cf target -o pcfdev-org -s pcfdev-test
+		cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
 		yes | cf delete-service -f mysql-github-webhook
 		yes | cf delete-service -f mysql-github-analytics
 		yes | cf delete-service -f rabbitmq-github-webhook
@@ -142,14 +173,14 @@ case $1 in
 		yes | cf delete-service -f eureka-github-webhook
 		yes | cf delete-service -f eureka-github-analytics
 
-		cf target -o pcfdev-org -s pcfdev-stage
+		cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
 		yes | cf delete-service -f mysql-github-webhook
 		yes | cf delete-service -f mysql-github-analytics
 		yes | cf delete-service -f rabbitmq-github
 		yes | cf delete-service -f mysql-github
 		yes | cf delete-service -f github-eureka
 
-		cf target -o pcfdev-org -s pcfdev-prod
+		cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
 		yes | cf delete-service -f mysql-github-webhook
 		yes | cf delete-service -f mysql-github-analytics
 		yes | cf delete-service -f rabbitmq-github
@@ -158,8 +189,8 @@ case $1 in
 		;;
 
 	setup-prod-infra)
-		pcfdev_login
-		cf target -s pcfdev-prod
+		cf_login
+		cf target -s "${PAAS_PROD_SPACE}"
 
 		POTENTIAL_DOCKER_HOST="$( echo "${DOCKER_HOST}" | cut -d ":" -f 2 | cut -d "/" -f 3 )"
 		if [[ -z "${POTENTIAL_DOCKER_HOST}" ]]; then
