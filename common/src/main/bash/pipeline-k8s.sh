@@ -18,7 +18,7 @@ function logInToPaas() {
     local api="PAAS_${ENVIRONMENT}_API_URL"
     local apiUrl="${!api:-192.168.99.100:8443}"
     local cliInstalled
-    cliInstalled="$( kubectl version || echo "false" )"
+    cliInstalled="$( kubectl version && echo "true" || echo "false" )"
     local cliDownloaded
     cliDownloaded="$( test -r kubectl && echo "true" || echo "false" )"
     echo "CLI Installed? [${cliInstalled}], CLI Downloaded? [${cliDownloaded}]"
@@ -35,10 +35,16 @@ function logInToPaas() {
         PATH="${PATH}:$( pwd )"
         chmod +x kubectl
     fi
-
+    echo "Removing current Kubernetes configuration"
+    rm ~/.kube/config || echo "Failed to remove Kube config. Continuing with the script"
     echo "Logging in to Kubernetes API [${apiUrl}], with cluster name [${k8sClusterName}] and user [${k8sClusterUser}]"
-    kubectl config set-cluster "${k8sClusterName}" --server="https://${apiUrl}" --certificate-authority="${k8sCa}"
-    kubectl config set-credentials "${k8sClusterUser}" --certificate-authority="${k8sCa}" --client-key="${k8sClientKey}" --client-certificate="${k8sClientCert}"
+    kubectl config set-cluster "${k8sClusterName}" --server="https://${apiUrl}" --certificate-authority="${k8sCa}" --embed-certs=true
+    # TOKEN will get injected as a credential if present
+    if [[ "${TOKEN}" != "" ]]; then
+        kubectl config set-credentials "${k8sClusterUser}" --token="${TOKEN}"
+    else
+        kubectl config set-credentials "${k8sClusterUser}" --certificate-authority="${k8sCa}" --client-key="${k8sClientKey}" --client-certificate="${k8sClientCert}"
+    fi
     kubectl config set-context "${k8sSystemName}" --cluster="${k8sClusterName}" --user="${k8sClusterUser}"
     kubectl config use-context "${k8sSystemName}"
 
@@ -471,11 +477,11 @@ function prepareForSmokeTests() {
     stubrunnerAppName="stubrunner-${appName}"
     local stubrunnerPort
     stubrunnerPort="$( portFromKubernetes "${stubrunnerAppName}" )"
-    local applicationUrl
-    applicationUrl="$( applicationUrl "${appName}" )"
+    local applicationHost
+    applicationHost="$( applicationHost "${appName}" )"
     local stubRunnerUrl
-    stubRunnerUrl="$( applicationUrl "${stubrunnerAppName}" )"
-    export APPLICATION_URL="${applicationUrl}:${applicationPort}"
+    stubRunnerUrl="$( applicationHost "${stubrunnerAppName}" )"
+    export APPLICATION_URL="${applicationHost}:${applicationPort}"
     export STUBRUNNER_URL="${stubRunnerUrl}:${stubrunnerPort}"
 }
 
@@ -487,52 +493,50 @@ function prepareForE2eTests() {
     logInToPaas
     local applicationPort
     applicationPort="$( portFromKubernetes "${appName}" )"
-    local applicationUrl
-    applicationUrl="$( applicationUrl "${appName}" )"
-    export APPLICATION_URL="${applicationUrl}:${applicationPort}"
+    local applicationHost
+    applicationHost="$( applicationHost "${appName}" )"
+    export APPLICATION_URL="${applicationHost}:${applicationPort}"
 }
 
-function applicationUrl() {
+function applicationHost() {
     local appName="${1}"
     if [[ "${KUBERNETES_MINIKUBE}" == "true" ]]; then
         local apiUrlProp="PAAS_${ENVIRONMENT}_API_URL"
         # host:port -> host
         echo "${!apiUrlProp}" | awk -F: '{print $1}'
     else
-        echo "${appName}"
+        echo "${appName}.${PAAS_NAMESPACE}"
     fi
 }
 
 function portFromKubernetes() {
     local appName="${1}"
-    if [[ "${KUBERNETES_MINIKUBE}" == "true" ]]; then
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc "${appName}" -o jsonpath='{.spec.ports[0].nodePort}'
+    local jsonPath
+    { if [[ "${KUBERNETES_MINIKUBE}" == "true" ]]; then
+        jsonPath="{.spec.ports[0].nodePort}"
     else
-        # TODO: Retrieve port from cluster
-        echo ""
-    fi
+        jsonPath="{.spec.ports[0].port}"
+    fi }
+    # '8080' -> 8080
+    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc "${appName}" -o jsonpath="${jsonPath}"
 }
 
 function waitForAppToStart() {
     local appName="${1}"
-    local apiUrlVar="PAAS_${ENVIRONMENT}_API_URL"
-    local apiUrl="${!apiUrlVar}"
     local port
     port="$( portFromKubernetes "${appName}" )"
-    local kubHost
-    kubHost="$( hostFromApi "${apiUrl}" )"
-    isAppRunning "${kubHost}" "${port}"
+    local applicationHost
+    applicationHost="$( applicationHost "${appName}" )"
+    isAppRunning "${applicationHost}" "${port}"
 }
 
 function retrieveApplicationUrl() {
     local appName
     appName="$( retrieveAppName )"
-    local apiUrlVar="PAAS_${ENVIRONMENT}_API_URL"
-    local apiUrl="${!apiUrlVar}"
     local port
     port="$( portFromKubernetes "${appName}" )"
     local kubHost
-    kubHost="$( hostFromApi "${apiUrl}" )"
+    kubHost="$( applicationHost "${appName}" )"
     echo "${kubHost}:${port}"
 }
 
@@ -543,6 +547,7 @@ function isAppRunning() {
     local retries=50
     local running=1
     local healthEndpoint="health"
+    echo "Checking if app [${host}:${port}] is running at [/${healthEndpoint}] endpoint"
     for i in $( seq 1 "${retries}" ); do
         sleep "${waitTime}"
         curl -m 5 "${host}:${port}/${healthEndpoint}" && running=0 && break
@@ -554,14 +559,6 @@ function isAppRunning() {
     fi
     echo ""
     echo "App started successfully!"
-}
-
-function hostFromApi() {
-    local api="${1}"
-    local string
-    local id
-    IFS=':' read -r id string <<< "${api}"
-    echo "${id}"
 }
 
 function readTestPropertiesFromFile() {
