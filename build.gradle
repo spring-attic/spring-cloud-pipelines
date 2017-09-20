@@ -47,7 +47,7 @@ ext {
             String cmd = shellcheckFile.path + " -V"
             Process p = cmd.execute()
             p.consumeProcessOutput(os, os)
-            p.waitFor(2L, TimeUnit.SECONDS)
+            p.waitFor(5L, TimeUnit.SECONDS)
             output = os.toString()
         }
         project.logger.lifecycle("Checking if shellcheck version is [${shellcheckVersionWithoutPrefix}]")
@@ -79,7 +79,7 @@ subprojects {
 
     task shellcheck {
         doLast {
-            boolean shellcheckInstalled = isCommandAvailable("shellcheck -V")
+            boolean shellcheckInstalled = isShellcheckPresent()
             String pathToShellcheck = "shellcheck"
             if (!shellcheckInstalled) {
                 pathToShellcheck = new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck").path
@@ -115,17 +115,29 @@ jruby {
     defaultRepositories false
 }
 
+// remove::start[JENKINS]
 task generateJenkinsReadme(type: JRubyExec) {
     script "${projectDir}/tools/coalesce-readme.rb"
     scriptArgs "-i ${projectDir}/docs-sources/src/main/asciidoc/JENKINS.adoc", "-o ${projectDir}/jenkins/README.adoc"
 }
+// remove::end[JENKINS]
 
+// remove::start[CONCOURSE]
 task generateConcourseReadme(type: JRubyExec) {
     script "${projectDir}/tools/coalesce-readme.rb"
     scriptArgs "-i ${projectDir}/docs-sources/src/main/asciidoc/CONCOURSE.adoc", "-o ${projectDir}/concourse/README.adoc"
 }
+//remove::end[CONCOURSE]
 
-task generateIndex(dependsOn: ["generateJenkinsReadme", "generateConcourseReadme"]) {
+List<String> projects = []
+//remove::start[JENKINS]
+projects << "generateJenkinsReadme"
+//remove::end[JENKINS]
+//remove::start[CONCOURSE]
+projects << "generateConcourseReadme"
+//remove::end[CONCOURSE]
+
+task generateIndex(dependsOn: [projects]) {
     doLast {
         exec {
             workingDir project(":docs-sources").projectDir.path
