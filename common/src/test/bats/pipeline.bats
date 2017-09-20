@@ -14,7 +14,7 @@ setup() {
 	run toLowerCase "Foo"
 	assert_output "foo"
 	
-    run toLowerCase "FOObar"
+	run toLowerCase "FOObar"
 	assert_output "foobar"
 }
 
@@ -33,7 +33,7 @@ setup() {
 @test "deployServices should deploy services from pipeline descriptor" {
 	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
 
-	cd "${BATS_TEST_DIRNAME}/fixtures" 
+	cd "${BATS_TEST_DIRNAME}/fixtures"
 
 	run deployServices
 	assert_success
@@ -41,4 +41,14 @@ setup() {
 	assert_line --index 1 'mysql mysql-github-webhook null'
 	assert_line --index 2 'eureka eureka-github-webhook com.example.eureka:github-eureka:0.0.1.M1'
 	assert_line --index 3 'stubrunner stubrunner-github-webhook com.example.github:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1'
+}
+
+@test "parsePipelineDescriptor should export an env var with parsed YAML" {
+	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
+    assert_equal "${PARSED_YAML}" ""
+
+	parsePipelineDescriptor "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml"
+
+	assert_success
+	assert [ "${PARSED_YAML}" != "${PARSED_YAML/\"coordinates\"/}" ]
 }

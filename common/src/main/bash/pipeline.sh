@@ -143,9 +143,12 @@ function serviceExists() {
 }
 
 # Sets the environment variable with contents of the parsed pipeline descriptor
+# shellcheck disable=SC2120
 function parsePipelineDescriptor() {
-  PARSED_YAML=$( yaml2json "sc-pipelines.yml" )
+  local descriptorFile
+  descriptorFile="${1:-sc-pipelines.yml}"
   export PARSED_YAML
+  PARSED_YAML=$( yaml2json "${descriptorFile}" )
 }
 
 # Deploys services assuming that pipeline descriptor exists
@@ -158,7 +161,8 @@ function deployServices() {
         return
     fi
 
- 	parsePipelineDescriptor
+    # shellcheck disable=SC2119
+    parsePipelineDescriptor
 
     while read -r serviceType serviceName serviceCoordinates; do
         if [[ "${ENVIRONMENT}" == "TEST" ]]; then
