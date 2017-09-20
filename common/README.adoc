@@ -48,6 +48,29 @@ building tools like Gradle and Maven (via `projectType/pipeline-gradle.sh` and
 === Customizations
 
 In order to add a new platform (e.g. `aaa` platform) it's enough to create a new file called
- `pipeline-aaa.sh` and implement all functions present in the `pipeline.sh` file. Also
- you'll need to pass the `PAAS_TYPE=aaa` env variable to the bash scripts so that
-  files get properly sourced.
+`pipeline-aaa.sh` and implement all functions present in the `pipeline.sh` file. Also
+you'll need to pass the `PAAS_TYPE=aaa` env variable to the bash scripts so that
+files get properly sourced.
+
+==== Override specific project type pipeline functions
+
+If you want to replace one of the common functions located in `projectType/pipeline-gradle` or
+`projectType/pipeline-maven.sh`, you don't have to copy and paste all the code that leads to the
+execution of that function. Spring Cloud Pipelines provides a way to hook in custom shell scripts
+that can override those functions. Spring Cloud Pipelines will source custom scripts located in
+`common/src/main/bash/custom` after all of its own scripts have been sourced. Or if you set the
+`CUSTOM_SCRIPT_IDENTIFIER` environment variable, then it will look for them under
+`common/src/main/bash/<replaced_with_custom_script_identifier>`
+where `<replaced_with_custom_script_identifier>` is the value of the `CUSTOM_SCRIPT_IDENTIFIER`
+environment variable.
+
+Specifically for Concourse, you also need to name the script that will replace the function the same name
+as the Concourse task but with underscores in replace of the dashes.
+
+For example, to customize the build-and-upload task in the Concourse pipeline, all you would need
+to do is provide a script called `build_and_upload.sh` in your `common/src/main/bash/custom/`
+folder and Spring Cloud Pipelines will automatically source it in.
+Then, you can override the build function in `common/src/main/bash/projectType/pipeline-${projectType}`
+with your own without re-writing all the logic up to that point. Here is an
+https://github.com/pivotalservices/pcf-apptx-pipelines/tree/spike-150749835/common/src/main/bash/apptx[example]
+and a https://github.com/malston/github-webhook/blob/spike-150749835/ci/pipeline.yml[pipeline] that uses it.

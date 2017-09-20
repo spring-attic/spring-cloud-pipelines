@@ -208,3 +208,16 @@ export OUTPUT_FOLDER TEST_REPORTS_FOLDER
 
 echo "Output folder [${OUTPUT_FOLDER}]"
 echo "Test reports folder [${TEST_REPORTS_FOLDER}]"
+
+export CUSTOM_SCRIPT_IDENTIFIER="${CUSTOM_SCRIPT_IDENTIFIER:-custom}"
+echo "Custom script identifier is [${CUSTOM_SCRIPT_IDENTIFIER}]"
+
+CUSTOM_SCRIPT_DIR="${__ROOT}/${CUSTOM_SCRIPT_IDENTIFIER}"
+mkdir -p "${__ROOT}/${CUSTOM_SCRIPT_IDENTIFIER}"
+
+CUSTOM_SCRIPT_NAME="$(basename "${BASH_SOURCE[1]}")"
+echo "Path to custom script is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
+
+# shellcheck source=/dev/null
+[[ -f "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ]] && source "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" || \
+    echo "No ${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME} found"

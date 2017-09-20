@@ -820,6 +820,11 @@ Sure! It's open-source! The important thing is that the core part of the logic i
 Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
 whole pipeline. https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash[You can check out the scripts here.]
 
+Furthermore, if you only want to customize a particular function under `common/src/main/bash`, you can provide your own
+function under `common/src/main/bash/<some custom identifier>` where `<some custom identifier>` is equal to the value of
+the `CUSTOM_SCRIPT_IDENTIFIER` environment variable. For more on this technique, see
+<<../common/README.adoc#Override specific project type pipeline functions,Override specific project type pipeline functions>>.
+
 ==== I ran out of resources!!
 
 [[resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
