@@ -52,3 +52,12 @@ setup() {
 	assert_success
 	assert [ "${PARSED_YAML}" != "${PARSED_YAML/\"coordinates\"/}" ]
 }
+
+@test "sourcing pipeline.sh should export an env var with lower case env var" {
+	export ENVIRONMENT="FOO"
+
+	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
+
+	assert_equal "${ENVIRONMENT}" "FOO"
+	assert_equal "${LOWERCASE_ENV}" "foo"
+}
