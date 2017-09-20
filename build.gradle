@@ -42,15 +42,20 @@ ext {
     shellcheckVersionWithoutPrefix = "${shellcheckVersion}".startsWith("v") ? "${shellcheckVersion}".substring(1) : "${shellcheckVersion}"
 
     assertShellcheckVersion = {
-        def os = new ByteArrayOutputStream()
-        def es = new ByteArrayOutputStream()
-        String cmd = shellcheckFile.path + " -V"
-        project.logger.lifecycle("Executing cmd [${cmd}]")
-        Process p = cmd.execute()
-        p.consumeProcessOutput(os, os)
-        p.waitFor(5L, TimeUnit.SECONDS)
+        String output = ""
+        new ByteArrayOutputStream().withStream { os ->
+            String cmd = shellcheckFile.path + " -V"
+            project.logger.lifecycle("Executing cmd [${cmd}]")
+            Process p = cmd.execute()
+            p.consumeProcessOutput(os, os)
+            p.waitFor(5L, TimeUnit.SECONDS)
+            output = os.toString()
+        }
         project.logger.lifecycle("Checking if shellcheck version is [${shellcheckVersionWithoutPrefix}]")
-        assert os.toString().contains("version: ${shellcheckVersionWithoutPrefix}") || es.toString().contains("version: ${shellcheckVersionWithoutPrefix}")
+        boolean versionIsOk = output.contains("version: ${shellcheckVersionWithoutPrefix}")
+        if (!versionIsOk) {
+            logger.info("Shellcheck is in wrong version. The output of checking version is \n\n[${output}]")
+        }
     }
 
     isShellcheckDownloaded = {
