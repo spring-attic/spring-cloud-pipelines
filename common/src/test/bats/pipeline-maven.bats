@@ -44,6 +44,86 @@ setup() {
 	assert_output --partial "[echo] foo/bar/bar"
 }
 
+@test "should set a version and execute build from maven for Jenkins" {
+	export CI="JENKINS"
+	export PIPELINE_VERSION="100.0.0"
+	export M2_SETTINGS_REPO_ID="foo"
+	export REPO_WITH_BINARIES="bar"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run build
+
+	assert_output --partial "from version 1.0.0.BUILD-SNAPSHOT to 100.0.0"
+	assert_output --partial "[echo] foo/bar/bar"
+}
+
+@test "should print test results when build failed for Concourse" {
+	export BUILD_OPTIONS="invalid option"
+	export CI="CONCOURSE"
+	export PIPELINE_VERSION="100.0.0"
+	export M2_SETTINGS_REPO_ID="foo"
+	export REPO_WITH_BINARIES="bar"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run build
+
+	assert_output --partial "Build failed!!!"
+}
+
+function findLatestProdTag {
+    echo ""
+}
+
+@test "should skip the step if prod tag is missing for apiCompatibilityCheck" {
+	export BUILD_OPTIONS="invalid option"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run apiCompatibilityCheck
+
+	assert_output --partial "No prod release took place - skipping this step"
+}
+
+@test "should run the check when prod tag exists for apiCompatibilityCheck for Concourse" {
+	export CI="CONCOURSE"
+	export LATEST_PROD_TAG="prod/100.0.0"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run apiCompatibilityCheck
+
+	assert_output --partial "Last prod version equals [100.0.0]"
+	assert_output --partial "[echo] 100.0.0"
+}
+
+@test "should run the check when prod tag exists for apiCompatibilityCheck for Jenkins" {
+	export CI="JENKINS"
+	export LATEST_PROD_TAG="prod/100.0.0"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run apiCompatibilityCheck
+
+	assert_output --partial "Last prod version equals [100.0.0]"
+	assert_output --partial "[echo] 100.0.0"
+}
+
+@test "should print test results when build failed for Jenkins" {
+	export BUILD_OPTIONS="invalid option"
+	export CI="JENKINS"
+	export PIPELINE_VERSION="100.0.0"
+	export M2_SETTINGS_REPO_ID="foo"
+	export REPO_WITH_BINARIES="bar"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run build
+
+	assert_output --partial "Build failed!!!"
+}
+
 @test "should return 'target' for outputFolder" {
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
