@@ -42,6 +42,21 @@ setup() {
 
 	assert_output --partial "from version 1.0.0.BUILD-SNAPSHOT to 100.0.0"
 	assert_output --partial "[echo] foo/bar/bar"
+	assert_output --partial "maven-deploy-plugin"
+}
+
+@test "should print test results when build failed for Jenkins" {
+	export BUILD_OPTIONS="invalid option"
+	export CI="JENKINS"
+	export PIPELINE_VERSION="100.0.0"
+	export M2_SETTINGS_REPO_ID="foo"
+	export REPO_WITH_BINARIES="bar"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run build
+
+	assert_output --partial "Build failed!!!"
 }
 
 @test "should set a version and execute build from maven for Jenkins" {
@@ -56,6 +71,7 @@ setup() {
 
 	assert_output --partial "from version 1.0.0.BUILD-SNAPSHOT to 100.0.0"
 	assert_output --partial "[echo] foo/bar/bar"
+	assert_output --partial "maven-deploy-plugin"
 }
 
 @test "should print test results when build failed for Concourse" {
@@ -96,6 +112,7 @@ function findLatestProdTag {
 
 	assert_output --partial "Last prod version equals [100.0.0]"
 	assert_output --partial "[echo] 100.0.0"
+	assert_output --partial "maven-surefire-plugin"
 }
 
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Jenkins" {
@@ -108,6 +125,7 @@ function findLatestProdTag {
 
 	assert_output --partial "Last prod version equals [100.0.0]"
 	assert_output --partial "[echo] 100.0.0"
+	assert_output --partial "maven-surefire-plugin"
 }
 
 @test "should print a property value from pom.xml if it exists" {
@@ -146,7 +164,7 @@ function findLatestProdTag {
 	assert_output "test"
 }
 
-@test "should print artifact id from pom.xml" {
+@test "should print that build has failed" {
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
 	run printTestResults
@@ -173,6 +191,7 @@ function findLatestProdTag {
 	run runSmokeTests
 
 	assert_output --partial "SMOKE TESTS [foo/bar]"
+	assert_output --partial "maven-surefire-plugin"
 }
 
 @test "should run the smoke tests for Jenkins" {
@@ -185,20 +204,31 @@ function findLatestProdTag {
 	run runSmokeTests
 
 	assert_output --partial "SMOKE TESTS [foo/bar]"
+	assert_output --partial "maven-surefire-plugin"
 }
 
-@test "should print test results when build failed for Jenkins" {
-	export BUILD_OPTIONS="invalid option"
-	export CI="JENKINS"
-	export PIPELINE_VERSION="100.0.0"
-	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+@test "should run the e2e tests for Concourse" {
+	export CI="CONCOURSE"
+	export APPLICATION_URL="foo"
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
-	run build
+	run runE2eTests
 
-	assert_output --partial "Build failed!!!"
+	assert_output --partial "E2E [foo]"
+	assert_output --partial "maven-surefire-plugin"
+}
+
+@test "should run the e2e tests for Jenkins" {
+	export CI="JENKINS"
+	export APPLICATION_URL="foo"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run runE2eTests
+
+	assert_output --partial "E2E [foo]"
+	assert_output --partial "maven-surefire-plugin"
 }
 
 @test "should return 'target' for outputFolder" {
