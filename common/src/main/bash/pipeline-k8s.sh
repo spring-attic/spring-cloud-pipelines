@@ -18,9 +18,9 @@ function logInToPaas() {
     local api="PAAS_${ENVIRONMENT}_API_URL"
     local apiUrl="${!api:-192.168.99.100:8443}"
     local cliInstalled
-    cliInstalled="$( kubectl version && echo "true" || echo "false" )"
+    cliInstalled="$( "${KUBECTL_BIN}" version && echo "true" || echo "false" )"
     local cliDownloaded
-    cliDownloaded="$( test -r kubectl && echo "true" || echo "false" )"
+    cliDownloaded="$( test -r "${KUBECTL_BIN}" && echo "true" || echo "false" )"
     echo "CLI Installed? [${cliInstalled}], CLI Downloaded? [${cliDownloaded}]"
     if [[ ${cliInstalled} == "false" && (${cliDownloaded} == "false" || ${cliDownloaded} == "true" && ${redownloadInfra} == "true") ]]; then
         echo "Downloading CLI"
@@ -33,23 +33,23 @@ function logInToPaas() {
     if [[ ${cliDownloaded} == "true" ]]; then
         echo "Adding CLI to PATH"
         PATH="${PATH}:$( pwd )"
-        chmod +x kubectl
+        chmod +x "${KUBECTL_BIN}"
     fi
     echo "Removing current Kubernetes configuration"
-    rm "${KUBE_CONFIG_PATH}" || echo "Failed to remove Kube config. Continuing with the script"
+    rm -rf "${KUBE_CONFIG_PATH}" || echo "Failed to remove Kube config. Continuing with the script"
     echo "Logging in to Kubernetes API [${apiUrl}], with cluster name [${k8sClusterName}] and user [${k8sClusterUser}]"
-    kubectl config set-cluster "${k8sClusterName}" --server="https://${apiUrl}" --certificate-authority="${k8sCa}" --embed-certs=true
+    "${KUBECTL_BIN}" config set-cluster "${k8sClusterName}" --server="https://${apiUrl}" --certificate-authority="${k8sCa}" --embed-certs=true
     # TOKEN will get injected as a credential if present
     if [[ "${TOKEN}" != "" ]]; then
-        kubectl config set-credentials "${k8sClusterUser}" --token="${TOKEN}"
+        "${KUBECTL_BIN}" config set-credentials "${k8sClusterUser}" --token="${TOKEN}"
     else
-        kubectl config set-credentials "${k8sClusterUser}" --certificate-authority="${k8sCa}" --client-key="${k8sClientKey}" --client-certificate="${k8sClientCert}"
+        "${KUBECTL_BIN}" config set-credentials "${k8sClusterUser}" --certificate-authority="${k8sCa}" --client-key="${k8sClientKey}" --client-certificate="${k8sClientCert}"
     fi
-    kubectl config set-context "${k8sSystemName}" --cluster="${k8sClusterName}" --user="${k8sClusterUser}"
-    kubectl config use-context "${k8sSystemName}"
+    "${KUBECTL_BIN}" config set-context "${k8sSystemName}" --cluster="${k8sClusterName}" --user="${k8sClusterUser}"
+    "${KUBECTL_BIN}" config use-context "${k8sSystemName}"
 
     echo "CLI version"
-    kubectl version
+    "${KUBECTL_BIN}" version
 }
 
 function testDeploy() {
@@ -203,26 +203,26 @@ function deployRabbitMq() {
 
 function deployApp() {
     local fileName="${1}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create -f "${fileName}"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create -f "${fileName}"
 }
 
 function replaceApp() {
     local fileName="${1}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" replace --force -f "${fileName}"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" replace --force -f "${fileName}"
 }
 
 function deleteAppByName() {
     local serviceName="${1}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] . Continuing with the script"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete service "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] . Continuing with the script"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete service "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
 }
 
 function deleteAppByFile() {
     local file="${1}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete -f "${file}" || echo "Failed to delete app by [${file}] file. Continuing with the script"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete -f "${file}" || echo "Failed to delete app by [${file}] file. Continuing with the script"
 }
 
 function system {
@@ -279,8 +279,8 @@ function deployMySql() {
     local mySqlDatabase
     mySqlDatabase="$( mySqlDatabase )"
     echo "Generating secret with name [${secretName}]"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${secretName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${secretName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${secretName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" create secret generic "${secretName}" --from-literal=username="${MYSQL_USER}" --from-literal=password="${MYSQL_PASSWORD}" --from-literal=rootpassword="${MYSQL_ROOT_PASSWORD}"
     substituteVariables "appName" "${serviceName}" "${deploymentFile}"
     substituteVariables "secretName" "${secretName}" "${deploymentFile}"
     substituteVariables "mysqlDatabase" "${mySqlDatabase}" "${deploymentFile}"
@@ -296,7 +296,7 @@ function deployMySql() {
 function findAppByName() {
     local serviceName
     serviceName="${1}"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pods -o wide -l app="${serviceName}" | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get pods -o wide -l app="${serviceName}" | awk -v "app=${serviceName}" '$1 ~ app {print($0)}'
 }
 
 function deployAndRestartAppWithName() {
@@ -518,7 +518,7 @@ function portFromKubernetes() {
         jsonPath="{.spec.ports[0].port}"
     fi }
     # '8080' -> 8080
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc "${appName}" -o jsonpath="${jsonPath}"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get svc "${appName}" -o jsonpath="${jsonPath}"
 }
 
 function waitForAppToStart() {
@@ -583,14 +583,14 @@ function label() {
     local key="${2}"
     local value="${3}"
     local type="deployment"
-    kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label "${type}" "${appName}" "${key}"="${value}"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" label "${type}" "${appName}" "${key}"="${value}"
 }
 
 function objectDeployed() {
     local appType="${1}"
     local appName="${2}"
     local result
-    result="$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get "${appType}" "${appName}" --ignore-not-found=true )"
+    result="$( "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get "${appType}" "${appName}" --ignore-not-found=true )"
     if [[ "${result}" != "" ]]; then
         echo "true"
     else
@@ -675,7 +675,7 @@ function deleteBlueInstance() {
     oldestDeployment="$( oldestDeployment "${appName}" )"
     if [[ "${oldestDeployment}" != "" ]]; then
         echo "Deleting deployment with name [${oldestDeployment}]"
-        kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${oldestDeployment}"
+        "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${oldestDeployment}"
     else
         echo "There's no blue instance to remove, skipping this step"
     fi
@@ -686,7 +686,7 @@ function oldestDeployment() {
     local changedAppName
     changedAppName="$( escapeValueForDns "${appName}-${PIPELINE_VERSION}" )"
     local deployedApps
-    deployedApps="$( kubectl --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}" )"
+    deployedApps="$( "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}" )"
     local oldestDeployment
     oldestDeployment="$( echo "${deployedApps}" | sort | head -n 1 )"
     echo "${oldestDeployment}"
@@ -702,6 +702,8 @@ export SYSTEM
 SYSTEM="$( system )"
 export KUBE_CONFIG_PATH
 KUBE_CONFIG_PATH="${KUBE_CONFIG_PATH:-~/.kube/config}"
+export KUBECTL_BIN
+KUBECTL_BIN="${KUBECTL_BIN:-kubectl}"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 # shellcheck source=/dev/null
