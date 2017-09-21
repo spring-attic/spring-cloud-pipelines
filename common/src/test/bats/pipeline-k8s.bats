@@ -41,7 +41,7 @@ export -f curl
 export -f kubectl
 export -f kubectl_that_fails_first_time
 
-@test "should download kubectl if it's missing and connect to cluster" {
+@test "should download kubectl if it's missing and connect to cluster [K8S]" {
 	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl_that_fails_first_time"
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
