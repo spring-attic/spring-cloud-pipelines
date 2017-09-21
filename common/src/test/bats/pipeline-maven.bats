@@ -30,6 +30,20 @@ setup() {
 	assert_equal "${BUILD_OPTIONS}" "-Djava.security.egd=file:///dev/urandom"
 }
 
+@test "should set a version and execute build from maven for Concourse" {
+	export CI="CONCOURSE"
+	export PIPELINE_VERSION="100.0.0"
+	export M2_SETTINGS_REPO_ID="foo"
+	export REPO_WITH_BINARIES="bar"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run build
+
+	assert_output --partial "from version 1.0.0.BUILD-SNAPSHOT to 100.0.0"
+	assert_output --partial "[echo] foo/bar/bar"
+}
+
 @test "should return 'target' for outputFolder" {
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 

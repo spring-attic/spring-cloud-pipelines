@@ -4,18 +4,18 @@ load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 
 setup() {
+	source "${BATS_TEST_DIRNAME}/test_helper/setup.bash"
+
 	export ENVIRONMENT="TEST"
 	export PAAS_TYPE="k8s"
-	export KUBE_CONFIG_PATH="${BATS_TEST_DIRNAME}/.kube/config"
+	export KUBE_CONFIG_PATH="${PIPELINES_TEST_DIR}/.kube/config"
 	mkdir -p "${KUBE_CONFIG_PATH}"
-	export PAAS_TEST_CA="${BATS_TEST_DIRNAME}/ca"
-	export PAAS_TEST_CLIENT_CERT="${BATS_TEST_DIRNAME}/client_cert"
-	export PAAS_TEST_CLIENT_KEY="${BATS_TEST_DIRNAME}/client_key"
+	export PAAS_TEST_CA="${PIPELINES_TEST_DIR}/ca"
+	export PAAS_TEST_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
+	export PAAS_TEST_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
 	export PAAS_TEST_CLUSTER_NAME="cluster_name"
 	export PAAS_TEST_SYSTEM_NAME="cluster_name"
 	export PAAS_TEST_API_URL="http://1.2.3.4:8765"
-
-	source "${BATS_TEST_DIRNAME}/test_helper/setup.bash"
 }
 
 function curl {
