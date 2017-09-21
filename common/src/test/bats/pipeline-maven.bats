@@ -128,7 +128,7 @@ function findLatestProdTag {
 	assert_output --partial "maven-surefire-plugin"
 }
 
-@test "should print a property value from pom.xml if it exists [Maven]" {
+@test "should print a property value if it exists [Maven]" {
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
@@ -137,7 +137,7 @@ function findLatestProdTag {
 	assert_equal "${result}" "baz"
 }
 
-@test "should print empty string from pom.xml if it doesn't exist [Maven]" {
+@test "should print empty string if it doesn't exist [Maven]" {
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
@@ -146,7 +146,7 @@ function findLatestProdTag {
 	assert_equal "${result}" ""
 }
 
-@test "should print empty string from pom.xml if it doesn't exist and _JAVA_OPTIONS are passed [Maven]" {
+@test "should print empty string if it doesn't exist and _JAVA_OPTIONS are passed [Maven]" {
 	export _JAVA_OPTIONS="-Dfoo=bar"
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
@@ -156,7 +156,7 @@ function findLatestProdTag {
 	assert_equal "${result}" ""
 }
 
-@test "should print group id from pom.xml [Maven]" {
+@test "should print group id [Maven]" {
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
@@ -165,7 +165,7 @@ function findLatestProdTag {
 	assert_output "com.example"
 }
 
-@test "should print artifact id from pom.xml [Maven]" {
+@test "should print artifact id [Maven]" {
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
@@ -182,7 +182,7 @@ function findLatestProdTag {
 	assert_output --partial "Build failed!!!"
 }
 
-@test "should print stubrunner ids property from pom.xml [Maven]" {
+@test "should print stubrunner ids property [Maven]" {
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 

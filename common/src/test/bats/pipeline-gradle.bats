@@ -126,22 +126,22 @@ function findLatestProdTag {
 	assert_output --partial ":apiCompatibility"
 }
 
-@test "should print group id from pom.xml [Gradle]" {
+@test "should print group id [Gradle]" {
 	cd "${PIPELINES_TEST_DIR}/gradle/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-gradle.sh"
 
-	run retrieveGroupId
+	result="$( retrieveGroupId )"
 
-	assert_output "com.example"
+	assert_equal "${result}" "com.example"
 }
 
-@test "should print artifact id from pom.xml [Gradle]" {
+@test "should print artifact id [Gradle]" {
 	cd "${PIPELINES_TEST_DIR}/gradle/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-gradle.sh"
 
-	run retrieveAppName
+	result="$( retrieveAppName )"
 
-	assert_output "my-project"
+	assert_equal "${result}" "my-project"
 }
 
 @test "should print that build has failed [Gradle]" {
@@ -152,13 +152,13 @@ function findLatestProdTag {
 	assert_output --partial "Build failed!!!"
 }
 
-@test "should print stubrunner ids property from pom.xml [Gradle]" {
+@test "should print stubrunner ids property [Gradle]" {
 	cd "${PIPELINES_TEST_DIR}/gradle/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-gradle.sh"
 
-	run retrieveStubRunnerIds
+	result="$( retrieveStubRunnerIds )"
 
-	assert_output --partial "foo.bar:baz"
+	assert_equal "${result}" "foo.bar:baz"
 }
 
 @test "should run the smoke tests for Concourse [Gradle]" {

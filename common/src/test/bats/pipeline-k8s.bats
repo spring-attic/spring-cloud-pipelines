@@ -18,15 +18,10 @@ setup() {
 	export PAAS_TEST_API_URL="http://1.2.3.4:8765"
 }
 
-function curl {
-    echo "curl"
-}
-
 function kubectl {
     echo "kubectl"
 }
 
-export -f curl
 export -f kubectl
 
 @test "should download kubectl if it's missing" {
