@@ -59,4 +59,4 @@ __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 [[ -f "${__DIR}/pipeline-${lowerCaseProjectType}.sh" ]] && \
     source "${__DIR}/pipeline-${lowerCaseProjectType}.sh" || \
-    echo "No pipeline-${lowerCaseProjectType}.sh found"
+    echo "No ${__DIR}/pipeline-${lowerCaseProjectType}.sh found"

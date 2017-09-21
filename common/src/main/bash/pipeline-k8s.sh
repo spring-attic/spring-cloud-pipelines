@@ -36,7 +36,7 @@ function logInToPaas() {
         chmod +x kubectl
     fi
     echo "Removing current Kubernetes configuration"
-    rm ~/.kube/config || echo "Failed to remove Kube config. Continuing with the script"
+    rm "${KUBE_CONFIG_PATH}" || echo "Failed to remove Kube config. Continuing with the script"
     echo "Logging in to Kubernetes API [${apiUrl}], with cluster name [${k8sClusterName}] and user [${k8sClusterUser}]"
     kubectl config set-cluster "${k8sClusterName}" --server="https://${apiUrl}" --certificate-authority="${k8sCa}" --embed-certs=true
     # TOKEN will get injected as a credential if present
@@ -700,6 +700,8 @@ export PAAS_NAMESPACE_VAR="PAAS_${ENVIRONMENT}_NAMESPACE"
 export KUBERNETES_NAMESPACE="${PAAS_NAMESPACE}"
 export SYSTEM
 SYSTEM="$( system )"
+export KUBE_CONFIG_PATH
+KUBE_CONFIG_PATH="${KUBE_CONFIG_PATH:-~/.kube/config}"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 # shellcheck source=/dev/null
