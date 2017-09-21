@@ -30,7 +30,7 @@ setup() {
 	assert_equal "${BUILD_OPTIONS}" "-Djava.security.egd=file:///dev/urandom"
 }
 
-@test "should set a version and execute build from maven for Concourse [Maven]" {
+@test "should set a version and execute build for Concourse [Maven]" {
 	export CI="CONCOURSE"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
@@ -59,7 +59,7 @@ setup() {
 	assert_output --partial "Build failed!!!"
 }
 
-@test "should set a version and execute build from maven for Jenkins [Maven]" {
+@test "should set a version and execute build for Jenkins [Maven]" {
 	export CI="JENKINS"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"

@@ -30,7 +30,7 @@ setup() {
 	assert_equal "${BUILD_OPTIONS}" "-Djava.security.egd=file:///dev/urandom"
 }
 
-@test "should set a version and execute build from maven for Concourse [Gradle]" {
+@test "should set a version and execute build for Concourse [Gradle]" {
 	export CI="CONCOURSE"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
@@ -58,7 +58,7 @@ setup() {
 	assert_output --partial "Build failed!!!"
 }
 
-@test "should set a version and execute build from maven for Jenkins [Gradle]" {
+@test "should set a version and execute build for Jenkins [Gradle]" {
 	export CI="JENKINS"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
@@ -221,7 +221,7 @@ function findLatestProdTag {
 	assert_output "build/libs"
 }
 
-@test "should return maven test results for testResultsAntPattern [Gradle]" {
+@test "should return gradle test results for testResultsAntPattern [Gradle]" {
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-gradle.sh"
 
 	run testResultsAntPattern

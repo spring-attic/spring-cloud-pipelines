@@ -6,10 +6,12 @@ load 'test_helper/bats-assert/load'
 setup() {
 	export ENVIRONMENT="test"
 	export PAAS_TYPE="dummy"
+
+	source "${BATS_TEST_DIRNAME}/test_helper/setup.bash"
 }
 
 @test "toLowerCase should convert a string lower case" {
-	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	run toLowerCase "Foo"
 	assert_output "foo"
@@ -19,23 +21,26 @@ setup() {
 }
 
 @test "yaml2json should convert valid YAML file to JSON" {
-	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+
 	run yaml2json "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml"
+
 	assert_success
 }
 
 @test "yaml2json should fail with invalid YAML file" {
-	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+
 	run yaml2json "${BATS_TEST_DIRNAME}/fixtures/pipeline-invalid.yml"
+
 	assert_failure
 }
 
 @test "deployServices should deploy services from pipeline descriptor" {
-	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
-
-	cd "${BATS_TEST_DIRNAME}/fixtures"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	run deployServices
+
 	assert_success
 	assert_line --index 0 'rabbitmq rabbitmq-github-webhook null'
 	assert_line --index 1 'mysql mysql-github-webhook null'
@@ -44,7 +49,7 @@ setup() {
 }
 
 @test "parsePipelineDescriptor should export an env var with parsed YAML" {
-	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
     assert_equal "${PARSED_YAML}" ""
 
 	parsePipelineDescriptor "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml"
@@ -56,7 +61,7 @@ setup() {
 @test "sourcing pipeline.sh should export an env var with lower case env var" {
 	export ENVIRONMENT="FOO"
 
-	source "${BATS_TEST_DIRNAME}/../../main/bash/pipeline.sh"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	assert_equal "${ENVIRONMENT}" "FOO"
 	assert_equal "${LOWERCASE_ENV}" "foo"

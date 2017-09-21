@@ -11,8 +11,8 @@ export ENVIRONMENT=TEST
     echo "No pipeline.sh found"
 
 # Find latest prod version
-LATEST_PROD_TAG=$( findLatestProdTag )
-echo "Last prod tag equals ${LATEST_PROD_TAG}"
+[[ -z "${LATEST_PROD_TAG}" ]] && LATEST_PROD_TAG="$( findLatestProdTag )"
+echo "Last prod tag equals [${LATEST_PROD_TAG}]"
 if [[ -z "${LATEST_PROD_TAG}" ]]; then
     echo "No prod release took place - skipping this step"
 else
