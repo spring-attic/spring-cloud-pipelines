@@ -128,6 +128,65 @@ function findLatestProdTag {
 	assert_output ""
 }
 
+@test "should print group id from pom.xml" {
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run retrieveGroupId
+
+	assert_output "com.example"
+}
+
+@test "should print artifact id from pom.xml" {
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run retrieveAppName
+
+	assert_output "test"
+}
+
+@test "should print artifact id from pom.xml" {
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run printTestResults
+
+	assert_output --partial "Build failed!!!"
+}
+
+@test "should print stubrunner ids property from pom.xml" {
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run retrieveStubRunnerIds
+
+	assert_output --partial "foo.bar.baz"
+}
+
+@test "should run the smoke tests for Concourse" {
+	export CI="CONCOURSE"
+	export APPLICATION_URL="foo"
+	export STUBRUNNER_URL="bar"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run runSmokeTests
+
+	assert_output --partial "SMOKE TESTS [foo/bar]"
+}
+
+@test "should run the smoke tests for Jenkins" {
+	export CI="JENKINS"
+	export APPLICATION_URL="foo"
+	export STUBRUNNER_URL="bar"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run runSmokeTests
+
+	assert_output --partial "SMOKE TESTS [foo/bar]"
+}
+
 @test "should print test results when build failed for Jenkins" {
 	export BUILD_OPTIONS="invalid option"
 	export CI="JENKINS"
