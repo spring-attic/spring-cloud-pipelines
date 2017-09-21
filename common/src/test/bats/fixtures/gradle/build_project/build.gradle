@@ -1,0 +1,54 @@
+apply plugin: 'groovy'
+apply from: 'gradle/pipeline.gradle'
+
+buildscript {
+	repositories {
+		mavenCentral()
+		mavenLocal()
+	}
+}
+
+group = 'com.example'
+version = getProp('newVersion') ?: '0.0.1-SNAPSHOT'
+
+ext {
+	projectGroupId = project.group
+	projectArtifactId = project.name
+	projectVersion = project.version
+	stubrunnerIds = 'foo.bar:baz'
+}
+
+repositories {
+	mavenCentral()
+	mavenLocal()
+}
+
+if (gradle.startParameter.taskRequests.any { it.args.contains("apiCompatibility") }) {
+	println "apiCompatibility executed"
+} else {
+    println "build executed"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.5'
+}
+
+task publish {
+}
+
+task printProps {
+    doLast {
+        println "REPO_WITH_BINARIES [${getProp("REPO_WITH_BINARIES")}]"
+        println "latestProductionVersion [${getProp("latestProductionVersion")}]"
+        println "application.url [${getProp("application.url")}]"
+        println "stubrunner.url [${getProp("stubrunner.url")}]"
+    }
+}
+
+compileJava.dependsOn("printProps")
+
+String getProp(String propName) {
+	return hasProperty(propName) ?
+			(getProperty(propName) ?: System.properties[propName]) : System.properties[propName] ?:
+			System.getenv(propName)
+}

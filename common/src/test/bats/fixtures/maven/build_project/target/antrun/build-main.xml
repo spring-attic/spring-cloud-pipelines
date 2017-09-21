@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main">
+  <echo>${distribution.management.release.id}/${distribution.management.release.url}/${repo.with.binaries}</echo>
+</target>
+</project>

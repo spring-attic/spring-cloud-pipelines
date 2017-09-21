@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# It takes ages on Docker to run the app without this
+if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
+    if [[ ! -z ${BUILD_OPTIONS} && ${BUILD_OPTIONS} != "null" ]]; then
+        export BUILD_OPTIONS="${BUILD_OPTIONS} -Djava.security.egd=file:///dev/urandom"
+    else
+        export BUILD_OPTIONS="-Djava.security.egd=file:///dev/urandom"
+    fi
+fi
+
 function build() {
     echo "Additional Build Options [${BUILD_OPTIONS}]"
 
@@ -9,7 +18,7 @@ function build() {
         ./gradlew clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
         # shellcheck disable=SC2086
-        ./gradlew clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS}
+        ./gradlew clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || ( echo "Build failed!!!" && return 1 )
     fi
 }
 
@@ -17,14 +26,14 @@ function apiCompatibilityCheck() {
     echo "Running retrieval of group and artifactid to download all dependencies. It might take a while..."
 
     # Find latest prod version
-    LATEST_PROD_TAG=$( findLatestProdTag )
-    echo "Last prod tag equals ${LATEST_PROD_TAG}"
+    [[ -z "${LATEST_PROD_TAG}" ]] && LATEST_PROD_TAG="$( findLatestProdTag )"
+    echo "Last prod tag equals [${LATEST_PROD_TAG}]"
     if [[ -z "${LATEST_PROD_TAG}" ]]; then
         echo "No prod release took place - skipping this step"
     else
         # Downloading latest jar
         LATEST_PROD_VERSION=${LATEST_PROD_TAG#prod/}
-        echo "Last prod version equals ${LATEST_PROD_VERSION}"
+        echo "Last prod version equals [${LATEST_PROD_VERSION}]"
         echo "Additional Build Options [${BUILD_OPTIONS}]"
         if [[ "${CI}" == "CONCOURSE" ]]; then
             # shellcheck disable=SC2086

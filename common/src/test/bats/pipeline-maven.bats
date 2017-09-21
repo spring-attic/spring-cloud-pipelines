@@ -132,18 +132,18 @@ function findLatestProdTag {
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
-	run extractMavenProperty "foo.bar"
+	result="$( extractMavenProperty "foo.bar" )"
 
-	assert_output "baz"
+	assert_equal "${result}" "baz"
 }
 
 @test "should print empty string from pom.xml if it doesn't exist [Maven]" {
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
-	run extractMavenProperty "missing"
+	result="$( extractMavenProperty "missing" )"
 
-	assert_output ""
+	assert_equal "${result}" ""
 }
 
 @test "should print empty string from pom.xml if it doesn't exist and _JAVA_OPTIONS are passed [Maven]" {
@@ -171,7 +171,7 @@ function findLatestProdTag {
 
 	run retrieveAppName
 
-	assert_output "test"
+	assert_output "my-project"
 }
 
 @test "should print that build has failed [Maven]" {
@@ -188,7 +188,7 @@ function findLatestProdTag {
 
 	run retrieveStubRunnerIds
 
-	assert_output --partial "foo.bar.baz"
+	assert_output --partial "foo.bar:baz"
 }
 
 @test "should run the smoke tests for Concourse [Maven]" {
