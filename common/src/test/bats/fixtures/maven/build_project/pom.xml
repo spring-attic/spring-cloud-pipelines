@@ -7,6 +7,9 @@
     <artifactId>test</artifactId>
     <version>1.0.0.BUILD-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <properties>
+        <foo.bar>baz</foo.bar>
+    </properties>
     <build>
         <plugins>
             <plugin>

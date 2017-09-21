@@ -110,6 +110,24 @@ function findLatestProdTag {
 	assert_output --partial "[echo] 100.0.0"
 }
 
+@test "should print a property value from pom.xml if it exists" {
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run extractMavenProperty "foo.bar"
+
+	assert_output "baz"
+}
+
+@test "should print empty string from pom.xml if it doesn't exist" {
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+
+	run extractMavenProperty "missing"
+
+	assert_output ""
+}
+
 @test "should print test results when build failed for Jenkins" {
 	export BUILD_OPTIONS="invalid option"
 	export CI="JENKINS"
