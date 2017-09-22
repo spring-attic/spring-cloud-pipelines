@@ -20,25 +20,21 @@ setup() {
 }
 
 function curl {
-    echo "curl $*"
+	echo "curl $*"
 }
 
 function kubectl {
-    echo "kubectl $*"
+	echo "kubectl $*"
 }
 
 count=1
 function kubectl_that_fails_first_time {
-    if [[ "${1}" == "version" && "${count}" == 1 ]]; then
-        return 1
-    else
-        count=count+1
-    fi
-    echo "kubectl $*"
-}
-
-function deployServices {
-    echo "deployServices $*"
+	if [[ "${1}" == "version" && "${count}" == 1 ]]; then
+		return 1
+	else
+		count=count+1
+	fi
+	echo "kubectl $*"
 }
 
 export -f curl
@@ -110,7 +106,6 @@ export -f kubectl_that_fails_first_time
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	refute_output --partial "deployServices"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/service.yml"
@@ -118,6 +113,7 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
 	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "App started successfully!"
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing for minikube [K8S][Maven]" {
@@ -134,7 +130,6 @@ export -f kubectl_that_fails_first_time
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	refute_output --partial "deployServices"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/service.yml"
@@ -142,4 +137,73 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
 	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "App started successfully!"
+}
+
+@test "should deploy app to test environment with additional services for non-minikube [K8S][Maven]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="false"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/maven/build_project"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	touch "${KUBECTL_BIN}"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+
+	run testDeploy
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f target/k8s/rabbitmq-service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-github-webhook"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-my-project --from-literal=username= --from-literal=password= --from-literal=rootpassword="
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f target/k8s/mysql-service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f target/k8s/eureka-service.yml"
+	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret stubrunner-github-webhook"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f target/k8s/stubrunner-service.yml"
+	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
+	assert_output --partial "my-project -o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "App started successfully!"
+}
+
+@test "should deploy app to test environment with additional services for minikube [K8S][Maven]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="true"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/maven/build_project"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	touch "${KUBECTL_BIN}"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+
+	run testDeploy
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f target/k8s/rabbitmq-service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-github-webhook"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-my-project --from-literal=username= --from-literal=password= --from-literal=rootpassword="
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f target/k8s/mysql-service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f target/k8s/eureka-service.yml"
+	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret stubrunner-github-webhook"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f target/k8s/stubrunner-service.yml"
+	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
+	assert_output --partial "my-project -o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "App started successfully!"
 }

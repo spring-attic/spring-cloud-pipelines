@@ -169,7 +169,7 @@ function appSystemProps() {
 function deleteService() {
     local serviceType="${1}"
     local serviceName="${2}"
-    echo "Deleting all mysql related services with name [${serviceName}]"
+    echo "Deleting all possible entries with name [${serviceName}]"
     deleteAppByName "${serviceName}"
 }
 
@@ -213,11 +213,11 @@ function replaceApp() {
 
 function deleteAppByName() {
     local serviceName="${1}"
-    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${serviceName}" || echo "Failed to delete secret [${serviceName}]. Continuing with the script"
-    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete persistentvolumeclaim "${serviceName}"  || echo "Failed to delete persistentvolumeclaim [${serviceName}]. Continuing with the script"
-    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete pod "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
-    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${serviceName}" || echo "Failed to delete deployment [${serviceName}] . Continuing with the script"
-    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete service "${serviceName}" || echo "Failed to delete service [${serviceName}]. Continuing with the script"
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete secret "${serviceName}" || result=""
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete persistentvolumeclaim "${serviceName}"  || result=""
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete pod "${serviceName}" || result=""
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${serviceName}" || result=""
+    "${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete service "${serviceName}" || result=""
 }
 
 function deleteAppByFile() {
@@ -248,12 +248,6 @@ function substituteVariables() {
     else
         sed -i "s/{{${variableName}}}/${escapedSubstitution}/" "${fileName}"
     fi
-}
-
-function deleteMySql() {
-    local serviceName="${1:-mysql-github}"
-    echo "Deleting all mysql related services with name [${serviceName}]"
-    deleteAppByName "${serviceName}"
 }
 
 function deployMySql() {
