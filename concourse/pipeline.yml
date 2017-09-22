@@ -28,7 +28,7 @@ jobs:
     - get: tools
     - get: version
   - task: generate-version
-    file: tools/concourse/tasks/generate-version.yml
+    file: tools/concourse/tasks/generate-version/task.yml
     params:
       GIT_EMAIL: ((git-email))
       GIT_NAME: ((git-name))
@@ -49,7 +49,7 @@ jobs:
       - generate-version
       trigger: true
   - task: build-and-upload
-    file: tools/concourse/tasks/build-and-upload.yml
+    file: tools/concourse/tasks/build-and-upload/task.yml
     params:
       <<: *common-params
   - put: repo
@@ -71,7 +71,7 @@ jobs:
       - build-and-upload
       trigger: true
   - task: build-api-compatibility-check
-    file: tools/concourse/tasks/build-api-compatibility-check.yml
+    file: tools/concourse/tasks/build-api-compatibility-check/task.yml
     params:
       <<: *common-params
 
@@ -88,7 +88,7 @@ jobs:
       - build-api-compatibility-check
       trigger: true
   - task: test-deploy
-    file: tools/concourse/tasks/test-deploy.yml
+    file: tools/concourse/tasks/test-deploy/task.yml
     params:
       <<: *common-params
       <<: *paas-test-params
@@ -107,7 +107,7 @@ jobs:
       - test-deploy
       trigger: true
   - task: test-smoke
-    file: tools/concourse/tasks/test-smoke.yml
+    file: tools/concourse/tasks/test-smoke/task.yml
     params:
       <<: *common-params
       <<: *paas-test-params
@@ -125,7 +125,7 @@ jobs:
       - test-smoke
       trigger: true
   - task: test-rollback-deploy
-    file: tools/concourse/tasks/test-rollback-deploy.yml
+    file: tools/concourse/tasks/test-rollback-deploy/task.yml
     params:
       <<: *common-params
       <<: *paas-test-params
@@ -144,7 +144,7 @@ jobs:
       - test-rollback-deploy
       trigger: true
   - task: test-rollback-smoke
-    file: tools/concourse/tasks/test-rollback-smoke.yml
+    file: tools/concourse/tasks/test-rollback-smoke/task.yml
     params:
       <<: *common-params
       <<: *paas-test-params
@@ -162,7 +162,7 @@ jobs:
       - test-rollback-smoke
       trigger: false
   - task: stage-deploy
-    file: tools/concourse/tasks/stage-deploy.yml
+    file: tools/concourse/tasks/stage-deploy/task.yml
     params:
       <<: *common-params
       <<: *paas-stage-params
@@ -181,7 +181,7 @@ jobs:
       - stage-deploy
       trigger: false
   - task: stage-smoke
-    file: tools/concourse/tasks/stage-e2e.yml
+    file: tools/concourse/tasks/stage-e2e/task.yml
     params:
       <<: *common-params
       <<: *paas-stage-params
@@ -199,7 +199,7 @@ jobs:
       - stage-e2e
       trigger: false
   - task: prod-deploy
-    file: tools/concourse/tasks/prod-deploy.yml
+    file: tools/concourse/tasks/prod-deploy/task.yml
     params:
       <<: *common-params
       <<: *paas-prod-params
@@ -223,7 +223,7 @@ jobs:
       - prod-deploy
       trigger: false
   - task: prod-complete
-    file: tools/concourse/tasks/prod-complete.yml
+    file: tools/concourse/tasks/prod-complete/task.yml
     params:
       <<: *common-params
       <<: *paas-prod-params

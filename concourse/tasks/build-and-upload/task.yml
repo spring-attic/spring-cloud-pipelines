@@ -16,4 +16,4 @@ caches:
 run:
   path: /bin/bash
   args:
-    - tools/concourse/tasks/build-api-compatibility-check.sh
+    - tools/concourse/tasks/build-and-upload/task.sh

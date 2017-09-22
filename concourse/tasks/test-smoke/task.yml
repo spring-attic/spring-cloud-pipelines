@@ -16,4 +16,4 @@ caches:
 run:
   path: /bin/bash
   args:
-    - tools/concourse/tasks/test-smoke.sh
+    - tools/concourse/tasks/test-smoke/task.sh

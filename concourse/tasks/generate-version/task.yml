@@ -14,7 +14,7 @@ outputs:
   - name: updated-version
 
 run:
-  path: tools/concourse/tasks/generate-version.sh
+  path: tools/concourse/tasks/generate-version/task.sh
 
 params:
   GIT_EMAIL:
