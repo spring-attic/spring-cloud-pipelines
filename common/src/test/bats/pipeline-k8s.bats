@@ -37,6 +37,10 @@ function kubectl_that_fails_first_time {
     echo "kubectl $*"
 }
 
+function deployServices {
+    echo "deployServices $*"
+}
+
 export -f curl
 export -f kubectl
 export -f kubectl_that_fails_first_time
@@ -56,4 +60,86 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
 	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+}
+
+@test "should redownload kubectl if redownload infra flag is set and connect to cluster [K8S]" {
+	export REDOWNLOAD_INFRA="true"
+	export KUBECTL_BIN="kubectl_that_fails_first_time"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	touch "${KUBECTL_BIN}"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+
+	run logInToPaas
+
+	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
+	assert_output --partial "CLI Installed? [false], CLI Downloaded? [true]"
+	assert_output --partial "curl -LO https://storage.googleapis.com"
+	assert_output --partial "Adding CLI to PATH"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
+	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
+	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+}
+
+@test "should not redownload kubectl if redownload infra flag is not set and kubectl was downloaded and connect to cluster [K8S]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	touch "${KUBECTL_BIN}"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+
+	run logInToPaas
+
+	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
+	refute_output --partial "curl -LO https://storage.googleapis.com"
+	assert_output --partial "Adding CLI to PATH"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
+	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
+	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+}
+
+@test "should deploy app to test environment without additional services if pipeline descriptor is missing for non-minikube [K8S][Maven]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	touch "${KUBECTL_BIN}"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+
+	run testDeploy
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	refute_output --partial "deployServices"
+	assert_output --partial "No pipeline descriptor found - will not deploy any services"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
+	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
+}
+
+@test "should deploy app to test environment without additional services if pipeline descriptor is missing for minikube [K8S][Maven]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export KUBERNETES_MINIKUBE="true"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	touch "${KUBECTL_BIN}"
+	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+
+	run testDeploy
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	refute_output --partial "deployServices"
+	assert_output --partial "No pipeline descriptor found - will not deploy any services"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f target/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f target/k8s/service.yml"
+	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
 }
