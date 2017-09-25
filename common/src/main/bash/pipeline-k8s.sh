@@ -549,9 +549,9 @@ function isAppRunning() {
 	local healthEndpoint="health"
 	echo "Checking if app [${host}:${port}] is running at [/${healthEndpoint}] endpoint"
 	for i in $( seq 1 "${retries}" ); do
-		sleep "${waitTime}"
 		curl -m 5 "${host}:${port}/${healthEndpoint}" && running=0 && break
 		echo "Fail #$i/${retries}... will try again in [${waitTime}] seconds"
+		sleep "${waitTime}"
 	done
 	if [[ "${running}" == 1 ]]; then
 		echo "App failed to start"
