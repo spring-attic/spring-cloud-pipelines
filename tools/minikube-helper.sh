@@ -18,9 +18,10 @@ function createNamespace() {
 	kubectl create -f "${folder}build/namespace.yml"
 }
 
+# shellcheck disable=SC2120
 function createJenkins() {
 	local appName="jenkins"
-	local namespaceName="${2:sc-pipelines-prod}"
+	local namespaceName="sc-pipelines-prod"
 	local folder=""
 	if [ -d "tools" ]; then
 		folder="tools/"
@@ -31,9 +32,10 @@ function createJenkins() {
 	kubectl create -f "${folder}k8s/${appName}-service.yml" --namespace="${namespaceName}" --validate=false
 }
 
+# shellcheck disable=SC2120
 function createArtifactory() {
 	local appName="artifactory"
-	local namespaceName="${2:sc-pipelines-prod}"
+	local namespaceName="sc-pipelines-prod"
 	local folder=""
 	if [ -d "tools" ]; then
 		folder="tools/"
@@ -133,7 +135,7 @@ case $1 in
 		tar xvf "${GCLOUD_ARCHIVE}"
 		rm -vf -- "${GCLOUD_ARCHIVE}"
 		echo "Running the installer"
-		${GCLOUD_PATH}/install.sh
+		"${GCLOUD_PATH}/install.sh"
 		popd
 		;;
 
@@ -177,13 +179,17 @@ case $1 in
 
 	setup-tools-infra-vsphere)
 		export CLOUD_TYPE=vpshere
+		# shellcheck disable=SC2119
 		createArtifactory
+		# shellcheck disable=SC2119
 		createJenkins
 		;;
 
 	setup-tools-infra-gce)
 		export CLOUD_TYPE=gce
+		# shellcheck disable=SC2119
 		createArtifactory
+		# shellcheck disable=SC2119
 		createJenkins
 		;;
 
