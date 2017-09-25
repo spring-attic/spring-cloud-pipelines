@@ -252,6 +252,9 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_TEST_CLIENT_KEY | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
 |PAAS_STAGE_CLIENT_KEY | Path to the client key for stage environment | /usr/share/jenkins/cert/apiserver.key
 |PAAS_PROD_CLIENT_KEY | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_TEST_CLIENT_TOKEN_PATH | Path to the file containing the token for test env |
+|PAAS_STAGE_CLIENT_TOKEN_PATH | Path to the file containing the token for stage env |
+|PAAS_PROD_CLIENT_TOKEN_PATH | Path to the file containing the token for prod env |
 |PAAS_TEST_CLIENT_TOKEN_ID | Access token for test environment |
 |PAAS_STAGE_CLIENT_TOKEN_ID | Access token for test environment |
 |PAAS_PROD_CLIENT_TOKEN_ID | Access token for test environment |
@@ -281,7 +284,47 @@ The env vars that are used in all of the jobs are as follows:
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
-=== Connecting to a Kubo cluster
+=== Preparing to connect to GCE
+
+IMPORTANT: Skip this step if you're not using GCE
+
+In order to use GCE we need to have `gcloud` running. If you already have the
+CLI installed, skip this step. If not just execute to have the CLI
+downloaded and an installer started
+
+```bash
+$ ./tools/minikube-helper.sh download-gcloud
+```
+
+Next, configure `gcloud`. Execute `gcloud init` and log in
+to your cluster. You will get redirected to a login page, pick the
+proper Google account and log in.
+
+Pick an existing project or create a new one.
+
+Go to your platform page in GCP and connect to your cluster
+
+```bash
+$ CLUSTER_NAME=...
+$ ZONE=us-east1-b
+$ PROJECT_NAME=...
+$ gcloud container clusters get-credentials ${CLUSTER_NAME} --zone ${ZONE} --project ${PROJECT_NAME}
+$ kubectl proxy
+```
+
+The Kubernetes dashboard will be running at `http://localhost:8001/ui/`.
+
+We'll need a Persistent Disk for our Jenkins installation. Let's create it
+
+```bash
+$ ZONE=us-east1-b
+$ gcloud compute disks create --size=200GB --zone=${ZONE} sc-pipelines-jenkins-disk
+```
+
+Since the disk got created now we need to format it. You can check out
+the instructions on how to do it here - https://cloud.google.com/compute/docs/disks/add-persistent-disk#formatting
+
+=== Connecting to a Kubo or GCE cluster
 
 In this section a description of steps required to deploy Jenkins and
 Artifactory to a Kubernetes cluster deployed via Kubo.
@@ -289,7 +332,9 @@ Artifactory to a Kubernetes cluster deployed via Kubo.
 TIP: To see the dashboard just do `kubectl proxy` and access `localhost:8081/ui`
 
 - Log in to the cluster
-- Deploy Jenkins and Artifactory to the cluster (`./tools/minikube-helper.sh setup-tools-infra`)
+- Deploy Jenkins and Artifactory to the cluster 
+* `./tools/minikube-helper.sh setup-tools-infra-vsphere` for a cluster deployed on VSphere
+* `./tools/minikube-helper.sh setup-tools-infra-gce` for a cluster deployed to GCE
 - Go to `Credentials`, click `System` and `Global credentials`
 
 image::{jenkins-root-docs}/kubo_credentials.png[caption="Click `Global credentials`"]
@@ -325,10 +370,10 @@ new File("/root/.m2/settings.xml").text = """
 		</server>
 		<server>
 			<id>docker-repo</id>
-            <username>${username}</username>
-            <password>${password}</password>
+			<username>${username}</username>
+			<password>${password}</password>
 			<configuration>
-                 <email>${email}</email>
+				 <email>${email}</email>
 			</configuration>
 		</server>
 	</servers>

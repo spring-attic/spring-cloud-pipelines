@@ -54,7 +54,7 @@ if (gradleHomeFile.exists()) {
 println "Creating the seed job"
 new DslScriptLoader(jobManagement).with {
 	runScript(jobScript.text
-			.replace('https://github.com/marcingrzejszczak', "https://github.com/${System.getenv('FORKED_ORG')}")
+			.replace('https://github.com/marcingrzejszczak', "https://github.com/${System.getenv('FORKED_ORG') ?: "marcingrzejszczak"}")
 			.replace('http://artifactory', "http://${System.getenv('EXTERNAL_IP') ?: "localhost"}")
 			.replace('scpipelines', "${System.getenv('DOCKER_REGISTRY_ORGANIZATION') ?: "scpipelines"}"))
 }
