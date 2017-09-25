@@ -13,6 +13,8 @@ setup() {
 	export PAAS_TEST_CA="${PIPELINES_TEST_DIR}/ca"
 	export PAAS_TEST_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
 	export PAAS_TEST_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
+	export PAAS_TEST_CLIENT_TOKEN_PATH=""
+	export TOKEN=""
 	export PAAS_TEST_CLUSTER_USERNAME="cluster_username"
 	export PAAS_TEST_CLUSTER_NAME="cluster_name"
 	export PAAS_TEST_SYSTEM_NAME="cluster_name"
@@ -511,4 +513,111 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+}
+
+@test "should skip the rollback step if no prod deployment took place [K8S][Maven]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="true"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "No prod release took place - skipping this step"
+	refute_output --partial "SMOKE TESTS "
+	refute_output --partial "maven-surefire-plugin"
+}
+
+@test "should prepare and execute rollback tests for minikube [K8S][Maven]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="true"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "SMOKE TESTS [1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].nodePort}/1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].nodePort}]"
+	assert_output --partial "maven-surefire-plugin"
+}
+
+@test "should prepare and execute rollback tests for minikube [K8S][Gradle]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="true"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "application.url [1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].nodePort}]"
+	assert_output --partial "stubrunner.url [1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].nodePort}]"
+	assert_output --partial ":smoke"
+}
+
+@test "should prepare and execute rollback tests for non minikube [K8S][Maven]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "SMOKE TESTS [my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].port}/stubrunner-my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].port}]"
+	assert_output --partial "maven-surefire-plugin"
+}
+
+@test "should prepare and execute rollback tests for non minikube [K8S][Gradle]" {
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "application.url [my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].port}]"
+	assert_output --partial "stubrunner.url [stubrunner-my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].port}]"
+	assert_output --partial ":smoke"
 }
