@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+export GRADLEW_BIN
+GRADLEW_BIN="${GRADLEW_BIN:-./gradlew}"
+
 # It takes ages on Docker to run the app without this
 if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
     if [[ ! -z ${BUILD_OPTIONS} && ${BUILD_OPTIONS} != "null" ]]; then
@@ -15,10 +18,10 @@ function build() {
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
         # shellcheck disable=SC2086
-        ./gradlew clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || ( printTestResults && return 1)
+        "${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
         # shellcheck disable=SC2086
-        ./gradlew clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || ( echo "Build failed!!!" && return 1 )
+        "${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || ( echo "Build failed!!!" && return 1 )
     fi
 }
 
@@ -37,20 +40,20 @@ function apiCompatibilityCheck() {
         echo "Additional Build Options [${BUILD_OPTIONS}]"
         if [[ "${CI}" == "CONCOURSE" ]]; then
             # shellcheck disable=SC2086
-            ./gradlew clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || ( printTestResults && return 1)
+            "${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || ( printTestResults && return 1)
         else
             # shellcheck disable=SC2086
-            ./gradlew clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS}
+            "${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS}
         fi
     fi
 }
 
 function retrieveGroupId() {
-    ./gradlew groupId -q | tail -1
+    "${GRADLEW_BIN}" groupId -q | tail -1
 }
 
 function retrieveAppName() {
-    ./gradlew artifactId -q | tail -1
+    "${GRADLEW_BIN}" artifactId -q | tail -1
 }
 
 function printTestResults() {
@@ -59,7 +62,7 @@ function printTestResults() {
 }
 
 function retrieveStubRunnerIds() {
-    ./gradlew stubIds -q | tail -1
+    "${GRADLEW_BIN}" stubIds -q | tail -1
 }
 
 function runSmokeTests() {
@@ -69,10 +72,10 @@ function runSmokeTests() {
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
         # shellcheck disable=SC2086
-        ./gradlew smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
+        "${GRADLEW_BIN}" smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
         # shellcheck disable=SC2086
-        ./gradlew smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
+        "${GRADLEW_BIN}" smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
     fi
 }
 
@@ -82,10 +85,10 @@ function runE2eTests() {
 
     if [[ "${CI}" == "CONCOURSE" ]]; then
         # shellcheck disable=SC2086
-        ./gradlew e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
+        "${GRADLEW_BIN}" e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} || ( printTestResults && return 1)
     else
         # shellcheck disable=SC2086
-        ./gradlew e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
+        "${GRADLEW_BIN}" e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
     fi
 }
 

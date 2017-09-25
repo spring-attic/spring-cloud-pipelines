@@ -6,6 +6,9 @@ load 'test_helper/bats-assert/load'
 setup() {
 	source "${BATS_TEST_DIRNAME}/test_helper/setup.bash"
 
+	export MAVENW_BIN="mockMvnw"
+	export GRADLEW_BIN="mockGradlew"
+
 	export ENVIRONMENT="TEST"
 	export PAAS_TYPE="k8s"
 	export KUBE_CONFIG_PATH="${PIPELINES_TEST_DIR}/.kube/config"
@@ -60,14 +63,24 @@ function kubectl_that_fails_first_time {
 	echo "kubectl $*"
 }
 
+function mockMvnw {
+	echo "mvnw $*"
+}
+
+function mockGradlew {
+	echo "gradlew $*"
+}
+
 export -f curl
 export -f kubectl
 export -f kubectl_that_fails_first_time
+export -f mockMvnw
+export -f mockGradlew
 
 @test "should download kubectl if it's missing and connect to cluster [K8S]" {
 	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl_that_fails_first_time"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
 	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	run logInToPaas
@@ -84,7 +97,7 @@ export -f kubectl_that_fails_first_time
 @test "should redownload kubectl if redownload infra flag is set and connect to cluster [K8S]" {
 	export REDOWNLOAD_INFRA="true"
 	export KUBECTL_BIN="kubectl_that_fails_first_time"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
 	touch "${KUBECTL_BIN}"
 	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
@@ -102,7 +115,7 @@ export -f kubectl_that_fails_first_time
 @test "should not redownload kubectl if redownload infra flag is not set and kubectl was downloaded and connect to cluster [K8S]" {
 	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
 	touch "${KUBECTL_BIN}"
 	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
@@ -120,7 +133,7 @@ export -f kubectl_that_fails_first_time
 	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export TOKEN="FOO"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
 	touch "${KUBECTL_BIN}"
 	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
@@ -137,8 +150,8 @@ export -f kubectl_that_fails_first_time
 @test "should use token from a file to connect to the cluster [K8S]" {
 	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
-	export PAAS_TEST_CLIENT_TOKEN_PATH="${PIPELINES_TEST_DIR}/maven/build_project/token"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
+	export PAAS_TEST_CLIENT_TOKEN_PATH="${PIPELINES_TEST_DIR}/maven/empty_project/token"
+	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
 	touch "${KUBECTL_BIN}"
 	echo "FOO" > token
 	source "${PIPELINES_TEST_DIR}/pipeline.sh"
@@ -160,9 +173,8 @@ export -f kubectl_that_fails_first_time
 	export PAAS_NAMESPACE="sc-pipelines-test"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
 
@@ -186,9 +198,8 @@ export -f kubectl_that_fails_first_time
 	export PAAS_NAMESPACE="sc-pipelines-test"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
 
@@ -212,10 +223,9 @@ export -f kubectl_that_fails_first_time
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
 
@@ -223,8 +233,8 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/rabbitmq-service.yml"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-github-webhook"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-my-project --from-literal=username= --from-literal=password= --from-literal=rootpassword="
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/mysql-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/eureka-service.yml"
@@ -236,7 +246,7 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "my-project -o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -248,10 +258,9 @@ export -f kubectl_that_fails_first_time
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
 
@@ -259,8 +268,8 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/rabbitmq-service.yml"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-github-webhook"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-my-project --from-literal=username= --from-literal=password= --from-literal=rootpassword="
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/mysql-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/eureka-service.yml"
@@ -272,7 +281,7 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "my-project -o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -284,9 +293,8 @@ export -f kubectl_that_fails_first_time
 	export PAAS_NAMESPACE="sc-pipelines-test"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
 
@@ -310,10 +318,9 @@ export -f kubectl_that_fails_first_time
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
 
 	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
 
@@ -321,8 +328,8 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/rabbitmq-service.yml"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-github-webhook"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-my-project --from-literal=username= --from-literal=password= --from-literal=rootpassword="
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/mysql-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/eureka-service.yml"
@@ -334,7 +341,7 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "my-project -o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -346,8 +353,8 @@ export -f kubectl_that_fails_first_time
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
@@ -356,8 +363,8 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/rabbitmq-service.yml"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-github-webhook"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-my-project --from-literal=username= --from-literal=password= --from-literal=rootpassword="
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create secret generic mysql-"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/mysql-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/eureka-service.yml"
@@ -369,7 +376,7 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "my-project -o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -381,16 +388,15 @@ export -f kubectl_that_fails_first_time
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}"/test_smoke.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	assert_output --partial "SMOKE TESTS [1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].nodePort}/1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].nodePort}]"
-	assert_output --partial "maven-surefire-plugin"
+	assert_output --partial "-Psmoke"
 }
 
 @test "should prepare and execute smoke tests for minikube [K8S][Gradle]" {
@@ -401,17 +407,15 @@ export -f kubectl_that_fails_first_time
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}"/test_smoke.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	assert_output --partial "application.url [1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].nodePort}]"
-	assert_output --partial "stubrunner.url [1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].nodePort}]"
-	assert_output --partial ":smoke"
+	assert_output --partial "gradlew smoke"
 }
 
 @test "should prepare and execute smoke tests for non minikube [K8S][Maven]" {
@@ -422,16 +426,15 @@ export -f kubectl_that_fails_first_time
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}"/test_smoke.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	assert_output --partial "SMOKE TESTS [my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].port}/stubrunner-my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].port}]"
-	assert_output --partial "maven-surefire-plugin"
+	assert_output --partial "-Psmoke"
 }
 
 @test "should prepare and execute smoke tests for non minikube [K8S][Gradle]" {
@@ -442,17 +445,15 @@ export -f kubectl_that_fails_first_time
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}"/test_smoke.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	assert_output --partial "application.url [my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].port}]"
-	assert_output --partial "stubrunner.url [stubrunner-my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].port}]"
-	assert_output --partial ":smoke"
+	assert_output --partial "gradlew smoke"
 }
 
 @test "should deploy app for rollback tests without additional services if pipeline descriptor is missing for minikube [K8S][Gradle]" {
@@ -464,7 +465,7 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}/test_rollback_deploy.sh"
@@ -491,8 +492,8 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}/test_rollback_deploy.sh"
@@ -518,8 +519,8 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}/test_rollback_deploy.sh"
@@ -544,8 +545,8 @@ export -f kubectl_that_fails_first_time
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
@@ -553,8 +554,7 @@ export -f kubectl_that_fails_first_time
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "No prod release took place - skipping this step"
-	refute_output --partial "SMOKE TESTS "
-	refute_output --partial "maven-surefire-plugin"
+	refute_output --partial "-Psmoke"
 }
 
 @test "should prepare and execute rollback tests for minikube [K8S][Maven]" {
@@ -566,16 +566,15 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	assert_output --partial "SMOKE TESTS [1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].nodePort}/1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].nodePort}]"
-	assert_output --partial "maven-surefire-plugin"
+	assert_output --partial "-Psmoke"
 }
 
 @test "should prepare and execute rollback tests for minikube [K8S][Gradle]" {
@@ -587,17 +586,15 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	assert_output --partial "application.url [1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].nodePort}]"
-	assert_output --partial "stubrunner.url [1.2.3.4:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].nodePort}]"
-	assert_output --partial ":smoke"
+	assert_output --partial "gradlew smoke"
 }
 
 @test "should prepare and execute rollback tests for non minikube [K8S][Maven]" {
@@ -609,16 +606,15 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	assert_output --partial "SMOKE TESTS [my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].port}/stubrunner-my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].port}]"
-	assert_output --partial "maven-surefire-plugin"
+	assert_output --partial "-Psmoke"
 }
 
 @test "should prepare and execute rollback tests for non minikube [K8S][Gradle]" {
@@ -630,17 +626,15 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
-	assert_output --partial "application.url [my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].port}]"
-	assert_output --partial "stubrunner.url [stubrunner-my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].port}]"
-	assert_output --partial ":smoke"
+	assert_output --partial "gradlew smoke"
 }
 
 @test "should deploy app for e2e tests without additional services if pipeline descriptor is missing for minikube [K8S][Gradle]" {
@@ -653,7 +647,7 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}/stage_deploy.sh"
@@ -680,8 +674,8 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}/stage_deploy.sh"
@@ -707,8 +701,8 @@ export -f kubectl_that_fails_first_time
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${PIPELINES_TEST_DIR}/stage_deploy.sh"
