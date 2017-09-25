@@ -10,6 +10,7 @@ setup() {
 	export PAAS_TYPE="k8s"
 	export KUBE_CONFIG_PATH="${PIPELINES_TEST_DIR}/.kube/config"
 	mkdir -p "${KUBE_CONFIG_PATH}"
+
 	export PAAS_TEST_CA="${PIPELINES_TEST_DIR}/ca"
 	export PAAS_TEST_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
 	export PAAS_TEST_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
@@ -19,6 +20,26 @@ setup() {
 	export PAAS_TEST_CLUSTER_NAME="cluster_name"
 	export PAAS_TEST_SYSTEM_NAME="cluster_name"
 	export PAAS_TEST_API_URL="1.2.3.4:8765"
+
+	export PAAS_STAGE_CA="${PIPELINES_TEST_DIR}/ca"
+	export PAAS_STAGE_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
+	export PAAS_STAGE_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
+	export PAAS_STAGE_CLIENT_TOKEN_PATH=""
+	export TOKEN=""
+	export PAAS_STAGE_CLUSTER_USERNAME="cluster_username"
+	export PAAS_STAGE_CLUSTER_NAME="cluster_name"
+	export PAAS_STAGE_SYSTEM_NAME="cluster_name"
+	export PAAS_STAGE_API_URL="1.2.3.4:8765"
+
+	export PAAS_PROD_CA="${PIPELINES_TEST_DIR}/ca"
+	export PAAS_PROD_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
+	export PAAS_PROD_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
+	export PAAS_PROD_CLIENT_TOKEN_PATH=""
+	export TOKEN=""
+	export PAAS_PROD_CLUSTER_USERNAME="cluster_username"
+	export PAAS_PROD_CLUSTER_NAME="cluster_name"
+	export PAAS_PROD_SYSTEM_NAME="cluster_name"
+	export PAAS_PROD_API_URL="1.2.3.4:8765"
 }
 
 function curl {
@@ -620,4 +641,85 @@ export -f kubectl_that_fails_first_time
 	assert_output --partial "application.url [my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc my-project -o jsonpath={.spec.ports[0].port}]"
 	assert_output --partial "stubrunner.url [stubrunner-my-project.sc-pipelines-test:kubectl --context=context --namespace=sc-pipelines-test get svc stubrunner-my-project -o jsonpath={.spec.ports[0].port}]"
 	assert_output --partial ":smoke"
+}
+
+@test "should deploy app for e2e tests without additional services if pipeline descriptor is missing for minikube [K8S][Gradle]" {
+	export ENVIRONMENT="STAGE"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export KUBERNETES_MINIKUBE="true"
+	export PAAS_NAMESPACE="sc-pipelines-stage"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}/stage_deploy.sh"
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "No pipeline descriptor found - will not deploy any services"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "App started successfully!"
+}
+
+@test "should deploy app to stage environment with additional services for non-minikube [K8S][Gradle]" {
+	export ENVIRONMENT="STAGE"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-stage"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}/stage_deploy.sh"
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "App started successfully!"
+}
+
+@test "should deploy app to stage environment with additional services for minikube [K8S][Gradle]" {
+	export ENVIRONMENT="STAGE"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-stage"
+	export KUBERNETES_MINIKUBE="true"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}/stage_deploy.sh"
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "App started successfully!"
 }
