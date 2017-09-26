@@ -1,13 +1,19 @@
 #!/usr/bin/env bats
 
+load 'test_helper'
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 
 setup() {
+	export TEMP_DIR="$( mktemp -d )"
 	export ENVIRONMENT="TEST"
-	export PAAS_TYPE="k8s"
+	export PAAS_TYPE="dummy"
+	ln -s "${FIXTURES_DIR}/pipeline-dummy.sh" "${SOURCE_DIR}"
+	mkdir -p "${TEMP_DIR}/project"
+}
 
-	source "${BATS_TEST_DIRNAME}/test_helper/setup.bash"
+teardown() {
+	rm -rf -- "${TEMP_DIR}" "${SOURCE_DIR}/pipeline-dummy.sh"
 }
 
 function curl {
@@ -22,7 +28,7 @@ function curl {
 export -f curl
 
 @test "should return unknown if no matching project type is found" {
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-jvm.sh"
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
 
 	run projectType
 
@@ -30,8 +36,9 @@ export -f curl
 }
 
 @test "should return MAVEN if mvnw file is found" {
-	touch "${PIPELINES_TEST_DIR}/mvnw"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-jvm.sh"
+	cd "${TEMP_DIR}/project" && touch mvnw
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
 
 	run projectType
 
@@ -39,8 +46,9 @@ export -f curl
 }
 
 @test "should return GRADLE if gradlew file is found" {
-	touch "${PIPELINES_TEST_DIR}/gradlew"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-jvm.sh"
+	cd "${TEMP_DIR}/project" && touch gradlew
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
 
 	run projectType
 
@@ -48,16 +56,17 @@ export -f curl
 }
 
 @test "should return PROJECT_TYPE env var after sourcing" {
-	touch "${PIPELINES_TEST_DIR}/gradlew"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-jvm.sh"
+	cd "${TEMP_DIR}/project" && touch gradlew
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
 
 	assert_equal "${PROJECT_TYPE}" "GRADLE"
 }
 
 @test "should download an artifact if file hasn't been downloaded" {
-	export OUTPUT_FOLDER="output"
-	alias curl=curl_successfully
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-jvm.sh"
+	export OUTPUT_FOLDER="${TEMP_DIR}/output"
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
 
 	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version"
 
@@ -66,10 +75,10 @@ export -f curl
 }
 
 @test "should download a WAR artifact if file hasn't been downloaded" {
-	export OUTPUT_FOLDER="output"
+	export OUTPUT_FOLDER="${TEMP_DIR}/output"
 	export BINARY_EXTENSION="war"
-	alias curl=curl_successfully
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-jvm.sh"
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
 
 	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version"
 
@@ -79,9 +88,9 @@ export -f curl
 }
 
 @test "should exit 1 when failed to download the artifact" {
-	export OUTPUT_FOLDER="output"
-	alias curl=curl_unsuccessfully
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-jvm.sh"
+	export OUTPUT_FOLDER="${TEMP_DIR}/output"
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
 
 	run downloadAppBinary "failed" "group.id" "artifactId" "version"
 

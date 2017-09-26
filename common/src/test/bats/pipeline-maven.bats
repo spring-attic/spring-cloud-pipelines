@@ -1,31 +1,37 @@
 #!/usr/bin/env bats
 
+load 'test_helper'
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 
 setup() {
+	export TEMP_DIR="$( mktemp -d )"
 	export ENVIRONMENT="TEST"
-	export PAAS_TYPE="k8s"
+	export PAAS_TYPE="dummy"
+	ln -s "${FIXTURES_DIR}/pipeline-dummy.sh" "${SOURCE_DIR}"
+	cp -a "${FIXTURES_DIR}/maven" "${TEMP_DIR}"
+}
 
-	source "${BATS_TEST_DIRNAME}/test_helper/setup.bash"
+teardown() {
+	rm -rf -- "${TEMP_DIR}" "${SOURCE_DIR}/pipeline-dummy.sh"
 }
 
 @test "should set BUILD_OPTIONS if there were none [Maven]" {
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	assert_equal "${BUILD_OPTIONS}" "-Djava.security.egd=file:///dev/urandom"
 }
 
 @test "should append security props for BUILD_OPTIONS if it wasn't set [Maven]" {
 	export BUILD_OPTIONS="foo"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	assert_equal "${BUILD_OPTIONS}" "foo -Djava.security.egd=file:///dev/urandom"
 }
 
 @test "should not append additional security props for BUILD_OPTIONS if it wasn't set [Maven]" {
 	export BUILD_OPTIONS="-Djava.security.egd=file:///dev/urandom"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	assert_equal "${BUILD_OPTIONS}" "-Djava.security.egd=file:///dev/urandom"
 }
@@ -35,8 +41,8 @@ setup() {
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
 	export REPO_WITH_BINARIES="bar"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run build
 
@@ -51,8 +57,8 @@ setup() {
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
 	export REPO_WITH_BINARIES="bar"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run build
 
@@ -64,8 +70,8 @@ setup() {
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
 	export REPO_WITH_BINARIES="bar"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run build
 
@@ -80,22 +86,18 @@ setup() {
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
 	export REPO_WITH_BINARIES="bar"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run build
 
 	assert_output --partial "Build failed!!!"
 }
 
-function findLatestProdTag {
-    echo ""
-}
-
 @test "should skip the step if prod tag is missing for apiCompatibilityCheck [Maven]" {
 	export BUILD_OPTIONS="invalid option"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run apiCompatibilityCheck
 
@@ -105,8 +107,8 @@ function findLatestProdTag {
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Concourse [Maven]" {
 	export CI="CONCOURSE"
 	export LATEST_PROD_TAG="prod/100.0.0"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run apiCompatibilityCheck
 
@@ -118,8 +120,8 @@ function findLatestProdTag {
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Jenkins [Maven]" {
 	export CI="JENKINS"
 	export LATEST_PROD_TAG="prod/100.0.0"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run apiCompatibilityCheck
 
@@ -129,8 +131,8 @@ function findLatestProdTag {
 }
 
 @test "should print a property value if it exists [Maven]" {
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	result="$( extractMavenProperty "foo.bar" )"
 
@@ -138,8 +140,8 @@ function findLatestProdTag {
 }
 
 @test "should print empty string if it doesn't exist [Maven]" {
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	result="$( extractMavenProperty "missing" )"
 
@@ -148,8 +150,8 @@ function findLatestProdTag {
 
 @test "should print empty string if it doesn't exist and _JAVA_OPTIONS are passed [Maven]" {
 	export _JAVA_OPTIONS="-Dfoo=bar"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	result="$( extractMavenProperty "missing" )"
 
@@ -157,8 +159,8 @@ function findLatestProdTag {
 }
 
 @test "should print group id [Maven]" {
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run retrieveGroupId
 
@@ -166,8 +168,8 @@ function findLatestProdTag {
 }
 
 @test "should print artifact id [Maven]" {
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run retrieveAppName
 
@@ -175,7 +177,7 @@ function findLatestProdTag {
 }
 
 @test "should print that build has failed [Maven]" {
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run printTestResults
 
@@ -183,8 +185,8 @@ function findLatestProdTag {
 }
 
 @test "should print stubrunner ids property [Maven]" {
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run retrieveStubRunnerIds
 
@@ -195,8 +197,8 @@ function findLatestProdTag {
 	export CI="CONCOURSE"
 	export APPLICATION_URL="foo"
 	export STUBRUNNER_URL="bar"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run runSmokeTests
 
@@ -208,8 +210,8 @@ function findLatestProdTag {
 	export CI="JENKINS"
 	export APPLICATION_URL="foo"
 	export STUBRUNNER_URL="bar"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run runSmokeTests
 
@@ -220,8 +222,8 @@ function findLatestProdTag {
 @test "should run the e2e tests for Concourse [Maven]" {
 	export CI="CONCOURSE"
 	export APPLICATION_URL="foo"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run runE2eTests
 
@@ -232,8 +234,8 @@ function findLatestProdTag {
 @test "should run the e2e tests for Jenkins [Maven]" {
 	export CI="JENKINS"
 	export APPLICATION_URL="foo"
-	cd "${PIPELINES_TEST_DIR}/maven/build_project"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	cd "${TEMP_DIR}/maven/build_project"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run runE2eTests
 
@@ -242,7 +244,7 @@ function findLatestProdTag {
 }
 
 @test "should return 'target' for outputFolder [Maven]" {
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run outputFolder
 
@@ -250,7 +252,7 @@ function findLatestProdTag {
 }
 
 @test "should return maven test results for testResultsAntPattern [Maven]" {
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run testResultsAntPattern
 
