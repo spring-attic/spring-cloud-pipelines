@@ -9,7 +9,20 @@ metadata:
 provisioner: kubernetes.io/vsphere-volume
 parameters:
   diskformat: zeroedthick
-
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jenkins-volume
+  annotations:
+    volume.beta.kubernetes.io/storage-class: ci-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ci-storage
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -54,18 +67,3 @@ spec:
         - name: jenkinshome
           persistentVolumeClaim:
             claimName: jenkins-volume
-
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: jenkins-volume
-  annotations:
-    volume.beta.kubernetes.io/storage-class: ci-storage
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  storageClassName: ci-storage
