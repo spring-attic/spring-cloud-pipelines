@@ -54,18 +54,6 @@ export -f curl
 	assert_equal "${PROJECT_TYPE}" "GRADLE"
 }
 
-@test "should not download an artifact if file has already been downloaded" {
-	export OUTPUT_FOLDER="output"
-	source "${PIPELINES_TEST_DIR}/projectType/pipeline-jvm.sh"
-	mkdir -p "${PIPELINES_TEST_DIR}/${OUTPUT_FOLDER}/"
-	touch "${PIPELINES_TEST_DIR}/${OUTPUT_FOLDER}/artifactId-version.jar"
-
-	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version"
-
-	assert_output --partial 'Will not download it again'
-	assert_success
-}
-
 @test "should download an artifact if file hasn't been downloaded" {
 	export OUTPUT_FOLDER="output"
 	alias curl=curl_successfully

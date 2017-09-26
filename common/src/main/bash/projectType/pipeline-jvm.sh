@@ -19,13 +19,10 @@ function downloadAppBinary() {
 	destination="$(pwd)/${OUTPUT_FOLDER}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	changedGroupId="$(echo "${groupId}" | tr . /)"
 	pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.${BINARY_EXTENSION}"
-	if [[ ! -e ${destination} ]]; then
-		mkdir -p "${OUTPUT_FOLDER}"
-		echo "Current folder is [$(pwd)]; Downloading [${pathToJar}] to [${destination}]"
-		(curl "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
-	else
-		echo "File [${destination}] exists. Will not download it again"
-	fi
+	mkdir -p "${OUTPUT_FOLDER}"
+	echo "Current folder is [$(pwd)]; Downloading [${pathToJar}] to [${destination}]"
+	(curl "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
+
 }
 
 function isMavenProject() {
