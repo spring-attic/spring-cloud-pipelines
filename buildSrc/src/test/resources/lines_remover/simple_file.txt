@@ -1,3 +1,5 @@
+tag::
+end::
 don't remove 1
 // remove::start[]
 remove
