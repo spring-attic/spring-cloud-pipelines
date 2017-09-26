@@ -226,7 +226,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	deleteAppInstance "${appName}"
-	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${env}]"
+	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
 	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'false'
 	bindService "${rabbitName}" "${appName}"
 	if [[ "${eurekaName}" != "" ]]; then

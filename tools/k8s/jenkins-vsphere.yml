@@ -56,23 +56,6 @@ spec:
             claimName: jenkins-volume
 
 ---
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: jenkins-volume
-  labels:
-    name: jenkins
-spec:
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  vsphereVolume:
-    volumePath: "[datastore1] volumes/myDisk"
-    fsType: ext4
-
----
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:

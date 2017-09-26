@@ -1,0 +1,11 @@
+don't remove 1
+// remove::start[]
+remove
+// remove::end[]
+don't remove 2
+// remove::start[return]
+return some value
+// remove::end[return]
+//remove::start[return]
+return some value 2
+//remove::end[return]
