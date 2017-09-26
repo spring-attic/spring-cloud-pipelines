@@ -12,11 +12,11 @@ In the real world scenario we wouldn't want to automatically provision services 
 RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
 production is provisioned manually (using automated solutions). In our case, before
 you deploy to production you can provision the `pcfdev-prod` space using the
- `pcfdev-helper.sh`. Just call
+ `cf-helper.sh`. Just call
 
 [source,bash]
 ----
-$ ./pcfdev-helper.sh setup-prod-infra
+$ ./cf-helper.sh setup-prod-infra
 ----
 
 What will happen is that the CF CLI will login to PCF Dev, target `pcfdev-prod` space,

@@ -93,7 +93,7 @@ First you'll need to install the `kubectl` CLI.
 [[kubernetes-cli-script]]
 ===== Script Installation
 
-You can use the `tools/minikube-helper.sh` script to install `kubectl`. Just call
+You can use the `tools/k8s-helper.sh` script to install `kubectl`. Just call
 
 ```bash
 $ ./tools/minikube-helper download-kubectl
@@ -136,7 +136,7 @@ Don't worry! Keep calm and <<jenkins-resources-k8s,clear some apps from Minikube
 [[kubernetes-minikube-script]]
 ===== Script Installation
 
-You can use the `tools/minikube-helper.sh` script to install `Minikube`. Just call
+You can use the `tools/k8s-helper.sh` script to install `Minikube`. Just call
 
 ```bash
 $ ./tools/minikube-helper download-minikube
@@ -208,7 +208,7 @@ $ kubectl config use-context default-system
 ==== Generate Minikube namespaces
 
 With the running Minikube cluster we need to generate namespaces. Just execute the
-`./tools/minikube-helper.sh setup-namespaces` to do this.
+`./tools/k8s-helper.sh setup-namespaces` to do this.
 
 [[jenkins-seed-k8s]]
 ==== Run the seed job
@@ -293,7 +293,7 @@ CLI installed, skip this step. If not just execute to have the CLI
 downloaded and an installer started
 
 ```bash
-$ ./tools/minikube-helper.sh download-gcloud
+$ ./tools/k8s-helper.sh download-gcloud
 ```
 
 Next, configure `gcloud`. Execute `gcloud init` and log in
@@ -333,8 +333,8 @@ TIP: To see the dashboard just do `kubectl proxy` and access `localhost:8081/ui`
 
 - Log in to the cluster
 - Deploy Jenkins and Artifactory to the cluster 
-* `./tools/minikube-helper.sh setup-tools-infra-vsphere` for a cluster deployed on VSphere
-* `./tools/minikube-helper.sh setup-tools-infra-gce` for a cluster deployed to GCE
+* `./tools/k8s-helper.sh setup-tools-infra-vsphere` for a cluster deployed on VSphere
+* `./tools/k8s-helper.sh setup-tools-infra-gce` for a cluster deployed to GCE
 - Go to `Credentials`, click `System` and `Global credentials`
 
 image::{jenkins-root-docs}/kubo_credentials.png[caption="Click `Global credentials`"]

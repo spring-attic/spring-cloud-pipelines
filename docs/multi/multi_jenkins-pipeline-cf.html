@@ -26,7 +26,7 @@ cf <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">set</span>-s
 cf create-space pcfdev-stage
 cf <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">set</span>-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
 cf create-space pcfdev-prod
-cf <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">set</span>-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</pre><p>You can also execute the <code class="literal">./tools/pcfdev-helper.sh setup-spaces</code> to do this.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="jenkins-seed-cf" href="#jenkins-seed-cf"></a>6.1.4&nbsp;Run the seed job</h3></div></div></div><p>We already create the seed job for you but you&#8217;ll have to run it. When you do
+cf <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">set</span>-space-role user pcfdev-org pcfdev-prod SpaceDeveloper</pre><p>You can also execute the <code class="literal">./tools/cf-helper.sh setup-spaces</code> to do this.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="jenkins-seed-cf" href="#jenkins-seed-cf"></a>6.1.4&nbsp;Run the seed job</h3></div></div></div><p>We already create the seed job for you but you&#8217;ll have to run it. When you do
 run it you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
 set the properties as global env variables you have to remove them from the

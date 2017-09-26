@@ -122,7 +122,7 @@ cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 ----
 
-You can also execute the `./tools/pcfdev-helper.sh setup-spaces` to do this.
+You can also execute the `./tools/cf-helper.sh setup-spaces` to do this.
 
 ==== Setup the `fly` CLI
 
@@ -307,7 +307,7 @@ cf stop github-eureka
 cf stop stubrunner
 ----
 
-You can also execute `./tools/pcfdev-helper.sh kill-all-apps` that will remove
+You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove
 all demo-related apps deployed to PCF dev.
 
 ==== The rollback step fails due to missing JAR ?!
@@ -365,7 +365,7 @@ yes | cf delete-route local.pcfdev.io -n github-webhook-prod
 yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
 
-You can also execute the `./tools/pcfdev-helper.sh delete-routes`
+You can also execute the `./tools/cf-helper.sh delete-routes`
 
 ==== I'm unauthorized to deploy infrastructure jars
 

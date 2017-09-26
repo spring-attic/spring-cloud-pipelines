@@ -11,7 +11,7 @@ cf stop github-eureka
 cf stop stubrunner
 ----
 
-You can also execute `./tools/pcfdev-helper.sh kill-all-apps` that will remove all demo-related apps
+You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove all demo-related apps
 deployed to PCF dev.
 
 === Deploying to test / stage / prod fails - error finding space (Cloud Foundry)
@@ -56,4 +56,4 @@ yes | cf delete-route local.pcfdev.io -n github-webhook-prod
 yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
 
-You can also execute the `./tools/pcfdev-helper.sh delete-routes`
+You can also execute the `./tools/cf-helper.sh delete-routes`

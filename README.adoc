@@ -426,8 +426,8 @@ The step to deploy to production is manual but ideally it should be automatic.
 IMPORTANT: This step does deployment to production. On production you would assume
 that you have the infrastructure running. That's why before you run this step you
 must execute a script that will provision the services on the production environment.
-For `Cloud Foundry` just call `tools/pcfdev-helper.sh setup-prod-infra` and
-for Kubernetes `tools/minikube-helper.sh setup-prod-infra`
+For `Cloud Foundry` just call `tools/cf-helper.sh setup-prod-infra` and
+for Kubernetes `tools/k8s-helper.sh setup-prod-infra`
 
 Here we're
 
@@ -653,7 +653,7 @@ cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 ----
 
-You can also execute the `./tools/pcfdev-helper.sh setup-spaces` to do this.
+You can also execute the `./tools/cf-helper.sh setup-spaces` to do this.
 
 ==== Setup the `fly` CLI
 
@@ -838,7 +838,7 @@ cf stop github-eureka
 cf stop stubrunner
 ----
 
-You can also execute `./tools/pcfdev-helper.sh kill-all-apps` that will remove
+You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove
 all demo-related apps deployed to PCF dev.
 
 ==== The rollback step fails due to missing JAR ?!
@@ -896,7 +896,7 @@ yes | cf delete-route local.pcfdev.io -n github-webhook-prod
 yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
 
-You can also execute the `./tools/pcfdev-helper.sh delete-routes`
+You can also execute the `./tools/cf-helper.sh delete-routes`
 
 ==== I'm unauthorized to deploy infrastructure jars
 
@@ -1239,7 +1239,7 @@ cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 ----
 
-You can also execute the `./tools/pcfdev-helper.sh setup-spaces` to do this.
+You can also execute the `./tools/cf-helper.sh setup-spaces` to do this.
 
 [[jenkins-seed-cf]]
 ==== Run the seed job
@@ -1532,7 +1532,7 @@ First you'll need to install the `kubectl` CLI.
 [[kubernetes-cli-script]]
 ===== Script Installation
 
-You can use the `tools/minikube-helper.sh` script to install `kubectl`. Just call
+You can use the `tools/k8s-helper.sh` script to install `kubectl`. Just call
 
 ```bash
 $ ./tools/minikube-helper download-kubectl
@@ -1575,7 +1575,7 @@ Don't worry! Keep calm and <<jenkins-resources-k8s,clear some apps from Minikube
 [[kubernetes-minikube-script]]
 ===== Script Installation
 
-You can use the `tools/minikube-helper.sh` script to install `Minikube`. Just call
+You can use the `tools/k8s-helper.sh` script to install `Minikube`. Just call
 
 ```bash
 $ ./tools/minikube-helper download-minikube
@@ -1647,7 +1647,7 @@ $ kubectl config use-context default-system
 ==== Generate Minikube namespaces
 
 With the running Minikube cluster we need to generate namespaces. Just execute the
-`./tools/minikube-helper.sh setup-namespaces` to do this.
+`./tools/k8s-helper.sh setup-namespaces` to do this.
 
 [[jenkins-seed-k8s]]
 ==== Run the seed job
@@ -1855,7 +1855,7 @@ CLI installed, skip this step. If not just execute to have the CLI
 downloaded and an installer started
 
 ```bash
-$ ./tools/minikube-helper.sh download-gcloud
+$ ./tools/k8s-helper.sh download-gcloud
 ```
 
 Next, configure `gcloud`. Execute `gcloud init` and log in
@@ -1895,8 +1895,8 @@ TIP: To see the dashboard just do `kubectl proxy` and access `localhost:8081/ui`
 
 - Log in to the cluster
 - Deploy Jenkins and Artifactory to the cluster
-* `./tools/minikube-helper.sh setup-tools-infra-vsphere` for a cluster deployed on VSphere
-* `./tools/minikube-helper.sh setup-tools-infra-gce` for a cluster deployed to GCE
+* `./tools/k8s-helper.sh setup-tools-infra-vsphere` for a cluster deployed on VSphere
+* `./tools/k8s-helper.sh setup-tools-infra-gce` for a cluster deployed to GCE
 - Go to `Credentials`, click `System` and `Global credentials`
 
 image::{jenkins-root-docs}/kubo_credentials.png[caption="Click `Global credentials`"]
@@ -2212,7 +2212,7 @@ cf stop github-eureka
 cf stop stubrunner
 ----
 
-You can also execute `./tools/pcfdev-helper.sh kill-all-apps` that will remove all demo-related apps
+You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove all demo-related apps
 deployed to PCF dev.
 
 === Deploying to test / stage / prod fails - error finding space (Cloud Foundry)
@@ -2257,7 +2257,7 @@ yes | cf delete-route local.pcfdev.io -n github-webhook-prod
 yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
 
-You can also execute the `./tools/pcfdev-helper.sh delete-routes`
+You can also execute the `./tools/cf-helper.sh delete-routes`
 
 == The demo setup (Cloud Foundry)
 
@@ -2298,11 +2298,11 @@ In the real world scenario we wouldn't want to automatically provision services 
 RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
 production is provisioned manually (using automated solutions). In our case, before
 you deploy to production you can provision the `pcfdev-prod` space using the
- `pcfdev-helper.sh`. Just call
+ `cf-helper.sh`. Just call
 
 [source,bash]
 ----
-$ ./pcfdev-helper.sh setup-prod-infra
+$ ./cf-helper.sh setup-prod-infra
 ----
 
 What will happen is that the CF CLI will login to PCF Dev, target `pcfdev-prod` space,
@@ -2421,11 +2421,11 @@ In the real world scenario we wouldn't want to automatically provision services 
 RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
 production is provisioned manually (using automated solutions). In our case, before
 you deploy to production you can provision the `sc-pipelines-prod` namespace using the
- `minikube-helper.sh`. Just call
+ `k8s-helper.sh`. Just call
 
 [source,bash]
 ----
-$ ./minikube-helper.sh setup-prod-infra
+$ ./k8s-helper.sh setup-prod-infra
 ----
 
 === Running Prometheus on Kubernetes

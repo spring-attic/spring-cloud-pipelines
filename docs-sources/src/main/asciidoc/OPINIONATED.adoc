@@ -109,8 +109,8 @@ The step to deploy to production is manual but ideally it should be automatic.
 IMPORTANT: This step does deployment to production. On production you would assume
 that you have the infrastructure running. That's why before you run this step you
 must execute a script that will provision the services on the production environment.
-For `Cloud Foundry` just call `tools/pcfdev-helper.sh setup-prod-infra` and
-for Kubernetes `tools/minikube-helper.sh setup-prod-infra`
+For `Cloud Foundry` just call `tools/cf-helper.sh setup-prod-infra` and
+for Kubernetes `tools/k8s-helper.sh setup-prod-infra`
 
 Here we're
 

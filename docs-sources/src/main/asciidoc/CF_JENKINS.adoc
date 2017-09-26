@@ -120,7 +120,7 @@ cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 ----
 
-You can also execute the `./tools/pcfdev-helper.sh setup-spaces` to do this.
+You can also execute the `./tools/cf-helper.sh setup-spaces` to do this.
 
 [[jenkins-seed-cf]]
 ==== Run the seed job

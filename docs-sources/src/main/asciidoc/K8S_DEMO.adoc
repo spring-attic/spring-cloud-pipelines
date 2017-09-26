@@ -12,11 +12,11 @@ In the real world scenario we wouldn't want to automatically provision services 
 RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
 production is provisioned manually (using automated solutions). In our case, before
 you deploy to production you can provision the `sc-pipelines-prod` namespace using the
- `minikube-helper.sh`. Just call
+ `k8s-helper.sh`. Just call
 
 [source,bash]
 ----
-$ ./minikube-helper.sh setup-prod-infra
+$ ./k8s-helper.sh setup-prod-infra
 ----
 
 === Running Prometheus on Kubernetes
