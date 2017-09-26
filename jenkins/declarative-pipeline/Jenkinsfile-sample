@@ -76,6 +76,20 @@ pipeline {
 						}
 					}
 
+					if (env.MYSQL_CREDENTIAL_ID) {
+						withCredentials([usernamePassword(credentialsId: env.MYSQL_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+							env.MYSQL_USER = USER
+							env.MYSQL_PASSWORD = PASS
+						}
+					}
+
+					if (env.MYSQL_ROOT_CREDENTIAL_ID) {
+						withCredentials([usernamePassword(credentialsId: env.MYSQL_ROOT_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+							env.MYSQL_ROOT_USER = USER
+							env.MYSQL_ROOT_PASSWORD = PASS
+						}
+					}
+
 					env.DEPLOY_TO_PROD = input message: '', parameters: [
 						choice(
 							name: 'Deploy to prod?',

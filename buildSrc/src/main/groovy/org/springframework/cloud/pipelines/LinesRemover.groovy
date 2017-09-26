@@ -15,7 +15,7 @@ class LinesRemover {
 		this.project = project
 	}
 
-	void modifyFiles(String dirName, List<String> includes = ['**/*.java',
+	void modifyFiles(String dirName, Options options, List<String> includes = ['**/*.java',
 															  '**/*.groovy',
 															  '**/*.adoc',
 															  '**/*.bats',
@@ -44,7 +44,7 @@ class LinesRemover {
 					return
 				}
 				// reached the end of the removal line
-				if (line.contains("remove::end[]")) {
+				if (lineContainsEndTagToRemove(options, line)) {
 					remove = false
 				} else if (line.contains("remove::end[return]")) {
 					// removal with providing of a return value
@@ -56,15 +56,33 @@ class LinesRemover {
 					return
 				}
 				if (!remove) {
-					if (line.contains("remove::start")) {
+					if (lineContainsStartTagToRemove(options, line)) {
 						remove = true
-					} else if (!line.contains("remove::end")) {
+					} else if (!line.contains("remove::")) {
 						newString.append(line).append("\n")
 					}
 				}
 				return
 			}
 			file.text = newString.toString()
+		}
+	}
+
+	private boolean lineContainsStartTagToRemove(Options options, String line) {
+		if (line.contains("remove::start[]") || line.contains("remove::start[return]")) {
+			return true
+		}
+		return options.asKeywordsToDelete().any {
+			line.toLowerCase().contains("remove::start[${it.toLowerCase()}]")
+		}
+	}
+
+	private boolean lineContainsEndTagToRemove(Options options, String line) {
+		if (line.contains("remove::end[]")) {
+			return true
+		}
+		return options.asKeywordsToDelete().any {
+			line.toLowerCase().contains("remove::end[${it.toLowerCase()}]")
 		}
 	}
 }
