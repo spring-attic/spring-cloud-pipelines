@@ -174,6 +174,7 @@ The env vars that are used in all of the jobs are as follows:
 |APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
 |JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
+|BINARY_EXTENSION | Extension of the binary uploaded to Artifactory / Nexus. Example: change this to `war` for WAR artifacts | jar
 |======================
 
 [[jenkins-credentials-cf]]
@@ -194,3 +195,4 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 If you already have in your system a credential to for example tag a repo
 you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
 
+TIP: Check out the `cf-helper` script for all the configuration options!

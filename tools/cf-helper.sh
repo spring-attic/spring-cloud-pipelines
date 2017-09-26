@@ -33,6 +33,10 @@ export CF_DEFAULT_ORG
 CF_DEFAULT_ORG="${CF_DEFAULT_ORG:-pcfdev-org}"
 export CF_DEFAULT_SPACE
 CF_DEFAULT_SPACE="${CF_DEFAULT_SPACE:-pcfdev-test}"
+export ARTIFACTORY_URL
+ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://repo.spring.io/libs-milestone}"
+export EUREKA_MEMORY
+EUREKA_MEMORY="${EUREKA_MEMORY:-1024m}"
 
 function cf_login {
     if [[ "${REUSE_CF_LOGIN}" == "true" ]]; then
@@ -53,7 +57,9 @@ case $1 in
 	kill-all-apps)
 		cf_login
 
-		cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+		fi
 		yes | cf stop github-webhook
 		yes | cf stop github-analytics
 		yes | cf stop eureka-github-webhook
@@ -62,12 +68,16 @@ case $1 in
 		yes | cf stop stubrunner-github-webhook
 		yes | cf stop stubrunner-github-analytics
 
-		cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
+		fi
 		yes | cf stop github-webhook
 		yes | cf stop github-analytics
 		yes | cf stop github-eureka
 
-		cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
+		fi
 		yes | cf stop github-webhook
 		yes | cf stop github-webhook-venerable
 		yes | cf stop github-analytics
@@ -78,7 +88,9 @@ case $1 in
 	kill-all-prod-apps)
 		cf_login
 
-		cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
+		fi
 		yes | cf stop github-webhook
 		yes | cf stop github-webhook-venerable
 		yes | cf stop github-analytics
@@ -89,7 +101,9 @@ case $1 in
 	delete-all-apps)
 		cf_login
 
-		cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+		fi
 		cf delete -f github-webhook
 		cf delete -f github-analytics
 		cf delete -f eureka-github-analytics
@@ -97,12 +111,16 @@ case $1 in
 		cf delete -f stubrunner-github-webhook
 		cf delete -f stubrunner-github-analytics
 
-		cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
+		fi
 		cf delete -f github-webhook
 		cf delete -f github-analytics
 		cf delete -f github-eureka
 
-		cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
+		fi
 		cf delete -f github-webhook
 		cf delete -f github-webhook-venerable
 		cf delete -f github-analytics
@@ -113,7 +131,9 @@ case $1 in
 	delete-all-test-apps)
 		cf_login
 
-		cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+		fi
 		cf delete -f github-webhook
 		cf delete -f github-analytics
 		cf delete -f eureka-github-webhook
@@ -125,7 +145,9 @@ case $1 in
 	delete-all-stage-apps)
 		cf_login
 
-		cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
+		fi
 		cf delete -f github-webhook
 		cf delete -f github-analytics
 		cf delete -f github-eureka
@@ -165,7 +187,9 @@ case $1 in
 	delete-all-services)
 		cf_login
 
-		cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+		fi
 		yes | cf delete-service -f mysql-github-webhook
 		yes | cf delete-service -f mysql-github-analytics
 		yes | cf delete-service -f rabbitmq-github-webhook
@@ -173,14 +197,18 @@ case $1 in
 		yes | cf delete-service -f eureka-github-webhook
 		yes | cf delete-service -f eureka-github-analytics
 
-		cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
+		fi
 		yes | cf delete-service -f mysql-github-webhook
 		yes | cf delete-service -f mysql-github-analytics
 		yes | cf delete-service -f rabbitmq-github
 		yes | cf delete-service -f mysql-github
 		yes | cf delete-service -f github-eureka
 
-		cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_PROD_ORG}" -s "${PAAS_PROD_SPACE}"
+		fi
 		yes | cf delete-service -f mysql-github-webhook
 		yes | cf delete-service -f mysql-github-analytics
 		yes | cf delete-service -f rabbitmq-github
@@ -190,26 +218,18 @@ case $1 in
 
 	setup-prod-infra)
 		cf_login
-		cf target -s "${PAAS_PROD_SPACE}"
-
-		POTENTIAL_DOCKER_HOST="$( echo "${DOCKER_HOST}" | cut -d ":" -f 2 | cut -d "/" -f 3 )"
-		if [[ -z "${POTENTIAL_DOCKER_HOST}" ]]; then
-			POTENTIAL_DOCKER_HOST="localhost"
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -s "${PAAS_PROD_SPACE}"
 		fi
-		ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://admin:password@${POTENTIAL_DOCKER_HOST}:8081/artifactory/libs-release-local}"
-		ARTIFACTORY_ID="${ARTIFACTORY_ID:-artifactory-local}"
-
-		echo "Installing rabbitmq" && cf cs p-rabbitmq standard github-rabbitmq
-		# for Standard CF
-		# cf cs cloudamqp lemur
-		echo "Installing mysql" && cf cs p-mysql 512mb "mysql-github-analytics"
-		# for Standard CF
-		# cf cs p-mysql 100mb
-		echo "Downloading eureka jar"
+		echo "Installing rabbitmq"
+		cf cs p-rabbitmq standard github-rabbitmq || cf cs cloudamqp lemur github-rabbimq
+		echo "Installing mysql"
+		cf cs p-mysql 512mb mysql-github-analytics || cf cs p-mysql 100mb mysql-github-analytics
+		echo "Downloading eureka jar from ${ARTIFACTORY_URL}"
 		mkdir -p build
-		curl "${ARTIFACTORY_URL}/com/example/eureka/github-eureka/0.0.1.M1/github-eureka-0.0.1.M1.jar" -o "build/eureka.jar" --fail
+		curl "${ARTIFACTORY_URL}/com/example/eureka/github-eureka/0.0.1.M1/github-eureka-0.0.1.M1.jar" -o "build/eureka.jar" --fail || echo "Failed to download the JAR"
 		echo "Deploying eureka"
-		cf push "github-eureka" -p "build/eureka.jar" -n "github-eureka" -b "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" -m "256m" -i 1 --no-manifest --no-start
+		cf push "github-eureka" -p "build/eureka.jar" -n "github-eureka" -b "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" -m "${EUREKA_MEMORY}" -i 1 --no-manifest --no-start
 		APPLICATION_DOMAIN="$( cf apps | grep github-eureka | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 )"
 		JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
 		cf set-env "github-eureka" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"

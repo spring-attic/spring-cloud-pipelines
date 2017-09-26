@@ -57,3 +57,15 @@ yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
 
 You can also execute the `./tools/cf-helper.sh delete-routes`
+
+=== How to execute helper scripts against a real CF instance I'm logged into (Cloud Foundry)
+
+Assuming that you're already logged into the cluster it's enough to run the
+helper script with the `REUSE_CF_LOGIN=true` env variable. Example:
+
+```bash
+REUSE_CF_LOGIN=true ./tools/cf-helper.sh setup-prod-infra
+```
+
+This script will create the mysql db, rabbit mq service, download and deploy Eureka
+to the space and organization you're logged into.

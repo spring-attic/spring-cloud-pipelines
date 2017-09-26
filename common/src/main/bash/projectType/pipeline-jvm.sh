@@ -5,6 +5,7 @@ set -e
 # It takes ages on Docker to run the app without this
 # Also we want to disable the progress indicator for downloaded jars
 export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+export BINARY_EXTENSION="${BINARY_EXTENSION:-jar}"
 
 function downloadAppBinary() {
 	local repoWithJars="${1}"
@@ -15,9 +16,9 @@ function downloadAppBinary() {
 	local changedGroupId
 	local pathToJar
 
-	destination="$(pwd)/${OUTPUT_FOLDER}/${artifactId}-${version}.jar"
+	destination="$(pwd)/${OUTPUT_FOLDER}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	changedGroupId="$(echo "${groupId}" | tr . /)"
-	pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.jar"
+	pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	if [[ ! -e ${destination} ]]; then
 		mkdir -p "${OUTPUT_FOLDER}"
 		echo "Current folder is [$(pwd)]; Downloading [${pathToJar}] to [${destination}]"

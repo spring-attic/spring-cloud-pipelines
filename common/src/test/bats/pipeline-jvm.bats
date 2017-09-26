@@ -77,6 +77,19 @@ export -f curl
 	assert_success
 }
 
+@test "should download a WAR artifact if file hasn't been downloaded" {
+	export OUTPUT_FOLDER="output"
+	export BINARY_EXTENSION="war"
+	alias curl=curl_successfully
+	source "${PIPELINES_TEST_DIR}/projectType/pipeline-jvm.sh"
+
+	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version"
+
+	assert_output --partial 'artifactId-version.war'
+	assert_output --partial 'File downloaded successfully'
+	assert_success
+}
+
 @test "should exit 1 when failed to download the artifact" {
 	export OUTPUT_FOLDER="output"
 	alias curl=curl_unsuccessfully

@@ -246,7 +246,7 @@ function appHost() {
 
 function deployAppWithName() {
 	local appName="${1}"
-	local jarName="${2}"
+	local artifactName="${2}"
 	local env="${3}"
 	local useManifest="${4:-false}"
 	local manifestOption
@@ -259,6 +259,7 @@ function deployAppWithName() {
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	local hostname="${lowerCaseAppName}"
 	local memory="${APP_MEMORY_LIMIT:-256m}"
+	# TODO: This is very JVM specific
 	local buildPackUrl="${JAVA_BUILDPACK_URL:-https://github.com/cloudfoundry/java-buildpack.git#v3.8.1}"
 	if [[ "${PAAS_HOSTNAME_UUID}" != "" ]]; then
 		hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
@@ -268,14 +269,17 @@ function deployAppWithName() {
 	fi
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] with manifest [${useManifest}] and host [${hostname}]"
 	if [[ ! -z "${manifestOption}" ]]; then
-		cf push "${lowerCaseAppName}" -m "${memory}" -i 1 -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b "${buildPackUrl}" "${manifestOption}"
+		# TODO: This is very JVM specific
+		cf push "${lowerCaseAppName}" -m "${memory}" -i 1 -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}" "${manifestOption}"
 	else
-		cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${jarName}.jar" -n "${hostname}" --no-start -b "${buildPackUrl}"
+		# TODO: This is very JVM specific
+		cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}"
 	fi
 	local applicationDomain
 	applicationDomain="$(appHost "${lowerCaseAppName}")"
 	echo "Determined that application_domain for [${lowerCaseAppName}] is [${applicationDomain}]"
 	setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${applicationDomain}"
+	# TODO: This is very JVM specific
 	setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
 }
 
