@@ -1959,7 +1959,7 @@ println "Done!"
 ```
 image::{jenkins-root-docs}/kubo_script_console_2.png[caption="Run the script to update credentials"]
 - Run the `jenkins-pipeline-k8s-seed` seed job and fill it out with the following data
-* Put `kubernetes:443` here (or `KUBERNETES_API:KUBERNETES_PORT`)
+* Put `kubernetes.default:443` here (or `KUBERNETES_API:KUBERNETES_PORT`)
 ** `PAAS_TEST_API_URL`
 ** `PAAS_STAGE_API_URL`
 ** `PAAS_PROD_API_URL`
