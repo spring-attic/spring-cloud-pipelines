@@ -34,10 +34,12 @@ pipeline {
 				])
 
 				script {
-					env.PIPELINE_VERSION = VersionNumber(
-						versionNumberString: '${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}-VERSION',
-						versionPrefix: '1.0.0.M1-'
-					)
+					if (!env.PIPELINE_VERSION) {
+						env.PIPELINE_VERSION = VersionNumber(
+							versionNumberString: '${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}-VERSION',
+							versionPrefix: '1.0.0.M1-'
+						)
+					}
 
 					if (env.REPO_WITH_BINARIES_CREDENTIALS_ID) {
 						withCredentials([usernamePassword(credentialsId: env.REPO_WITH_BINARIES_CREDENTIALS_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
