@@ -39,41 +39,39 @@ pipeline {
 						versionPrefix: '1.0.0.M1-'
 					)
 
-					withCredentials([usernamePassword(credentialsId: env.REPO_WITH_BINARIES_CREDENTIALS_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-						env.M2_SETTINGS_REPO_USERNAME = USER
-						env.M2_SETTINGS_REPO_PASSWORD = PASS
+					if (env.REPO_WITH_BINARIES_CREDENTIALS_ID) {
+						withCredentials([usernamePassword(credentialsId: env.REPO_WITH_BINARIES_CREDENTIALS_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+							env.M2_SETTINGS_REPO_USERNAME = USER
+							env.M2_SETTINGS_REPO_PASSWORD = PASS
+						}
 					}
 
-					withCredentials([usernamePassword(credentialsId: env.PAAS_TEST_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-						env.PAAS_TEST_USERNAME = USER
-						env.PAAS_TEST_PASSWORD = PASS
+					if (env.PAAS_TEST_CREDENTIAL_ID) {
+						withCredentials([usernamePassword(credentialsId: env.PAAS_TEST_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+							env.PAAS_TEST_USERNAME = USER
+							env.PAAS_TEST_PASSWORD = PASS
+						}
 					}
 
-					withCredentials([usernamePassword(credentialsId: env.PAAS_STAGE_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-						env.PAAS_STAGE_USERNAME = USER
-						env.PAAS_STAGE_PASSWORD = PASS
+					if (env.PAAS_STAGE_CREDENTIAL_ID) {
+						withCredentials([usernamePassword(credentialsId: env.PAAS_STAGE_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+							env.PAAS_STAGE_USERNAME = USER
+							env.PAAS_STAGE_PASSWORD = PASS
+						}
 					}
 
-					withCredentials([usernamePassword(credentialsId: env.PAAS_PROD_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-						env.PAAS_PROD_USERNAME = USER
-						env.PAAS_PROD_PASSWORD = PASS
+					if (env.PAAS_PROD_CREDENTIAL_ID) {
+						withCredentials([usernamePassword(credentialsId: env.PAAS_PROD_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+							env.PAAS_PROD_USERNAME = USER
+							env.PAAS_PROD_PASSWORD = PASS
+						}
 					}
 
-					withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-						env.GIT_USERNAME = USER
-						env.GIT_PASSWORD = PASS
-					}
-
-					withCredentials([string(credentialsId: env.PAAS_TEST_CLIENT_TOKEN_ID, variable: 'TOKEN')]) {
-						env.PAAS_TEST_CLIENT_TOKEN = TOKEN
-					}
-
-					withCredentials([string(credentialsId: env.PAAS_STAGE_CLIENT_TOKEN_ID, variable: 'TOKEN')]) {
-						env.PAAS_STAGE_CLIENT_TOKEN = TOKEN
-					}
-
-					withCredentials([string(credentialsId: env.PAAS_PROD_CLIENT_TOKEN_ID, variable: 'TOKEN')]) {
-						env.PAAS_PROD_CLIENT_TOKEN = TOKEN
+					if (env.GIT_CREDENTIAL_ID) {
+						withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+							env.GIT_USERNAME = USER
+							env.GIT_PASSWORD = PASS
+						}
 					}
 
 					env.DEPLOY_TO_PROD = input message: '', parameters: [

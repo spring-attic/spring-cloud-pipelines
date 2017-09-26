@@ -11,12 +11,12 @@ String cronValue = "H H * * 7" //every Sunday - I guess you should run it more o
 // TODO: this doesn't scale too much
 String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].join(",")
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
-String repoWithBinariesCredentials = binding.variables["REPO_WITH_BINARIES_CREDENTIALS_ID"] ?: "repo-with-binaries"
+String repoWithBinariesCredentials = binding.variables["REPO_WITH_BINARIES_CREDENTIALS_ID"] ?: ""
 String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
 // remove::start[CF]
-String cfTestCredentialId = binding.variables["PAAS_TEST_CREDENTIAL_ID"] ?: "cf-test"
-String cfStageCredentialId = binding.variables["PAAS_STAGE_CREDENTIAL_ID"] ?: "cf-stage"
-String cfProdCredentialId = binding.variables["PAAS_PROD_CREDENTIAL_ID"] ?: "cf-prod"
+String cfTestCredentialId = binding.variables["PAAS_TEST_CREDENTIAL_ID"] ?: ""
+String cfStageCredentialId = binding.variables["PAAS_STAGE_CREDENTIAL_ID"] ?: ""
+String cfProdCredentialId = binding.variables["PAAS_PROD_CREDENTIAL_ID"] ?: ""
 // remove::end[CF]
 // remove::start[K8S]
 String k8sTestTokenCredentialId= binding.variables["PAAS_TEST_CLIENT_TOKEN_ID"] ?: ""
@@ -35,8 +35,8 @@ String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/
 String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
 // TODO: K8S - consider parametrization
 // remove::start[K8S]
-String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: "mysql-root"
-String mySqlCredential = binding.variables["MYSQL_CREDENTIAL_ID"] ?: "mysql"
+String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: ""
+String mySqlCredential = binding.variables["MYSQL_CREDENTIAL_ID"] ?: ""
 // remove::end[K8S]
 
 
@@ -77,7 +77,7 @@ parsedRepos.each {
 				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 			}
 			credentialsBinding {
-				usernamePassword('M2_SETTINGS_REPO_USERNAME', 'M2_SETTINGS_REPO_PASSWORD', repoWithBinariesCredentials)
+				if (repoWithBinariesCredentials) usernamePassword('M2_SETTINGS_REPO_USERNAME', 'M2_SETTINGS_REPO_PASSWORD', repoWithBinariesCredentials)
 			}
 		}
 		jdk(jdkVersion)
@@ -192,12 +192,12 @@ parsedRepos.each {
 			credentialsBinding {
 				// remove::start[CF]
 				// TODO: CF related
-				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+				if (cfTestCredentialId) usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 				// remove::end[CF]
 				// remove::start[K8S]
 				// TODO: What to do about this?
-				usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
-				usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
+				if (mySqlCredential) usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
+				if (mySqlRootCredential) usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
 				// remove::end[K8S]
 			}
@@ -255,10 +255,10 @@ parsedRepos.each {
 			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				// remove::start[CF]
-				usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+				if (cfTestCredentialId) usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 				// remove::end[CF]
 				// remove::start[K8S]
-				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+				if (k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
 				// remove::end[K8S]
 			}
 			timestamps()
@@ -324,10 +324,10 @@ parsedRepos.each {
 				}
 				credentialsBinding {
 					// remove::start[CF]
-					usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+					if (cfTestCredentialId) usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 					// remove::end[CF]
 					// remove::start[K8S]
-					if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+					if (k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
 					// remove::end[K8S]
 				}
 				timeout {
@@ -383,10 +383,10 @@ parsedRepos.each {
 				}
 				credentialsBinding {
 					// remove::start[CF]
-					usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
+					if (cfTestCredentialId) usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 					// remove::end[CF]
 					// remove::start[K8S]
-					if(k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
+					if (k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
 					// remove::end[K8S]
 				}
 				parameters {
@@ -474,9 +474,9 @@ parsedRepos.each {
 				}
 				credentialsBinding {
 					// remove::start[CF]
-					usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
-					usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
-					usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
+					if (cfStageCredentialId) usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
+					if (mySqlCredential) usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
+					if (mySqlRootCredential) usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 					// remove::end[CF]
 					// remove::start[K8S]
 					if(k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
@@ -546,7 +546,7 @@ parsedRepos.each {
 				}
 				credentialsBinding {
 					// remove::start[CF]
-					usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
+					if (cfStageCredentialId) usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
 					// remove::end[CF]
 					// remove::start[K8S]
 					if(k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
@@ -610,10 +610,10 @@ parsedRepos.each {
 			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				// remove::start[CF]
-				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
+				if (cfProdCredentialId) usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
 				// remove::end[CF]
 				// remove::start[K8S]
-				if(k8sProdTokenCredentialId) string("TOKEN", k8sProdTokenCredentialId)
+				if (k8sProdTokenCredentialId) string("TOKEN", k8sProdTokenCredentialId)
 				// remove::end[K8S]
 			}
 			timestamps()
@@ -685,7 +685,7 @@ parsedRepos.each {
 			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				// remove::start[CF]
-				usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
+				if (cfProdCredentialId) usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
 				// remove::end[CF]
 				// remove::start[K8S]
 				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)

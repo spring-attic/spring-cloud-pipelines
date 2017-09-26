@@ -255,9 +255,9 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_TEST_CLIENT_TOKEN_PATH | Path to the file containing the token for test env |
 |PAAS_STAGE_CLIENT_TOKEN_PATH | Path to the file containing the token for stage env |
 |PAAS_PROD_CLIENT_TOKEN_PATH | Path to the file containing the token for prod env |
-|PAAS_TEST_CLIENT_TOKEN_ID | Access token for test environment |
-|PAAS_STAGE_CLIENT_TOKEN_ID | Access token for test environment |
-|PAAS_PROD_CLIENT_TOKEN_ID | Access token for test environment |
+|PAAS_TEST_CLIENT_TOKEN_ID | ID of the credential containing access token for test environment |
+|PAAS_STAGE_CLIENT_TOKEN_ID | ID of the credential containing access token for stage environment |
+|PAAS_PROD_CLIENT_TOKEN_ID | ID of the credential containing access token for prod environment |
 |PAAS_TEST_CLUSTER_NAME | Name of the cluster for test environment | minikube
 |PAAS_STAGE_CLUSTER_NAME | Name of the cluster for stage environment | minikube
 |PAAS_PROD_CLUSTER_NAME | Name of the cluster for prod environment | minikube
@@ -335,19 +335,20 @@ TIP: To see the dashboard just do `kubectl proxy` and access `localhost:8081/ui`
 - Deploy Jenkins and Artifactory to the cluster 
 * `./tools/k8s-helper.sh setup-tools-infra-vsphere` for a cluster deployed on VSphere
 * `./tools/k8s-helper.sh setup-tools-infra-gce` for a cluster deployed to GCE
+- Forward the ports so that you can access the Jenkins UI from your local machine
+
+```bash
+$ NAMESPACE=default
+$ JENKINS_POD=jenkins-1430785859-nfhx4
+$ LOCAL_PORT=32044
+$ CONTAINER_PORT=8080
+$ kubectl port-forward --namespace=${NAMESPACE} ${JENKINS_POD} ${LOCAL_PORT}:${CONTAINER_PORT}
+```
 - Go to `Credentials`, click `System` and `Global credentials`
 
 image::{jenkins-root-docs}/kubo_credentials.png[caption="Click `Global credentials`"]
 
 - Update `git` credential
-
-image::{jenkins-root-docs}/kubo_update_git.png[caption="Update the `git` credentials with your data"]
-
-- Add `k8s-token` credential with the `token`
-
-image::{jenkins-root-docs}/kubo_token.png[caption="Add the `k8s-token` text credential with the k8s access `token`"]
-
-- Click `Manage Jenkins` and pick `Script Console`
 
 image::{jenkins-root-docs}/kubo_script_console_1.png[caption="Pick the `Script Console`"]
 
@@ -359,14 +360,18 @@ String username="dockeruser"
 String password="dockerpass"
 // insert your DockerHub email
 String email="docker@email.com"
+// modify these if you want to connect to some other instance
+String artifactoryId="artifactory-local"
+String artifactoryUser="admin"
+String artifactoryPass="password"
 new File("/root/.m2/settings.xml").text = """
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
 	<servers>
 		<server>
-			<id>artifactory-local</id>
-			<username>admin</username>
-			<password>password</password>
+			<id>${artifactoryId}</id>
+			<username>${artifactoryUser}</username>
+			<password>${artifactoryPass}</password>
 		</server>
 		<server>
 			<id>docker-repo</id>
@@ -390,7 +395,7 @@ println "Done!"
 ```
 image::{jenkins-root-docs}/kubo_script_console_2.png[caption="Run the script to update credentials"]
 - Run the `jenkins-pipeline-k8s-seed` seed job and fill it out with the following data
-* Put your `KUBERNETES_API:KUBERNETES_PORT` or `kubernetes` here
+* Put `kubernetes:443` here (or `KUBERNETES_API:KUBERNETES_PORT`)
 ** `PAAS_TEST_API_URL`
 ** `PAAS_STAGE_API_URL`
 ** `PAAS_PROD_API_URL`
@@ -406,10 +411,10 @@ image::{jenkins-root-docs}/kubo_script_console_2.png[caption="Run the script to 
 ** `PAAS_TEST_CLIENT_KEY`
 ** `PAAS_STAGE_CLIENT_KEY`
 ** `PAAS_PROD_CLIENT_KEY`
-* Set `k8s-token` value to these ids
-** `PAAS_TEST_CLIENT_TOKEN_ID`
-** `PAAS_STAGE_CLIENT_TOKEN_ID`
-** `PAAS_PROD_CLIENT_TOKEN_ID`
+* Set `/var/run/secrets/kubernetes.io/serviceaccount/token` value to these ids
+** `PAAS_TEST_CLIENT_TOKEN_PATH`
+** `PAAS_STAGE_CLIENT_TOKEN_PATH`
+** `PAAS_STAGE_CLIENT_TOKEN_PATH`
 * Set the cluster name to these values
 ** `PAAS_TEST_CLUSTER_NAME`
 ** `PAAS_STAGE_CLUSTER_NAME`
