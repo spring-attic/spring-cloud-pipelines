@@ -63,6 +63,17 @@ function kubectl_that_fails_first_time {
 	echo "kubectl $*"
 }
 
+function kubectl_that_returns_empty_string {
+	echo ""
+}
+
+function kubectl_that_returns_deployments {
+	echo "github-webhook-1-0-0-m1-170925-142938-version   1         1         1         1         14h"
+	echo "github-webhook-1-0-0-m1-170924-142938-version   1         1         1         1         14h"
+	echo "github-webhook-1-0-0-m1-170923-142938-version   1         1         1         1         14h"
+	echo "github-webhook-1-0-0-m1-170924-152938-version   1         1         1         1         14h"
+}
+
 function mockMvnw {
 	echo "mvnw $*"
 }
@@ -74,6 +85,8 @@ function mockGradlew {
 export -f curl
 export -f kubectl
 export -f kubectl_that_fails_first_time
+export -f kubectl_that_returns_empty_string
+export -f kubectl_that_returns_deployments
 export -f mockMvnw
 export -f mockGradlew
 
@@ -659,7 +672,6 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
@@ -685,7 +697,6 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
@@ -713,7 +724,210 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+}
+
+@test "should prepare and execute e2e tests for minikube [K8S][Maven]" {
+	export ENVIRONMENT="STAGE"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-stage"
+	export KUBERNETES_MINIKUBE="true"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/stage_e2e.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "-Pe2e"
+}
+
+@test "should prepare and execute e2e tests for minikube [K8S][Gradle]" {
+	export ENVIRONMENT="STAGE"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="true"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/stage_e2e.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "gradlew e2e"
+}
+
+@test "should prepare and execute e2e tests for non minikube [K8S][Maven]" {
+	export ENVIRONMENT="STAGE"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-stage"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/stage_e2e.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "-Pe2e"
+}
+
+@test "should prepare and execute e2e tests for non minikube [K8S][Gradle]" {
+	export ENVIRONMENT="STAGE"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/stage_e2e.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "gradlew e2e"
+}
+
+@test "should escape non DNS valid name [K8S]" {
+	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+
+	run escapeValueForDns "a_b_1.2.3"
+
+	assert_output "a-b-1-2-3"
+}
+
+@test "should not escape a valid DNS name [K8S]" {
+	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+
+	run escapeValueForDns "a-b-1-2-3"
+
+	assert_output "a-b-1-2-3"
+}
+
+@test "should return false if object hasn't been deployed [K8S]" {
+	export KUBECTL_BIN="kubectl_that_returns_empty_string"
+	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+
+	result="$( objectDeployed "service" "bar" )"
+
+	assert_equal "${result}" "false"
+}
+
+@test "should return true if object has been deployed [K8S]" {
+	export KUBECTL_BIN="kubectl"
+	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+
+	result="$( objectDeployed "service" "bar" )"
+
+	assert_equal "${result}" "true"
+}
+
+@test "should deploy blue instance for non minikube [K8S][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/prod_deploy.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
+}
+
+@test "should deploy blue instance for non minikube [K8S][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/prod_deploy.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
+}
+
+@test "should return the oldest deployment by sorting the deployment names [K8S]" {
+	export KUBECTL_BIN="kubectl_that_returns_deployments"
+	export PIPELINE_VERSION="1.0.0.M1-170925_142938-VERSION"
+	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+
+	result="$( oldestDeployment "github-webhook" )"
+
+	assert_equal "${result}" "github-webhook-1-0-0-m1-170923-142938-version"
+}
+
+@test "should delete green instance for non minikube [K8S][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/prod_complete.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "delete deployment"
+}
+
+@test "should delete green instance for non minikube [K8S][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${PIPELINES_TEST_DIR}"/prod_complete.sh
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "delete deployment"
 }
