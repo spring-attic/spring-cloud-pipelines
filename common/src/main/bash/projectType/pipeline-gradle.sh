@@ -82,7 +82,7 @@ function runSmokeTests() {
 
 function runE2eTests() {
 	local applicationUrl="${APPLICATION_URL}"
-	echo "Running e2e tests"
+	echo "Running e2e tests for application with url [${applicationUrl}]"
 
 	if [[ "${CI}" == "CONCOURSE" ]]; then
 		# shellcheck disable=SC2086

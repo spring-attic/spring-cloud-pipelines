@@ -234,7 +234,9 @@ parsedRepos.each {
 			archiveArtifacts {
 				pattern("**/build/**/k8s/*.yml")
 				pattern("**/target/**/k8s/*.yml")
+				// remove::start[CF]
 				allowEmpty()
+				// remove::end[CF]
 			}
 			// end::start[K8S]
 			downstreamParameterized {
@@ -360,7 +362,9 @@ parsedRepos.each {
 				archiveArtifacts {
 					pattern("**/build/**/k8s/*.yml")
 					pattern("**/target/**/k8s/*.yml")
+					// remove::start[CF]
 					allowEmpty()
+					// remove::end[CF]
 				}
 				// end::start[K8S]
 				downstreamParameterized {
@@ -515,7 +519,9 @@ parsedRepos.each {
 				archiveArtifacts {
 					pattern("**/build/**/k8s/*.yml")
 					pattern("**/target/**/k8s/*.yml")
+					// remove::start[CF]
 					allowEmpty()
+					// remove::end[CF]
 				}
 				// end::start[K8S]
 				if (autoStage) {
@@ -658,7 +664,9 @@ parsedRepos.each {
 			archiveArtifacts {
 				pattern("**/build/**/k8s/*.yml")
 				pattern("**/target/**/k8s/*.yml")
+				// remove::start[CF]
 				allowEmpty()
+				// remove::end[CF]
 			}
 			// end::start[K8S]
 			buildPipelineTrigger("${projectName}-prod-env-complete") {
