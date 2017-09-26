@@ -26,6 +26,8 @@ function createJenkins() {
 	if [ -d "tools" ]; then
 		folder="tools/"
 	fi
+	kubectl delete -f "${folder}k8s/${appName}-${CLOUD_TYPE}-pvc.yml" --namespace="${namespaceName}" --ignore-not-found
+	kubectl create -f "${folder}k8s/${appName}-${CLOUD_TYPE}-pvc.yml" --namespace="${namespaceName}" --validate=false
 	kubectl delete -f "${folder}k8s/${appName}-${CLOUD_TYPE}.yml" --namespace="${namespaceName}" --ignore-not-found
 	kubectl create -f "${folder}k8s/${appName}-${CLOUD_TYPE}.yml" --namespace="${namespaceName}" --validate=false
 	kubectl delete -f "${folder}k8s/${appName}-service.yml" --namespace="${namespaceName}" --ignore-not-found
