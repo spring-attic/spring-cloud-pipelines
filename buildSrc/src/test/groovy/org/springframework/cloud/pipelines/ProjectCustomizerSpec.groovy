@@ -36,7 +36,7 @@ class ProjectCustomizerSpec extends Specification {
 			Logger logger = Stub(Logger)
 			logger.info(_) >> { String text -> println text }
 			ProjectDelegate delegate = new ProjectDelegate(project, logger)
-			ProjectCustomizer customizer = new ProjectCustomizer(delegate, new OptionsReader(reader))
+			ProjectCustomizer customizer = new ProjectCustomizer(delegate, reader)
 		when:
 			customizer.customize()
 		then:
@@ -50,16 +50,11 @@ class ProjectCustomizerSpec extends Specification {
 	def "should leave anything related to Jenkins and K8S"() {
 		given:
 			InputReader reader = Stub(InputReader)
+			reader.readLine(_, _) >> "k8s" >> "Jenkins"
 			Logger logger = Stub(Logger)
 			logger.info(_) >> { String text -> println text }
 			ProjectDelegate delegate = new ProjectDelegate(project, logger)
-			ProjectCustomizer customizer = new ProjectCustomizer(delegate, new OptionsReader(reader) {
-				@Override Options read() { return Options.builder()
-					.ciTool(Options.CiTool.JENKINS)
-					.paasType(Options.PaasType.K8S)
-					.build()
-				}
-			})
+			ProjectCustomizer customizer = new ProjectCustomizer(delegate, reader)
 		when:
 			customizer.customize()
 		then:
@@ -87,16 +82,11 @@ class ProjectCustomizerSpec extends Specification {
 	def "should leave anything related to Concourse and CF"() {
 		given:
 			InputReader reader = Stub(InputReader)
+			reader.readLine(_, _) >> "cf" >> "Concourse"
 			Logger logger = Stub(Logger)
 			logger.info(_) >> { String text -> println text }
 			ProjectDelegate delegate = new ProjectDelegate(project, logger)
-			ProjectCustomizer customizer = new ProjectCustomizer(delegate, new OptionsReader(reader) {
-				@Override Options read() { return Options.builder()
-					.ciTool(Options.CiTool.CONCOURSE)
-					.paasType(Options.PaasType.CF)
-					.build()
-				}
-			})
+			ProjectCustomizer customizer = new ProjectCustomizer(delegate, reader)
 		when:
 			customizer.customize()
 		then:

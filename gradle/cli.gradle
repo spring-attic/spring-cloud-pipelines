@@ -1,0 +1,30 @@
+import org.springframework.cloud.pipelines.InputReader
+import org.springframework.cloud.pipelines.ProjectCustomizer
+
+task customize {
+	description = "Gives you a CLI to customize this project"
+	group = "spring Cloud Pipelines"
+	doLast {
+		println file('buildSrc/src/main/resources/banner.txt').text
+		println "\n"
+		println "Follow the instructions presented in the console or terminate the process to quit (ctrl + c)"
+		println "\n"
+		Console console = System.console()
+		if (console) {
+			new ProjectCustomizer(project, new InputReader() {
+				@Override
+				void println(String text) {
+					console.println(text)
+				}
+
+				@Override
+				String readLine(String text, Object... args) {
+					return console.readLine(text, args)
+				}
+			}).customize()
+		} else {
+			logger.error "Cannot get console."
+			throw new IllegalStateException("Console Not Found")
+		}
+	}
+}

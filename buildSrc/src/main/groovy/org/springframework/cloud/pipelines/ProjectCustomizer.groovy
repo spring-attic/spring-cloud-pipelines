@@ -13,8 +13,8 @@ class ProjectCustomizer {
 	private final FileRemover fileRemover
 	private final LinesRemover linesRemover
 
-	ProjectCustomizer(Project project, OptionsReader optionsReader) {
-		this.optionsReader = optionsReader
+	ProjectCustomizer(Project project, InputReader inputReader) {
+		this.optionsReader = new OptionsReader(inputReader)
 		this.project = project
 		this.fileRemover = new FileRemover(project)
 		this.linesRemover = new LinesRemover(project)
