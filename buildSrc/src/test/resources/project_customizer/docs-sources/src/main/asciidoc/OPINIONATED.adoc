@@ -1,0 +1,213 @@
+== Opinionated implementation
+
+For the demo purposes we're providing Docker Compose setup with Artifactory and Concourse / Jenkins tools.
+Regardless of the picked CD application for the pipeline to pass one needs either
+
+- *[CLOUD FOUNDRY]* a Cloud Foundry instance (for example https://run.pivotal.io/[Pivotal Web Services] or https://pivotal.io/pcf-dev[PCF Dev])
+- *[KUBERNETES]* a Kubernetes cluster (for example https://github.com/kubernetes/minikube[Minikube])
+- the infrastructure applications deployed to the JAR hosting application (for the demo we're providing Artifactory).
+    - `Eureka` for Service Discovery
+    - `Stub Runner Boot` for running Spring Cloud Contract stubs.
+
+TIP: In the demos we're showing you how to first build the `github-webhook` project. That's because
+the `github-analytics` needs the stubs of `github-webhook` to pass the tests. Below you'll find
+references to `github-analytics` project since it contains more interesting pieces as far as testing
+is concerned.
+
+=== Build
+
+image::{intro-root-docs}/build.png[title="Build and upload artifacts"]
+
+In this step we're generating a version of the pipeline, next we're
+ running unit, integration and contract tests. Finally we're:
+
+- publishing a fat jar of the application
+- publishing a Spring Cloud Contract jar containing stubs of the application
+- *[KUBERNETES]* uploading a Docker image of the application
+
+During this phase we're executing a `Maven` build using Maven Wrapper or a `Gradle` build using Gradle Wrapper
+, with unit and integration tests. We're also *tagging* the repository with `dev/${version}` format. That way in each
+subsequent step of the pipeline we're able to retrieve the tagged version. Also we know
+exactly which version of the pipeline corresponds to which Git hash.
+
+Once the artifact got built we're running API compatibility check.
+
+- we're searching for the latest production deployment
+- we're retrieving the contracts that were used by that deployment
+- from the contracts we're generating API tests to see if the current implementation
+is fulfilling the HTTP / messaging contracts that the current production deployment
+has defined (we're checking backward compatibility of the API)
+
+=== Test
+
+image::{intro-root-docs}/test.png[title="Smoke test and rollback test on test environment"]
+
+Here we're
+
+- starting a RabbitMQ service in PaaS
+- deploying `Eureka` infrastructure application to PaaS
+- downloading the fat jar from Nexus and we're uploading it to PaaS. We want the application
+to run in isolation (be surrounded by stubs).
+
+TIP: Currently due to port constraints in Cloud Foundry
+we cannot run multiple stubbed HTTP services in the cloud so to fix this issue we're running
+the application with `smoke` Spring profile on which you can stub out all HTTP calls to return
+a mocked response
+
+- if the application is using a database then it gets upgraded at this point via Flyway, Liquibase
+or any other tool once the application gets started
+- from the project's Maven or Gradle build we're extracting `stubrunner.ids` property that contains
+ all the `groupId:artifactId:version:classifier` notation of dependant projects for which
+ the stubs should be downloaded.
+- then we're uploading `Stub Runner Boot` and pass the extracted `stubrunner.ids` to it. That way
+we'll have a running application in Cloud Foundry that will download all the necessary stubs
+of our application
+- from the checked out code we're running the tests available under the `smoke` profile. In the
+case of `GitHub Analytics` application we're triggering a message from the `GitHub Webhook`
+application's stub, that is sent via RabbitMQ to GitHub Analytics. Then we're checking if
+message count has increased.
+- once the tests pass we're searching for the last production release. Once the application
+is deployed to production we're tagging it with `prod/${version}` tag. If there is no such tag
+(there was no production release) there will be no rollback tests executed. If there was
+a production release the tests will get executed.
+- assuming that there was a production release we're checking out the code corresponding to that
+release (we're checking out the tag), we're downloading the appropriate artifact (either JAR for Cloud Foundry
+or Docker image for Kubernetes) and we're uploading
+it to PaaS. *IMPORTANT* the _old_ artifact is running against the *NEW* version of the database.
+- we're running the _old_ `smoke` tests against the freshly deployed application surrounded by stubs.
+If those tests pass then we have a high probability that the application is backwards compatible
+- the default behaviour is that after all of those steps the user can manually click to deploy the
+application to a stage environment
+
+=== Stage
+
+image::{intro-root-docs}/stage.png[title="End to end tests on stage environment"]
+
+Here we're
+
+- starting a RabbitMQ service in PaaS
+- deploying `Eureka` infrastructure application to PaaS
+- downloading the artifact (either JAR for Cloud Foundry or Docker image for Kubernetes)
+from and we're uploading it to PaaS.
+
+Next we have a manual step in which:
+
+- from the checked out code we're running the tests available under the `e2e` profile. In the
+case of `GitHub Analytics` application we're sending a HTTP message to GitHub Analytic's endpoint. Then we're checking if
+the received message count has increased.
+
+The step is manual by default due to the fact that stage environment is often shared between
+teams and some preparations on databases / infrastructure have to take place before running the tests.
+Ideally these step should be fully automatic.
+
+=== Prod
+
+image::{intro-root-docs}/prod.png[title="Deployment to production"]
+
+The step to deploy to production is manual but ideally it should be automatic.
+
+IMPORTANT: This step does deployment to production. On production you would assume
+that you have the infrastructure running. That's why before you run this step you
+must execute a script that will provision the services on the production environment.
+For `Cloud Foundry` just call `tools/cf-helper.sh setup-prod-infra` and
+for Kubernetes `tools/k8s-helper.sh setup-prod-infra`
+
+Here we're
+
+- tagging the Git repo with `prod/${version}` tag
+- downloading the application artifact (either JAR for Cloud Foundry or Docker image for Kubernetes)
+- we're doing Blue Green deployment:
+    - for Cloud Foundry
+        * we're renaming the current instance of the app e.g. `fooService` to `fooService-venerable`
+        * we're deploying the new instance of the app under the `fooService` name
+        * now two instances of the same application are running on production
+    - for Kubernetes
+        * we're deploying a service with the name of the app e.g. `fooService`
+        * we're doing a deployment with the name of the app with version suffix (with the name escaped
+         to fulfill the DNS name requirements) e.g. `fooService-1-0-0-M1-123-456-VERSION`
+        * all deployments of the same application have the same label `name` equal to app name e.g. `fooService`
+        * the service is routing the traffic basing on the `name` label selector
+        * now two instances of the same application are running on production
+- in the `Complete switch over` which is a manual step
+    * we're deleting the old instance
+    * remember to run this step only after you have confirmed that both instances are working fine!
+
+== Project opinions
+
+In this section we will go through the assumptions we've made in the project
+structure and project properties.
+
+=== CF project opinions
+
+We've taken the following opinionated decisions for a Cloud Foundry based project:
+
+- application built using Maven or Gradle wrappers
+- application deployment to Cloud Foundry
+- For Maven (https://github.com/spring-cloud-samples/github-webhook[example project]):
+    * usage of Maven Wrapper
+    * `settings.xml` contains all the credentials to push code to Artifactory
+    * artifacts deployment by `./mvnw clean deploy`
+    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * `repo.with.binaries` property - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `distribution.management.release.id` property - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in `settings.xml`
+    * `distribution.management.release.url` property - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * running API compatibility tests via the `apicompatibility` Maven profile
+    * `latest.production.version` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
+    * running smoke tests on a deployed app via the `smoke` Maven profile
+    * running end to end tests on a deployed app via the `e2e` Maven profile
+- For Gradle  (https://github.com/spring-cloud-samples/github-analytics[example project] check the `gradle/pipeline.gradle` file):
+    * usage of Gradlew Wrapper
+    * `deploy` task for artifacts deployment
+    * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_USERNAME` env var - (Taken from `gradle.properties`) Username used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_PASSWORD` env var - (Taken from `gradle.properties`) Password used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * running API compatibility tests via the `apiCompatibility` task
+    * `latestProductionVersion` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
+    * running smoke tests on a deployed app via the `smoke` task
+    * running end to end tests on a deployed app via the `e2e` task
+    * `groupId` task to retrieve group id
+    * `artifactId` task to retrieve artifact id
+    * `currentVersion` task to retrieve the current version
+    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
+
+=== Kubernetes project opinions
+
+We've taken the following opinionated decisions for a Cloud Foundry based project:
+
+- application built using Maven or Gradle wrappers
+- application deployment to Kubernetes
+- The produced Java Docker image needs to allow passing of system properties via `SYSTEM_PROPS` env variable
+- For Maven (https://github.com/spring-cloud-samples/github-webhook-kubernetes[example project]):
+    * usage of Maven Wrapper
+    * `settings.xml` contains all the credentials to push code to Artifactory and Docker repository
+    * artifacts and Docker image deployment by `./mvnw clean deploy`
+    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * `repo.with.binaries` property - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `distribution.management.release.id` property - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in `settings.xml`
+    * `distribution.management.release.url` property - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `deployment.yml` contains the Kubernetes deployment descriptor
+    * `service.yml` contains the Kubernetes service descriptor
+    * running API compatibility tests via the `apicompatibility` Maven profile
+    * `latest.production.version` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
+    * running smoke tests on a deployed app via the `smoke` Maven profile
+    * running end to end tests on a deployed app via the `e2e` Maven profile
+- For Gradle  (https://github.com/spring-cloud-samples/github-analytics-kubernetes[example project] check the `gradle/pipeline.gradle` file):
+    * usage of Gradlew Wrapper
+    * `deploy` task for artifacts deployment
+    * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_USERNAME` env var - (Taken from `gradle.properties`) Username used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_PASSWORD` env var - (Taken from `gradle.properties`) Password used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `DOCKER_URL` env var - (Overridable - defaults to DockerHub) URL of the Docker registry
+    * `DOCKER_USERNAME` env var - (Taken from `gradle.properties`) Username used to send the the Docker image
+    * `DOCKER_PASSWORD` env var - (Taken from `gradle.properties`) Password used to send the the Docker image
+    * `DOCKER_EMAIL` env var - (Taken from `gradle.properties`) Email used to send the the Docker image
+    * `deployment.yml` contains the Kubernetes deployment descriptor
+    * `service.yml` contains the Kubernetes service descriptor
+    * running API compatibility tests via the `apiCompatibility` task
+    * `latestProductionVersion` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
+    * running smoke tests on a deployed app via the `smoke` task
+    * running end to end tests on a deployed app via the `e2e` task
+    * `groupId` task to retrieve group id
+    * `artifactId` task to retrieve artifact id
+    * `currentVersion` task to retrieve the current version
+    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded

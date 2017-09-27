@@ -1,0 +1,28 @@
+We already create the seed job for you but you'll have to run it. When you do
+run it you have to provide some properties. By default we create a seed that
+has all the properties options, but you can delete most of it. If you
+set the properties as global env variables you have to remove them from the
+seed.
+
+Anyways, to run the demo just provide in the `REPOS` var the comma separated
+ list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics'.
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/seed_click.png[caption="Step 1: ", title="Click the 'jenkins-pipeline-seed-cf' job for Cloud Foundry and `jenkins-pipeline-seed-k8s` for Kubernetes"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/seed_run.png[caption="Step 2: ", title="Click the 'Build with parameters'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/seed.png[caption="Step 3: ", title="The `REPOS` parameter should already contain your forked repos (you'll have more properties than the ones in the screenshot)"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/seed_built.png[caption="Step 4: ", title="This is how the results of seed should look like"]

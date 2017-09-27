@@ -1,0 +1,28 @@
+== The demo setup (Kubernetes)
+
+https://github.com/spring-cloud-samples/github-webhook-kubernetes/[Github webhook code]
+
+https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github analytics code]
+
+include::DEMO_SETUP.adoc[]
+
+=== Deploying production applications to Minikube
+
+In the real world scenario we wouldn't want to automatically provision services like
+RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
+production is provisioned manually (using automated solutions). In our case, before
+you deploy to production you can provision the `sc-pipelines-prod` namespace using the
+ `k8s-helper.sh`. Just call
+
+[source,bash]
+----
+$ ./k8s-helper.sh setup-prod-infra
+----
+
+=== Running Prometheus on Kubernetes
+
+//TODO: Add this
+
+=== Running Grafana on Kubernetes
+
+//TODO: Add this

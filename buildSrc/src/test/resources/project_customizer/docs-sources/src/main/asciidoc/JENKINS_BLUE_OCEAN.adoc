@@ -1,0 +1,53 @@
+You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
+https://jenkins.io/projects/blueocean/[Blue Ocean UI]. Here is a step by step guide to run a pipeline via
+this approach.
+
+The Blue Ocean UI is available under the `blue/` URL. E.g. for Docker Machine based setup `http://192.168.99.100:8080/blue`.
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_1.png[caption="Step 1: ", title="Open Blue Ocean UI and click on `github-webhook-declarative-pipeline`"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_2.png[caption="Step 2: ", title="Your first run will look like this. Click `Run` button"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_3.png[caption="Step 3: ", title="Enter parameters required for the build and click `run`"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_4.png[caption="Step 4: ", title="A list of pipelines will be shown. Click your first run."]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_5.png[caption="Step 5: ", title="State if you want to go to production or not and click `Proceed`"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_6.png[caption="Step 6: ", title="The build is in progress..."]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/blue_7.png[caption="Step 7: ", title="The pipeline is done!"]
+
+{nbsp}
+{nbsp}
+
+
+IMPORTANT: There is no possibility of restarting pipeline from specific stage, after failure. Please
+check out this https://issues.jenkins-ci.org/browse/JENKINS-33846[issue] for more information
+
+WARNING: Currently there is no way to introduce manual steps in a performant way. Jenkins is
+blocking an executor when manual step is required. That means that you'll run out of executors
+pretty fast. You can check out this https://issues.jenkins-ci.org/browse/JENKINS-36235[issue] for
+and this http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
+for more information.

@@ -1,0 +1,78 @@
+== Building the project
+
+=== Prerequisites
+
+As prerequisites you need to have http://www.shellcheck.net/[shellcheck],
+https://github.com/sstephenson/bats[bats], https://stedolan.github.io/jq/[jq]
+ and https://rubyinstaller.org/downloads/[ruby] installed. If you're on a Linux
+ machine then `bats` and `shellcheck` will be installed for you.
+
+To install the required software on Linux just type the following commands
+
+[source,bash]
+----
+$ sudo apt-get install -y ruby jq
+----
+
+If you're on a Mac then just execute these commands to install the missing software
+
+[source,bash]
+----
+$ brew install jq
+$ brew install ruby
+$ brew install bats
+$ brew install shellcheck
+----
+
+=== Bats submodules
+
+To make `bats` work properly we needed to attach Git submodules. To have them
+initialized either clone with appropriate command
+
+[source,bash]
+----
+$ git clone --recursive https://github.com/spring-cloud/spring-cloud-pipelines.git
+----
+
+or if you have already cloned the project and are just pulling changes
+
+[source,bash]
+----
+$ git submodule init
+$ git submodule update
+----
+
+=== Build and test
+
+Once you have installed all the prerequisites you can execute
+
+[source,bash]
+----
+./gradlew clean build
+----
+
+to build and test the project.
+
+=== Generate readme
+
+To generate readme just run
+
+[source,bash]
+----
+./gradlew generateDocs
+----
+
+== Releasing the project
+
+=== Publishing A Docker Image
+
+When doing a release you also need to push a Docker image to Dockerhub.
+From the project root, run the following commands replacing `<version>` with the
+version of the release.
+
+[source,bash]
+----
+docker login
+docker build -t springcloud/spring-cloud-pipeline-jenkins:<version> ./jenkins
+docker push springcloud/spring-cloud-pipeline-jenkins:<version>
+----

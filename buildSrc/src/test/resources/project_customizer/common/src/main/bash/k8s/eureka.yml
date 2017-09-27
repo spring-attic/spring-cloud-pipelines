@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{appName}}
+spec:
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template: # create pods using pod definition in this template
+      metadata:
+        labels:
+          name: {{appName}}
+      spec:
+        containers:
+        - name: {{appName}}
+          image: {{eurekaImg}}
+          ports:
+          - containerPort: 8761
+          env:
+          - name: PORT
+            value: "8761"
+          - name: eureka_client_serviceUrl_defaultZone
+            value: "http://{{appUrl}}:8761/eureka/"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8761
+            initialDelaySeconds: 30
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8761
+            initialDelaySeconds: 30
+            periodSeconds: 3

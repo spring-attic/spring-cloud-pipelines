@@ -1,0 +1,219 @@
+== FAQ
+
+Below you can find the answers to most frequently asked questions.
+
+[[jenkins_faq]]
+=== Pipeline version contains ${PIPELINE_VERSION}
+
+You can check the Jenkins logs and you'll see
+
+[source,bash]
+----
+WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
+	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
+	to be injected as environment variables or
+	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
+	to whitelist specific parameter names, even though it represents a security breach
+----
+
+To fix it you have to do exactly what the warning suggests... Also ensure that the `Groovy token macro processing`
+checkbox is set.
+
+=== Pipeline version is not passed to the build
+
+You can see that the Jenkins version is properly set but in the build version is still snapshot and
+the `echo "${PIPELINE_VERSION}"` doesn't print anything.
+
+You can check the Jenkins logs and you'll see
+
+[source,bash]
+----
+WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
+	Set `-Dhudson.model.ParametersAction.keepUndefinedParameters`=true to allow undefined parameters
+	to be injected as environment variables or
+	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
+	to whitelist specific parameter names, even though it represents a security breach
+----
+
+To fix it you have to do exactly what the warning suggests...
+
+=== The build times out with `pipeline.sh` info
+
+Docker compose, docker compose, docker compose... The problem is that for some reason, only in Docker, the execution of
+Java hangs. But it hangs randomly and only the first time you try to execute the pipeline.
+
+The solution to this is to run the pipeline again. If once it suddenly, magically passes then
+it will pass for any subsequent build.
+
+Another thing that you can try is to run it with plain Docker. Maybe that will help.
+
+=== Can I use the pipeline for some other repos?
+
+Sure! you can pass `REPOS` variable with comma separated list of
+`project_name$project_url` format. If you don't provide the PROJECT_NAME the
+repo name will be extracted and used as the name of the project.
+
+E.g. for `REPOS` equal to:
+
+`https://github.com/spring-cloud-samples/github-analytics,https://github.com/spring-cloud-samples/github-webhook`
+
+will result in the creation of pipelines with root names `github-analytics` and `github-webhook`.
+
+E.g. for `REPOS` equal to:
+
+`foo$https://github.com/spring-cloud-samples/github-analytics,bar$https://github.com/spring-cloud-samples/atom-feed`
+
+will result in the creation of pipelines with root names `foo` for `github-analytics`
+and `bar` for `github-webhook`.
+
+=== Will this work for ANY project out of the box?
+
+Not really. This is an `opinionated pipeline` that's why we took some
+opinionated decisions like:
+
+- usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
+- application deployment to Cloud Foundry
+- For Maven:
+    * usage of Maven Wrapper
+    * artifacts deployment by `./mvnw clean deploy`
+    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * running smoke tests on a deployed app via the `smoke` Maven profile
+    * running end to end tests on a deployed app via the `e2e` Maven profile
+- For Gradle (in the `github-analytics` application check the `gradle/pipeline.gradle` file):
+    * usage of Gradlew Wrapper
+    * `deploy` task for artifacts deployment
+    * running smoke tests on a deployed app via the `smoke` task
+    * running end to end tests on a deployed app via the `e2e` task
+    * `groupId` task to retrieve group id
+    * `artifactId` task to retrieve artifact id
+    * `currentVersion` task to retrieve the current version
+    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
+
+This is the initial approach that can be easily changed in the future.
+
+=== Can I modify this to reuse in my project?
+
+Sure! It's open-source! The important thing is that the core part of the logic is written
+in Bash scripts. That way, in the majority of cases, you could change only the bash
+scripts without changing the whole pipeline.
+
+=== The rollback step fails due to missing JAR ?!
+
+[[jenkins_tags]] You must have pushed some tags and have removed the Artifactory volume that
+contained them. To fix this, just remove the tags
+
+[source,bash]
+----
+git tag -l | xargs -n 1 git push --delete origin
+----
+
+=== I want to provide a different JDK version
+
+- by default we assume that you have jdk with id `jdk8` configured
+- if you want a different one just override `JDK_VERSION` env var and point to the proper one
+
+TIP: The docker image comes in with Java installed at `/usr/lib/jvm/java-8-openjdk-amd64`.
+You can go to `Global Tools` and create a JDK with `jdk8` id and JAVA_HOME
+ pointing to `/usr/lib/jvm/java-8-openjdk-amd64`
+
+To change the default one just follow these steps:
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/global_tool.png[caption="Step 2: ", title="Click 'Global Tool'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/jdk_installation.png[caption="Step 3: ", title="Click 'JDK Installations'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/jdk.png[caption="Step 4: ", title="Fill out JDK Installation with path to your JDK"]
+
+{nbsp}
+{nbsp}
+
+And that's it!
+
+[[groovy-token-macro]]
+=== Enable Groovy Token Macro Processing
+
+With scripted that but if you needed to this manually then this is how to do it:
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
+
+{nbsp}
+{nbsp}
+
+image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
+
+==== I want deployment to stage and prod be automatic
+
+No problem, just set the property / env var to true
+
+- `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage
+- `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod
+
+==== I don't want to test API compativility
+
+No problem, just set the `API_COMPATIBILITY_STEP_REQUIRED` env variable
+to `false` and rerun the seed (you can pick it from the seed
+job's properties too).
+
+=== I can't tag the repo!
+
+When you get sth like this:
+
+[source,bash]
+----
+19:01:44 stderr: remote: Invalid username or password.
+19:01:44 fatal: Authentication failed for 'https://github.com/marcingrzejszczak/github-webhook/'
+19:01:44
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1740)
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:1476)
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.access$300(CliGitAPIImpl.java:63)
+19:01:44 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$8.execute(CliGitAPIImpl.java:1816)
+19:01:44 	at hudson.plugins.git.GitPublisher.perform(GitPublisher.java:295)
+19:01:44 	at hudson.tasks.BuildStepMonitor$3.perform(BuildStepMonitor.java:45)
+19:01:44 	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:779)
+19:01:44 	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:720)
+19:01:44 	at hudson.model.Build$BuildExecution.post2(Build.java:185)
+19:01:44 	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:665)
+19:01:44 	at hudson.model.Run.execute(Run.java:1745)
+19:01:44 	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+19:01:44 	at hudson.model.ResourceController.execute(ResourceController.java:98)
+19:01:44 	at hudson.model.Executor.run(Executor.java:404)
+----
+
+most likely you've passed a wrong password. Check the <<jenkins_credentials,credentials>> section
+on how to update your credentials.
+
+=== I'm unauthorized to deploy infrastructure jars
+
+Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
+setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml`>>.
+
+=== Signing Artifacts
+
+In some cases it may be required that when performing a release that the artifacts be signed
+before pushing them to the repository.
+To do this you will need to import your GPG keys into the Docker image running Jenkins.
+This can be done by placing a file called `public.key` containing your public key
+and a file called `private.key` containing your private key in the `seed` directory.
+These keys will be imported by the `init.groovy` script that is run when Jenkins starts.

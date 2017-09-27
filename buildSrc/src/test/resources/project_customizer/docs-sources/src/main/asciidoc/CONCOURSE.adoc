@@ -1,0 +1,373 @@
+== Concourse Pipeline [[concourse]]
+
+The repository contains an opinionated pipeline that will build and deploy  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook] application.
+
+All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+
+- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
+- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
+- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+
+=== Step by step
+
+If you want to just run the demo as far as possible using PCF Dev and Docker Compose
+
+- <<fork,Fork repos>>
+- <<start,Start Concourse and Artifactory>>
+- <<deploy,Deploy infra to Artifactory>>
+- <<pcfdev,Start PCF Dev (if you don't want to use an existing one)>>
+- <<fly,Setup the `fly` CLI>>
+- <<creds,Setup your `credentials.yml`>>
+- <<seed,Run the seed job>>
+- <<pipeline,Run the `github-webhook` pipeline>>
+
+Below you can find <<optional,optional>> steps needed to be taken when you want to customize the pipeline
+
+- <<env,Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
+just check out the section on how to update the URL to Artifactory)>>
+- <<settings,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
+- <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
+- <<credentials,Setup Jenkins credentials>>
+
+==== Fork repos
+
+[[fork]] There are 4 apps that are composing the pipeline
+
+  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
+  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Stub Runner Boot]
+
+You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+
+  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
+
+==== Start Concourse and Artifactory
+
+[[start]] Concourse + Artifactory can be run locally. To do that just execute the
+`start.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/concourse
+./setup_docker_compose.sh
+./start.sh 192.168.99.100
+----
+
+The `setup_docker_compose.sh` script should be executed once only to allow
+generation of keys.
+
+The `192.168.99.100` param is an example of an external URL of Concourse
+(equal to Docker-Machine ip in this example).
+
+Then Concourse will be running on port `8080` and Artifactory `8081`.
+
+===== Deploy the infra JARs to Artifactory
+
+[[deploy]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+./tools/deploy-infra.sh
+----
+
+As a result both `eureka` and `stub runner` repos will be cloned, built
+and uploaded to Artifactory.
+
+==== Start PCF Dev
+
+[[pcfdev]] TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
+The only thing you have to do is to set up spaces.
+
+WARNING: It's more than likely that you'll run out of resources when you reach stage step.
+Don't worry! Keep calm and <<resources,clear some apps from PCF Dev and continue>>.
+
+You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
+
+The default credentials when using PCF Dev are:
+
+[source,bash]
+----
+username: user
+password: pass
+email: user
+org: pcfdev-org
+space: pcfdev-space
+api: api.local.pcfdev.io
+----
+
+You can start the PCF dev like this:
+
+[source,bash]
+----
+cf dev start
+----
+
+You'll have to create 3 separate spaces (email admin, pass admin)
+
+[source,bash]
+----
+cf login -a https://api.local.pcfdev.io --skip-ssl-validation -u admin -p admin -o pcfdev-org
+
+cf create-space pcfdev-test
+cf set-space-role user pcfdev-org pcfdev-test SpaceDeveloper
+cf create-space pcfdev-stage
+cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
+cf create-space pcfdev-prod
+cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
+----
+
+You can also execute the `./tools/cf-helper.sh setup-spaces` to do this.
+
+==== Setup the `fly` CLI
+
+[[fly]] If you go to Concourse website you should see sth like this:
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/running_concourse.png[]
+
+{nbsp}
+{nbsp}
+
+You can click one of the icons (depending on your OS) to download `fly`, which is the Concourse CLI. Once you've downloaded that (and maybe added to your PATH) you can run:
+
+[source,bash]
+----
+fly --version
+----
+
+If `fly` is properly installed then it should print out the version.
+
+==== Setup your `credentials.yml`
+
+[[creds]] The repo comes with `credentials-sample.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo jus setup:
+
+  - `app-url` - url pointing to your forked `github-webhook` repo
+  - `github-private-key` - your private key to clone / tag GitHub repos
+  - `repo-with-binaries` - the IP is set to the defaults for Docker Machine. You should update it to point to your setup
+
+If you don't have a Docker Machine just execute `./whats_my_ip.sh` script to
+get an external IP that you can pass to your `repo-with-binaries` instead of the default
+Docker Machine IP.
+
+Below you can see what environment variables are required by the scripts. To the right hand side you can see the default values for PCF Dev that we set in the `credentials-sample.yml`.
+
+[frame="topbot",options="header,footer"]
+|======================
+|Property Name  | Property Description | Default value
+|PAAS_TEST_API_URL | The URL to the CF Api for TEST env| api.local.pcfdev.io
+|PAAS_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
+|PAAS_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
+|PAAS_TEST_ORG    | Name of the org for the test env | pcfdev-org
+|PAAS_TEST_SPACE  | Name of the space for the test env | pcfdev-space
+|PAAS_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
+|PAAS_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
+|PAAS_PROD_ORG   | Name of the org for the prod env | pcfdev-org
+|PAAS_PROD_SPACE | Name of the space for the prod env | pcfdev-space
+|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
+|M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
+|PAAS_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
+|APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
+|JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+|BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
+|======================
+
+==== Build the pipeline
+
+Log in (e.g. for Concourse running at `192.168.99.100` - if you don't provide any value then `localhost` is assumed). If you execute this script  (it assumes that either `fly` is on your `PATH` or it's in the same folder as the script is):
+
+[source,bash]
+----
+./login.sh 192.168.99.100
+----
+
+Next run the command to create the pipeline.
+
+[source,bash]
+----
+./set_pipeline.sh
+----
+
+Then you'll create a `github-webhook` pipeline under the `docker` alias, using the provided `credentials.yml` file.
+You can override these values in exactly that order (e.g. `./set-pipeline.sh some-project another-target some-other-credentials.yml`)
+
+==== Run the `github-webhook` pipeline
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_login.png[caption="Step 1: ", title="Click `Login`"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_team_main.png[caption="Step 2: ", title="Pick `main` team"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_user_pass.png[caption="Step 3: ", title="Log in with `concourse` user and `changeme` password"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_pipeline.png[caption="Step 4: ", title="Your screen should look more or less like this"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/start_pipeline.png[caption="Step 5: ", title="Unpause the pipeline by clicking in the top lefr corner and then clicking the `play` button"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/generate_version.png[caption="Step 6: ", title="Click 'generate-version'"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/run_pipeline.png[caption="Step 7: ", title="Click `+` sign to start a new build"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_pending.png[caption="Step 8: ", title="The job is pending"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/job_running.png[caption="Step 9: ", title="Job is pending in the main screen"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Job is running in the main screen"]
+
+=== FAQ
+
+[[faq]]
+
+==== Can I use the pipeline for some other repos?
+
+Sure! Just change the `app-url` in `credentials.yml`!
+
+==== Will this work for ANY project out of the box?
+
+Not really. This is an `opinionated pipeline` that's why we took some
+opinionated decisions like:
+
+- usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
+- application deployment to Cloud Foundry
+- For Maven:
+    * usage of Maven Wrapper
+    * artifacts deployment by `./mvnw clean deploy`
+    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
+    * running smoke tests on a deployed app via the `smoke` Maven profile
+    * running end to end tests on a deployed app via the `e2e` Maven profile
+- For Gradle (in the `github-analytics` application check the `gradle/pipeline.gradle` file):
+    * usage of Gradlew Wrapper
+    * `deploy` task for artifacts deployment
+    * running smoke tests on a deployed app via the `smoke` task
+    * running end to end tests on a deployed app via the `e2e` task
+    * `groupId` task to retrieve group id
+    * `artifactId` task to retrieve artifact id
+    * `currentVersion` task to retrieve the current version
+    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
+
+This is the initial approach that can be easily changed in the future.
+
+==== Can I modify this to reuse in my project?
+
+Sure! It's open-source! The important thing is that the core part of the logic is written in
+Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
+whole pipeline. https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash[You can check out the scripts here.]
+
+Furthermore, if you only want to customize a particular function under `common/src/main/bash`, you can provide your own
+function under `common/src/main/bash/<some custom identifier>` where `<some custom identifier>` is equal to the value of
+the `CUSTOM_SCRIPT_IDENTIFIER` environment variable. For more on this technique, see
+<<../common/README.adoc#Override specific project type pipeline functions,Override specific project type pipeline functions>>.
+
+==== I ran out of resources!!
+
+[[resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
+ solve it is to kill some apps from test / stage env. To achieve that just call
+
+[source,bash]
+----
+cf target -o pcfdev-org -s pcfdev-test
+cf stop github-webhook
+cf stop github-eureka
+cf stop stubrunner
+----
+
+You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove
+all demo-related apps deployed to PCF dev.
+
+==== The rollback step fails due to missing JAR ?!
+
+You must have pushed some tags and have removed the Artifactory volume that
+contained them. To fix this, just remove the tags
+
+[source,bash]
+----
+git tag -l | xargs -n 1 git push --delete origin
+----
+
+==== Can I see the output of a job from the terminal?
+
+Yes! Assuming that pieline name is `github-webhook` and job name is `build-and-upload` you can running
+
+[source,bash]
+----
+fly watch --job github-webhook/build-and-upload -t docker
+----
+
+==== I clicked the job and it's constantly pending...
+
+Don't worry... most likely you've just forgotten to click the `play` button to
+unpause the pipeline. Click to the top left, expand the list of pipelines and click
+the `play` button next to `github-webhook`.
+
+Another problem that might occur is that you need to have the `version` branch.
+Concourse will wait for the `version` branch to appear in your repo. So in order for
+the pipeline to start ensure that when doing some git operations you haven't
+forgotten to create / copy the `version` branch too.
+
+==== The route is already in use
+
+If you play around with Jenkins / Concourse you might end up with the routes occupied
+
+[source,bash]
+----
+Using route github-webhook-test.local.pcfdev.io
+Binding github-webhook-test.local.pcfdev.io to github-webhook...
+FAILED
+The route github-webhook-test.local.pcfdev.io is already in use.
+----
+
+Just delete the routes
+
+[source,bash]
+----
+yes | cf delete-route local.pcfdev.io -n github-webhook-test
+yes | cf delete-route local.pcfdev.io -n github-eureka-test
+yes | cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n github-webhook-stage
+yes | cf delete-route local.pcfdev.io -n github-eureka-stage
+yes | cf delete-route local.pcfdev.io -n github-webhook-prod
+yes | cf delete-route local.pcfdev.io -n github-eureka-prod
+----
+
+You can also execute the `./tools/cf-helper.sh delete-routes`
+
+==== I'm unauthorized to deploy infrastructure jars
+
+Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
+setup. Check out <<settings,this section of the docs and update your `settings.xml`>>.

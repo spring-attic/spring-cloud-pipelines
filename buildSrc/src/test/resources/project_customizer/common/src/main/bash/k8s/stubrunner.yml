@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{appName}}
+spec:
+  replicas: 1
+  template:
+      metadata:
+        labels:
+          name: {{appName}}
+      spec:
+        containers:
+        - name: {{appName}}
+          image: {{stubrunnerImg}}
+          ports:
+          - containerPort: 8050
+          env:
+          - name: PORT
+            value: "8050"
+          - name: SPRING_RABBITMQ_ADDRESSES
+            value: "{{rabbitAppName}}:5672"
+          - name: eureka_client_serviceUrl_defaultZone
+            value: "http://{{eurekaAppName}}:8761/eureka/"
+          - name: STUBRUNNER_IDS
+            value: "{{stubrunnerIds}}"
+          - name: SYSTEM_PROPS
+            value: "{{systemProps}}"
+          - name: SPRING_PROFILES_ACTIVE
+            value: "kubernetes"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8050
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8050
+            initialDelaySeconds: 30
+            periodSeconds: 10

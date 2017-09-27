@@ -10,9 +10,13 @@ import org.gradle.api.file.FileTree
 class LinesRemover {
 
 	private final Project project
+	private final List<String> ignored
 
 	LinesRemover(Project project) {
 		this.project = project
+		this.ignored = [
+		        '**/buildSrc/**'
+		]
 	}
 
 	void modifyFiles(String dirName, Options options, List<String> includes = ['**/*.java',
@@ -23,12 +27,14 @@ class LinesRemover {
 															  '**/*.sh',
 															  '**/Jenkinsfile-sample',
 															  '**/Dockerfile',
-															  '**/*.txt',
 															  '**/*.xml',
 															  '**/*.gradle',
 															  '**/*.yml',
 															  '**/*.properties']) {
-		FileTree tree = project.fileTree(dir: dirName, include: includes)
+		if (options.ciTool == Options.CiTool.BOTH && options.paasType == Options.PaasType.BOTH) {
+			return
+		}
+		FileTree tree = project.fileTree(dir: dirName, include: includes, excludes: ignored)
 		tree.each { File file ->
 			if (file.absolutePath == new File(project.rootDir, "build.gradle").absolutePath) {
 				return
@@ -64,7 +70,11 @@ class LinesRemover {
 				}
 				return
 			}
-			file.text = newString.toString()
+			String newText = newString.toString()
+			if (text != newText) {
+				project.logger.info("Removing lines from [${file}]")
+				file.text = newString.toString()
+			}
 		}
 	}
 

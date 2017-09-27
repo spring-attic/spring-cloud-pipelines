@@ -1,0 +1,4 @@
+image::https://badges.gitter.im/Join%20Chat.svg[Gitter, link="https://gitter.im/spring-cloud/spring-cloud-pipelines?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
+image::https://circleci.com/gh/spring-cloud/spring-cloud-pipelines.svg?style=svg["CircleCI", link="https://circleci.com/gh/spring-cloud/spring-cloud-pipelines"]
+
+include::DOCS.adoc[]

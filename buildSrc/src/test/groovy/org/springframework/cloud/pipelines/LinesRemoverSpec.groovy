@@ -22,18 +22,35 @@ class LinesRemoverSpec extends Specification {
 		new File(outputResources, "simple_file.txt").text = new File(testResources, "simple_file.txt").text
 	}
 
-	def "should remove entries from a file that contains start and end tag"() {
+	def "should not remove entries from a file that contains start and end tag"() {
 		when:
 			remover.modifyFiles(outputResources.absolutePath, new Options(), ["**/*.txt"])
 		then:
-			new File(outputResources, "simple_file.txt").text == """don't remove 1
+			new File(outputResources, "simple_file.txt").text == """tag::
+end::
+don't remove 1
+// remove::start[]
+remove
+// remove::end[]
+// remove::start[CF]
 remove CF
+// remove::end[CF]
+// remove::start[K8S]
 remove K8S
+// remove::end[K8S]
+// remove::start[Jenkins]
 remove Jenkins
+// remove::end[Jenkins]
+// remove::start[Concourse]
 remove Concourse
+// remove::end[Concourse]
 don't remove 2
-return null;
-return null;
+// remove::start[return]
+return some value
+// remove::end[return]
+//remove::start[return]
+return some value 2
+//remove::end[return]
 """
 	}
 

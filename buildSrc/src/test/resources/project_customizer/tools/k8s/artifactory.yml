@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: artifactory
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: artifactory
+    spec:
+      containers:
+      - name: artifactory
+        image: jfrog-docker-registry.bintray.io/artifactory/artifactory-oss:latest
+        ports:
+        - containerPort: 8081

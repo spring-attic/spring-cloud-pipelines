@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: jenkins
+    spec:
+      containers:
+        - name: jenkins
+          image: springcloud/spring-cloud-pipeline-jenkins:latest
+          ports:
+          - containerPort: 8080
+          resources:
+            requests:
+              cpu: 10m
+          env:
+          - name: DOCKER_HOST
+            value: tcp://localhost:2375
+        - name: dind-daemon
+          image: docker:1.12.6-dind
+          resources:
+              requests:
+                  cpu: 20m
+                  memory: 512Mi
+          securityContext:
+              privileged: true
+          volumeMounts:
+            - name: docker-graph-storage
+              mountPath: /var/lib/docker
+            - name: jenkinshome
+              mountPath: /var/jenkins_home
+              securityContext:
+                fsGroup: 1000
+      volumes:
+        - name: docker-graph-storage
+          emptyDir: {}
+        - name: jenkinshome
+          persistentVolumeClaim:
+            claimName: jenkins-volume

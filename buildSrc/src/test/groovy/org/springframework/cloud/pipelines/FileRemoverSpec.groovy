@@ -18,7 +18,7 @@ class FileRemoverSpec extends Specification {
 
 	def "should remove the whole directory"() {
 		when:
-			remover.deleteFiles(resources.absolutePath)
+			remover.deleteFiles([resources.absolutePath])
 		then:
 			!resources.exists()
 	}
@@ -27,7 +27,7 @@ class FileRemoverSpec extends Specification {
 		given:
 			File singleFile = new File(resources, "remove.me")
 		when:
-			remover.deleteFiles(singleFile.absolutePath)
+			remover.deleteFiles([singleFile.absolutePath])
 		then:
 			!singleFile.exists()
 	}

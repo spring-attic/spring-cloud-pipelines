@@ -1,0 +1,71 @@
+=== I ran out of resources!! (Cloud Foundry)
+
+[jenkins-cf-resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
+ solve it is to kill some apps from test / stage env. To achieve that just call
+
+[source,bash]
+----
+cf target -o pcfdev-org -s pcfdev-test
+cf stop github-webhook
+cf stop github-eureka
+cf stop stubrunner
+----
+
+You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove all demo-related apps
+deployed to PCF dev.
+
+=== Deploying to test / stage / prod fails - error finding space (Cloud Foundry)
+
+If you receive a similar exception:
+
+[source,bash]
+----
+20:26:18 API endpoint:   https://api.local.pcfdev.io (API version: 2.58.0)
+20:26:18 User:           user
+20:26:18 Org:            pcfdev-org
+20:26:18 Space:          No space targeted, use 'cf target -s SPACE'
+20:26:18 FAILED
+20:26:18 Error finding space pcfdev-test
+20:26:18 Space pcfdev-test not found
+----
+
+It means that you've forgotten to <<jenkins_pcfdev,create the spaces>> in your PCF Dev installation.
+
+=== The route is already in use (Cloud Foundry)
+
+If you play around with Jenkins / Concourse you might end up with the routes occupied
+
+[source,bash]
+----
+Using route github-webhook-test.local.pcfdev.io
+Binding github-webhook-test.local.pcfdev.io to github-webhook...
+FAILED
+The route github-webhook-test.local.pcfdev.io is already in use.
+----
+
+Just delete the routes
+
+[source,bash]
+----
+yes | cf delete-route local.pcfdev.io -n github-webhook-test
+yes | cf delete-route local.pcfdev.io -n github-eureka-test
+yes | cf delete-route local.pcfdev.io -n stubrunner-test
+yes | cf delete-route local.pcfdev.io -n github-webhook-stage
+yes | cf delete-route local.pcfdev.io -n github-eureka-stage
+yes | cf delete-route local.pcfdev.io -n github-webhook-prod
+yes | cf delete-route local.pcfdev.io -n github-eureka-prod
+----
+
+You can also execute the `./tools/cf-helper.sh delete-routes`
+
+=== How to execute helper scripts against a real CF instance I'm logged into (Cloud Foundry)
+
+Assuming that you're already logged into the cluster it's enough to run the
+helper script with the `REUSE_CF_LOGIN=true` env variable. Example:
+
+```bash
+REUSE_CF_LOGIN=true ./tools/cf-helper.sh setup-prod-infra
+```
+
+This script will create the mysql db, rabbit mq service, download and deploy Eureka
+to the space and organization you're logged into.

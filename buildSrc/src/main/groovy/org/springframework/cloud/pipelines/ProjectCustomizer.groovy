@@ -22,21 +22,91 @@ class ProjectCustomizer {
 
 	void customize() {
 		Options options = this.optionsReader.read()
-		switch(options.ciTool) {
-			case Options.CiTool.JENKINS:
-				break
-			case Options.CiTool.CONCOURSE:
-				break
-			case Options.CiTool.BOTH:
-				project.logger.info("Doing nothing since you've picked the BOTH option")
-		}
+		List<String> filesToRemove = []
+		linesRemover.modifyFiles(project.rootDir.absolutePath, options)
+		appendCiToolFiles(options, filesToRemove)
+		appendPaasFiles(options, filesToRemove)
+		fileRemover.deleteFiles(filesToRemove)
+	}
+
+	private void appendPaasFiles(Options options, List<String> filesToRemove) {
 		switch (options.paasType) {
 			case Options.PaasType.CF:
+				filesToRemove.addAll(
+					paasFiles(Options.PaasType.K8S.name()))
 				break
 			case Options.PaasType.K8S:
+				filesToRemove.addAll(
+					paasFiles(Options.PaasType.CF.name()))
 				break
 			case Options.PaasType.BOTH:
-				project.logger.info("Doing nothing since you've picked the BOTH option")
+				project.logger.info("Doing nothing since you've picked the BOTH PaaS option")
+		}
+	}
+
+	private void appendCiToolFiles(Options options, List<String> filesToRemove) {
+		switch (options.ciTool) {
+			case Options.CiTool.JENKINS:
+				filesToRemove.addAll(concourseFiles())
+				break
+			case Options.CiTool.CONCOURSE:
+				filesToRemove.addAll(jenkinsFiles())
+				break
+			case Options.CiTool.BOTH:
+				project.logger.info("Doing nothing since you've picked the BOTH CI tools option")
+		}
+	}
+
+	private List<String> jenkinsFiles() {
+		try {
+			List<String> matchingFiles = []
+			File asciiDocs = new File(project.rootDir, "docs-sources/src/main/asciidoc")
+			asciiDocs.eachFile(appendToList(matchingFiles, "jenkins"))
+			new File(project.rootDir, "tools/k8s").eachFile(appendToList(matchingFiles, "jenkins"))
+			return [
+				new File(project.rootDir, "jenkins").absolutePath,
+				new File(asciiDocs, "images/jenkins").absolutePath
+			] + matchingFiles
+		} catch (Exception e) {
+			project.logger.error("Failed to pick the Jenkins files", e)
+			return []
+		}
+	}
+
+	private List<String> concourseFiles() {
+		try {
+			List<String> matchingFiles = []
+			File asciiDocs = new File(project.rootDir, "docs-sources/src/main/asciidoc")
+			asciiDocs.eachFile(appendToList(matchingFiles, "concourse"))
+			return [
+				new File(project.rootDir, "concourse").absolutePath,
+				new File(asciiDocs, "images/concourse").absolutePath
+			] + matchingFiles
+		} catch (Exception e) {
+			project.logger.error("Failed to pick the Concourse files", e)
+			return []
+		}
+	}
+
+	private List<String> paasFiles(String paasType) {
+		try {
+			List<String> matchingFiles = []
+			File asciiDocs = new File(project.rootDir, "docs-sources/src/main/asciidoc")
+			asciiDocs.eachFile(appendToList(matchingFiles, paasType))
+			new File(project.rootDir, "tools").eachFile(appendToList(matchingFiles, paasType))
+			new File(project.rootDir, "common").eachFileRecurse(appendToList(matchingFiles, paasType))
+			return matchingFiles
+		} catch (Exception e) {
+			project.logger.error("Failed to pick the PaaS files", e)
+			return []
+		}
+	}
+
+	private Closure appendToList(List<String> matchingFiles, String name) {
+		return { File file ->
+			if (file.name.toLowerCase().contains(name.toLowerCase())) {
+				matchingFiles << file.absolutePath
+			}
 		}
 	}
 }

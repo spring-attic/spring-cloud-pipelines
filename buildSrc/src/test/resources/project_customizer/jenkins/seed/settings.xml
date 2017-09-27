@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<servers>
+		<server>
+			<id>artifactory-local</id>
+			<username>admin</username>
+			<password>password</password>
+		</server>
+		<server>
+			<id>docker-repo</id>
+			<username>dockeruser</username>
+			<password>dockerpass</password>
+			<configuration>
+				<email>docker@email.com</email>
+			</configuration>
+		</server>
+	</servers>
+</settings>

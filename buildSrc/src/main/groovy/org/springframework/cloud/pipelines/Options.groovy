@@ -25,7 +25,6 @@ class Options {
 		List<String> paases = passes()
 		List<String> cis = cis()
 		return paases + cis
-
 	}
 
 	private List<String> passes() {

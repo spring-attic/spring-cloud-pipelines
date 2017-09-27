@@ -15,7 +15,11 @@ class FileRemover {
 		this.project = project
 	}
 
-	void deleteFiles(String dirName) {
-		project.delete(dirName)
+	void deleteFiles(List<String> paths) {
+		if (paths.empty) {
+			return
+		}
+		project.logger.info("Removing files ${paths}")
+		project.delete(paths)
 	}
 }

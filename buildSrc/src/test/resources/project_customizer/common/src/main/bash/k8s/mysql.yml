@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{appName}}
+  labels:
+    name: {{appName}}
+    visualize: "true"
+spec:
+  containers:
+    - resources:
+        limits :
+          cpu: 0.5
+      image: mysql:5.6
+      name: {{appName}}
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{secretName}}
+              key: rootpassword
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{secretName}}
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{secretName}}
+              key: password
+        - name: MYSQL_DATABASE
+          value: {{mysqlDatabase}}
+      ports:
+        - containerPort: 3306
+          name: mysql
+      volumeMounts:
+          # name must match the volume name below
+        - name: {{appName}}-persistent-storage
+          # mount path within the container
+          mountPath: /var/lib/mysql
+  volumes:
+    - name: {{appName}}-persistent-storage
+      emptyDir: {}
