@@ -137,7 +137,7 @@ pipeline {
 		stage("Deploy to test latest prod version") {
 			when {
 				environment name: 'ROLLBACK_STEP_REQUIRED',
-					value: 'yes'
+					value: 'true'
 			}
 			steps {
 				sh '''#!/bin/bash
@@ -149,7 +149,7 @@ pipeline {
 		stage("Tests on test latest prod version") {
 			when {
 				environment name: 'ROLLBACK_STEP_REQUIRED',
-					value: 'yes'
+					value: 'true'
 			}
 			steps {
 				sh '''#!/bin/bash
@@ -161,7 +161,7 @@ pipeline {
 		stage("Deploy to stage") {
 			when {
 				environment name: 'DEPLOY_TO_STAGE_STEP_REQUIRED',
-					value: 'yes'
+					value: 'true'
 			}
 			steps {
 				sh '''#!/bin/bash
@@ -173,7 +173,7 @@ pipeline {
 		stage("End to end tests on stage") {
 			when {
 				environment name: 'DEPLOY_TO_STAGE_STEP_REQUIRED',
-					value: 'yes'
+					value: 'true'
 			}
 			steps {
 				sh '''#!/bin/bash
