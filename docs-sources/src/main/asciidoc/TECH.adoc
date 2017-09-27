@@ -62,6 +62,20 @@ To generate readme just run
 ./gradlew generateDocs
 ----
 
+== Customizing the project
+
+If you want to pick only pieces (e.g. you're interested only in `Cloud Foundry` with
+`Concourse` combination) it's enough to execute
+
+```bash
+$ ./gradlew customize
+```
+
+and answer a couple of questions. That way whole files and its pieces
+will get removed / updated accordingly. For example in the aforementioned
+case all `Kubernetes` and `Jenkins` configuration / folders / pieces of code in
+the project will get removed
+
 == Releasing the project
 
 === Publishing A Docker Image

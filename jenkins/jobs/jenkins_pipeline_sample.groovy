@@ -485,11 +485,11 @@ parsedRepos.each {
 				credentialsBinding {
 					// remove::start[CF]
 					if (cfStageCredentialId) usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
-					if (mySqlCredential) usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
-					if (mySqlRootCredential) usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
 					// remove::end[CF]
 					// remove::start[K8S]
-					if(k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
+					if (mySqlCredential) usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
+					if (mySqlRootCredential) usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
+					if (k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
 					// remove::end[K8S]
 				}
 				timestamps()
