@@ -1,22 +1,22 @@
 #!/usr/bin/env bats
 
+load 'test_helper'
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 
 setup() {
-	source "${BATS_TEST_DIRNAME}/test_helper/setup.bash"
-
+	export TEMP_DIR="$( mktemp -d )"
+	
 	export MAVENW_BIN="mockMvnw"
 	export GRADLEW_BIN="mockGradlew"
 
 	export ENVIRONMENT="TEST"
 	export PAAS_TYPE="k8s"
-	export KUBE_CONFIG_PATH="${PIPELINES_TEST_DIR}/.kube/config"
-	mkdir -p "${KUBE_CONFIG_PATH}"
+	export KUBE_CONFIG_PATH="${TEMP_DIR}/.kube/config"
 
-	export PAAS_TEST_CA="${PIPELINES_TEST_DIR}/ca"
-	export PAAS_TEST_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
-	export PAAS_TEST_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
+	export PAAS_TEST_CA="${TEMP_DIR}/ca"
+	export PAAS_TEST_CLIENT_CERT="${TEMP_DIR}/client_cert"
+	export PAAS_TEST_CLIENT_KEY="${TEMP_DIR}/client_key"
 	export PAAS_TEST_CLIENT_TOKEN_PATH=""
 	export TOKEN=""
 	export PAAS_TEST_CLUSTER_USERNAME="cluster_username"
@@ -24,9 +24,9 @@ setup() {
 	export PAAS_TEST_SYSTEM_NAME="cluster_name"
 	export PAAS_TEST_API_URL="1.2.3.4:8765"
 
-	export PAAS_STAGE_CA="${PIPELINES_TEST_DIR}/ca"
-	export PAAS_STAGE_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
-	export PAAS_STAGE_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
+	export PAAS_STAGE_CA="${TEMP_DIR}/ca"
+	export PAAS_STAGE_CLIENT_CERT="${TEMP_DIR}/client_cert"
+	export PAAS_STAGE_CLIENT_KEY="${TEMP_DIR}/client_key"
 	export PAAS_STAGE_CLIENT_TOKEN_PATH=""
 	export TOKEN=""
 	export PAAS_STAGE_CLUSTER_USERNAME="cluster_username"
@@ -34,15 +34,22 @@ setup() {
 	export PAAS_STAGE_SYSTEM_NAME="cluster_name"
 	export PAAS_STAGE_API_URL="1.2.3.4:8765"
 
-	export PAAS_PROD_CA="${PIPELINES_TEST_DIR}/ca"
-	export PAAS_PROD_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
-	export PAAS_PROD_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
+	export PAAS_PROD_CA="${TEMP_DIR}/ca"
+	export PAAS_PROD_CLIENT_CERT="${TEMP_DIR}/client_cert"
+	export PAAS_PROD_CLIENT_KEY="${TEMP_DIR}/client_key"
 	export PAAS_PROD_CLIENT_TOKEN_PATH=""
 	export TOKEN=""
 	export PAAS_PROD_CLUSTER_USERNAME="cluster_username"
 	export PAAS_PROD_CLUSTER_NAME="cluster_name"
 	export PAAS_PROD_SYSTEM_NAME="cluster_name"
 	export PAAS_PROD_API_URL="1.2.3.4:8765"
+
+	mkdir -p "${KUBE_CONFIG_PATH}"
+	cp -a "${FIXTURES_DIR}/gradle" "${FIXTURES_DIR}/maven" "${TEMP_DIR}"
+}
+
+teardown() {
+	rm -rf -- "${TEMP_DIR}"
 }
 
 function curl {
@@ -93,8 +100,8 @@ export -f mockGradlew
 @test "should download kubectl if it's missing and connect to cluster [K8S]" {
 	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl_that_fails_first_time"
-	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+	cd "${TEMP_DIR}/maven/empty_project"
+	source "${SOURCE_DIR}/pipeline.sh"
 
 	run logInToPaas
 
@@ -110,9 +117,9 @@ export -f mockGradlew
 @test "should redownload kubectl if redownload infra flag is set and connect to cluster [K8S]" {
 	export REDOWNLOAD_INFRA="true"
 	export KUBECTL_BIN="kubectl_that_fails_first_time"
-	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
+	cd "${TEMP_DIR}/maven/empty_project"
 	touch "${KUBECTL_BIN}"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+	source "${SOURCE_DIR}/pipeline.sh"
 
 	run logInToPaas
 
@@ -128,9 +135,9 @@ export -f mockGradlew
 @test "should not redownload kubectl if redownload infra flag is not set and kubectl was downloaded and connect to cluster [K8S]" {
 	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
-	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
+	cd "${TEMP_DIR}/maven/empty_project"
 	touch "${KUBECTL_BIN}"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+	source "${SOURCE_DIR}/pipeline.sh"
 
 	run logInToPaas
 
@@ -146,9 +153,9 @@ export -f mockGradlew
 	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export TOKEN="FOO"
-	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
+	cd "${TEMP_DIR}/maven/empty_project"
 	touch "${KUBECTL_BIN}"
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+	source "${SOURCE_DIR}/pipeline.sh"
 
 	run logInToPaas
 
@@ -163,11 +170,11 @@ export -f mockGradlew
 @test "should use token from a file to connect to the cluster [K8S]" {
 	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
-	export PAAS_TEST_CLIENT_TOKEN_PATH="${PIPELINES_TEST_DIR}/maven/empty_project/token"
-	cd "${PIPELINES_TEST_DIR}/maven/empty_project"
+	export PAAS_TEST_CLIENT_TOKEN_PATH="${TEMP_DIR}/maven/empty_project/token"
+	cd "${TEMP_DIR}/maven/empty_project"
 	touch "${KUBECTL_BIN}"
 	echo "FOO" > token
-	source "${PIPELINES_TEST_DIR}/pipeline.sh"
+	source "${SOURCE_DIR}/pipeline.sh"
 
 	run logInToPaas
 
@@ -186,10 +193,10 @@ export -f mockGradlew
 	export PAAS_NAMESPACE="sc-pipelines-test"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
+	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -211,10 +218,10 @@ export -f mockGradlew
 	export PAAS_NAMESPACE="sc-pipelines-test"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
+	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -236,11 +243,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
+	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -271,11 +278,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
+	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -306,10 +313,10 @@ export -f mockGradlew
 	export PAAS_NAMESPACE="sc-pipelines-test"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
+	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -331,11 +338,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
+	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -366,11 +373,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_deploy.sh"
+	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -401,11 +408,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/test_smoke.sh
+	run "${SOURCE_DIR}/test_smoke.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -420,11 +427,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/test_smoke.sh
+	run "${SOURCE_DIR}/test_smoke.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -439,11 +446,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/test_smoke.sh
+	run "${SOURCE_DIR}/test_smoke.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -458,11 +465,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/test_smoke.sh
+	run "${SOURCE_DIR}/test_smoke.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -478,10 +485,10 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_rollback_deploy.sh"
+	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -505,11 +512,11 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_rollback_deploy.sh"
+	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -532,11 +539,11 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/test_rollback_deploy.sh"
+	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -558,11 +565,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -579,11 +586,11 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -599,11 +606,11 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -619,11 +626,11 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -639,11 +646,11 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/test_rollback_smoke.sh
+	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -660,10 +667,10 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/stage_deploy.sh"
+	run "${SOURCE_DIR}/stage_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -686,11 +693,11 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/stage_deploy.sh"
+	run "${SOURCE_DIR}/stage_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -712,11 +719,11 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}/stage_deploy.sh"
+	run "${SOURCE_DIR}/stage_deploy.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -737,11 +744,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/stage_e2e.sh
+	run "${SOURCE_DIR}/stage_e2e.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -757,11 +764,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/stage_e2e.sh
+	run "${SOURCE_DIR}/stage_e2e.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -777,11 +784,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/stage_e2e.sh
+	run "${SOURCE_DIR}/stage_e2e.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -797,11 +804,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/stage_e2e.sh
+	run "${SOURCE_DIR}/stage_e2e.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -809,7 +816,7 @@ export -f mockGradlew
 }
 
 @test "should escape non DNS valid name [K8S]" {
-	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+	source "${SOURCE_DIR}/pipeline-k8s.sh"
 
 	run escapeValueForDns "a_b_1.2.3"
 
@@ -817,7 +824,7 @@ export -f mockGradlew
 }
 
 @test "should not escape a valid DNS name [K8S]" {
-	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+	source "${SOURCE_DIR}/pipeline-k8s.sh"
 
 	run escapeValueForDns "a-b-1-2-3"
 
@@ -826,7 +833,7 @@ export -f mockGradlew
 
 @test "should return false if object hasn't been deployed [K8S]" {
 	export KUBECTL_BIN="kubectl_that_returns_empty_string"
-	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+	source "${SOURCE_DIR}/pipeline-k8s.sh"
 
 	result="$( objectDeployed "service" "bar" )"
 
@@ -835,7 +842,7 @@ export -f mockGradlew
 
 @test "should return true if object has been deployed [K8S]" {
 	export KUBECTL_BIN="kubectl"
-	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+	source "${SOURCE_DIR}/pipeline-k8s.sh"
 
 	result="$( objectDeployed "service" "bar" )"
 
@@ -851,11 +858,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/prod_deploy.sh
+	run "${SOURCE_DIR}"/prod_deploy.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -871,11 +878,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/prod_deploy.sh
+	run "${SOURCE_DIR}"/prod_deploy.sh
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -885,7 +892,7 @@ export -f mockGradlew
 @test "should return the oldest deployment by sorting the deployment names [K8S]" {
 	export KUBECTL_BIN="kubectl_that_returns_deployments"
 	export PIPELINE_VERSION="1.0.0.M1-170925_142938-VERSION"
-	source "${PIPELINES_TEST_DIR}"/pipeline-k8s.sh
+	source "${SOURCE_DIR}/pipeline-k8s.sh"
 
 	result="$( oldestDeployment "github-webhook" )"
 
@@ -901,11 +908,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/prod_complete.sh
+	run "${SOURCE_DIR}/prod_complete.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
@@ -921,11 +928,11 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${BATS_TEST_DIRNAME}/fixtures/sc-pipelines.yml" "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
-	cd "${PIPELINES_TEST_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
-	run "${PIPELINES_TEST_DIR}"/prod_complete.sh
+	run "${SOURCE_DIR}/prod_complete.sh"
 
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"

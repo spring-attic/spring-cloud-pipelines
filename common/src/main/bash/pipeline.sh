@@ -105,17 +105,6 @@ function extractVersionFromProdTag() {
 	echo "${tag#prod/}"
 }
 
-# Checks for existence of pipeline.yaml file that contains types and names of the
-# services required to be deployed for the given environment
-function pipelineDescriptorExists() {
-	if [ -f "sc-pipelines.yml" ]
-	then
-		echo "true"
-	else
-		echo "false"
-	fi
-}
-
 function deleteService() {
 	local serviceType="${1}"
 	local serviceName="${2}"
@@ -145,14 +134,12 @@ function serviceExists() {
 # Sets the environment variable with contents of the parsed pipeline descriptor
 # shellcheck disable=SC2120
 function parsePipelineDescriptor() {
-	local descriptorFile
-	descriptorFile="${1:-sc-pipelines.yml}"
-	if [[ "$(pipelineDescriptorExists)" != "true" ]]; then
+	if [[ ! -f "${PIPELINE_DESCRIPTOR}" ]]; then
 		echo "No pipeline descriptor found - will not deploy any services"
 		return
 	fi
 	export PARSED_YAML
-	PARSED_YAML=$(yaml2json "${descriptorFile}")
+	PARSED_YAML=$(yaml2json "${PIPELINE_DESCRIPTOR}")
 }
 
 # Deploys services assuming that pipeline descriptor exists
@@ -194,13 +181,14 @@ function toLowerCase() {
 	echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
+PIPELINE_DESCRIPTOR="${PIPELINE_DESCRIPTOR:-sc-pipelines.yml}"
 PAAS_TYPE="${PAAS_TYPE:-cf}"
-export PAAS_TYPE
 # Not every linux distribution comes with installation of JQ that is new enough
 # to have the asci_downcase method. That's why we're using the global env variable
 # At some point we'll deprecate this and use what JQ provides
 LOWERCASE_ENV="$(toLowerCase "${ENVIRONMENT}")"
-export LOWERCASE_ENV
+
+export PIPELINE_DESCRIPTOR PAAS_TYPE LOWERCASE_ENV
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"
