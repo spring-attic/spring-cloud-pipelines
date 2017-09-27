@@ -217,6 +217,7 @@ have an image you can pull and use on https://hub.docker.com/r/springcloud/sprin
 The `latest` tag corresponds to the latest snapshot build.  You can also find tags
 corresponding to stable releases that you can use as well.
 
+// remove::start[CF]
 [[jenkins-pipeline-cf]]
 == Jenkins Pipeline (Cloud Foundry)
 
@@ -539,7 +540,9 @@ If you already have in your system a credential to for example tag a repo
 you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
 
 TIP: Check out the `cf-helper` script for all the configuration options!
+// remove::end[CF]
 
+// remove::start[K8S]
 [[jenkins-pipeline-k8s]]
 == Jenkins Pipeline (Kubernetes)
 
@@ -1093,6 +1096,7 @@ image::{jenkins-root-docs}/kubo_script_console_2.png[caption="Run the script to 
 image::{jenkins-root-docs}/pks_seed.png[caption="Example of a filled out seed job"]
 
 - Run the pipeline
+// remove::end[K8S]
 
 == FAQ
 

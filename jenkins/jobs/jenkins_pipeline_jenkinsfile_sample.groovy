@@ -81,6 +81,8 @@ envs["PAAS_TEST_NAMESPACE"] = binding.variables["PAAS_TEST_NAMESPACE"] ?: "sc-pi
 envs["PAAS_STAGE_NAMESPACE"] = binding.variables["PAAS_STAGE_NAMESPACE"] ?: "sc-pipelines-stage"
 envs["PAAS_PROD_NAMESPACE"] = binding.variables["PAAS_PROD_NAMESPACE"] ?: "sc-pipelines-prod"
 envs["KUBERNETES_MINIKUBE"] = binding.variables["KUBERNETES_MINIKUBE"] ?: "true"
+envs["MYSQL_ROOT_CREDENTIAL_ID"] = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: ""
+envs["MYSQL_CREDENTIAL_ID"] = binding.variables["MYSQL_CREDENTIAL_ID"] ?: ""
 
 parsedRepos.each {
 	List<String> parsedEntry = it.split('\\$')
