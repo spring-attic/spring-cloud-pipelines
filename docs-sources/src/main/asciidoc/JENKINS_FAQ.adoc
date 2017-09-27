@@ -170,6 +170,12 @@ No problem, just set the property / env var to true
 - `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage
 - `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod
 
+==== I don't want to test API compativility
+
+No problem, just set the `API_COMPATIBILITY_STEP_REQUIRED` env variable
+to `false` and rerun the seed (you can pick it from the seed
+job's properties too).
+
 === I can't tag the repo!
 
 When you get sth like this:

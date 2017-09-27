@@ -13,8 +13,9 @@ List<String> parsedRepos = repos.split(",")
 String jenkinsfileDir = binding.variables["JENKINSFILE_DIR"] ?: "${WORKSPACE}/jenkins/declarative-pipeline"
 
 Map<String, Object> envs = [:]
-envs['PIPELINE_VERSION_FORMAT'] = binding.variables["PIPELINE_VERSION"] ?: '''${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}-VERSION'''
-envs['PIPELINE_VERSION_PREFIX'] = binding.variables["PIPELINE_VERSION"] ?: '''1.0.0.M1'''
+envs['PIPELINE_VERSION_FORMAT'] = binding.variables["PIPELINE_VERSION_FORMAT"] ?: '''${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}-VERSION'''
+envs['PIPELINE_VERSION_PREFIX'] = binding.variables["PIPELINE_VERSION_PREFIX"] ?: '''1.0.0.M1'''
+envs['PIPELINE_VERSION'] = binding.variables["PIPELINE_VERSION"] ?: ""
 envs['REPO_WITH_BINARIES_CREDENTIALS_ID'] = binding.variables['REPO_WITH_BINARIES_CREDENTIALS_ID'] ?: 'repo-with-binaries'
 envs['GIT_CREDENTIAL_ID'] = gitCredentials
 envs['JDK_VERSION'] = binding.variables["JDK_VERSION"] ?: "jdk8"

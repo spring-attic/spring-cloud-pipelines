@@ -1,7 +1,7 @@
 pipeline {
 	agent any
 	tools {
-		jdk 'jdk8'
+		jdk(env.JDK_VERSION ?: 'jdk8')
 	}
 	stages {
 		stage("Build and Upload") {
@@ -36,8 +36,8 @@ pipeline {
 				script {
 					if (!env.PIPELINE_VERSION) {
 						env.PIPELINE_VERSION = VersionNumber(
-							versionNumberString: '${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}-VERSION',
-							versionPrefix: '1.0.0.M1-'
+							versionNumberString: env.PIPELINE_VERSION_FORMAT ?: '${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}-VERSION',
+							versionPrefix: env.PIPELINE_VERSION_PREFIX ?: '1.0.0.M1-'
 						)
 					}
 
@@ -48,6 +48,7 @@ pipeline {
 						}
 					}
 
+					// remove::start[CF]
 					if (env.PAAS_TEST_CREDENTIAL_ID) {
 						withCredentials([usernamePassword(credentialsId: env.PAAS_TEST_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
 							env.PAAS_TEST_USERNAME = USER
@@ -68,6 +69,7 @@ pipeline {
 							env.PAAS_PROD_PASSWORD = PASS
 						}
 					}
+					// remove::end[CF]
 
 					if (env.GIT_CREDENTIAL_ID) {
 						withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
@@ -76,6 +78,7 @@ pipeline {
 						}
 					}
 
+					// remove::start[K8S]
 					if (env.MYSQL_CREDENTIAL_ID) {
 						withCredentials([usernamePassword(credentialsId: env.MYSQL_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
 							env.MYSQL_USER = USER
@@ -89,6 +92,7 @@ pipeline {
 							env.MYSQL_ROOT_PASSWORD = PASS
 						}
 					}
+					// remove::end[K8S]
 
 					env.DEPLOY_TO_PROD = input message: '', parameters: [
 						choice(
@@ -130,6 +134,10 @@ pipeline {
 		}
 
 		stage("Deploy to test latest prod version") {
+			when {
+				environment name: 'ROLLBACK_STEP_REQUIRED',
+					value: 'yes'
+			}
 			steps {
 				sh '''#!/bin/bash
 				${WORKSPACE}@tools/common/src/main/bash/test_rollback_deploy.sh
@@ -138,6 +146,10 @@ pipeline {
 		}
 
 		stage("Tests on test latest prod version") {
+			when {
+				environment name: 'ROLLBACK_STEP_REQUIRED',
+					value: 'yes'
+			}
 			steps {
 				sh '''#!/bin/bash
 				${WORKSPACE}@tools/common/src/main/bash/test_rollback_smoke.sh
@@ -146,6 +158,10 @@ pipeline {
 		}
 
 		stage("Deploy to stage") {
+			when {
+				environment name: 'DEPLOY_TO_STAGE_STEP_REQUIRED',
+					value: 'yes'
+			}
 			steps {
 				sh '''#!/bin/bash
 				${WORKSPACE}@tools/common/src/main/bash/stage_deploy.sh
@@ -154,6 +170,10 @@ pipeline {
 		}
 
 		stage("End to end tests on stage") {
+			when {
+				environment name: 'DEPLOY_TO_STAGE_STEP_REQUIRED',
+					value: 'yes'
+			}
 			steps {
 				sh '''#!/bin/bash
 				${WORKSPACE}@tools/common/src/main/bash/stage_e2e.sh
@@ -196,6 +216,8 @@ pipeline {
 	post {
 		always {
 			junit '**/surefire-reports/*.xml,**/test-results/**/*.xml'
+			archive "**/build/**/k8s/*.yml"
+			archive "**/target/**/k8s/*.yml"
 		}
 	}
 }

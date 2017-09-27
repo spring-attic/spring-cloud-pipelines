@@ -27,6 +27,7 @@ String gitEmail = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
 String gitName = binding.variables["GIT_NAME"] ?: "Pivo Tal"
 boolean autoStage = binding.variables["AUTO_DEPLOY_TO_STAGE"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_STAGE"])
 boolean autoProd = binding.variables["AUTO_DEPLOY_TO_PROD"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_PROD"])
+boolean apiCompatibilityStep = binding.variables["API_COMPATIBILITY_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["API_COMPATIBILITY_STEP_REQUIRED"])
 boolean rollbackStep = binding.variables["ROLLBACK_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["ROLLBACK_STEP_REQUIRED"])
 boolean stageStep = binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"])
 String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src/main/bash"
@@ -111,8 +112,11 @@ parsedRepos.each {
 		}
 		publishers {
 			archiveJunit(testReports)
+			String nextProject = apiCompatibilityStep ?
+				"${projectName}-build-api-check" :
+				"${projectName}-test-env-deploy"
 			downstreamParameterized {
-				trigger("${projectName}-build-api-check") {
+				trigger(nextProject) {
 					triggerWithNoParameters()
 					parameters {
 						currentBuild()
@@ -129,55 +133,58 @@ parsedRepos.each {
 		}
 	}
 
-	dsl.job("${projectName}-build-api-check") {
-		deliveryPipelineConfiguration('Build', 'API compatibility check')
-		triggers {
-			cron(cronValue)
-			githubPush()
-		}
-		wrappers {
-			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-			environmentVariables(defaults.defaultEnvVars)
-			timestamps()
-			colorizeOutput()
-			maskPasswords()
-			timeout {
-				noActivity(300)
-				failBuild()
-				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+	if (apiCompatibilityStep) {
+
+		dsl.job("${projectName}-build-api-check") {
+			deliveryPipelineConfiguration('Build', 'API compatibility check')
+			triggers {
+				cron(cronValue)
+				githubPush()
 			}
-		}
-		jdk(jdkVersion)
-		scm {
-			git {
-				remote {
-					name('origin')
-					url(fullGitRepo)
-					branch('master')
-					credentials(gitCredentials)
-				}
-				extensions {
-					wipeOutWorkspace()
+			wrappers {
+				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+				environmentVariables(defaults.defaultEnvVars)
+				timestamps()
+				colorizeOutput()
+				maskPasswords()
+				timeout {
+					noActivity(300)
+					failBuild()
+					writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 				}
 			}
-		}
-		steps {
-			shell("""#!/bin/bash
+			jdk(jdkVersion)
+			scm {
+				git {
+					remote {
+						name('origin')
+						url(fullGitRepo)
+						branch('master')
+						credentials(gitCredentials)
+					}
+					extensions {
+						wipeOutWorkspace()
+					}
+				}
+			}
+			steps {
+				shell("""#!/bin/bash
 		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
 		""")
-			shell('''#!/bin/bash
+				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
 		''')
-		}
-		publishers {
-			archiveJunit(testReports) {
-				allowEmptyResults()
 			}
-			downstreamParameterized {
-				trigger("${projectName}-test-env-deploy") {
-					triggerWithNoParameters()
-					parameters {
-						currentBuild()
+			publishers {
+				archiveJunit(testReports) {
+					allowEmptyResults()
+				}
+				downstreamParameterized {
+					trigger("${projectName}-test-env-deploy") {
+						triggerWithNoParameters()
+						parameters {
+							currentBuild()
+						}
 					}
 				}
 			}
@@ -191,7 +198,6 @@ parsedRepos.each {
 			environmentVariables(defaults.defaultEnvVars)
 			credentialsBinding {
 				// remove::start[CF]
-				// TODO: CF related
 				if (cfTestCredentialId) usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', cfTestCredentialId)
 				// remove::end[CF]
 				// remove::start[K8S]

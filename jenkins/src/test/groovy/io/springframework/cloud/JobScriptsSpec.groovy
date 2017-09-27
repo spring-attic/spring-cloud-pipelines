@@ -100,6 +100,59 @@ class JobScriptsSpec extends Specification {
 		}
 	}
 
+	def 'should automatically run api compatibility by default'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+				new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		noExceptionThrown()
+
+		and:
+		jm.savedConfigs.find { it.key == "github-webhook-pipeline-build" }.with {
+			assert it.value.contains("hudson.plugins.parameterizedtrigger.BuildTrigger")
+			assert it.value.contains("<projects>github-webhook-pipeline-build-api-check</projects>")
+			assert !it.value.contains("au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger")
+			return it
+		}
+	}
+
+	def 'should not run api compatibility if that option is checked'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo',
+			API_COMPATIBILITY_STEP_REQUIRED: 'false'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+				new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		noExceptionThrown()
+
+		and:
+		jm.savedConfigs.find { it.key == "github-webhook-pipeline-build" }.with {
+			assert it.value.contains("hudson.plugins.parameterizedtrigger.BuildTrigger")
+			assert it.value.contains("<projects>github-webhook-pipeline-test-env-deploy</projects>")
+			assert !it.value.contains("<projects>github-webhook-pipeline-build-api-check</projects>")
+			assert !it.value.contains("au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger")
+			return it
+		}
+		!scripts.jobs.find { it.jobName == "github-webhook-pipeline-build-api-check" }
+	}
+
 	def 'should automatically deploy to stage if that option is checked'() {
 		given:
 		MemoryJobManagement jm = new MemoryJobManagement()

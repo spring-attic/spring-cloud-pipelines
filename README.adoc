@@ -1411,6 +1411,7 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
 |AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
 |AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
+|API_COMPATIBILITY_STEP_REQUIRED | Should api compatibility step be required | true
 |ROLLBACK_STEP_REQUIRED | Should rollback step be present | true
 |DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
 |APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
@@ -1843,6 +1844,7 @@ The env vars that are used in all of the jobs are as follows:
 |GIT_NAME | The name used by Git to tag repo | Pivo Tal
 |AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
 |AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
+|API_COMPATIBILITY_STEP_REQUIRED | Should api compatibility step be required | true
 |ROLLBACK_STEP_REQUIRED | Should rollback step be present | true
 |DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
@@ -2163,6 +2165,12 @@ No problem, just set the property / env var to true
 
 - `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage
 - `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod
+
+==== I don't want to test API compativility
+
+No problem, just set the `API_COMPATIBILITY_STEP_REQUIRED` env variable
+to `false` and rerun the seed (you can pick it from the seed
+job's properties too).
 
 === I can't tag the repo!
 
