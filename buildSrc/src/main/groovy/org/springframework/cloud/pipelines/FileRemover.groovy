@@ -10,16 +10,18 @@ import org.gradle.api.file.FileTree
 class FileRemover {
 
 	private final Project project
+	private final InputReader inputReader
 
-	FileRemover(Project project) {
+	FileRemover(InputReader inputReader, Project project) {
 		this.project = project
+		this.inputReader = inputReader
 	}
 
 	void deleteFiles(List<String> paths) {
 		if (paths.empty) {
 			return
 		}
-		project.logger.info("Removing files ${paths}")
+		inputReader.println("Removing files ${paths}")
 		project.delete(paths)
 	}
 }

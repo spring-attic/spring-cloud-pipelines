@@ -9,7 +9,7 @@ task customize {
 		println "\n"
 		println "Follow the instructions presented in the console or terminate the process to quit (ctrl + c)"
 		println "\n"
-		Console console = System.console()
+		java.io.Console console = System.console()
 		if (console) {
 			new ProjectCustomizer(project, new InputReader() {
 				@Override
@@ -18,8 +18,8 @@ task customize {
 				}
 
 				@Override
-				String readLine(String text, Object... args) {
-					return console.readLine(text, args)
+				String readLine() {
+					return console.readLine()
 				}
 			}).customize()
 		} else {

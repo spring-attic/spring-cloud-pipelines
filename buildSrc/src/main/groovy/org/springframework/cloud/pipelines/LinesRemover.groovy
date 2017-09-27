@@ -10,10 +10,12 @@ import org.gradle.api.file.FileTree
 class LinesRemover {
 
 	private final Project project
+	private final InputReader inputReader
 	private final List<String> ignored
 
-	LinesRemover(Project project) {
+	LinesRemover(InputReader inputReader, Project project) {
 		this.project = project
+		this.inputReader = inputReader
 		this.ignored = [
 		        '**/buildSrc/**'
 		]
@@ -72,7 +74,7 @@ class LinesRemover {
 			}
 			String newText = newString.toString()
 			if (text != newText) {
-				project.logger.info("Removing lines from [${file}]")
+				inputReader.println("Removing lines from [${file}]")
 				file.text = newString.toString()
 			}
 		}

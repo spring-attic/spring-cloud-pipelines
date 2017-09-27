@@ -13,8 +13,8 @@ class FileRemoverSpec extends Specification {
 	Project project = ProjectBuilder
 		.builder()
 		.withProjectDir(resources.parentFile)
-		.build();
-	FileRemover remover = new FileRemover(project)
+		.build()
+	FileRemover remover = new FileRemover(new SystemOutReader(), project)
 
 	def "should remove the whole directory"() {
 		when:

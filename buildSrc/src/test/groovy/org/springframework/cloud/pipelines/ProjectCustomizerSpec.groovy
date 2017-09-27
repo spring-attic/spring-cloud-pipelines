@@ -33,10 +33,10 @@ class ProjectCustomizerSpec extends Specification {
 	def "should not remove anything when BOTH picked"() {
 		given:
 			InputReader reader = Stub(InputReader)
+			reader.println(_) >> { println it }
 			Logger logger = Stub(Logger)
 			logger.info(_) >> { String text -> println text }
-			ProjectDelegate delegate = new ProjectDelegate(project, logger)
-			ProjectCustomizer customizer = new ProjectCustomizer(delegate, reader)
+			ProjectCustomizer customizer = new ProjectCustomizer(project, reader)
 		when:
 			customizer.customize()
 		then:
@@ -50,11 +50,10 @@ class ProjectCustomizerSpec extends Specification {
 	def "should leave anything related to Jenkins and K8S"() {
 		given:
 			InputReader reader = Stub(InputReader)
-			reader.readLine(_, _) >> "k8s" >> "Jenkins"
+			reader.readLine() >> "k8s" >> "Jenkins"
 			Logger logger = Stub(Logger)
 			logger.info(_) >> { String text -> println text }
-			ProjectDelegate delegate = new ProjectDelegate(project, logger)
-			ProjectCustomizer customizer = new ProjectCustomizer(delegate, reader)
+			ProjectCustomizer customizer = new ProjectCustomizer(project, reader)
 		when:
 			customizer.customize()
 		then:
@@ -82,11 +81,10 @@ class ProjectCustomizerSpec extends Specification {
 	def "should leave anything related to Concourse and CF"() {
 		given:
 			InputReader reader = Stub(InputReader)
-			reader.readLine(_, _) >> "cf" >> "Concourse"
+			reader.readLine() >> "cf" >> "Concourse"
 			Logger logger = Stub(Logger)
 			logger.info(_) >> { String text -> println text }
-			ProjectDelegate delegate = new ProjectDelegate(project, logger)
-			ProjectCustomizer customizer = new ProjectCustomizer(delegate, reader)
+			ProjectCustomizer customizer = new ProjectCustomizer(project, reader)
 		when:
 			customizer.customize()
 		then:
@@ -111,19 +109,4 @@ class ProjectCustomizerSpec extends Specification {
 			}
 	}
 
-}
-
-class ProjectDelegate implements Project {
-	@Delegate private final Project project
-	private final Logger logger
-
-	ProjectDelegate(Project project, Logger logger) {
-		this.project = project
-		this.logger = logger
-	}
-
-	@Override
-	Logger getLogger() {
-		return logger
-	}
 }

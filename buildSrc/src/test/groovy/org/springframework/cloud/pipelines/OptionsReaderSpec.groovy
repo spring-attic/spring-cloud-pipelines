@@ -10,7 +10,7 @@ class OptionsReaderSpec extends Specification {
 	def 'should parse input to valid input'() {
 		given:
 			InputReader reader = Stub(InputReader)
-			reader.readLine(_, _) >> "cf" >> "Jenkins"
+			reader.readLine() >> "cf" >> "Jenkins"
 			OptionsReader optionsReader = new OptionsReader(reader)
 		when:
 			Options options = optionsReader.read()
@@ -22,7 +22,7 @@ class OptionsReaderSpec extends Specification {
 	def 'should return BOTH if no input received'() {
 		given:
 			InputReader reader = Stub(InputReader)
-			reader.readLine(_, _) >> "\n" >> ""
+			reader.readLine() >> "\n" >> ""
 			OptionsReader optionsReader = new OptionsReader(reader)
 		when:
 			Options options = optionsReader.read()
@@ -34,7 +34,7 @@ class OptionsReaderSpec extends Specification {
 	def 'should throw exception when parsing invalid input'() {
 		given:
 			InputReader reader = Stub(InputReader)
-			reader.readLine(_, _) >> "cfaaaa" >> "Jenkinsaaaa"
+			reader.readLine() >> "cfaaaa" >> "Jenkinsaaaa"
 			OptionsReader optionsReader = new OptionsReader(reader)
 		when:
 			optionsReader.read()

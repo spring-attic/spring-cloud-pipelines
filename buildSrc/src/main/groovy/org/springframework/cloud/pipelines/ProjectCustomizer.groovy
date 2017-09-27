@@ -12,12 +12,14 @@ class ProjectCustomizer {
 	private final Project project
 	private final FileRemover fileRemover
 	private final LinesRemover linesRemover
+	private final InputReader inputReader
 
 	ProjectCustomizer(Project project, InputReader inputReader) {
 		this.optionsReader = new OptionsReader(inputReader)
 		this.project = project
-		this.fileRemover = new FileRemover(project)
-		this.linesRemover = new LinesRemover(project)
+		this.fileRemover = new FileRemover(inputReader, project)
+		this.linesRemover = new LinesRemover(inputReader, project)
+		this.inputReader = inputReader
 	}
 
 	void customize() {
@@ -40,7 +42,7 @@ class ProjectCustomizer {
 					paasFiles(Options.PaasType.CF.name()))
 				break
 			case Options.PaasType.BOTH:
-				project.logger.info("Doing nothing since you've picked the BOTH PaaS option")
+				inputReader.println("Doing nothing since you've picked the BOTH PaaS option")
 		}
 	}
 
@@ -53,7 +55,7 @@ class ProjectCustomizer {
 				filesToRemove.addAll(jenkinsFiles())
 				break
 			case Options.CiTool.BOTH:
-				project.logger.info("Doing nothing since you've picked the BOTH CI tools option")
+				inputReader.println("Doing nothing since you've picked the BOTH CI tools option")
 		}
 	}
 

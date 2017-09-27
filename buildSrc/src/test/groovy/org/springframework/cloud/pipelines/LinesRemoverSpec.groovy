@@ -14,8 +14,8 @@ class LinesRemoverSpec extends Specification {
 	Project project = ProjectBuilder
 		.builder()
 		.withProjectDir(outputResources.parentFile)
-		.build();
-	LinesRemover remover = new LinesRemover(project)
+		.build()
+	LinesRemover remover = new LinesRemover(new SystemOutReader(), project)
 
 	def setup() {
 		outputResources.mkdirs()
