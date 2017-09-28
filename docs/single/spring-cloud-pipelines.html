@@ -636,10 +636,25 @@ $ brew install bats
 $ brew install shellcheck</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_bats_submodules" href="#_bats_submodules"></a>11.2&nbsp;Bats submodules</h2></div></div></div><p>To make <code class="literal">bats</code> work properly we needed to attach Git submodules. To have them
 initialized either clone with appropriate command</p><pre class="programlisting">$ git clone --recursive https://github.com/spring-cloud/spring-cloud-pipelines.git</pre><p>or if you have already cloned the project and are just pulling changes</p><pre class="programlisting">$ git submodule init
 $ git submodule update</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_build_and_test" href="#_build_and_test"></a>11.3&nbsp;Build and test</h2></div></div></div><p>Once you have installed all the prerequisites you can execute</p><pre class="programlisting">./gradlew clean build</pre><p>to build and test the project.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_generate_readme" href="#_generate_readme"></a>11.4&nbsp;Generate readme</h2></div></div></div><p>To generate readme just run</p><pre class="programlisting">./gradlew generateDocs</pre></div></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="_customizing_the_project" href="#_customizing_the_project"></a>12.&nbsp;Customizing the project</h1></div></div></div><p>If you want to pick only pieces (e.g. you&#8217;re interested only in <code class="literal">Cloud Foundry</code> with
-<code class="literal">Concourse</code> combination) it&#8217;s enough to execute</p><pre class="programlisting">$ ./gradlew customize</pre><p>and answer a couple of questions. That way whole files and its pieces
+<code class="literal">Concourse</code> combination) it&#8217;s enough to execute this command:</p><pre class="programlisting">$ ./gradlew customize</pre><p>You&#8217;ll see a screen looking more or less like this:</p><pre class="programlisting">:customize
+  ___          _              ___ _             _   ___ _           _ _
+ / __|_ __ _ _(_)_ _  __ _   / __| |___ _  _ __| | | _ (_)_ __  ___| (_)_ _  ___ ___
+ \__ \ <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">'_ \ '</span>_| | <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">' \/ _` | | (__| / _ \ || / _` | |  _/ | '</span>_ \/ -_) | | <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">' \/ -_|_-&lt;
+ |___/ .__/_| |_|_||_\__, |  \___|_\___/\_,_\__,_| |_| |_| .__/\___|_|_|_||_\___/__/
+     |_|             |___/                               |_|
+
+
+
+Follow the instructions presented in the console or terminate the process to quit (ctrl + c)
+
+
+=== PAAS TYPE ===
+Which PAAS type do you want to use? Options: [CF, K8S, BOTH]
+&lt;-------------&gt; 0% EXECUTING
+&gt; :customize</span></pre><p>Now you need to answer a couple of questions. That way whole files and its pieces
 will get removed / updated accordingly. For example in the aforementioned
 case all <code class="literal">Kubernetes</code> and <code class="literal">Jenkins</code> configuration / folders / pieces of code in
-the project will get removed</p></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="_releasing_the_project" href="#_releasing_the_project"></a>13.&nbsp;Releasing the project</h1></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_publishing_a_docker_image" href="#_publishing_a_docker_image"></a>13.1&nbsp;Publishing A Docker Image</h2></div></div></div><p>When doing a release you also need to push a Docker image to Dockerhub.
+the project will get removed.</p></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="_releasing_the_project" href="#_releasing_the_project"></a>13.&nbsp;Releasing the project</h1></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_publishing_a_docker_image" href="#_publishing_a_docker_image"></a>13.1&nbsp;Publishing A Docker Image</h2></div></div></div><p>When doing a release you also need to push a Docker image to Dockerhub.
 From the project root, run the following commands replacing <code class="literal">&lt;version&gt;</code> with the
 version of the release.</p><pre class="programlisting">docker login
 docker build -t springcloud/spring-cloud-pipeline-jenkins:&lt;version&gt; ./jenkins
