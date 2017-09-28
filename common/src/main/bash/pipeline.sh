@@ -182,7 +182,7 @@ function toLowerCase() {
 }
 
 PIPELINE_DESCRIPTOR="${PIPELINE_DESCRIPTOR:-sc-pipelines.yml}"
-PAAS_TYPE="${PAAS_TYPE:-cf}"
+PAAS_TYPE="$( toLowerCase "${PAAS_TYPE:-cf}" )"
 # Not every linux distribution comes with installation of JQ that is new enough
 # to have the asci_downcase method. That's why we're using the global env variable
 # At some point we'll deprecate this and use what JQ provides
