@@ -67,6 +67,8 @@ function testRollbackDeploy() {
 	projectGroupId=$(retrieveGroupId)
 	local appName
 	appName=$(retrieveAppName)
+	# shellcheck disable=SC2119
+	parsePipelineDescriptor
 	# Downloading latest jar
 	local LATEST_PROD_VERSION=${latestProdTag#prod/}
 	echo "Last prod version equals ${LATEST_PROD_VERSION}"
@@ -228,19 +230,11 @@ function deployAndRestartAppWithNameForSmokeTests() {
 	deleteAppInstance "${appName}"
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
 	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'false'
-	local eurekaName rabbitName mysqlName
-	eurekaName="$(eurekaName)"
-	rabbitName="$(rabbitMqName)"
-	mysqlName="$(mySqlName)"
-	if [[ "${eurekaName}" != "" && "${eurekaName}" != "null" ]]; then
-		bindService "${eurekaName}" "${appName}"
-	fi
-	if [[ "${rabbitName}" != "" && "${rabbitName}" != "null" ]]; then
-		bindService "${rabbitName}" "${appName}"
-	fi
-	if [[ "${mysqlName}" != "" && "${mysqlName}" != "null" ]]; then
-		bindService "${mysqlName}" "${appName}"
-	fi
+	echo "Binding all services from the pipeline descriptor"
+	while read -r serviceName; do
+		bindService "${serviceName}" "${appName}"
+	done <<<"$(echo "${PARSED_YAML}" | \
+				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.name)"')"
 	setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
 	restartApp "${appName}"
 }

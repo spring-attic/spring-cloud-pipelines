@@ -181,18 +181,17 @@ function toLowerCase() {
 	echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
-PIPELINE_DESCRIPTOR="${PIPELINE_DESCRIPTOR:-sc-pipelines.yml}"
 PAAS_TYPE="$( toLowerCase "${PAAS_TYPE:-cf}" )"
 # Not every linux distribution comes with installation of JQ that is new enough
 # to have the asci_downcase method. That's why we're using the global env variable
 # At some point we'll deprecate this and use what JQ provides
 LOWERCASE_ENV="$(toLowerCase "${ENVIRONMENT}")"
 
+PIPELINE_DESCRIPTOR="${PIPELINE_DESCRIPTOR:-sc-pipelines.yml}"
 export PIPELINE_DESCRIPTOR PAAS_TYPE LOWERCASE_ENV
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
-echo "Current environment is [${ENVIRONMENT}]"
-
+echo "Current environment is [${ENVIRONMENT}], lower case [${LOWERCASE_ENV}]"
 # shellcheck source=/dev/null
 [[ -f "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ||  \
  echo "No pipeline-${PAAS_TYPE}.sh found"
@@ -207,13 +206,10 @@ echo "Test reports folder [${TEST_REPORTS_FOLDER}]"
 
 export CUSTOM_SCRIPT_IDENTIFIER="${CUSTOM_SCRIPT_IDENTIFIER:-custom}"
 echo "Custom script identifier is [${CUSTOM_SCRIPT_IDENTIFIER}]"
-
 CUSTOM_SCRIPT_DIR="${__ROOT}/${CUSTOM_SCRIPT_IDENTIFIER}"
 mkdir -p "${__ROOT}/${CUSTOM_SCRIPT_IDENTIFIER}"
-
 CUSTOM_SCRIPT_NAME="$(basename "${BASH_SOURCE[1]}")"
 echo "Path to custom script is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
-
 # shellcheck source=/dev/null
 [[ -f "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ]] && source "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ||  \
  echo "No ${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME} found"

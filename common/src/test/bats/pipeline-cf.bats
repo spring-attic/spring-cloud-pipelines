@@ -437,7 +437,7 @@ export -f mockGradlew
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project/"
 	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
@@ -448,6 +448,10 @@ export -f mockGradlew
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "cf delete -f my-project"
 	assert_output --partial "cf delete -f my-project"
+	assert_output --partial "cf bind-service my-project rabbitmq-github-webhook"
+	assert_output --partial "cf bind-service my-project eureka-github-webhook"
+	assert_output --partial "cf bind-service my-project mysql-github-webhook"
+	assert_output --partial "cf bind-service my-project stubrunner-github-webhook"
 	assert_output --partial "cf push my-project"
 	assert_output --partial "cf set-env my-project APPLICATION_DOMAIN my-project-sc-pipelines.demo.io"
 	assert_output --partial "cf set-env my-project JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
@@ -469,7 +473,7 @@ export -f mockGradlew
 	# notice lowercase of artifactid (should be artifactId) - but lowercase function gets applied
 	projectName="gradlew artifactid -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project/"
 	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
@@ -480,6 +484,10 @@ export -f mockGradlew
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "cf delete -f ${projectName}"
 	assert_output --partial "cf delete -f ${projectName}"
+	assert_output --partial "cf bind-service gradlew artifactId -q rabbitmq-github-webhook"
+	assert_output --partial "cf bind-service gradlew artifactId -q eureka-github-webhook"
+	assert_output --partial "cf bind-service gradlew artifactId -q mysql-github-webhook"
+	assert_output --partial "cf bind-service gradlew artifactId -q stubrunner-github-webhook"
 	assert_output --partial "cf push ${projectName}"
 	assert_output --partial "cf set-env ${projectName} APPLICATION_DOMAIN"
 	assert_output --partial "cf set-env ${projectName} JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
