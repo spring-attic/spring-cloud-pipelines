@@ -209,10 +209,13 @@ function deployMySql() {
 
 function deployAndRestartAppWithName() {
 	local appName="${1}"
+	local lowerCaseAppName
+	lowerCaseAppName=$(toLowerCase "${appName}")
 	local jarName="${2}"
-	local env="${ENVIRONMENT}"
+	local profiles="cloud,e2e"
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
-	deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
+	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'true'
+	setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
 	restartApp "${appName}"
 }
 
