@@ -42,6 +42,8 @@ $ git submodule init
 $ git submodule update
 ----
 
+If you forget about this step, then Gradle will execute these steps for you.
+
 === Build and test
 
 Once you have installed all the prerequisites you can execute
@@ -53,9 +55,9 @@ Once you have installed all the prerequisites you can execute
 
 to build and test the project.
 
-=== Generate readme
+=== Generate docs
 
-To generate readme just run
+To generate docs just run
 
 [source,bash]
 ----
@@ -93,8 +95,8 @@ Which PAAS type do you want to use? Options: [CF, K8S, BOTH]
 ```
 
 Now you need to answer a couple of questions. That way whole files and its pieces
-will get removed / updated accordingly. For example in the aforementioned
-case all `Kubernetes` and `Jenkins` configuration / folders / pieces of code in
+will get removed / updated accordingly. If you provide `CF` and `Concourse` options
+thn `Kubernetes` and `Jenkins` configuration / folders / pieces of code in
 the project will get removed.
 
 == Releasing the project

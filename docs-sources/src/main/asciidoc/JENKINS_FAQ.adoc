@@ -163,14 +163,14 @@ image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click
 
 image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
-==== I want deployment to stage and prod be automatic
+=== I want deployment to stage and prod be automatic
 
 No problem, just set the property / env var to true
 
 - `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage
 - `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod
 
-==== I don't want to test API compativility
+=== I don't want to test API compativility
 
 No problem, just set the `API_COMPATIBILITY_STEP_REQUIRED` env variable
 to `false` and rerun the seed (you can pick it from the seed
@@ -217,3 +217,14 @@ To do this you will need to import your GPG keys into the Docker image running J
 This can be done by placing a file called `public.key` containing your public key
 and a file called `private.key` containing your private key in the `seed` directory.
 These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
+
+=== Deploy to stage fails and doesn't redeploy a service (Kubernetes)
+
+There can be a number of reason but remember that for stage we
+assume that a sequence of manual steps need to be performed. We don't
+redeploy any existing services cause most likely you deliberately
+have set it up in that way or the other. If in the logs of your application
+you can see that you can't connect to a service, first ensure that
+the service is forwarding traffic to a pod. Next if that's not the case
+please delete the service and re-run the step in the pipeline. That way
+Spring Cloud Pipelines will redeploy the service and the underlying pods.
