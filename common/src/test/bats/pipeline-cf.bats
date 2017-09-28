@@ -26,6 +26,12 @@ setup() {
 	export PAAS_STAGE_SPACE="stage-space"
 	export PAAS_STAGE_API_URL="stage-api"
 
+	export PAAS_PROD_USERNAME="prod-username"
+	export PAAS_PROD_PASSWORD="prod-password"
+	export PAAS_PROD_ORG="prod-org"
+	export PAAS_PROD_SPACE="prod-space"
+	export PAAS_PROD_API_URL="prod-api"
+
 	cp -a "${FIXTURES_DIR}/gradle" "${FIXTURES_DIR}/maven" "${TEMP_DIR}"
 }
 
@@ -98,6 +104,13 @@ function cf_that_returns_prod_apps {
 	cf_that_returns_apps
 }
 
+function cf_that_returns_nothing {
+	if [[ "${1}" == "app" ]]; then
+		return 1
+	fi
+	echo "cf $*"
+}
+
 function cf {
 	if [[ "${1}" == "apps" ]]; then
 		cf_that_returns_${LOWERCASE_ENV}_apps
@@ -121,6 +134,7 @@ export -f cf_that_returns_apps
 export -f cf_that_returns_test_apps
 export -f cf_that_returns_stage_apps
 export -f cf_that_returns_prod_apps
+export -f cf_that_returns_nothing
 export -f cf_that_fails_first_time
 export -f mockMvnw
 export -f mockGradlew
@@ -682,4 +696,174 @@ export -f mockGradlew
 	assert_output --partial "cf restart gradlew artifactId -q"
 	assert_output --partial "APPLICATION_URL="
 	assert_output --partial "STUBRUNNER_URL="
+}
+
+@test "should prepare and execute e2e tests [CF][Maven]" {
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	env="stage"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${CF_BIN}"
+
+	run "${SOURCE_DIR}/stage_e2e.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "mvnw clean install -Pe2e -Dapplication.url=my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
+}
+
+@test "should prepare and execute e2e tests [CF][Gradle]" {
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	env="stage"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${CF_BIN}"
+
+	run "${SOURCE_DIR}/stage_e2e.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "gradlew e2e -PnewVersion= -Dapplication.url= -Djava.security.egd=file:///dev/urandom"
+}
+
+@test "should deploy app to prod environment [CF][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	env="prod"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${CF_BIN}"
+
+	run "${SOURCE_DIR}/prod_deploy.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	refute_output --partial "No pipeline descriptor found - will not deploy any services"
+	refute_output --partial "cf delete -f my-project"
+	assert_output --partial "cf push my-project"
+	assert_output --partial "cf set-env my-project APPLICATION_DOMAIN"
+	assert_output --partial "cf set-env my-project JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
+	refute_output --partial "cf bind-service my-project rabbitmq-my-project"
+	refute_output --partial "cf bind-service my-project eureka-my-project"
+	refute_output --partial "cf bind-service my-project mysql-my-project"
+	assert_output --partial "cf set-env my-project spring.profiles.active cloud,e2e"
+	assert_output --partial "cf restart my-project"
+}
+
+@test "should deploy app to prod environment without additional services if pipeline descriptor is missing [CF][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	env="prod"
+	# notice lowercase of artifactid (should be artifactId) - but lowercase function gets applied
+	projectName="gradlew artifactid -q"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${CF_BIN}"
+
+	run "${SOURCE_DIR}/prod_deploy.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	refute_output --partial "No pipeline descriptor found - will not deploy any services"
+	refute_output --partial "cf delete -f my-project"
+	assert_output --partial "cf push ${projectName}"
+	assert_output --partial "cf set-env ${projectName} APPLICATION_DOMAIN"
+	assert_output --partial "cf set-env ${projectName} JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
+	refute_output --partial "cf bind-service ${projectName} rabbitmq-${projectName}"
+	refute_output --partial "cf bind-service ${projectName} eureka-${projectName}"
+	refute_output --partial "cf bind-service ${projectName} mysql-${projectName}"
+	assert_output --partial "cf set-env ${projectName} spring.profiles.active cloud,e2e"
+	assert_output --partial "cf restart gradlew artifactId -q"
+}
+
+@test "should complete switch over on prod [CF][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	env="prod"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${CF_BIN}"
+
+	run "${SOURCE_DIR}/prod_complete.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf app my-project-venerable"
+	assert_output --partial "cf delete my-project-venerable -f"
+}
+
+@test "should complete switch over on prod [CF][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	env="prod"
+	projectName="gradlew artifactId -q"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${CF_BIN}"
+
+	run "${SOURCE_DIR}/prod_complete.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf app ${projectName}-venerable"
+	assert_output --partial "cf delete ${projectName}-venerable -f"
+}
+
+@test "should complete switch over on prod without doing anything if app is missing [CF][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf_that_returns_nothing"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	env="prod"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "cf"
+
+	run "${SOURCE_DIR}/prod_complete.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "Will not remove the old application cause it's not there"
+	refute_output --partial "cf app my-project-venerable"
+	refute_output --partial "cf delete -f my-project-venerable"
+}
+
+@test "should complete switch over on prod without doing anything if app is missing [CF][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf_that_returns_nothing"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	env="prod"
+	projectName="gradlew artifactId -q"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "cf"
+
+	run "${SOURCE_DIR}/prod_complete.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "Will not remove the old application cause it's not there"
+	refute_output --partial "cf app ${projectName}-venerable"
+	refute_output --partial "cf delete ${projectName}-venerable -f"
 }

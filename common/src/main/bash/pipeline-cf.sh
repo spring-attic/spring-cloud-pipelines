@@ -492,6 +492,7 @@ function deleteBlueInstance() {
 	logInToPaas
 	local oldName="${appName}-venerable"
 	echo "Deleting the app [${oldName}]"
+	local appPresent="no"
 	"${CF_BIN}" app "${oldName}" && appPresent="yes"
 	if [[ "${appPresent}" == "yes" ]]; then
 		"${CF_BIN}" delete "${oldName}" -f
