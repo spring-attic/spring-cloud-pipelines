@@ -105,7 +105,7 @@ function cf_that_returns_prod_apps {
 }
 
 function cf_that_returns_nothing {
-	if [[ "${1}" == "app" ]]; then
+	if [[ "${1}" == "app" || "${1}" == "service" ]]; then
 		return 1
 	fi
 	echo "cf $*"
@@ -200,6 +200,17 @@ export -f mockGradlew
 
 	result="$( appHost "github-eureka" )"
 	assert_equal "${result}" "github-eureka-sc-pipelines-demo.demo.io"
+}
+
+@test "should bind a service only if it's already running [CF]" {
+	export CF_BIN="cf_that_returns_nothing"
+	cd "${TEMP_DIR}/maven/empty_project"
+	touch "${CF_BIN}"
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	run bindService "github-analytics"
+	assert_output --partial "Service is not there"
+	refute_output --partial "cf_that_returns_nothing bind-service"
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing [CF][Maven]" {

@@ -369,8 +369,13 @@ function deployStubRunnerBoot() {
 function bindService() {
 	local serviceName="${1}"
 	local appName="${2}"
-	echo "Binding service [${serviceName}] to app [${appName}]"
-	"${CF_BIN}" bind-service "${appName}" "${serviceName}"
+	local serviceExists="no"
+	echo "Checking if service with name [${serviceName}] exists"
+	"${CF_BIN}" service "${serviceName}" && serviceExists="yes" || echo "Service is not there"
+	if [[ "${serviceExists}" == "yes" ]]; then
+		echo "Binding service [${serviceName}] to app [${appName}]"
+		"${CF_BIN}" bind-service "${appName}" "${serviceName}"
+	fi
 }
 
 function createServiceWithName() {
