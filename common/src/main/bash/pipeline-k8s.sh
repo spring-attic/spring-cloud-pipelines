@@ -125,7 +125,7 @@ function deployService() {
 			IFS=${coordinatesSeparator} read -r STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
 			IFS="${previousIfs}"
 			local parsedStubRunnerUseClasspath
-			parsedStubRunnerUseClasspath="$(echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/')"
+			parsedStubRunnerUseClasspath="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/')"
 			local stubRunnerUseClasspath
 			stubRunnerUseClasspath=$(if [[ "${parsedStubRunnerUseClasspath}" == "null" ]]; then
 				echo "false";
@@ -142,19 +142,19 @@ function deployService() {
 }
 
 function eurekaName() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/'
+	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
 }
 
 function rabbitMqName() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/'
+	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
 }
 
 function mySqlName() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .name' | sed 's/^"\(.*\)"$/\1/'
+	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
 }
 
 function mySqlDatabase() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWER_CASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .database' | sed 's/^"\(.*\)"$/\1/'
+	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .database' | sed 's/^"\(.*\)"$/\1/' || echo ""
 }
 
 function appSystemProps() {
@@ -311,7 +311,7 @@ function findAppByName() {
 function deployAndRestartAppWithName() {
 	local appName="${1}"
 	local jarName="${2}"
-	local env="${LOWER_CASE_ENV}"
+	local env="${LOWERCASE_ENV}"
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
 	deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
 	restartApp "${appName}"
@@ -703,8 +703,6 @@ function oldestDeployment() {
 }
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export LOWER_CASE_ENV
-LOWER_CASE_ENV="$(lowerCaseEnv)"
 export PAAS_NAMESPACE_VAR="PAAS_${ENVIRONMENT}_NAMESPACE"
 [[ -z "${PAAS_NAMESPACE}" ]] && PAAS_NAMESPACE="${!PAAS_NAMESPACE_VAR}"
 export KUBERNETES_NAMESPACE="${PAAS_NAMESPACE}"

@@ -14,16 +14,16 @@ function logInToPaas() {
 	local api="PAAS_${ENVIRONMENT}_API_URL"
 	local apiUrl="${!api:-api.run.pivotal.io}"
 	local cfInstalled
-	cfInstalled="$(cf --version || echo "false")"
+	cfInstalled="$("${CF_BIN}" --version || echo "false")"
 	local cfDownloaded
-	cfDownloaded="$(test -r cf && echo "true" || echo "false")"
-	echo "CF Installed? [${cfInstalled}], CF Downloaded? [${cfDownloaded}]"
+	cfDownloaded="$(test -r "${CF_BIN}" && echo "true" || echo "false")"
+	echo "CLI Installed? [${cfInstalled}], CLI Downloaded? [${cfDownloaded}]"
 	if [[ ${cfInstalled} == "false" && ${cfDownloaded} == "false" ]]; then
-		echo "Downloading Cloud Foundry"
+		echo "Downloading Cloud Foundry CLI"
 		curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
 		cfDownloaded="true"
 	else
-		echo "CF is already installed"
+		echo "CLI is already installed"
 	fi
 
 	if [[ ${cfDownloaded} == "true" ]]; then
@@ -33,11 +33,11 @@ function logInToPaas() {
 	fi
 
 	echo "Cloud foundry version"
-	cf --version
+	"${CF_BIN}" --version
 
 	echo "Logging in to CF to org [${cfOrg}], space [${cfSpace}]"
-	cf api --skip-ssl-validation "${apiUrl}"
-	cf login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
+	"${CF_BIN}" api --skip-ssl-validation "${apiUrl}"
+	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
 }
 
 function testDeploy() {
@@ -153,8 +153,8 @@ function deployRabbitMq() {
 	foundApp=$(serviceExists "rabbitmq" "${serviceName}")
 	if [[ "${foundApp}" == "false" ]]; then
 		local hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
-		(cf cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
-		(cf cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
+		("${CF_BIN}" cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
+		("${CF_BIN}" cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
 	else
 		echo "Service [${serviceName}] already started"
 	fi
@@ -162,7 +162,7 @@ function deployRabbitMq() {
 
 function findAppByName() {
 	local serviceName="${1}"
-	cf s | awk -v "app=${serviceName}" '$1 == app {print($0)}'
+	"${CF_BIN}" s | awk -v "app=${serviceName}" '$1 == app {print($0)}'
 }
 
 function serviceExists() {
@@ -189,8 +189,8 @@ function deleteRabbitMq() {
 
 function deleteServiceWithName() {
 	local serviceName="${1}"
-	cf delete -f "${serviceName}" || echo "Failed to delete app [${serviceName}]"
-	cf delete-service -f "${serviceName}" || echo "Failed to delete service [${serviceName}]"
+	"${CF_BIN}" delete -f "${serviceName}" || echo "Failed to delete app [${serviceName}]"
+	"${CF_BIN}" delete-service -f "${serviceName}" || echo "Failed to delete service [${serviceName}]"
 }
 
 function deployMySql() {
@@ -200,8 +200,8 @@ function deployMySql() {
 	foundApp=$(serviceExists "mysql" "${serviceName}")
 	if [[ "${foundApp}" == "false" ]]; then
 		local hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
-		(cf cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
-		(cf cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev")
+		("${CF_BIN}" cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
+		("${CF_BIN}" cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev")
 	else
 		echo "Service [${serviceName}] already started"
 	fi
@@ -219,29 +219,46 @@ function deployAndRestartAppWithName() {
 function deployAndRestartAppWithNameForSmokeTests() {
 	local appName="${1}"
 	local jarName="${2}"
-	local rabbitName="rabbitmq-${appName}"
-	local eurekaName="eureka-${appName}"
-	local mysqlName="mysql-${appName}"
 	local profiles="cloud,smoke"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	deleteAppInstance "${appName}"
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
 	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'false'
-	bindService "${rabbitName}" "${appName}"
-	if [[ "${eurekaName}" != "" ]]; then
+	local eurekaName rabbitName mysqlName
+	eurekaName="$(eurekaName)"
+	rabbitName="$(rabbitMqName)"
+	mysqlName="$(mySqlName)"
+	if [[ "${eurekaName}" != "" && "${eurekaName}" != "null" ]]; then
 		bindService "${eurekaName}" "${appName}"
 	fi
-	bindService "${mysqlName}" "${appName}"
+	if [[ "${rabbitName}" != "" && "${rabbitName}" != "null" ]]; then
+		bindService "${rabbitName}" "${appName}"
+	fi
+	if [[ "${mysqlName}" != "" && "${mysqlName}" != "null" ]]; then
+		bindService "${mysqlName}" "${appName}"
+	fi
 	setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
 	restartApp "${appName}"
+}
+
+function eurekaName() {
+	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
+}
+
+function rabbitMqName() {
+	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
+}
+
+function mySqlName() {
+	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
 }
 
 function appHost() {
 	local appName="${1}"
 	local lowerCase
 	lowerCase="$(toLowerCase "${appName}")"
-	cf apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
+	"${CF_BIN}" apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
 }
 
 function deployAppWithName() {
@@ -270,10 +287,10 @@ function deployAppWithName() {
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] with manifest [${useManifest}] and host [${hostname}]"
 	if [[ ! -z "${manifestOption}" ]]; then
 		# TODO: This is very JVM specific
-		cf push "${lowerCaseAppName}" -m "${memory}" -i 1 -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}" "${manifestOption}"
+		"${CF_BIN}" push "${lowerCaseAppName}" -m "${memory}" -i 1 -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}" "${manifestOption}"
 	else
 		# TODO: This is very JVM specific
-		cf push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}"
+		"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}"
 	fi
 	local applicationDomain
 	applicationDomain="$(appHost "${lowerCaseAppName}")"
@@ -289,7 +306,7 @@ function deleteAppInstance() {
 	lowerCaseAppName=$(toLowerCase "${serviceName}")
 	local APP_NAME="${lowerCaseAppName}"
 	echo "Deleting application [${APP_NAME}]"
-	cf delete -f "${APP_NAME}" || echo "Failed to delete the app. Continuing with the script"
+	"${CF_BIN}" delete -f "${APP_NAME}" || echo "Failed to delete the app. Continuing with the script"
 }
 
 function setEnvVarIfMissing() {
@@ -297,7 +314,7 @@ function setEnvVarIfMissing() {
 	local key="${2}"
 	local value="${3}"
 	echo "Setting env var [${key}] -> [${value}] for app [${appName}] if missing"
-	cf env "${appName}" | grep "${key}" || setEnvVar appName key value
+	"${CF_BIN}" env "${appName}" | grep "${key}" || setEnvVar appName key value
 }
 
 function setEnvVar() {
@@ -305,13 +322,13 @@ function setEnvVar() {
 	local key="${2}"
 	local value="${3}"
 	echo "Setting env var [${key}] -> [${value}] for app [${appName}]"
-	cf set-env "${appName}" "${key}" "${value}"
+	"${CF_BIN}" set-env "${appName}" "${key}" "${value}"
 }
 
 function restartApp() {
 	local appName="${1}"
 	echo "Restarting app with name [${appName}]"
-	cf restart "${appName}"
+	"${CF_BIN}" restart "${appName}"
 }
 
 function deployEureka() {
@@ -356,15 +373,15 @@ function bindService() {
 	local serviceName="${1}"
 	local appName="${2}"
 	echo "Binding service [${serviceName}] to app [${appName}]"
-	cf bind-service "${appName}" "${serviceName}"
+	"${CF_BIN}" bind-service "${appName}" "${serviceName}"
 }
 
 function createServiceWithName() {
 	local name="${1}"
 	echo "Creating service with name [${name}]"
-	APPLICATION_DOMAIN="$(cf apps | grep "${name}" | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1)"
+	APPLICATION_DOMAIN="$("${CF_BIN}" apps | grep "${name}" | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1)"
 	JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
-	cf create-user-provided-service "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
+	"${CF_BIN}" create-user-provided-service "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
 }
 
 function prepareForSmokeTests() {
@@ -456,9 +473,9 @@ function performGreenDeploymentOfTestedApplication() {
 	local newName="${appName}-venerable"
 	echo "Renaming the app from [${appName}] -> [${newName}]"
 	local appPresent="no"
-	cf app "${appName}" && appPresent="yes"
+	"${CF_BIN}" app "${appName}" && appPresent="yes"
 	if [[ "${appPresent}" == "yes" ]]; then
-		cf rename "${appName}" "${newName}"
+		"${CF_BIN}" rename "${appName}" "${newName}"
 	else
 		echo "Will not rename the application cause it's not there"
 	fi
@@ -472,9 +489,9 @@ function deleteBlueInstance() {
 	logInToPaas
 	local oldName="${appName}-venerable"
 	echo "Deleting the app [${oldName}]"
-	cf app "${oldName}" && appPresent="yes"
+	"${CF_BIN}" app "${oldName}" && appPresent="yes"
 	if [[ "${appPresent}" == "yes" ]]; then
-		cf delete "${oldName}" -f
+		"${CF_BIN}" delete "${oldName}" -f
 	else
 		echo "Will not remove the old application cause it's not there"
 	fi
@@ -500,6 +517,8 @@ function propagatePropertiesForTests() {
 }
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export CF_BIN
+CF_BIN="${CF_BIN:-cf}"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
 # shellcheck source=/dev/null
