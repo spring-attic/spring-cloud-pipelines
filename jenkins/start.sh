@@ -4,7 +4,7 @@ if [[ $# < 3 ]] ; then
     echo "You have to pass three params"
     echo "1 - git username with access to the forked repos"
     echo "2 - git password of that user"
-    echo "3 - org where the forked repos lay"
+    echo "3 - org or your user id where the forked repos lay"
     echo "4 - (for k8s) docker registry organization - you can leave an empty value"
     echo "5 - (for k8s) docker registry username - you can leave an empty value"
     echo "6 - (for k8s) docker registry password - you can leave an empty value"
