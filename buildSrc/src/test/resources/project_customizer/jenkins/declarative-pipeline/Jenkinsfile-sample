@@ -42,8 +42,8 @@ pipeline {
 						)
 					}
 
-					if (env.REPO_WITH_BINARIES_CREDENTIALS_ID) {
-						withCredentials([usernamePassword(credentialsId: env.REPO_WITH_BINARIES_CREDENTIALS_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+					if (env.REPO_WITH_BINARIES_CREDENTIAL_ID) {
+						withCredentials([usernamePassword(credentialsId: env.REPO_WITH_BINARIES_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
 							env.M2_SETTINGS_REPO_USERNAME = USER
 							env.M2_SETTINGS_REPO_PASSWORD = PASS
 						}

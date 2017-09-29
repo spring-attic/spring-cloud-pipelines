@@ -11,7 +11,7 @@ String cronValue = "H H * * 7" //every Sunday - I guess you should run it more o
 // TODO: this doesn't scale too much
 String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].join(",")
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
-String repoWithBinariesCredentials = binding.variables["REPO_WITH_BINARIES_CREDENTIALS_ID"] ?: ""
+String repoWithBinariesCredentials = binding.variables["REPO_WITH_BINARIES_CREDENTIAL_ID"] ?: ""
 String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
 // remove::start[CF]
 String cfTestCredentialId = binding.variables["PAAS_TEST_CREDENTIAL_ID"] ?: ""

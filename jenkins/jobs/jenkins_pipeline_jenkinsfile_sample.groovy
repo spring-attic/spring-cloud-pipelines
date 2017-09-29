@@ -16,7 +16,6 @@ Map<String, Object> envs = [:]
 envs['PIPELINE_VERSION_FORMAT'] = binding.variables["PIPELINE_VERSION_FORMAT"] ?: '''${BUILD_DATE_FORMATTED, \"yyMMdd_HHmmss\"}-VERSION'''
 envs['PIPELINE_VERSION_PREFIX'] = binding.variables["PIPELINE_VERSION_PREFIX"] ?: '''1.0.0.M1'''
 envs['PIPELINE_VERSION'] = binding.variables["PIPELINE_VERSION"] ?: ""
-envs['REPO_WITH_BINARIES_CREDENTIALS_ID'] = binding.variables['REPO_WITH_BINARIES_CREDENTIALS_ID'] ?: 'repo-with-binaries'
 envs['GIT_CREDENTIAL_ID'] = gitCredentials
 envs['JDK_VERSION'] = binding.variables["JDK_VERSION"] ?: "jdk8"
 envs['GIT_EMAIL'] = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
@@ -26,6 +25,7 @@ envs['TOOLS_REPOSITORY'] = binding.variables["TOOLS_REPOSITORY"] ?: 'https://git
 envs["TOOLS_BRANCH"] = binding.variables["TOOLS_BRANCH"] ?: "master"
 envs["M2_SETTINGS_REPO_ID"] = binding.variables["M2_SETTINGS_REPO_ID"] ?: "artifactory-local"
 envs["REPO_WITH_BINARIES"] = binding.variables["REPO_WITH_BINARIES"] ?: "http://artifactory:8081/artifactory/libs-release-local"
+envs['REPO_WITH_BINARIES_CREDENTIAL_ID'] = binding.variables['REPO_WITH_BINARIES_CREDENTIAL_ID'] ?: 'repo-with-binaries'
 envs["AUTO_DEPLOY_TO_STAGE"] = binding.variables["AUTO_DEPLOY_TO_STAGE"] ?: false
 envs["AUTO_DEPLOY_TO_PROD"] = binding.variables["AUTO_DEPLOY_TO_PROD"] ?: false
 envs["API_COMPATIBILITY_STEP_REQUIRED"] = binding.variables["API_COMPATIBILITY_STEP_REQUIRED"] ?: true
@@ -49,7 +49,6 @@ envs["APP_MEMORY_LIMIT"] = binding.variables["APP_MEMORY_LIMIT"] ?: ""
 envs["JAVA_BUILDPACK_URL"] = binding.variables["JAVA_BUILDPACK_URL"] ?: "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1"
 // remove::end[CF]
 // remove::start[K8S]
-envs["DOCKER_REGISTRY_ORGANIZATION"] = binding.variables["DOCKER_REGISTRY_ORGANIZATION"] ?: "scpipelines"
 envs["PAAS_TEST_API_URL"] = binding.variables["PAAS_TEST_API_URL"] ?: "192.168.99.100:8443"
 envs["PAAS_STAGE_API_URL"] = binding.variables["PAAS_STAGE_API_URL"] ?: "192.168.99.100:8443"
 envs["PAAS_PROD_API_URL"] = binding.variables["PAAS_PROD_API_URL"] ?: "192.168.99.100:8443"
@@ -83,6 +82,11 @@ envs["PAAS_PROD_NAMESPACE"] = binding.variables["PAAS_PROD_NAMESPACE"] ?: "sc-pi
 envs["KUBERNETES_MINIKUBE"] = binding.variables["KUBERNETES_MINIKUBE"] ?: "true"
 envs["MYSQL_ROOT_CREDENTIAL_ID"] = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: ""
 envs["MYSQL_CREDENTIAL_ID"] = binding.variables["MYSQL_CREDENTIAL_ID"] ?: ""
+envs["DOCKER_REGISTRY_ORGANIZATION"] = binding.variables["DOCKER_REGISTRY_ORGANIZATION"] ?: "scpipelines"
+envs["DOCKER_REGISTRY_CREDENTIAL_ID"] = binding.variables["DOCKER_REGISTRY_CREDENTIAL_ID"] ?: "docker-repo"
+envs["DOCKER_SERVER_ID"] = binding.variables["DOCKER_SERVER_ID"] ?: "docker-repo"
+envs["DOCKER_EMAIL"] = binding.variables["DOCKER_EMAIL"] ?: "change@me.com"
+envs["DOCKER_REGISTRY_URL"] = binding.variables["DOCKER_REGISTRY_URL"] ?: "https://index.docker.io/v1/"
 
 parsedRepos.each {
 	List<String> parsedEntry = it.split('\\$')

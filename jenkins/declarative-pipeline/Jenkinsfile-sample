@@ -42,8 +42,8 @@ pipeline {
 						)
 					}
 
-					if (env.REPO_WITH_BINARIES_CREDENTIALS_ID) {
-						withCredentials([usernamePassword(credentialsId: env.REPO_WITH_BINARIES_CREDENTIALS_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+					if (env.REPO_WITH_BINARIES_CREDENTIAL_ID) {
+						withCredentials([usernamePassword(credentialsId: env.REPO_WITH_BINARIES_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
 							env.M2_SETTINGS_REPO_USERNAME = USER
 							env.M2_SETTINGS_REPO_PASSWORD = PASS
 						}
@@ -80,6 +80,12 @@ pipeline {
 					}
 
 					// remove::start[K8S]
+					if (env.DOCKER_REGISTRY_CREDENTIAL_ID) {
+						withCredentials([usernamePassword(credentialsId: env.DOCKER_REGISTRY_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+							env.DOCKER_USERNAME = USER
+							env.DOCKER_PASSWORD = PASS
+						}
+					}
 					if (env.MYSQL_CREDENTIAL_ID) {
 						withCredentials([usernamePassword(credentialsId: env.MYSQL_CREDENTIAL_ID, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
 							env.MYSQL_USER = USER

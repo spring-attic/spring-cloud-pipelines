@@ -240,6 +240,11 @@ The env vars that are used in all of the jobs are as follows:
 |======================
 |Property Name  | Property Description | Default value
 |DOCKER_REGISTRY_ORGANIZATION | Name of the docker organization to which Docker images should be deployed | scpipelines
+|DOCKER_REGISTRY_CREDENTIAL_ID | Credential ID used to push Docker images | docker-registry
+|DOCKER_SERVER_ID | Server ID in `settings.xml` and Maven builds | docker-repo
+|DOCKER_EMAIL | Email used to connect to Docker registry` and Maven builds | change@me.com
+|DOCKER_REGISTRY_ORGANIZATION | URL to Kubernetes cluster for test env | scpipelines
+|DOCKER_REGISTRY_URL | URL to the docker registry | https://index.docker.io/v1/
 |PAAS_TEST_API_URL | URL of the API of the Kubernetes cluster for test environment | 192.168.99.100:8443
 |PAAS_STAGE_API_URL | URL of the API of the Kubernetes cluster for stage environment  | 192.168.99.100:8443
 |PAAS_PROD_API_URL | URL of the API of the Kubernetes cluster for prod environment | 192.168.99.100:8443
@@ -272,6 +277,7 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_PROD_NAMESPACE | Namespace for prod environment | sc-pipelines-prod
 |KUBERNETES_MINIKUBE | Will you connect to Minikube? | true
 |REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |JDK_VERSION | The name of the JDK installation | jdk8
 |PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
@@ -349,52 +355,7 @@ $ kubectl port-forward --namespace=${NAMESPACE} ${JENKINS_POD} ${LOCAL_PORT}:${C
 
 image::{jenkins-root-docs}/kubo_credentials.png[caption="Click `Global credentials`"]
 
-- Update `git` credential
-
-image::{jenkins-root-docs}/kubo_script_console_1.png[caption="Pick the `Script Console`"]
-
-- Update `settings.xml` and `gradle.properties` with this script
-```groovy
-// insert your DockerHub username
-String username="dockeruser"
-// insert your DockerHub password
-String password="dockerpass"
-// insert your DockerHub email
-String email="docker@email.com"
-// modify these if you want to connect to some other instance
-String artifactoryId="artifactory-local"
-String artifactoryUser="admin"
-String artifactoryPass="password"
-new File("/root/.m2/settings.xml").text = """
-<?xml version="1.0" encoding="UTF-8"?>
-<settings>
-	<servers>
-		<server>
-			<id>${artifactoryId}</id>
-			<username>${artifactoryUser}</username>
-			<password>${artifactoryPass}</password>
-		</server>
-		<server>
-			<id>docker-repo</id>
-			<username>${username}</username>
-			<password>${password}</password>
-			<configuration>
-				 <email>${email}</email>
-			</configuration>
-		</server>
-	</servers>
-</settings>
-"""
-new File("/root/.gradle/gradle.properties").text="""
-M2_SETTINGS_REPO_USERNAME=${artifactoryUser}
-M2_SETTINGS_REPO_PASSWORD=${artifactoryPass}
-DOCKER_USERNAME=${username}
-DOCKER_PASSWORD=${password}
-DOCKER_EMAIL=${email}
-"""
-println "Done!"
-```
-image::{jenkins-root-docs}/kubo_script_console_2.png[caption="Run the script to update credentials"]
+- Update `git`, `repo-with-binaries` and `docker-registry` credentials
 - Run the `jenkins-pipeline-k8s-seed` seed job and fill it out with the following data
 * Put `kubernetes.default:443` here (or `KUBERNETES_API:KUBERNETES_PORT`)
 ** `PAAS_TEST_API_URL`
@@ -424,6 +385,9 @@ image::{jenkins-root-docs}/kubo_script_console_2.png[caption="Run the script to 
 ** `PAAS_TEST_SYSTEM_NAME`
 ** `PAAS_STAGE_SYSTEM_NAME`
 ** `PAAS_PROD_SYSTEM_NAME`
+* Update the `DOCKER_EMAIL` property with your email
+* Update the `DOCKER_REGISTRY_ORGANIZATION` with your Docker organization name
+* If you don't want to upload the images to DockerHub update  `DOCKER_REGISTRY_URL`
 
 image::{jenkins-root-docs}/pks_seed.png[caption="Example of a filled out seed job"]
 

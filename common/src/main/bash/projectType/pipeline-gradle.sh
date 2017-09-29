@@ -15,8 +15,7 @@ if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
 fi
 
 function build() {
-	echo "Additional Build Options [${BUILD_OPTIONS}]"
-
+	BUILD_OPTIONS="${BUILD_OPTIONS} -DM2_SETTINGS_REPO_USERNAME=${M2_SETTINGS_REPO_USERNAME} -DM2_SETTINGS_REPO_PASSWORD=${M2_SETTINGS_REPO_PASSWORD}"
 	if [[ "${CI}" == "CONCOURSE" ]]; then
 		# shellcheck disable=SC2086
 		"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)
@@ -38,7 +37,6 @@ function apiCompatibilityCheck() {
 		# Downloading latest jar
 		LATEST_PROD_VERSION=${LATEST_PROD_TAG#prod/}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
-		echo "Additional Build Options [${BUILD_OPTIONS}]"
 		if [[ "${CI}" == "CONCOURSE" ]]; then
 			# shellcheck disable=SC2086
 			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)

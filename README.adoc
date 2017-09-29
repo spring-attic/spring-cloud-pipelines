@@ -462,7 +462,10 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 - application deployment to Cloud Foundry
 - For Maven (https://github.com/spring-cloud-samples/github-webhook[example project]):
     * usage of Maven Wrapper
-    * `settings.xml` contains all the credentials to push code to Artifactory
+    * `settings.xml` is parametrized to pass the credentials to push code to Artifactory
+    ** `M2_SETTINGS_REPO_ID` - server id for Artifactory / Nexus deployment
+    ** `M2_SETTINGS_REPO_USERNAME` - username for Artifactory / Nexus deployment
+    ** `M2_SETTINGS_REPO_PASSWORD` - password for Artifactory / Nexus deployment
     * artifacts deployment by `./mvnw clean deploy`
     * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
     * `repo.with.binaries` property - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
@@ -476,8 +479,8 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
     * usage of Gradlew Wrapper
     * `deploy` task for artifacts deployment
     * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_USERNAME` env var - (Taken from `gradle.properties`) Username used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_PASSWORD` env var - (Taken from `gradle.properties`) Password used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
     * running API compatibility tests via the `apiCompatibility` task
     * `latestProductionVersion` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
     * running smoke tests on a deployed app via the `smoke` task
@@ -496,7 +499,16 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 - The produced Java Docker image needs to allow passing of system properties via `SYSTEM_PROPS` env variable
 - For Maven (https://github.com/spring-cloud-samples/github-webhook-kubernetes[example project]):
     * usage of Maven Wrapper
-    * `settings.xml` contains all the credentials to push code to Artifactory and Docker repository
+    * `settings.xml` is parametrized to pass the credentials to push code to Artifactory and Docker repository
+    ** `M2_SETTINGS_REPO_ID` - server id for Artifactory / Nexus deployment
+    ** `M2_SETTINGS_REPO_USERNAME` - username for Artifactory / Nexus deployment
+    ** `M2_SETTINGS_REPO_PASSWORD` - password for Artifactory / Nexus deployment
+    ** `DOCKER_SERVER_ID` - server id for Docker image pushing
+    ** `DOCKER_USERNAME` - username for Docker image pushing
+    ** `DOCKER_PASSWORD` - password for Docker image pushing
+    ** `DOCKER_EMAIL` - email for Artifactory / Nexus deployment
+    * `DOCKER_REGISTRY_URL` env var - (Overridable - defaults to DockerHub) URL of the Docker registry
+    * `DOCKER_REGISTRY_ORGANIZATION` - env var containing the organization where your Docker repo lays
     * artifacts and Docker image deployment by `./mvnw clean deploy`
     * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
     * `repo.with.binaries` property - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
@@ -512,12 +524,13 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
     * usage of Gradlew Wrapper
     * `deploy` task for artifacts deployment
     * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_USERNAME` env var - (Taken from `gradle.properties`) Username used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_PASSWORD` env var - (Taken from `gradle.properties`) Password used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * `DOCKER_URL` env var - (Overridable - defaults to DockerHub) URL of the Docker registry
-    * `DOCKER_USERNAME` env var - (Taken from `gradle.properties`) Username used to send the the Docker image
-    * `DOCKER_PASSWORD` env var - (Taken from `gradle.properties`) Password used to send the the Docker image
-    * `DOCKER_EMAIL` env var - (Taken from `gradle.properties`) Email used to send the the Docker image
+    * `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `DOCKER_REGISTRY_URL` env var - (Overridable - defaults to DockerHub) URL of the Docker registry
+    * `DOCKER_USERNAME` env var - Username used to send the the Docker image
+    * `DOCKER_PASSWORD` env var - Password used to send the the Docker image
+    * `DOCKER_EMAIL` env var - Email used to send the the Docker image
+    * `DOCKER_REGISTRY_ORGANIZATION` - env var containing the organization where your Docker repo lays
     * `deployment.yml` contains the Kubernetes deployment descriptor
     * `service.yml` contains the Kubernetes service descriptor
     * running API compatibility tests via the `apiCompatibility` task
@@ -924,7 +937,6 @@ We will also provide answers to most frequently asked questions.
 │   ├── jenkins_pipeline_sample.groovy
 │   └── jenkins_pipeline_sample_view.groovy
 ├── seed
-│   ├── gradle.properties
 │   ├── init.groovy
 │   ├── jenkins_pipeline.groovy
 │   ├── k8s
@@ -982,12 +994,30 @@ already copying the missing `settings.xml` file for you. It looks more or less l
 
 [source,xml]
 ----
-<server>
-  <id>artifactory-local</id>
-  <username>admin</username>
-  <password>password</password>
-</server>
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<servers>
+		<server>
+			<id>${M2_SETTINGS_REPO_ID}</id>
+			<username>${M2_SETTINGS_REPO_USERNAME}</username>
+			<password>${M2_SETTINGS_REPO_PASSWORD}</password>
+		</server>
+		<server>
+			<id>${DOCKER_SERVER_ID}</id>
+			<username>${DOCKER_USERNAME}</username>
+			<password>${DOCKER_PASSWORD}</password>
+			<configuration>
+				<email>${DOCKER_EMAIL}</email>
+			</configuration>
+		</server>
+	</servers>
+</settings>
 ----
+
+As you can see the file is parameterized. In Maven it's enough to pass
+to `./mvnw` command the proper system property to override that value. For example to pass
+a different docker email you'd have to call `./mvnw -DDOCKER_EMAIL=foo@bar.com` and the value
+gets updated.
 
 If you want to use your own version of Artifactory / Nexus you have to update
 the file (it's in `seed/settings.xml`).
@@ -1433,7 +1463,7 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 |======================
 |Property Name  | Property Description | Default value
 |GIT_CREDENTIAL_ID    | Credential ID used to tag a git repo | git
-|REPO_WITH_BINARIES_CREDENTIALS_ID    | Credential ID used for the repo with jars | repo-with-binaries
+|REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
 |PAAS_TEST_CREDENTIAL_ID  | Credential ID for CF Test env access | cf-test
 |PAAS_STAGE_CREDENTIAL_ID   | Credential ID for CF Stage env access | cf-stage
 |PAAS_PROD_CREDENTIAL_ID | Credential ID for CF Prod env access | cf-prod
@@ -1811,6 +1841,11 @@ The env vars that are used in all of the jobs are as follows:
 |======================
 |Property Name  | Property Description | Default value
 |DOCKER_REGISTRY_ORGANIZATION | Name of the docker organization to which Docker images should be deployed | scpipelines
+|DOCKER_REGISTRY_CREDENTIAL_ID | Credential ID used to push Docker images | docker-registry
+|DOCKER_SERVER_ID | Server ID in `settings.xml` and Maven builds | docker-repo
+|DOCKER_EMAIL | Email used to connect to Docker registry` and Maven builds | change@me.com
+|DOCKER_REGISTRY_ORGANIZATION | URL to Kubernetes cluster for test env | scpipelines
+|DOCKER_REGISTRY_URL | URL to the docker registry | https://index.docker.io/v1/
 |PAAS_TEST_API_URL | URL of the API of the Kubernetes cluster for test environment | 192.168.99.100:8443
 |PAAS_STAGE_API_URL | URL of the API of the Kubernetes cluster for stage environment  | 192.168.99.100:8443
 |PAAS_PROD_API_URL | URL of the API of the Kubernetes cluster for prod environment | 192.168.99.100:8443
@@ -1843,6 +1878,7 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_PROD_NAMESPACE | Namespace for prod environment | sc-pipelines-prod
 |KUBERNETES_MINIKUBE | Will you connect to Minikube? | true
 |REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |JDK_VERSION | The name of the JDK installation | jdk8
 |PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
@@ -1920,52 +1956,7 @@ $ kubectl port-forward --namespace=${NAMESPACE} ${JENKINS_POD} ${LOCAL_PORT}:${C
 
 image::{jenkins-root-docs}/kubo_credentials.png[caption="Click `Global credentials`"]
 
-- Update `git` credential
-
-image::{jenkins-root-docs}/kubo_script_console_1.png[caption="Pick the `Script Console`"]
-
-- Update `settings.xml` and `gradle.properties` with this script
-```groovy
-// insert your DockerHub username
-String username="dockeruser"
-// insert your DockerHub password
-String password="dockerpass"
-// insert your DockerHub email
-String email="docker@email.com"
-// modify these if you want to connect to some other instance
-String artifactoryId="artifactory-local"
-String artifactoryUser="admin"
-String artifactoryPass="password"
-new File("/root/.m2/settings.xml").text = """
-<?xml version="1.0" encoding="UTF-8"?>
-<settings>
-	<servers>
-		<server>
-			<id>${artifactoryId}</id>
-			<username>${artifactoryUser}</username>
-			<password>${artifactoryPass}</password>
-		</server>
-		<server>
-			<id>docker-repo</id>
-			<username>${username}</username>
-			<password>${password}</password>
-			<configuration>
-				 <email>${email}</email>
-			</configuration>
-		</server>
-	</servers>
-</settings>
-"""
-new File("/root/.gradle/gradle.properties").text="""
-M2_SETTINGS_REPO_USERNAME=${artifactoryUser}
-M2_SETTINGS_REPO_PASSWORD=${artifactoryPass}
-DOCKER_USERNAME=${username}
-DOCKER_PASSWORD=${password}
-DOCKER_EMAIL=${email}
-"""
-println "Done!"
-```
-image::{jenkins-root-docs}/kubo_script_console_2.png[caption="Run the script to update credentials"]
+- Update `git`, `repo-with-binaries` and `docker-registry` credentials
 - Run the `jenkins-pipeline-k8s-seed` seed job and fill it out with the following data
 * Put `kubernetes.default:443` here (or `KUBERNETES_API:KUBERNETES_PORT`)
 ** `PAAS_TEST_API_URL`
@@ -1995,6 +1986,9 @@ image::{jenkins-root-docs}/kubo_script_console_2.png[caption="Run the script to 
 ** `PAAS_TEST_SYSTEM_NAME`
 ** `PAAS_STAGE_SYSTEM_NAME`
 ** `PAAS_PROD_SYSTEM_NAME`
+* Update the `DOCKER_EMAIL` property with your email
+* Update the `DOCKER_REGISTRY_ORGANIZATION` with your Docker organization name
+* If you don't want to upload the images to DockerHub update  `DOCKER_REGISTRY_URL`
 
 image::{jenkins-root-docs}/pks_seed.png[caption="Example of a filled out seed job"]
 

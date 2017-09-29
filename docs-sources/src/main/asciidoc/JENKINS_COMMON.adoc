@@ -16,7 +16,6 @@ We will also provide answers to most frequently asked questions.
 │   ├── jenkins_pipeline_sample.groovy
 │   └── jenkins_pipeline_sample_view.groovy
 ├── seed
-│   ├── gradle.properties
 │   ├── init.groovy
 │   ├── jenkins_pipeline.groovy
 │   ├── k8s
@@ -74,12 +73,30 @@ already copying the missing `settings.xml` file for you. It looks more or less l
 
 [source,xml]
 ----
-<server>
-  <id>artifactory-local</id>
-  <username>admin</username>
-  <password>password</password>
-</server>
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<servers>
+		<server>
+			<id>${M2_SETTINGS_REPO_ID}</id>
+			<username>${M2_SETTINGS_REPO_USERNAME}</username>
+			<password>${M2_SETTINGS_REPO_PASSWORD}</password>
+		</server>
+		<server>
+			<id>${DOCKER_SERVER_ID}</id>
+			<username>${DOCKER_USERNAME}</username>
+			<password>${DOCKER_PASSWORD}</password>
+			<configuration>
+				<email>${DOCKER_EMAIL}</email>
+			</configuration>
+		</server>
+	</servers>
+</settings>
 ----
+
+As you can see the file is parameterized. In Maven it's enough to pass
+to `./mvnw` command the proper system property to override that value. For example to pass
+a different docker email you'd have to call `./mvnw -DDOCKER_EMAIL=foo@bar.com` and the value
+gets updated.
 
 If you want to use your own version of Artifactory / Nexus you have to update
 the file (it's in `seed/settings.xml`).

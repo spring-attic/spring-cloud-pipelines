@@ -14,6 +14,13 @@ setup() {
 	export PAAS_TYPE="k8s"
 	export KUBE_CONFIG_PATH="${TEMP_DIR}/.kube/config"
 
+	export DOCKER_REGISTRY_ORGANIZATION=DOCKER_REGISTRY_ORGANIZATION
+	export DOCKER_REGISTRY_URL=DOCKER_REGISTRY_URL
+	export DOCKER_SERVER_ID=DOCKER_SERVER_ID
+	export DOCKER_USERNAME=DOCKER_USERNAME
+	export DOCKER_PASSWORD=DOCKER_PASSWORD
+	export DOCKER_EMAIL=DOCKER_EMAIL
+
 	export PAAS_TEST_CA="${TEMP_DIR}/ca"
 	export PAAS_TEST_CLIENT_CERT="${TEMP_DIR}/client_cert"
 	export PAAS_TEST_CLIENT_KEY="${TEMP_DIR}/client_key"
@@ -96,6 +103,24 @@ export -f kubectl_that_returns_empty_string
 export -f kubectl_that_returns_deployments
 export -f mockMvnw
 export -f mockGradlew
+
+@test "should pass docker related properties to the build [K8S][Maven]" {
+	export ENVIRONMENT=BUILD
+	cd "${TEMP_DIR}/maven/empty_project"
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	run build
+
+	assert_output --partial "mvnw clean verify deploy -Ddistribution.management.release.id="
+	assert_output --partial "distribution.management.release.url"
+	assert_output --partial "repo.with.binaries"
+	assert_output --partial "DOCKER_REGISTRY_ORGANIZATION=DOCKER_REGISTRY_ORGANIZATION"
+	assert_output --partial "DOCKER_REGISTRY_URL=DOCKER_REGISTRY_URL"
+	assert_output --partial "DOCKER_SERVER_ID=DOCKER_SERVER_ID"
+	assert_output --partial "DOCKER_USERNAME=DOCKER_USERNAME"
+	assert_output --partial "DOCKER_PASSWORD=DOCKER_PASSWORD"
+	assert_output --partial "DOCKER_EMAIL=DOCKER_EMAIL"
+}
 
 @test "should download kubectl if it's missing and connect to cluster [K8S]" {
 	export REDOWNLOAD_INFRA="false"
@@ -206,7 +231,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -231,7 +256,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -266,7 +291,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -301,7 +326,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -326,7 +351,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -361,7 +386,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -396,7 +421,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -499,7 +524,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -526,7 +551,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -553,7 +578,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -679,7 +704,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -705,7 +730,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
 }
 
@@ -731,7 +756,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "-o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
 }
 

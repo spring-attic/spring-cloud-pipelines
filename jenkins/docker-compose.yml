@@ -17,8 +17,9 @@ services:
       - "50000:50000"
       - "8080:8080"
     volumes:
-      - /var/jenkins_home:/var/jenkins_home
-      - /var/jenkins_root:/root/
+      # The /var/jenkins_* paths might not work for Docker machine...
+      - ~/jenkins_home:/var/jenkins_home
+      - ~/jenkins_root:/root/
       - /var/run/docker.sock:/var/run/docker.sock
     links:
       - artifactory
