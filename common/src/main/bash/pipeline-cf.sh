@@ -490,7 +490,7 @@ function rollbackToBlueInstance() {
 	# Log in to CF to start deployment
 	logInToPaas
 	local oldName="${appName}-venerable"
-	echo "Deleting the app [${oldName}]"
+	echo "Rolling back to [${oldName}]"
 	local appPresent="no"
 	"${CF_BIN}" app "${oldName}" && appPresent="yes"
 	if [[ "${appPresent}" == "yes" ]]; then
