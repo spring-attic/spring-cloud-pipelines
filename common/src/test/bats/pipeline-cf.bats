@@ -886,3 +886,85 @@ export -f mockGradlew
 	refute_output --partial "cf app ${projectName}-venerable"
 	refute_output --partial "cf delete ${projectName}-venerable -f"
 }
+
+@test "should rollback to blue instance on prod [CF][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	env="prod"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${CF_BIN}"
+
+	run "${SOURCE_DIR}/prod_rollback.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf app my-project-venerable"
+	assert_output --partial "cf start my-project-venerable"
+	assert_output --partial "cf stop my-project"
+}
+
+@test "should rollback to blue instance on prod [CF][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	env="prod"
+	projectName="gradlew artifactId -q"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "${CF_BIN}"
+
+	run "${SOURCE_DIR}/prod_rollback.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf app ${projectName}-venerable"
+	assert_output --partial "cf start ${projectName}-venerable"
+	assert_output --partial "cf stop ${projectName}"
+}
+
+@test "should not rollback to blue if blue is missing [CF][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf_that_returns_nothing"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	env="prod"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "cf"
+
+	run "${SOURCE_DIR}/prod_rollback.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "Will not rollback to blue instance cause it's not there"
+	refute_output --partial "cf start my-project-venerable"
+	refute_output --partial "cf stop my-project"
+}
+
+@test "should not rollback to blue if blue is missing [CF][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export CF_BIN="cf_that_returns_nothing"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	env="prod"
+	projectName="gradlew artifactId -q"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	touch "cf"
+
+	run "${SOURCE_DIR}/prod_rollback.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "Will not rollback to blue instance cause it's not there"
+	refute_output --partial "cf start ${projectName}-venerable"
+	refute_output --partial "cf stop ${projectName}"
+}

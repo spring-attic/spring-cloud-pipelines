@@ -67,6 +67,10 @@ function deleteBlueInstance() {
     echo "deleteBlueInstance"
 }
 
+function rollbackToBlueInstance() {
+    echo "rollbackToBlueInstance"
+}
+
 export -f deleteService
 export -f deployService
 export -f outputFolder
@@ -80,3 +84,4 @@ export -f prepareForE2eTests
 export -f runE2eTests
 export -f performGreenDeployment
 export -f deleteBlueInstance
+export -f rollbackToBlueInstance

@@ -170,7 +170,7 @@ The env vars that are used in all of the jobs are as follows:
 |AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
 |AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
 |API_COMPATIBILITY_STEP_REQUIRED | Should api compatibility step be required | true
-|ROLLBACK_STEP_REQUIRED | Should rollback step be present | true
+|DB_ROLLBACK_STEP_REQUIRED | Should DB rollback step be present | true
 |DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
 |APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
 |JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1

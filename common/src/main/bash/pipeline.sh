@@ -67,6 +67,11 @@ function performGreenDeployment() {
 	exit 1
 }
 
+function rollbackToBlueInstance() {
+	echo "Will rollback to blue instance"
+	exit 1
+}
+
 function deleteBlueInstance() {
 	echo "Deletes the old, Blue binary from the production environment"
 	exit 1
@@ -191,7 +196,7 @@ PIPELINE_DESCRIPTOR="${PIPELINE_DESCRIPTOR:-sc-pipelines.yml}"
 export PIPELINE_DESCRIPTOR PAAS_TYPE LOWERCASE_ENV
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
-echo "Current environment is [${ENVIRONMENT}], lower case [${LOWERCASE_ENV}]"
+echo "Current environment is [${ENVIRONMENT}]"
 # shellcheck source=/dev/null
 [[ -f "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ||  \
  echo "No pipeline-${PAAS_TYPE}.sh found"

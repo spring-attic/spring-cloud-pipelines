@@ -29,7 +29,7 @@ String gitName = binding.variables["GIT_NAME"] ?: "Pivo Tal"
 boolean autoStage = binding.variables["AUTO_DEPLOY_TO_STAGE"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_STAGE"])
 boolean autoProd = binding.variables["AUTO_DEPLOY_TO_PROD"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_PROD"])
 boolean apiCompatibilityStep = binding.variables["API_COMPATIBILITY_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["API_COMPATIBILITY_STEP_REQUIRED"])
-boolean rollbackStep = binding.variables["ROLLBACK_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["ROLLBACK_STEP_REQUIRED"])
+boolean rollbackStep = binding.variables["DB_ROLLBACK_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["DB_ROLLBACK_STEP_REQUIRED"])
 boolean stageStep = binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"])
 String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src/main/bash"
 // TODO: Automate customization of this value
@@ -682,6 +682,11 @@ parsedRepos.each {
 					currentBuild()
 				}
 			}
+			buildPipelineTrigger("${projectName}-prod-env-rollback") {
+				parameters {
+					currentBuild()
+				}
+			}
 			git {
 				forcePush(true)
 				pushOnlyIfSuccess()
@@ -690,6 +695,52 @@ parsedRepos.each {
 					update()
 				}
 			}
+		}
+	}
+
+	dsl.job("${projectName}-prod-env-rollback") {
+		deliveryPipelineConfiguration('Prod', 'Rollback to blue')
+		wrappers {
+			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+			maskPasswords()
+			environmentVariables(defaults.defaultEnvVars)
+			credentialsBinding {
+				// remove::start[CF]
+				if (cfProdCredentialId) usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
+				// remove::end[CF]
+				// remove::start[K8S]
+				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+				// remove::end[K8S]
+			}
+			timestamps()
+			colorizeOutput()
+			maskPasswords()
+			timeout {
+				noActivity(300)
+				failBuild()
+				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
+			}
+		}
+		scm {
+			git {
+				remote {
+					name('origin')
+					url(fullGitRepo)
+					branch('dev/${PIPELINE_VERSION}')
+					credentials(gitCredentials)
+				}
+				extensions {
+					wipeOutWorkspace()
+				}
+			}
+		}
+		steps {
+			shell("""#!/bin/bash
+		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
+		""")
+			shell('''#!/bin/bash
+		${WORKSPACE}/.git/tools/common/src/main/bash/prod_rollback.sh
+		''')
 		}
 	}
 

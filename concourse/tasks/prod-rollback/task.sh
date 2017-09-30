@@ -13,7 +13,7 @@ echo "Version resource folder is [${VERSION_RESOURCE}]"
 
 source ${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh
 
-echo "Completing the switch over"
+echo "Rolling back to blue instance"
 cd ${ROOT_FOLDER}/${REPO_RESOURCE}
 
-. ${SCRIPTS_OUTPUT_FOLDER}/prod_complete.sh
+. ${SCRIPTS_OUTPUT_FOLDER}/prod_rollback.sh

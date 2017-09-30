@@ -248,11 +248,39 @@ class JobScriptsSpec extends Specification {
 		noExceptionThrown()
 
 		and:
-		jm.savedConfigs.find { it.key == "github-webhook-pipeline-stage-env-test" }.with {
-			assert !it.value.contains("hudson.plugins.parameterizedtrigger.BuildTrigger")
-			assert !it.value.contains("<projects>github-webhook-pipeline-prod-env-deploy</projects>")
-			assert it.value.contains("au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger")
-			assert it.value.contains("<downstreamProjectNames>github-webhook-pipeline-prod-env-deploy</downstreamProjectNames>")
+		jm.savedConfigs.find { it.key == "github-webhook-pipeline-stage-env-test" }.value.with {
+			assert !it.contains("hudson.plugins.parameterizedtrigger.BuildTrigger")
+			assert !it.contains("<projects>github-webhook-pipeline-prod-env-deploy</projects>")
+			assert it.contains("au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger")
+			assert it.contains("<downstreamProjectNames>github-webhook-pipeline-prod-env-deploy</downstreamProjectNames>")
+			return it
+		}
+	}
+
+	def 'should manually complete switch over and rollback to prod by default'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		loader.runScripts([new ScriptRequest(
+				new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		noExceptionThrown()
+
+		and:
+		jm.savedConfigs.find { it.key == "github-webhook-pipeline-prod-env-deploy" }.value.with {
+			assert !it.contains("hudson.plugins.parameterizedtrigger.BuildTrigger")
+			assert !it.contains("<projects>github-webhook-pipeline-prod-env-complete</projects>")
+			assert !it.contains("<projects>github-webhook-pipeline-prod-env-rollback</projects>")
+			assert it.contains("au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger")
+			assert it.contains("<downstreamProjectNames>github-webhook-pipeline-prod-env-complete</downstreamProjectNames>")
+			assert it.contains("<downstreamProjectNames>github-webhook-pipeline-prod-env-rollback</downstreamProjectNames>")
 			return it
 		}
 	}

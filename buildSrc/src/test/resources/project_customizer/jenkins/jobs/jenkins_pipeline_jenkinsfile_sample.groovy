@@ -29,7 +29,7 @@ envs["REPO_WITH_BINARIES"] = binding.variables["REPO_WITH_BINARIES"] ?: "http://
 envs["AUTO_DEPLOY_TO_STAGE"] = binding.variables["AUTO_DEPLOY_TO_STAGE"] ?: false
 envs["AUTO_DEPLOY_TO_PROD"] = binding.variables["AUTO_DEPLOY_TO_PROD"] ?: false
 envs["API_COMPATIBILITY_STEP_REQUIRED"] = binding.variables["API_COMPATIBILITY_STEP_REQUIRED"] ?: true
-envs["ROLLBACK_STEP_REQUIRED"] = binding.variables["ROLLBACK_STEP_REQUIRED"] ?: true
+envs["DB_ROLLBACK_STEP_REQUIRED"] = binding.variables["DB_ROLLBACK_STEP_REQUIRED"] ?: true
 envs["DEPLOY_TO_STAGE_STEP_REQUIRED"] = binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"] ?: true
 // remove::start[CF]
 envs['PAAS_TEST_CREDENTIAL_ID'] = binding.variables["PAAS_TEST_CREDENTIAL_ID"] ?: ""

@@ -5,6 +5,8 @@ M2_CACHE="${ROOT_FOLDER}/maven"
 GRADLE_HOME="${HOME}/.gradle"
 GRADLE_CACHE="${ROOT_FOLDER}/gradle"
 
+echo "Generating symbolic links for caches"
+
 [[ -d $M2_CACHE && ! -d $M2_HOME ]] && ln -s $M2_CACHE $M2_HOME
 [[ -d $GRADLE_CACHE && ! -d $GRADLE_HOME ]] && ln -s $GRADLE_CACHE $GRADLE_HOME
 

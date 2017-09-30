@@ -109,3 +109,9 @@ teardown() {
 
 	assert_output --partial "deleteBlueInstance"
 }
+
+@test "should rollback to blue instance for prod_rollback" {
+	run "${SOURCE_DIR}/prod_rollback.sh"
+
+	assert_output --partial "rollbackToBlueInstance"
+}

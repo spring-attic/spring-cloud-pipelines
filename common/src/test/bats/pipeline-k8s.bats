@@ -216,6 +216,7 @@ export -f mockGradlew
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
@@ -914,12 +915,22 @@ export -f mockGradlew
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
 }
 
+@test "should return the dns escaped app name [K8S]" {
+	export KUBECTL_BIN="kubectl_that_returns_deployments"
+	export PIPELINE_VERSION="1.0.0.M1-170925_142938-VERSION"
+	source "${SOURCE_DIR}/pipeline-k8s.sh"
+
+	result="$( dnsEscapedAppNameWithVersionSuffix "github-webhook-${PIPELINE_VERSION}" )"
+
+	assert_equal "${result}" "github-webhook-1-0-0-m1-170925-142938-version"
+}
+
 @test "should return the oldest deployment by sorting the deployment names [K8S]" {
 	export KUBECTL_BIN="kubectl_that_returns_deployments"
 	export PIPELINE_VERSION="1.0.0.M1-170925_142938-VERSION"
 	source "${SOURCE_DIR}/pipeline-k8s.sh"
 
-	result="$( oldestDeployment "github-webhook" )"
+	result="$( oldestDeployment "github-webhook" "github-webhook-${PIPELINE_VERSION}")"
 
 	assert_equal "${result}" "github-webhook-1-0-0-m1-170923-142938-version"
 }
@@ -962,4 +973,44 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "delete deployment"
+}
+
+@test "should rollback to blue [K8S][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${SOURCE_DIR}/prod_rollback.sh"
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "scale deployment"
+}
+
+@test "should rollback to blue [K8S][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${SOURCE_DIR}/prod_rollback.sh"
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "scale deployment"
 }

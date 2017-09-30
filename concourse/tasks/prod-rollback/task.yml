@@ -1,0 +1,19 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: springcloud/pipeline-base
+inputs:
+  - name: tools
+  - name: repo
+  - name: version
+outputs:
+  - name: out
+caches:
+  - path: gradle
+  - path: maven
+run:
+  path: /bin/bash
+  args:
+    - tools/concourse/tasks/prod-rollback/task.sh

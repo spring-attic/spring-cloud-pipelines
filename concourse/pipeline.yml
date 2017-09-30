@@ -210,6 +210,25 @@ jobs:
       tag: out/tag
       only_tag: true
 
+- name: prod-rollback
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: version
+      resource: version
+      passed:
+      - prod-deploy
+      trigger: false
+  - task: prod-deploy
+    file: tools/concourse/tasks/prod-rollback/task.yml
+    params:
+      <<: *common-params
+      <<: *paas-prod-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+
 - name: prod-complete
   serial: true
   public: false

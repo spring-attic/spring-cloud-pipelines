@@ -136,7 +136,7 @@ pipeline {
 
 		stage("Deploy to test latest prod version") {
 			when {
-				environment name: 'ROLLBACK_STEP_REQUIRED',
+				environment name: 'DB_ROLLBACK_STEP_REQUIRED',
 					value: 'true'
 			}
 			steps {
@@ -148,7 +148,7 @@ pipeline {
 
 		stage("Tests on test latest prod version") {
 			when {
-				environment name: 'ROLLBACK_STEP_REQUIRED',
+				environment name: 'DB_ROLLBACK_STEP_REQUIRED',
 					value: 'true'
 			}
 			steps {

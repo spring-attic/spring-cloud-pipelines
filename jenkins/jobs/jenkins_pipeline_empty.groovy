@@ -137,6 +137,11 @@ dsl.job("${projectName}-stage-env-test") {
 				currentBuild()
 			}
 		}
+		buildPipelineTrigger("${projectName}-prod-env-rollback") {
+			parameters {
+				currentBuild()
+			}
+		}
 	}
 }
 
@@ -146,7 +151,7 @@ dsl.job("${projectName}-prod-env-deploy") {
 		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 	}
 	steps {
-		shell("echo 'Deploying to prod env blue instance'")
+		shell("echo 'Deploying to prod env'")
 	}
 	publishers {
 		buildPipelineTrigger("${projectName}-prod-env-complete") {
@@ -154,6 +159,21 @@ dsl.job("${projectName}-prod-env-deploy") {
 				currentBuild()
 			}
 		}
+		buildPipelineTrigger("${projectName}-prod-env-rollback") {
+			parameters {
+				currentBuild()
+			}
+		}
+	}
+}
+
+dsl.job("${projectName}-prod-env-rollback") {
+	deliveryPipelineConfiguration('Prod', 'Rollback to blue')
+	wrappers {
+		deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
+	}
+	steps {
+		shell("echo 'Rolling back to green'")
 	}
 }
 

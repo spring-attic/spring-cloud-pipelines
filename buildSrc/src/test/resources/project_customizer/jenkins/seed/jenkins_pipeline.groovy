@@ -78,7 +78,7 @@ factory.job('jenkins-pipeline-cf-seed') {
 			booleanParam('AUTO_DEPLOY_TO_STAGE', false, 'Should deployment to stage be automatic')
 			booleanParam('AUTO_DEPLOY_TO_PROD', false, 'Should deployment to prod be automatic')
 			booleanParam('API_COMPATIBILITY_STEP_REQUIRED', true, 'Should api compatibility step be present')
-			booleanParam('ROLLBACK_STEP_REQUIRED', true, 'Should rollback step be present')
+			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
 			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
 			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
 
@@ -147,7 +147,7 @@ factory.job('jenkins-pipeline-k8s-seed') {
 			booleanParam('AUTO_DEPLOY_TO_STAGE', false, 'Should deployment to stage be automatic')
 			booleanParam('AUTO_DEPLOY_TO_PROD', false, 'Should deployment to prod be automatic')
 			booleanParam('API_COMPATIBILITY_STEP_REQUIRED', true, 'Should api compatibility step be present')
-			booleanParam('ROLLBACK_STEP_REQUIRED', true, 'Should rollback step be present')
+			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
 			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
 			stringParam('PAAS_TYPE', 'k8s', "Which PAAS do you want to choose")
 			booleanParam('KUBERNETES_MINIKUBE', true, 'Will you connect to Minikube?')

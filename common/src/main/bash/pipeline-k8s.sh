@@ -675,14 +675,34 @@ function escapeValueForDns() {
 	echo "${lowerCaseSed}"
 }
 
+function rollbackToBlueInstance() {
+	local appName
+	appName="$(retrieveAppName)"
+	# Log in to CF to start deployment
+	logInToPaas
+	local changedAppName
+	changedAppName="$( dnsEscapedAppNameWithVersionSuffix "${appName}-${PIPELINE_VERSION}")"
+	# find the oldest version and remove it
+	local oldestDeployment
+	oldestDeployment="$(oldestDeployment "${appName}" "${changedAppName}")"
+	if [[ "${oldestDeployment}" != "" ]]; then
+		echo "Scaling the green instance to 0 instances. Only blue instance will be running"
+		"${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" scale deployment "${changedAppName}" --replicas=0
+	else
+		echo "Will not rollback to blue instance cause it's not there"
+	fi
+}
+
 function deleteBlueInstance() {
 	local appName
 	appName="$(retrieveAppName)"
 	# Log in to CF to start deployment
 	logInToPaas
 	# find the oldest version and remove it
+	local changedAppName
+	changedAppName="$(dnsEscapedAppNameWithVersionSuffix "${appName}-${PIPELINE_VERSION}")"
 	local oldestDeployment
-	oldestDeployment="$(oldestDeployment "${appName}")"
+	oldestDeployment="$(oldestDeployment "${appName}" "${changedAppName}")"
 	if [[ "${oldestDeployment}" != "" ]]; then
 		echo "Deleting deployment with name [${oldestDeployment}]"
 		"${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${oldestDeployment}"
@@ -693,13 +713,17 @@ function deleteBlueInstance() {
 
 function oldestDeployment() {
 	local appName="${1}"
-	local changedAppName
-	changedAppName="$(escapeValueForDns "${appName}-${PIPELINE_VERSION}")"
+	local changedAppName="${2}"
 	local deployedApps
 	deployedApps="$("${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}")"
 	local oldestDeployment
 	oldestDeployment="$(echo "${deployedApps}" | sort | head -n 1)"
 	echo "${oldestDeployment}"
+}
+
+function dnsEscapedAppNameWithVersionSuffix() {
+	local appName="${1}"
+	escapeValueForDns "${appName}"
 }
 
 __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -484,6 +484,24 @@ function performGreenDeploymentOfTestedApplication() {
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 }
 
+function rollbackToBlueInstance() {
+	local appName
+	appName="$(retrieveAppName)"
+	# Log in to CF to start deployment
+	logInToPaas
+	local oldName="${appName}-venerable"
+	echo "Deleting the app [${oldName}]"
+	local appPresent="no"
+	"${CF_BIN}" app "${oldName}" && appPresent="yes"
+	if [[ "${appPresent}" == "yes" ]]; then
+		echo "Starting blue (if it wasn't started) and stopping the green instance. Only blue instance will be running"
+		"${CF_BIN}" start "${oldName}"
+		"${CF_BIN}" stop "${appName}"
+	else
+		echo "Will not rollback to blue instance cause it's not there"
+	fi
+}
+
 function deleteBlueInstance() {
 	local appName
 	appName="$(retrieveAppName)"
