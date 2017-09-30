@@ -1,0 +1,72 @@
+---
+version: 1
+## This file is complementary to the JFrog Artifactory startup wizard, and may be used to specify the initial basic
+## settings for a new Artifactory installation, namely:
+## * License Key(s)
+## * Base URL
+## * Proxy
+## * Default repositories
+##
+##
+## HOW TO USE THIS FILE:
+##
+## To import these settings when bootstrapping Artifactory, save this file as artifactory.config.import.yml under Artifactory’s /etc folder
+## Artifactory will load this file if all of the following conditions are met:
+## - no repositories have been created
+## - a proxy has not been set up, or you did set up a proxy externally, but did not configure proxy setup through this file
+## - the base URL has not been set up, or you did set up the base URL externally, but did not configure the base URL setup through this file
+## - Artifactory has not been activated with a license, or Artifactory has been activated with a license, and you did not specify a license in this file
+##
+## To have any of these parameters automatically configured when you bootstrap an Artifactory instance using this file,
+## simply uncomment the relevant sections below, and where required, provide values.
+
+##################################################################################
+# General Configurations #
+##################################################################################
+#GeneralConfiguration:
+## License key to import in onboarding
+#    licenseKey : "Enter your license key"
+
+## Setup the Artifactory base URL
+## For more information about the Artifactory base URL, please refer to
+## https://www.jfrog.com/confluence/display/RTF/Configuring+Artifactory#ConfiguringArtifactory-GeneralSettings
+## Uncomment the line below to set the Artifactory base URL
+#   baseUrl : "https://mycomp.arti.co"
+
+## Configure proxies for artifactory
+## For more information on configuring a proxy in Artifactory, please refer to
+## https://www.jfrog.com/confluence/display/RTF/Managing+Proxies
+## Uncomment the lines below to setup a proxy
+#   proxies :
+#       - key : "proxy1"
+#       host : "https://proxy.mycomp.io"
+#       port : 443
+#       userName : "admin"
+#       password : "password"
+#       defaultProxy : true
+#       - key : "proxy2"
+#       ...
+##################################################################################
+# Onboarding Configurations #
+##################################################################################
+OnboardingConfiguration:
+## Uncomment the package types for which you want to create default repositories
+    repoTypes :
+#       - bower
+#       - cocoapods
+#       - conan
+#       - debian
+#       - docker
+#       - gems
+#       - gradle
+#       - ivy
+       - maven
+#       - npm
+#       - nuget
+#       - opkg
+#       - composer
+#       - pypi
+#       - sbt
+#       - vagrant
+#       - rpm
+#       - gitlfs
