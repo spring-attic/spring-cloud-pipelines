@@ -16,4 +16,4 @@ caches:
 run:
   path: /bin/bash
   args:
-    - tools/concourse/tasks/test-rollback-deploy.sh
+    - tools/concourse/tasks/test-rollback-smoke/task.sh

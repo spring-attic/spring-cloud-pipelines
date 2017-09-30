@@ -16,4 +16,4 @@ caches:
 run:
   path: /bin/bash
   args:
-    - tools/concourse/tasks/prod-deploy.sh
+    - tools/concourse/tasks/stage-e2e/task.sh

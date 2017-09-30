@@ -16,4 +16,4 @@ caches:
 run:
   path: /bin/bash
   args:
-    - tools/concourse/tasks/prod-complete.sh
+    - tools/concourse/tasks/build-api-compatibility-check/task.sh
