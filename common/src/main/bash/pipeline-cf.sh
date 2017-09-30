@@ -499,6 +499,7 @@ function rollbackToBlueInstance() {
 		"${CF_BIN}" stop "${appName}"
 	else
 		echo "Will not rollback to blue instance cause it's not there"
+		return 1
 	fi
 }
 

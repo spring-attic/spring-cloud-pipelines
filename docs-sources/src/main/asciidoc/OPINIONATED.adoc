@@ -131,6 +131,13 @@ Here we're
 - in the `Complete switch over` which is a manual step
     * we're deleting the old instance
     * remember to run this step only after you have confirmed that both instances are working fine!
+        * now two instances of the same application are running on production
+- in the `Rollback to blue` which is a manual step
+    * we're routing all the traffic to the old instance
+    * in CF we do that by ensuring that blue is running and stopping green
+    * in K8S we do that by scaling the number of instances of green to 0
+    * this step will set the state of your system to such where most likely some manual intervention should take place
+    (to restart some applications, redeploy them, etc.)
 
 == Project opinions
 

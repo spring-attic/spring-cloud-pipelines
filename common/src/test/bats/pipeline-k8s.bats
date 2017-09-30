@@ -993,6 +993,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "scale deployment"
+	assert_success
 }
 
 @test "should rollback to blue [K8S][Gradle]" {
@@ -1013,4 +1014,5 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "scale deployment"
+	assert_success
 }

@@ -905,6 +905,7 @@ export -f mockGradlew
 	assert_output --partial "cf app my-project-venerable"
 	assert_output --partial "cf start my-project-venerable"
 	assert_output --partial "cf stop my-project"
+	assert_success
 }
 
 @test "should rollback to blue instance on prod [CF][Gradle]" {
@@ -926,6 +927,7 @@ export -f mockGradlew
 	assert_output --partial "cf app ${projectName}-venerable"
 	assert_output --partial "cf start ${projectName}-venerable"
 	assert_output --partial "cf stop ${projectName}"
+	assert_success
 }
 
 @test "should not rollback to blue if blue is missing [CF][Maven]" {
@@ -946,6 +948,7 @@ export -f mockGradlew
 	assert_output --partial "Will not rollback to blue instance cause it's not there"
 	refute_output --partial "cf start my-project-venerable"
 	refute_output --partial "cf stop my-project"
+	assert_failure
 }
 
 @test "should not rollback to blue if blue is missing [CF][Gradle]" {
@@ -967,4 +970,5 @@ export -f mockGradlew
 	assert_output --partial "Will not rollback to blue instance cause it's not there"
 	refute_output --partial "cf start ${projectName}-venerable"
 	refute_output --partial "cf stop ${projectName}"
+	assert_failure
 }

@@ -690,6 +690,7 @@ function rollbackToBlueInstance() {
 		"${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" scale deployment "${changedAppName}" --replicas=0
 	else
 		echo "Will not rollback to blue instance cause it's not there"
+		return 1
 	fi
 }
 
