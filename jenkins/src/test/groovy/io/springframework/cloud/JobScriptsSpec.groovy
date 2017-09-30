@@ -276,11 +276,9 @@ class JobScriptsSpec extends Specification {
 		and:
 		jm.savedConfigs.find { it.key == "github-webhook-pipeline-prod-env-deploy" }.value.with {
 			assert !it.contains("hudson.plugins.parameterizedtrigger.BuildTrigger")
-			assert !it.contains("<projects>github-webhook-pipeline-prod-env-complete</projects>")
-			assert !it.contains("<projects>github-webhook-pipeline-prod-env-rollback</projects>")
+			assert !it.contains("<projects>github-webhook-pipeline-prod-env-complete,github-webhook-pipeline-prod-env-rollback</projects>")
 			assert it.contains("au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger")
-			assert it.contains("<downstreamProjectNames>github-webhook-pipeline-prod-env-complete</downstreamProjectNames>")
-			assert it.contains("<downstreamProjectNames>github-webhook-pipeline-prod-env-rollback</downstreamProjectNames>")
+			assert it.contains("<downstreamProjectNames>github-webhook-pipeline-prod-env-complete,github-webhook-pipeline-prod-env-rollback</downstreamProjectNames>")
 			return it
 		}
 	}

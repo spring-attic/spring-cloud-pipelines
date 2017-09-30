@@ -677,12 +677,7 @@ parsedRepos.each {
 				// remove::end[CF]
 			}
 			// end::start[K8S]
-			buildPipelineTrigger("${projectName}-prod-env-complete") {
-				parameters {
-					currentBuild()
-				}
-			}
-			buildPipelineTrigger("${projectName}-prod-env-rollback") {
+			buildPipelineTrigger("${projectName}-prod-env-complete,${projectName}-prod-env-rollback") {
 				parameters {
 					currentBuild()
 				}

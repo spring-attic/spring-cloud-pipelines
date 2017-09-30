@@ -154,12 +154,7 @@ dsl.job("${projectName}-prod-env-deploy") {
 		shell("echo 'Deploying to prod env'")
 	}
 	publishers {
-		buildPipelineTrigger("${projectName}-prod-env-complete") {
-			parameters {
-				currentBuild()
-			}
-		}
-		buildPipelineTrigger("${projectName}-prod-env-rollback") {
+		buildPipelineTrigger("${projectName}-prod-env-complete,${projectName}-prod-env-rollback") {
 			parameters {
 				currentBuild()
 			}
