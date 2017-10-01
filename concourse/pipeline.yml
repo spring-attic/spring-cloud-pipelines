@@ -222,7 +222,7 @@ jobs:
       passed:
       - prod-deploy
       trigger: false
-  - task: prod-deploy
+  - task: prod-rollback
     file: tools/concourse/tasks/prod-rollback/task.yml
     params:
       <<: *common-params
