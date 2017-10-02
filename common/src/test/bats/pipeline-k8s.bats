@@ -81,11 +81,22 @@ function kubectl_that_returns_empty_string {
 	echo ""
 }
 
-function kubectl_that_returns_deployments {
+function kubectl_that_returns_too_many_deployments {
 	echo "github-webhook-1-0-0-m1-170925-142938-version   1         1         1         1         14h"
 	echo "github-webhook-1-0-0-m1-170924-142938-version   1         1         1         1         14h"
 	echo "github-webhook-1-0-0-m1-170923-142938-version   1         1         1         1         14h"
 	echo "github-webhook-1-0-0-m1-170924-152938-version   1         1         1         1         14h"
+}
+
+function kubectl_that_returns_deployments {
+	echo "github-webhook-1-0-0-m1-170925-142938-version   1         1         1         1         14h"
+}
+
+function kubectl_that_returns_parsed_too_many_deployments {
+	echo "github-webhook-1-0-0-m1-170925-142938-version"
+	echo "github-webhook-1-0-0-m1-170924-142938-version"
+	echo "github-webhook-1-0-0-m1-170923-142938-version"
+	echo "github-webhook-1-0-0-m1-170924-152938-version"
 }
 
 function mockMvnw {
@@ -100,7 +111,9 @@ export -f curl
 export -f kubectl
 export -f kubectl_that_fails_first_time
 export -f kubectl_that_returns_empty_string
+export -f kubectl_that_returns_too_many_deployments
 export -f kubectl_that_returns_deployments
+export -f kubectl_that_returns_parsed_too_many_deployments
 export -f mockMvnw
 export -f mockGradlew
 
@@ -915,8 +928,52 @@ export -f mockGradlew
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
 }
 
+@test "should fail to deploy blue instance for non minikube when green is already deployed [K8S][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl_that_returns_parsed_too_many_deployments"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${SOURCE_DIR}"/prod_deploy.sh
+
+	# logged in
+	refute_output --partial "kubectl config use-context cluster_name"
+	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "Green already deployed. Please complete switch over first"
+	assert_failure
+}
+
+@test "should fail to deploy blue instance for non minikube when green is already deployed [K8S][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl_that_returns_parsed_too_many_deployments"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${SOURCE_DIR}"/prod_deploy.sh
+
+	# logged in
+	refute_output --partial "kubectl config use-context cluster_name"
+	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_output --partial "Green already deployed. Please complete switch over first"
+	assert_failure
+}
+
 @test "should return the dns escaped app name [K8S]" {
-	export KUBECTL_BIN="kubectl_that_returns_deployments"
+	export KUBECTL_BIN="kubectl_that_returns_too_many_deployments"
 	export PIPELINE_VERSION="1.0.0.M1-170925_142938-VERSION"
 	source "${SOURCE_DIR}/pipeline-k8s.sh"
 
@@ -925,14 +982,74 @@ export -f mockGradlew
 	assert_equal "${result}" "github-webhook-1-0-0-m1-170925-142938-version"
 }
 
-@test "should return the oldest deployment by sorting the deployment names [K8S]" {
-	export KUBECTL_BIN="kubectl_that_returns_deployments"
+@test "should return list of deployed apps [K8S]" {
+	export KUBECTL_BIN="kubectl_that_returns_too_many_deployments"
+	source "${SOURCE_DIR}/pipeline-k8s.sh"
+	deployments="$( kubectl_that_returns_too_many_deployments )"
+	expected="$( echo -e "github-webhook-1-0-0-m1-170925-142938-version\ngithub-webhook-1-0-0-m1-170924-142938-version\ngithub-webhook-1-0-0-m1-170924-152938-version" )"
+	result="$( otherDeployedInstances "github-webhook" "github-webhook-1-0-0-m1-170923-142938-version" )"
+
+	assert_equal "${result}" "${expected}"
+}
+
+@test "should return an empty string when no deployments are matched [K8S]" {
 	export PIPELINE_VERSION="1.0.0.M1-170925_142938-VERSION"
 	source "${SOURCE_DIR}/pipeline-k8s.sh"
+	deployments="$( kubectl_that_returns_empty_string )"
 
-	result="$( oldestDeployment "github-webhook" "github-webhook-${PIPELINE_VERSION}")"
+	result="$( oldestDeployment "${deployments}" )"
+
+	assert_equal "${result}" ""
+}
+
+@test "should return the oldest deployment by sorting the deployment names [K8S]" {
+	export PIPELINE_VERSION="1.0.0.M1-170925_142938-VERSION"
+	source "${SOURCE_DIR}/pipeline-k8s.sh"
+	deployments="$( kubectl_that_returns_parsed_too_many_deployments )"
+
+	result="$( oldestDeployment "${deployments}" )"
 
 	assert_equal "${result}" "github-webhook-1-0-0-m1-170923-142938-version"
+}
+
+@test "should delete green instance for non minikube [K8S][Maven]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${SOURCE_DIR}/prod_complete.sh"
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "delete deployment"
+}
+
+@test "should delete green instance for non minikube [K8S][Gradle]" {
+	export ENVIRONMENT="PROD"
+	export REDOWNLOAD_INFRA="false"
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-prod"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+
+	run "${SOURCE_DIR}/prod_complete.sh"
+
+	# logged in
+	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "delete deployment"
 }
 
 @test "should delete green instance for non minikube [K8S][Maven]" {

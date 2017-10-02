@@ -648,6 +648,14 @@ function performGreenDeploymentOfTestedApplication() {
 	local changedAppName
 	changedAppName="$(escapeValueForDns "${appName}-${PIPELINE_VERSION}")"
 	echo "Will name the application [${changedAppName}]"
+	local otherDeployedInstances
+	otherDeployedInstances="$(otherDeployedInstances "${appName}" "${changedAppName}" )"
+	local numberOfDeployments
+	numberOfDeployments="$(echo "${otherDeployedInstances}" | wc -l )"
+	if [[ "${numberOfDeployments}" != "" && $((${numberOfDeployments} > 1)) ]]; then
+		echo "Green already deployed. Please complete switch over first"
+		return 1
+	fi
 	local systemProps="-Dspring.profiles.active=${profiles}"
 	substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
 	substituteVariables "version" "${PIPELINE_VERSION}" "${deploymentFile}"
@@ -702,8 +710,10 @@ function deleteBlueInstance() {
 	# find the oldest version and remove it
 	local changedAppName
 	changedAppName="$(dnsEscapedAppNameWithVersionSuffix "${appName}-${PIPELINE_VERSION}")"
+	local otherDeployedInstances
+	otherDeployedInstances="$(otherDeployedInstances "${appName}" "${changedAppName}" )"
 	local oldestDeployment
-	oldestDeployment="$(oldestDeployment "${appName}" "${changedAppName}")"
+	oldestDeployment="$(oldestDeployment "${otherDeployedInstances}")"
 	if [[ "${oldestDeployment}" != "" ]]; then
 		echo "Deleting deployment with name [${oldestDeployment}]"
 		"${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" delete deployment "${oldestDeployment}"
@@ -712,11 +722,15 @@ function deleteBlueInstance() {
 	fi
 }
 
-function oldestDeployment() {
+function otherDeployedInstances() {
 	local appName="${1}"
 	local changedAppName="${2}"
+	"${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}"
+}
+
+function oldestDeployment() {
 	local deployedApps
-	deployedApps="$("${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}")"
+	deployedApps="${1}"
 	local oldestDeployment
 	oldestDeployment="$(echo "${deployedApps}" | sort | head -n 1)"
 	echo "${oldestDeployment}"
