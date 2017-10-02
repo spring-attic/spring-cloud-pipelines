@@ -649,7 +649,7 @@ function performGreenDeploymentOfTestedApplication() {
 	changedAppName="$(escapeValueForDns "${appName}-${PIPELINE_VERSION}")"
 	echo "Will name the application [${changedAppName}]"
 	local otherDeployedInstances
-	otherDeployedInstances="$(otherDeployedInstances "${appName}" "${changedAppName}" )"
+	otherDeployedInstances="$(otherDeployedInstances "${appName}" "${changedAppName}")"
 	if [[ "${otherDeployedInstances}" != "" ]]; then
 		local numberOfDeployments
 		numberOfDeployments="$(echo "${otherDeployedInstances}" | wc -l | awk '{print $1}')"
@@ -727,7 +727,7 @@ function deleteBlueInstance() {
 function otherDeployedInstances() {
 	local appName="${1}"
 	local changedAppName="${2}"
-	"${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}"
+	"${KUBECTL_BIN}" --context="${K8S_CONTEXT}" --namespace="${PAAS_NAMESPACE}" get deployments -lname="${appName}" --no-headers | awk '{print $1}' | grep -v "${changedAppName}" || echo ""
 }
 
 function oldestDeployment() {
