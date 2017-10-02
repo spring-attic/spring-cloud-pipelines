@@ -651,8 +651,8 @@ function performGreenDeploymentOfTestedApplication() {
 	local otherDeployedInstances
 	otherDeployedInstances="$(otherDeployedInstances "${appName}" "${changedAppName}" )"
 	local numberOfDeployments
-	numberOfDeployments="$(echo "${otherDeployedInstances}" | wc -l )"
-	if [[ "${numberOfDeployments}" != "" && $((numberOfDeployments > 1)) ]]; then
+	numberOfDeployments="$(echo "${otherDeployedInstances}" | wc -l | awk '{print $1}')"
+	if [[ "${numberOfDeployments}" != "" && $((numberOfDeployments > 1)) == 1 ]]; then
 		echo "Green already deployed. Please complete switch over first"
 		return 1
 	fi

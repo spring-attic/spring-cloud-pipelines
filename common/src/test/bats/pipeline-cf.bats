@@ -153,6 +153,7 @@ export -f mockGradlew
 	assert_output --partial "Adding CF to PATH"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_success
 }
 
 @test "should redownload cf if redownload infra flag is set and connect to cluster [CF]" {
@@ -170,6 +171,7 @@ export -f mockGradlew
 	assert_output --partial "Adding CF to PATH"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_success
 }
 
 @test "should not redownload cf if redownload infra flag is not set and cf was downloaded and connect to cluster [CF]" {
@@ -187,6 +189,7 @@ export -f mockGradlew
 	assert_output --partial "Adding CF to PATH"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_success
 }
 
 @test "should retrieve the host from the URL from CF [CF]" {
@@ -200,6 +203,7 @@ export -f mockGradlew
 
 	result="$( appHost "github-eureka" )"
 	assert_equal "${result}" "github-eureka-sc-pipelines-demo.demo.io"
+	assert_success
 }
 
 @test "should bind a service only if it's already running [CF]" {
@@ -211,6 +215,7 @@ export -f mockGradlew
 	run bindService "github-analytics"
 	assert_output --partial "Service is not there"
 	refute_output --partial "cf_that_returns_nothing bind-service"
+	assert_success
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing [CF][Maven]" {
@@ -237,6 +242,7 @@ export -f mockGradlew
 	refute_output --partial "cf bind-service my-project mysql-my-project"
 	assert_output --partial "cf set-env my-project spring.profiles.active cloud,smoke"
 	assert_output --partial "cf restart my-project"
+	assert_success
 }
 
 @test "should deploy app to test environment with additional services [CF][Maven]" {
@@ -296,6 +302,7 @@ export -f mockGradlew
 	assert_output --partial "cf restart my-project"
 	assert_output --partial "APPLICATION_URL=my-project-sc-pipelines.demo.io"
 	assert_output --partial "STUBRUNNER_URL=stubrunner-my-project-sc-pipelines.demo.io"
+	assert_success
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing [CF][Gradle]" {
@@ -324,6 +331,7 @@ export -f mockGradlew
 	refute_output --partial "cf bind-service ${projectName} mysql-${projectName}"
 	assert_output --partial "cf set-env ${projectName} spring.profiles.active cloud,smoke"
 	assert_output --partial "cf restart gradlew artifactId -q"
+	assert_success
 }
 
 @test "should deploy app to test environment with additional services [CF][Gradle]" {
@@ -385,6 +393,7 @@ export -f mockGradlew
 	assert_output --partial "cf restart gradlew artifactId -q"
 	assert_output --partial "APPLICATION_URL="
 	assert_output --partial "STUBRUNNER_URL="
+	assert_success
 }
 
 @test "should prepare and execute smoke tests [CF][Maven]" {
@@ -402,6 +411,7 @@ export -f mockGradlew
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url=stubrunner-my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
+	assert_success
 }
 
 @test "should prepare and execute smoke tests [CF][Gradle]" {
@@ -421,6 +431,7 @@ export -f mockGradlew
 	assert_output --partial "gradlew artifactId -q"
 	assert_output --partial "stubrunner-gradlew artifactId -q"
 	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url= -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
+	assert_success
 }
 
 @test "should skip rollback deploy step if there are no tags [CF]" {
@@ -438,6 +449,7 @@ export -f mockGradlew
 
 	# logged in
 	assert_output --partial "No prod release took place - skipping this step"
+	assert_success
 }
 
 @test "should deploy app to test environment for rollback testing [CF][Maven]" {
@@ -472,6 +484,7 @@ export -f mockGradlew
 	assert_output --partial "cf restart my-project"
 	assert_output --partial "APPLICATION_URL=my-project-sc-pipelines.demo.io"
 	assert_output --partial "STUBRUNNER_URL=stubrunner-my-project-sc-pipelines.demo.io"
+	assert_success
 }
 
 @test "should deploy app to test environment for rollback testing [CF][Gradle]" {
@@ -508,6 +521,7 @@ export -f mockGradlew
 	assert_output --partial "cf restart gradlew artifactId -q"
 	assert_output --partial "APPLICATION_URL="
 	assert_output --partial "STUBRUNNER_URL="
+	assert_success
 }
 
 @test "should skip rollback testing step if there are no tags [CF]" {
@@ -525,6 +539,7 @@ export -f mockGradlew
 
 	# logged in
 	assert_output --partial "No prod release took place - skipping this step"
+	assert_success
 }
 
 @test "should prepare and execute rollback tests [CF][Maven]" {
@@ -543,6 +558,7 @@ export -f mockGradlew
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url=stubrunner-my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
+	assert_success
 }
 
 @test "should prepare and execute rollback tests [CF][Gradle]" {
@@ -563,6 +579,7 @@ export -f mockGradlew
 	assert_output --partial "gradlew artifactId -q"
 	assert_output --partial "stubrunner-gradlew artifactId -q"
 	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url= -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
+	assert_success
 }
 
 @test "should deploy app to stage environment without additional services if pipeline descriptor is missing [CF][Maven]" {
@@ -590,6 +607,7 @@ export -f mockGradlew
 	refute_output --partial "cf bind-service my-project mysql-my-project"
 	assert_output --partial "cf set-env my-project spring.profiles.active cloud,e2e"
 	assert_output --partial "cf restart my-project"
+	assert_success
 }
 
 @test "should deploy app to stage environment with additional services [CF][Maven]" {
@@ -637,6 +655,7 @@ export -f mockGradlew
 	assert_output --partial "cf restart my-project"
 	assert_output --partial "APPLICATION_URL=my-project-sc-pipelines.demo.io"
 	assert_output --partial "STUBRUNNER_URL="
+	assert_success
 }
 
 @test "should deploy app to stage environment without additional services if pipeline descriptor is missing [CF][Gradle]" {
@@ -666,6 +685,7 @@ export -f mockGradlew
 	refute_output --partial "cf bind-service ${projectName} mysql-${projectName}"
 	assert_output --partial "cf set-env ${projectName} spring.profiles.active cloud,e2e"
 	assert_output --partial "cf restart gradlew artifactId -q"
+	assert_success
 }
 
 @test "should deploy app to stage environment with additional services [CF][Gradle]" {
@@ -715,6 +735,7 @@ export -f mockGradlew
 	assert_output --partial "cf restart gradlew artifactId -q"
 	assert_output --partial "APPLICATION_URL="
 	assert_output --partial "STUBRUNNER_URL="
+	assert_success
 }
 
 @test "should prepare and execute e2e tests [CF][Maven]" {
@@ -732,6 +753,7 @@ export -f mockGradlew
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "mvnw clean install -Pe2e -Dapplication.url=my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
+	assert_success
 }
 
 @test "should prepare and execute e2e tests [CF][Gradle]" {
@@ -749,6 +771,7 @@ export -f mockGradlew
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "gradlew e2e -PnewVersion= -Dapplication.url= -Djava.security.egd=file:///dev/urandom"
+	assert_success
 }
 
 @test "should deploy app to prod environment [CF][Maven]" {
@@ -776,6 +799,7 @@ export -f mockGradlew
 	refute_output --partial "cf bind-service my-project mysql-my-project"
 	assert_output --partial "cf set-env my-project spring.profiles.active cloud,e2e"
 	assert_output --partial "cf restart my-project"
+	assert_success
 }
 
 @test "should deploy app to prod environment without additional services if pipeline descriptor is missing [CF][Gradle]" {
@@ -805,6 +829,7 @@ export -f mockGradlew
 	refute_output --partial "cf bind-service ${projectName} mysql-${projectName}"
 	assert_output --partial "cf set-env ${projectName} spring.profiles.active cloud,e2e"
 	assert_output --partial "cf restart gradlew artifactId -q"
+	assert_success
 }
 
 @test "should complete switch over on prod [CF][Maven]" {
@@ -824,6 +849,7 @@ export -f mockGradlew
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "cf app my-project-venerable"
 	assert_output --partial "cf delete my-project-venerable -f"
+	assert_success
 }
 
 @test "should complete switch over on prod [CF][Gradle]" {
@@ -844,6 +870,7 @@ export -f mockGradlew
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "cf app ${projectName}-venerable"
 	assert_output --partial "cf delete ${projectName}-venerable -f"
+	assert_success
 }
 
 @test "should complete switch over on prod without doing anything if app is missing [CF][Maven]" {
@@ -864,6 +891,7 @@ export -f mockGradlew
 	assert_output --partial "Will not remove the old application cause it's not there"
 	refute_output --partial "cf app my-project-venerable"
 	refute_output --partial "cf delete -f my-project-venerable"
+	assert_success
 }
 
 @test "should complete switch over on prod without doing anything if app is missing [CF][Gradle]" {
@@ -885,6 +913,7 @@ export -f mockGradlew
 	assert_output --partial "Will not remove the old application cause it's not there"
 	refute_output --partial "cf app ${projectName}-venerable"
 	refute_output --partial "cf delete ${projectName}-venerable -f"
+	assert_success
 }
 
 @test "should rollback to blue instance on prod [CF][Maven]" {

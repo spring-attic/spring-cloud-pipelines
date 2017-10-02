@@ -49,6 +49,7 @@ teardown() {
 	assert_output --partial "from version 1.0.0.BUILD-SNAPSHOT to 100.0.0"
 	assert_output --partial "[echo] foo/bar/bar"
 	assert_output --partial "maven-deploy-plugin"
+	assert_success
 }
 
 @test "should print test results when build failed for Jenkins [Maven]" {
@@ -63,6 +64,7 @@ teardown() {
 	run build
 
 	assert_output --partial "Build failed!!!"
+	assert_failure
 }
 
 @test "should set a version and execute build for Jenkins [Maven]" {
@@ -78,6 +80,7 @@ teardown() {
 	assert_output --partial "from version 1.0.0.BUILD-SNAPSHOT to 100.0.0"
 	assert_output --partial "[echo] foo/bar/bar"
 	assert_output --partial "maven-deploy-plugin"
+	assert_success
 }
 
 @test "should print test results when build failed for Concourse [Maven]" {
@@ -92,6 +95,7 @@ teardown() {
 	run build
 
 	assert_output --partial "Build failed!!!"
+	assert_failure
 }
 
 @test "should skip the step if prod tag is missing for apiCompatibilityCheck [Maven]" {
@@ -102,6 +106,7 @@ teardown() {
 	run apiCompatibilityCheck
 
 	assert_output --partial "No prod release took place - skipping this step"
+	assert_success
 }
 
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Concourse [Maven]" {
@@ -115,6 +120,7 @@ teardown() {
 	assert_output --partial "Last prod version equals [100.0.0]"
 	assert_output --partial "[echo] 100.0.0"
 	assert_output --partial "maven-surefire-plugin"
+	assert_success
 }
 
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Jenkins [Maven]" {
@@ -128,6 +134,7 @@ teardown() {
 	assert_output --partial "Last prod version equals [100.0.0]"
 	assert_output --partial "[echo] 100.0.0"
 	assert_output --partial "maven-surefire-plugin"
+	assert_success
 }
 
 @test "should print a property value if it exists [Maven]" {
@@ -165,6 +172,7 @@ teardown() {
 	run retrieveGroupId
 
 	assert_output "com.example"
+	assert_success
 }
 
 @test "should print artifact id [Maven]" {
@@ -174,6 +182,7 @@ teardown() {
 	run retrieveAppName
 
 	assert_output "my-project"
+	assert_success
 }
 
 @test "should print that build has failed [Maven]" {
@@ -182,6 +191,7 @@ teardown() {
 	run printTestResults
 
 	assert_output --partial "Build failed!!!"
+	assert_failure
 }
 
 @test "should print stubrunner ids property [Maven]" {
@@ -191,6 +201,7 @@ teardown() {
 	run retrieveStubRunnerIds
 
 	assert_output --partial "foo.bar:baz"
+	assert_success
 }
 
 @test "should run the smoke tests for Concourse [Maven]" {
@@ -204,6 +215,7 @@ teardown() {
 
 	assert_output --partial "SMOKE TESTS [foo/bar]"
 	assert_output --partial "maven-surefire-plugin"
+	assert_success
 }
 
 @test "should run the smoke tests for Jenkins [Maven]" {
@@ -217,6 +229,7 @@ teardown() {
 
 	assert_output --partial "SMOKE TESTS [foo/bar]"
 	assert_output --partial "maven-surefire-plugin"
+	assert_success
 }
 
 @test "should run the e2e tests for Concourse [Maven]" {
@@ -229,6 +242,7 @@ teardown() {
 
 	assert_output --partial "E2E [foo]"
 	assert_output --partial "maven-surefire-plugin"
+	assert_success
 }
 
 @test "should run the e2e tests for Jenkins [Maven]" {
@@ -241,6 +255,7 @@ teardown() {
 
 	assert_output --partial "E2E [foo]"
 	assert_output --partial "maven-surefire-plugin"
+	assert_success
 }
 
 @test "should return 'target' for outputFolder [Maven]" {
@@ -249,6 +264,7 @@ teardown() {
 	run outputFolder
 
 	assert_output "target"
+	assert_success
 }
 
 @test "should return maven test results for testResultsAntPattern [Maven]" {
@@ -257,4 +273,5 @@ teardown() {
 	run testResultsAntPattern
 
 	assert_output "**/surefire-reports/*"
+	assert_success
 }

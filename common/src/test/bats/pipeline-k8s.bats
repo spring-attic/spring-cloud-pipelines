@@ -133,6 +133,7 @@ export -f mockGradlew
 	assert_output --partial "DOCKER_USERNAME=DOCKER_USERNAME"
 	assert_output --partial "DOCKER_PASSWORD=DOCKER_PASSWORD"
 	assert_output --partial "DOCKER_EMAIL=DOCKER_EMAIL"
+	assert_success
 }
 
 @test "should download kubectl if it's missing and connect to cluster [K8S]" {
@@ -150,6 +151,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
 	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+	assert_success
 }
 
 @test "should redownload kubectl if redownload infra flag is set and connect to cluster [K8S]" {
@@ -168,6 +170,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
 	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+	assert_success
 }
 
 @test "should not redownload kubectl if redownload infra flag is not set and kubectl was downloaded and connect to cluster [K8S]" {
@@ -185,6 +188,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
 	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+	assert_success
 }
 
 @test "should use token from env var to connect to the cluster [K8S]" {
@@ -203,6 +207,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
 	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+	assert_success
 }
 
 @test "should use token from a file to connect to the cluster [K8S]" {
@@ -222,6 +227,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
 	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+	assert_success
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing for non-minikube [K8S][Maven]" {
@@ -247,6 +253,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing for minikube [K8S][Maven]" {
@@ -272,6 +279,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to test environment with additional services for non-minikube [K8S][Maven]" {
@@ -307,6 +315,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to test environment with additional services for minikube [K8S][Maven]" {
@@ -342,6 +351,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing for minikube [K8S][Gradle]" {
@@ -367,6 +377,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to test environment with additional services for non-minikube [K8S][Gradle]" {
@@ -402,6 +413,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to test environment with additional services for minikube [K8S][Gradle]" {
@@ -437,6 +449,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should prepare and execute smoke tests for minikube [K8S][Maven]" {
@@ -456,6 +469,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "-Psmoke"
+	assert_success
 }
 
 @test "should prepare and execute smoke tests for minikube [K8S][Gradle]" {
@@ -475,6 +489,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "gradlew smoke"
+	assert_success
 }
 
 @test "should prepare and execute smoke tests for non minikube [K8S][Maven]" {
@@ -494,6 +509,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "-Psmoke"
+	assert_success
 }
 
 @test "should prepare and execute smoke tests for non minikube [K8S][Gradle]" {
@@ -513,6 +529,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "gradlew smoke"
+	assert_success
 }
 
 @test "should deploy app for rollback tests without additional services if pipeline descriptor is missing for minikube [K8S][Gradle]" {
@@ -540,6 +557,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to rollback test environment with additional services for non-minikube [K8S][Gradle]" {
@@ -567,6 +585,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to rollback test environment with additional services for minikube [K8S][Gradle]" {
@@ -594,6 +613,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should skip the rollback step if no prod deployment took place [K8S][Maven]" {
@@ -614,6 +634,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "No prod release took place - skipping this step"
 	refute_output --partial "-Psmoke"
+	assert_success
 }
 
 @test "should prepare and execute rollback tests for minikube [K8S][Maven]" {
@@ -634,6 +655,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "-Psmoke"
+	assert_success
 }
 
 @test "should prepare and execute rollback tests for minikube [K8S][Gradle]" {
@@ -654,6 +676,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "gradlew smoke"
+	assert_success
 }
 
 @test "should prepare and execute rollback tests for non minikube [K8S][Maven]" {
@@ -674,6 +697,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "-Psmoke"
+	assert_success
 }
 
 @test "should prepare and execute rollback tests for non minikube [K8S][Gradle]" {
@@ -694,6 +718,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "gradlew smoke"
+	assert_success
 }
 
 @test "should deploy app for e2e tests without additional services if pipeline descriptor is missing for minikube [K8S][Gradle]" {
@@ -720,6 +745,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to stage environment with additional services for non-minikube [K8S][Gradle]" {
@@ -746,6 +772,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should deploy app to stage environment with additional services for minikube [K8S][Gradle]" {
@@ -772,6 +799,7 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
 	assert_output --partial "App started successfully!"
+	assert_success
 }
 
 @test "should prepare and execute e2e tests for minikube [K8S][Maven]" {
@@ -792,6 +820,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "-Pe2e"
+	assert_success
 }
 
 @test "should prepare and execute e2e tests for minikube [K8S][Gradle]" {
@@ -812,6 +841,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "gradlew e2e"
+	assert_success
 }
 
 @test "should prepare and execute e2e tests for non minikube [K8S][Maven]" {
@@ -832,6 +862,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "-Pe2e"
+	assert_success
 }
 
 @test "should prepare and execute e2e tests for non minikube [K8S][Gradle]" {
@@ -852,6 +883,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "gradlew e2e"
+	assert_success
 }
 
 @test "should escape non DNS valid name [K8S]" {
@@ -860,6 +892,7 @@ export -f mockGradlew
 	run escapeValueForDns "a_b_1.2.3"
 
 	assert_output "a-b-1-2-3"
+	assert_success
 }
 
 @test "should not escape a valid DNS name [K8S]" {
@@ -868,6 +901,7 @@ export -f mockGradlew
 	run escapeValueForDns "a-b-1-2-3"
 
 	assert_output "a-b-1-2-3"
+	assert_success
 }
 
 @test "should return false if object hasn't been deployed [K8S]" {
@@ -877,6 +911,7 @@ export -f mockGradlew
 	result="$( objectDeployed "service" "bar" )"
 
 	assert_equal "${result}" "false"
+	assert_success
 }
 
 @test "should return true if object has been deployed [K8S]" {
@@ -886,6 +921,7 @@ export -f mockGradlew
 	result="$( objectDeployed "service" "bar" )"
 
 	assert_equal "${result}" "true"
+	assert_success
 }
 
 @test "should deploy blue instance for non minikube [K8S][Maven]" {
@@ -906,6 +942,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_success
 }
 
 @test "should deploy blue instance for non minikube [K8S][Gradle]" {
@@ -926,6 +963,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
+	assert_success
 }
 
 @test "should fail to deploy blue instance for non minikube when green is already deployed [K8S][Maven]" {
@@ -1030,6 +1068,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "delete deployment"
+	assert_success
 }
 
 @test "should delete green instance for non minikube [K8S][Gradle]" {
@@ -1050,6 +1089,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "delete deployment"
+	assert_success
 }
 
 @test "should delete green instance for non minikube [K8S][Maven]" {
@@ -1070,6 +1110,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "delete deployment"
+	assert_success
 }
 
 @test "should delete green instance for non minikube [K8S][Gradle]" {
@@ -1090,6 +1131,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name"
 	assert_output --partial "delete deployment"
+	assert_success
 }
 
 @test "should rollback to blue [K8S][Maven]" {

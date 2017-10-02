@@ -48,6 +48,7 @@ teardown() {
 
 	assert_output --partial ":jar"
 	assert [ -e "${TEMP_DIR}/gradle/build_project/build/libs/my-project-100.0.0.jar" ]
+	assert_success
 }
 
 @test "should print test results when build failed for Jenkins [Gradle]" {
@@ -62,6 +63,7 @@ teardown() {
 	run build
 
 	assert_output --partial "Build failed!!!"
+	assert_failure
 }
 
 @test "should set a version and execute build for Jenkins [Gradle]" {
@@ -76,6 +78,7 @@ teardown() {
 
 	assert_output --partial ":jar"
 	assert [ -e "${TEMP_DIR}/gradle/build_project/build/libs/my-project-100.0.0.jar" ]
+	assert_success
 }
 
 @test "should print test results when build failed for Concourse [Gradle]" {
@@ -90,6 +93,7 @@ teardown() {
 	run build
 
 	assert_output --partial "Build failed!!!"
+	assert_failure
 }
 
 @test "should skip the step if prod tag is missing for apiCompatibilityCheck [Gradle]" {
@@ -100,6 +104,7 @@ teardown() {
 	run apiCompatibilityCheck
 
 	assert_output --partial "No prod release took place - skipping this step"
+	assert_success
 }
 
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Concourse [Gradle]" {
@@ -113,6 +118,7 @@ teardown() {
 	assert_output --partial "Last prod version equals [100.0.0]"
 	assert_output --partial "latestProductionVersion [100.0.0]"
 	assert_output --partial ":apiCompatibility"
+	assert_success
 }
 
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Jenkins [Gradle]" {
@@ -126,6 +132,7 @@ teardown() {
 	assert_output --partial "Last prod version equals [100.0.0]"
 	assert_output --partial "latestProductionVersion [100.0.0]"
 	assert_output --partial ":apiCompatibility"
+	assert_success
 }
 
 @test "should print group id [Gradle]" {
@@ -175,6 +182,7 @@ teardown() {
 	assert_output --partial "application.url [foo]"
 	assert_output --partial "stubrunner.url [bar]"
 	assert_output --partial ":smoke"
+	assert_success
 }
 
 @test "should run the smoke tests for Jenkins [Gradle]" {
@@ -189,6 +197,7 @@ teardown() {
 	assert_output --partial "application.url [foo]"
 	assert_output --partial "stubrunner.url [bar]"
 	assert_output --partial ":smoke"
+	assert_success
 }
 
 @test "should run the e2e tests for Concourse [Gradle]" {
@@ -201,6 +210,7 @@ teardown() {
 
 	assert_output --partial "application.url [foo]"
 	assert_output --partial ":e2e"
+	assert_success
 }
 
 @test "should run the e2e tests for Jenkins [Gradle]" {
@@ -213,6 +223,7 @@ teardown() {
 
 	assert_output --partial "application.url [foo]"
 	assert_output --partial ":e2e"
+	assert_success
 }
 
 @test "should return 'target' for outputFolder [Gradle]" {
