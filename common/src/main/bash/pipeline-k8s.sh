@@ -650,11 +650,13 @@ function performGreenDeploymentOfTestedApplication() {
 	echo "Will name the application [${changedAppName}]"
 	local otherDeployedInstances
 	otherDeployedInstances="$(otherDeployedInstances "${appName}" "${changedAppName}" )"
-	local numberOfDeployments
-	numberOfDeployments="$(echo "${otherDeployedInstances}" | wc -l | awk '{print $1}')"
-	if [[ "${numberOfDeployments}" != "" && $((numberOfDeployments > 1)) == 1 ]]; then
-		echo "Green already deployed. Please complete switch over first"
-		return 1
+	if [[ "${otherDeployedInstances}" != "" ]]; then
+		local numberOfDeployments
+		numberOfDeployments="$(echo "${otherDeployedInstances}" | wc -l | awk '{print $1}')"
+		if ((numberOfDeployments > 1)); then
+			echo "Green already deployed. Please complete switch over first"
+			return 1
+		fi
 	fi
 	local systemProps="-Dspring.profiles.active=${profiles}"
 	substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
