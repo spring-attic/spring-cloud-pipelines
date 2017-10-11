@@ -67,7 +67,7 @@ function performGreenDeployment() {
 	exit 1
 }
 
-function rollbackToBlueInstance() {
+function rollbackToPreviousVersion() {
 	echo "Will rollback to blue instance"
 	exit 1
 }

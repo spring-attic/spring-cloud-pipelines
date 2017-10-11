@@ -10,4 +10,4 @@ export ENVIRONMENT=PROD
 [[ -f "${__DIR}/pipeline.sh" ]] && source "${__DIR}/pipeline.sh" ||  \
  echo "No pipeline.sh found"
 
-rollbackToBlueInstance
+rollbackToPreviousVersion

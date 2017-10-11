@@ -694,7 +694,7 @@ parsedRepos.each {
 	}
 
 	dsl.job("${projectName}-prod-env-rollback") {
-		deliveryPipelineConfiguration('Prod', 'Rollback to blue')
+		deliveryPipelineConfiguration('Prod', 'Rollback')
 		wrappers {
 			deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
 			maskPasswords()

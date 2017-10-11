@@ -685,7 +685,7 @@ function escapeValueForDns() {
 	echo "${lowerCaseSed}"
 }
 
-function rollbackToBlueInstance() {
+function rollbackToPreviousVersion() {
 	local appName
 	appName="$(retrieveAppName)"
 	# Log in to CF to start deployment

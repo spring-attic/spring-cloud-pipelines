@@ -484,7 +484,7 @@ function performGreenDeploymentOfTestedApplication() {
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 }
 
-function rollbackToBlueInstance() {
+function rollbackToPreviousVersion() {
 	local appName
 	appName="$(retrieveAppName)"
 	# Log in to CF to start deployment
