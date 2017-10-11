@@ -14,6 +14,4 @@ caches:
   - path: gradle
   - path: maven
 run:
-  path: /bin/bash
-  args:
-    - tools/concourse/tasks/test-smoke/task.sh
+  path: tools/concourse/tasks/test-smoke/task.sh
