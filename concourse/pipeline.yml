@@ -71,8 +71,10 @@ jobs:
       - build-and-upload
       trigger: true
   - task: build-api-compatibility-check
-    file: tools/concourse/tasks/build-api-compatibility-check/task.yml
+    file: tools/concourse/task.yml
     params:
+      MESSAGE: "Deploying the built application on test environment"
+      SCRIPT_TO_RUN: "build_api_compatibility_check.sh"
       <<: *common-params
 
 - name: test-deploy
@@ -88,8 +90,10 @@ jobs:
       - build-api-compatibility-check
       trigger: true
   - task: test-deploy
-    file: tools/concourse/tasks/test-deploy/task.yml
+    file: tools/concourse/task.yml
     params:
+      MESSAGE: "Deploying the built application on test environment"
+      SCRIPT_TO_RUN: "test_deploy.sh"
       <<: *common-params
       <<: *paas-test-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
@@ -107,8 +111,10 @@ jobs:
       - test-deploy
       trigger: true
   - task: test-smoke
-    file: tools/concourse/tasks/test-smoke/task.yml
+    file: tools/concourse/task.yml
     params:
+      MESSAGE: "Testing the built application on test environment"
+      SCRIPT_TO_RUN: "test_smoke.sh"
       <<: *common-params
       <<: *paas-test-params
 
@@ -125,8 +131,10 @@ jobs:
       - test-smoke
       trigger: true
   - task: test-rollback-deploy
-    file: tools/concourse/tasks/test-rollback-deploy/task.yml
+    file: tools/concourse/task.yml
     params:
+      MESSAGE: "Deploying the built application on test environment"
+      SCRIPT_TO_RUN: "test_rollback_deploy.sh"
       <<: *common-params
       <<: *paas-test-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
@@ -144,8 +152,10 @@ jobs:
       - test-rollback-deploy
       trigger: true
   - task: test-rollback-smoke
-    file: tools/concourse/tasks/test-rollback-smoke/task.yml
+    file: tools/concourse/task.yml
     params:
+      MESSAGE: "Testing the rolled back built application on test environment"
+      SCRIPT_TO_RUN: "test_rollback_smoke.sh"
       <<: *common-params
       <<: *paas-test-params
 
@@ -162,8 +172,10 @@ jobs:
       - test-rollback-smoke
       trigger: false
   - task: stage-deploy
-    file: tools/concourse/tasks/stage-deploy/task.yml
+    file: tools/concourse/task.yml
     params:
+      MESSAGE: "Deploying the built application on test environment"
+      SCRIPT_TO_RUN: "stage_deploy.sh"
       <<: *common-params
       <<: *paas-stage-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
@@ -181,8 +193,10 @@ jobs:
       - stage-deploy
       trigger: false
   - task: stage-smoke
-    file: tools/concourse/tasks/stage-e2e/task.yml
+    file: tools/concourse/task.yml
     params:
+      MESSAGE: "Testing the built application on stage environment"
+      SCRIPT_TO_RUN: "stage_e2e.sh"
       <<: *common-params
       <<: *paas-stage-params
 
@@ -223,8 +237,10 @@ jobs:
       - prod-deploy
       trigger: false
   - task: prod-rollback
-    file: tools/concourse/tasks/prod-rollback/task.yml
+    file: tools/concourse/task.yml
     params:
+      MESSAGE: "Rolling back to previous instance"
+      SCRIPT_TO_RUN: "prod_rollback.sh"
       <<: *common-params
       <<: *paas-prod-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
@@ -242,8 +258,10 @@ jobs:
       - prod-deploy
       trigger: false
   - task: prod-complete
-    file: tools/concourse/tasks/prod-complete/task.yml
+    file: tools/concourse/task.yml
     params:
+      MESSAGE: "Completing the switch over"
+      SCRIPT_TO_RUN: "prod_complete.sh"
       <<: *common-params
       <<: *paas-prod-params
 

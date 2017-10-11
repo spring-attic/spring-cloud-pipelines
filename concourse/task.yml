@@ -14,4 +14,4 @@ caches:
   - path: gradle
   - path: maven
 run:
-  path: tools/concourse/tasks/test-rollback-deploy/task.sh
+  path: tools/concourse/task.sh
