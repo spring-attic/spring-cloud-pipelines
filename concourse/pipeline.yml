@@ -44,7 +44,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - generate-version
       trigger: true
@@ -66,7 +65,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - build-and-upload
       trigger: true
@@ -85,7 +83,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - build-api-compatibility-check
       trigger: true
@@ -106,7 +103,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - test-deploy
       trigger: true
@@ -126,7 +122,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - test-smoke
       trigger: true
@@ -147,7 +142,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - test-rollback-deploy
       trigger: true
@@ -167,7 +161,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - test-rollback-smoke
       trigger: false
@@ -188,7 +181,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - stage-deploy
       trigger: false
@@ -208,7 +200,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - stage-e2e
       trigger: false
@@ -232,7 +223,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - prod-deploy
       trigger: false
@@ -253,7 +243,6 @@ jobs:
     - get: tools
     - get: repo
     - get: version
-      resource: version
       passed:
       - prod-deploy
       trigger: false
