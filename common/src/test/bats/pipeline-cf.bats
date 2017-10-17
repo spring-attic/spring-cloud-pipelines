@@ -44,6 +44,7 @@ function curl {
 }
 
 function tar {
+	touch "${CF_BIN}"
 	echo "tar $*"
 }
 
@@ -145,7 +146,6 @@ export -f mockGradlew
 @test "should retrieve the host from the URL from CF [CF]" {
 	export CF_BIN="cf_that_returns_apps"
 	cd "${TEMP_DIR}/maven/empty_project"
-	touch "${CF_BIN}"
 	source "${SOURCE_DIR}/pipeline.sh"
 
 	result="$( appHost "github-analytics" )"
@@ -159,7 +159,6 @@ export -f mockGradlew
 @test "should bind a service only if it's already running [CF]" {
 	export CF_BIN="cf_that_returns_nothing"
 	cd "${TEMP_DIR}/maven/empty_project"
-	touch "${CF_BIN}"
 	source "${SOURCE_DIR}/pipeline.sh"
 
 	run bindService "github-analytics"
@@ -174,7 +173,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_deploy.sh"
 
@@ -201,7 +199,6 @@ export -f mockGradlew
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_deploy.sh"
 
@@ -261,7 +258,6 @@ export -f mockGradlew
 	# notice lowercase of artifactid (should be artifactId) - but lowercase function gets applied
 	projectName="gradlew artifactid -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_deploy.sh"
 
@@ -290,7 +286,6 @@ export -f mockGradlew
 	projectName="gradlew artifactid -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_deploy.sh"
 
@@ -348,7 +343,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_smoke.sh"
 
@@ -365,7 +359,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="build/libs"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_smoke.sh"
 
@@ -386,7 +379,6 @@ export -f mockGradlew
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
@@ -403,7 +395,6 @@ export -f mockGradlew
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project/"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
@@ -439,7 +430,6 @@ export -f mockGradlew
 	projectName="gradlew artifactid -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project/"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
@@ -473,7 +463,6 @@ export -f mockGradlew
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
@@ -489,7 +478,6 @@ export -f mockGradlew
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
@@ -507,7 +495,6 @@ export -f mockGradlew
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
@@ -527,7 +514,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="stage"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
@@ -555,7 +541,6 @@ export -f mockGradlew
 	env="stage"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
@@ -603,7 +588,6 @@ export -f mockGradlew
 	# notice lowercase of artifactid (should be artifactId) - but lowercase function gets applied
 	projectName="gradlew artifactid -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
@@ -633,7 +617,6 @@ export -f mockGradlew
 	projectName="gradlew artifactid -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
@@ -678,7 +661,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="stage"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/stage_e2e.sh"
 
@@ -695,7 +677,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="build/libs"
 	env="stage"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/stage_e2e.sh"
 
@@ -713,7 +694,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="prod"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/prod_deploy.sh"
 
@@ -742,7 +722,6 @@ export -f mockGradlew
 	# notice lowercase of artifactid (should be artifactId) - but lowercase function gets applied
 	projectName="gradlew artifactid -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/prod_deploy.sh"
 
@@ -769,7 +748,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="prod"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/prod_complete.sh"
 
@@ -789,7 +767,6 @@ export -f mockGradlew
 	env="prod"
 	projectName="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/prod_complete.sh"
 
@@ -849,7 +826,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="prod"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/prod_rollback.sh"
 
@@ -870,7 +846,6 @@ export -f mockGradlew
 	env="prod"
 	projectName="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	touch "${CF_BIN}"
 
 	run "${SOURCE_DIR}/prod_rollback.sh"
 
