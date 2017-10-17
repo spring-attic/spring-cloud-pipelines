@@ -67,16 +67,6 @@ function kubectl {
 	echo "kubectl $*"
 }
 
-count=1
-function kubectl_that_fails_first_time {
-	if [[ "${1}" == "version" && "${count}" == 1 ]]; then
-		return 1
-	else
-		count=count+1
-	fi
-	echo "kubectl $*"
-}
-
 function kubectl_that_returns_empty_string {
 	echo ""
 }
@@ -114,7 +104,6 @@ function mockGradlew {
 
 export -f curl
 export -f kubectl
-export -f kubectl_that_fails_first_time
 export -f kubectl_that_returns_empty_string
 export -f kubectl_that_returns_too_many_deployments
 export -f kubectl_that_returns_deployments
@@ -142,63 +131,21 @@ export -f mockGradlew
 	assert_success
 }
 
-@test "should download kubectl if it's missing and connect to cluster [K8S]" {
-	export REDOWNLOAD_INFRA="false"
-	export KUBECTL_BIN="kubectl_that_fails_first_time"
+@test "should download kubectl and connect to cluster [K8S]" {
 	cd "${TEMP_DIR}/maven/empty_project"
 	source "${SOURCE_DIR}/pipeline.sh"
 
 	run logInToPaas
 
 	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
-	assert_output --partial "CLI Installed? [false], CLI Downloaded? [false]"
 	assert_output --partial "curl -LO https://storage.googleapis.com"
-	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
-	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
-	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
-	assert_success
-}
-
-@test "should redownload kubectl if redownload infra flag is set and connect to cluster [K8S]" {
-	export REDOWNLOAD_INFRA="true"
-	export KUBECTL_BIN="kubectl_that_fails_first_time"
-	cd "${TEMP_DIR}/maven/empty_project"
-	touch "${KUBECTL_BIN}"
-	source "${SOURCE_DIR}/pipeline.sh"
-
-	run logInToPaas
-
-	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
-	assert_output --partial "CLI Installed? [false], CLI Downloaded? [true]"
-	assert_output --partial "curl -LO https://storage.googleapis.com"
-	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
-	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
-	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
-	assert_success
-}
-
-@test "should not redownload kubectl if redownload infra flag is not set and kubectl was downloaded and connect to cluster [K8S]" {
-	export REDOWNLOAD_INFRA="false"
-	export KUBECTL_BIN="kubectl"
-	cd "${TEMP_DIR}/maven/empty_project"
-	touch "${KUBECTL_BIN}"
-	source "${SOURCE_DIR}/pipeline.sh"
-
-	run logInToPaas
-
-	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
-	refute_output --partial "curl -LO https://storage.googleapis.com"
-	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
-	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
-	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true" --kubeconfig=
+	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}" --kubeconfig=
+	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username" --kubeconfig=
 	assert_success
 }
 
 @test "should use token from env var to connect to the cluster [K8S]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export TOKEN="FOO"
 	cd "${TEMP_DIR}/maven/empty_project"
@@ -208,16 +155,14 @@ export -f mockGradlew
 	run logInToPaas
 
 	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
-	refute_output --partial "curl -LO https://storage.googleapis.com"
-	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
-	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO"
-	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+	assert_output --partial "curl -LO https://storage.googleapis.com"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true" --kubeconfig=
+	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO" --kubeconfig=
+	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username" --kubeconfig=
 	assert_success
 }
 
 @test "should use token from a file to connect to the cluster [K8S]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export PAAS_TEST_CLIENT_TOKEN_PATH="${TEMP_DIR}/maven/empty_project/token"
 	cd "${TEMP_DIR}/maven/empty_project"
@@ -228,16 +173,14 @@ export -f mockGradlew
 	run logInToPaas
 
 	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
-	refute_output --partial "curl -LO https://storage.googleapis.com"
-	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
-	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO"
-	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
+	assert_output --partial "curl -LO https://storage.googleapis.com"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true" --kubeconfig=
+	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO" --kubeconfig=
+	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username" --kubeconfig=
 	assert_success
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing for non-minikube [K8S][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -250,7 +193,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
@@ -263,7 +206,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing for minikube [K8S][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export KUBERNETES_MINIKUBE="true"
@@ -276,7 +218,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
@@ -289,7 +231,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment with additional services for non-minikube [K8S][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -303,7 +244,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/rabbitmq-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-"
@@ -325,7 +266,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment with additional services for minikube [K8S][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -339,7 +279,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/rabbitmq-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-"
@@ -361,7 +301,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing for minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export KUBERNETES_MINIKUBE="true"
@@ -374,7 +313,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
@@ -387,7 +326,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment with additional services for non-minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -401,7 +339,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/rabbitmq-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-"
@@ -423,7 +361,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment with additional services for minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -437,7 +374,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret rabbitmq-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/rabbitmq-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret mysql-"
@@ -459,7 +396,6 @@ export -f mockGradlew
 }
 
 @test "should prepare and execute smoke tests for minikube [K8S][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -473,13 +409,12 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
 	assert_success
 }
 
 @test "should prepare and execute smoke tests for minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -493,13 +428,12 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
 	assert_success
 }
 
 @test "should prepare and execute smoke tests for non minikube [K8S][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -513,13 +447,12 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
 	assert_success
 }
 
 @test "should prepare and execute smoke tests for non minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -533,13 +466,12 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
 	assert_success
 }
 
 @test "should deploy app for rollback tests without additional services if pipeline descriptor is missing for minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export KUBERNETES_MINIKUBE="true"
@@ -553,7 +485,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "Last prod version equals 1.0.0.FOO"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
@@ -567,7 +499,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to rollback test environment with additional services for non-minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -582,7 +513,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "Last prod version equals 1.0.0.FOO"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
@@ -595,7 +526,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to rollback test environment with additional services for minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -610,7 +540,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "Last prod version equals 1.0.0.FOO"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
@@ -623,7 +553,6 @@ export -f mockGradlew
 }
 
 @test "should skip the rollback step if no prod deployment took place [K8S][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -637,14 +566,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "No prod release took place - skipping this step"
 	refute_output --partial "-Psmoke"
 	assert_success
 }
 
 @test "should prepare and execute rollback tests for minikube [K8S][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -659,13 +587,12 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
 	assert_success
 }
 
 @test "should prepare and execute rollback tests for minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -680,13 +607,12 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
 	assert_success
 }
 
 @test "should prepare and execute rollback tests for non minikube [K8S][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -701,13 +627,12 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
 	assert_success
 }
 
 @test "should prepare and execute rollback tests for non minikube [K8S][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -722,14 +647,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
 	assert_success
 }
 
 @test "should deploy app for e2e tests without additional services if pipeline descriptor is missing for minikube [K8S][Gradle]" {
 	export ENVIRONMENT="STAGE"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export KUBERNETES_MINIKUBE="true"
@@ -743,7 +667,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
@@ -756,7 +680,6 @@ export -f mockGradlew
 
 @test "should deploy app to stage environment with additional services for non-minikube [K8S][Gradle]" {
 	export ENVIRONMENT="STAGE"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-stage"
@@ -771,7 +694,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
@@ -783,7 +706,6 @@ export -f mockGradlew
 
 @test "should deploy app to stage environment with additional services for minikube [K8S][Gradle]" {
 	export ENVIRONMENT="STAGE"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-stage"
@@ -798,7 +720,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
@@ -810,7 +732,6 @@ export -f mockGradlew
 
 @test "should prepare and execute e2e tests for minikube [K8S][Maven]" {
 	export ENVIRONMENT="STAGE"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-stage"
@@ -824,14 +745,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/stage_e2e.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Pe2e"
 	assert_success
 }
 
 @test "should prepare and execute e2e tests for minikube [K8S][Gradle]" {
 	export ENVIRONMENT="STAGE"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -845,14 +765,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/stage_e2e.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew e2e"
 	assert_success
 }
 
 @test "should prepare and execute e2e tests for non minikube [K8S][Maven]" {
 	export ENVIRONMENT="STAGE"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-stage"
@@ -866,14 +785,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/stage_e2e.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Pe2e"
 	assert_success
 }
 
 @test "should prepare and execute e2e tests for non minikube [K8S][Gradle]" {
 	export ENVIRONMENT="STAGE"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-test"
@@ -887,7 +805,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/stage_e2e.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew e2e"
 	assert_success
 }
@@ -932,7 +850,6 @@ export -f mockGradlew
 
 @test "should deploy blue instance for non minikube [K8S][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -946,14 +863,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}"/prod_deploy.sh
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_success
 }
 
 @test "should deploy blue instance for non minikube [K8S][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -967,14 +883,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}"/prod_deploy.sh
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_success
 }
 
 @test "should fail to deploy blue instance for non minikube when green is already deployed [K8S][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl_that_returns_parsed_too_many_deployments"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -996,7 +911,6 @@ export -f mockGradlew
 
 @test "should fail to deploy blue instance for non minikube when green is already deployed [K8S][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl_that_returns_parsed_too_many_deployments"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -1071,7 +985,6 @@ export -f mockGradlew
 
 @test "should delete green instance for non minikube [K8S][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -1085,14 +998,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/prod_complete.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "delete deployment"
 	assert_success
 }
 
 @test "should delete green instance for non minikube [K8S][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -1106,14 +1018,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/prod_complete.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "delete deployment"
 	assert_success
 }
 
 @test "should delete green instance for non minikube [K8S][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -1127,14 +1038,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/prod_complete.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "delete deployment"
 	assert_success
 }
 
 @test "should delete green instance for non minikube [K8S][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -1148,14 +1058,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/prod_complete.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "delete deployment"
 	assert_success
 }
 
 @test "should rollback to blue [K8S][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -1169,14 +1078,13 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/prod_rollback.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "scale deployment"
 	assert_success
 }
 
 @test "should rollback to blue [K8S][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export KUBECTL_BIN="kubectl"
 	export K8S_CONTEXT="context"
 	export PAAS_NAMESPACE="sc-pipelines-prod"
@@ -1190,7 +1098,7 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/prod_rollback.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name"
+	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "scale deployment"
 	assert_success
 }

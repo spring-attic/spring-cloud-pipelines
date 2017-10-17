@@ -3,7 +3,6 @@
 set -e
 
 function logInToPaas() {
-	local redownloadInfra="${REDOWNLOAD_INFRA}"
 	local ca="PAAS_${ENVIRONMENT}_CA"
 	local k8sCa="${!ca}"
 	local clientCert="PAAS_${ENVIRONMENT}_CLIENT_CERT"
@@ -20,24 +19,9 @@ function logInToPaas() {
 	local k8sSystemName="${!systemName}"
 	local api="PAAS_${ENVIRONMENT}_API_URL"
 	local apiUrl="${!api:-192.168.99.100:8443}"
-	local cliInstalled
-	cliInstalled="$("${KUBECTL_BIN}" version && echo "true" || echo "false")"
-	local cliDownloaded
-	cliDownloaded="$(test -r "${KUBECTL_BIN}" && echo "true" || echo "false")"
-	echo "CLI Installed? [${cliInstalled}], CLI Downloaded? [${cliDownloaded}]"
-	if [[ ${cliInstalled} == "false" && ( ${cliDownloaded} == "false" || ${cliDownloaded} == "true" && ${redownloadInfra} == "true" ) ]]; then
-		echo "Downloading CLI"
-		curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl" --fail
-		local cliDownloaded="true"
-	else
-		echo "CLI is already installed or was already downloaded but the flag to redownload was disabled"
-	fi
-
-	if [[ ${cliDownloaded} == "true" ]]; then
-		echo "Adding CLI to PATH"
-		PATH="${PATH}:$(pwd)"
-		chmod +x "${KUBECTL_BIN}"
-	fi
+	echo "Downloading CLI"
+	curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl" --fail
+	chmod +x "${KUBECTL_BIN}"
 	echo "Removing current Kubernetes configuration"
 	rm -rf "${KUBE_CONFIG_PATH}" || echo "Failed to remove Kube config. Continuing with the script"
 	echo "Logging in to Kubernetes API [${apiUrl}], with cluster name [${k8sClusterName}] and user [${k8sClusterUser}]"
@@ -48,12 +32,12 @@ function logInToPaas() {
 	elif [[ "${k8sTokenPath}" != "" ]]; then
 		local tokenContent
 		tokenContent="$(cat "${k8sTokenPath}")"
-		"${KUBECTL_BIN}" config set-credentials "${k8sClusterUser}" --token="${tokenContent}"
+		"${KUBECTL_BIN}" config set-credentials "${k8sClusterUser}" --token="${tokenContent}" --kubeconfig="${KUBE_CONFIG_PATH}"
 	else
-		"${KUBECTL_BIN}" config set-credentials "${k8sClusterUser}" --certificate-authority="${k8sCa}" --client-key="${k8sClientKey}" --client-certificate="${k8sClientCert}"
+		"${KUBECTL_BIN}" config set-credentials "${k8sClusterUser}" --certificate-authority="${k8sCa}" --client-key="${k8sClientKey}" --client-certificate="${k8sClientCert}"  --kubeconfig="${KUBE_CONFIG_PATH}"
 	fi
-	"${KUBECTL_BIN}" config set-context "${k8sSystemName}" --cluster="${k8sClusterName}" --user="${k8sClusterUser}"
-	"${KUBECTL_BIN}" config use-context "${k8sSystemName}"
+	"${KUBECTL_BIN}" config set-context "${k8sSystemName}" --cluster="${k8sClusterName}" --user="${k8sClusterUser}"  --kubeconfig="${KUBE_CONFIG_PATH}"
+	"${KUBECTL_BIN}" config use-context "${k8sSystemName}" --kubeconfig="${KUBE_CONFIG_PATH}"
 
 	echo "CLI version"
 	"${KUBECTL_BIN}" version
@@ -750,7 +734,7 @@ export KUBERNETES_NAMESPACE="${PAAS_NAMESPACE}"
 export SYSTEM
 SYSTEM="$(system)"
 export KUBE_CONFIG_PATH
-KUBE_CONFIG_PATH="${KUBE_CONFIG_PATH:-${HOME}/.kube/config}"
+KUBE_CONFIG_PATH="${KUBE_CONFIG_PATH:-.kube/config}"
 export KUBECTL_BIN
 KUBECTL_BIN="${KUBECTL_BIN:-kubectl}"
 

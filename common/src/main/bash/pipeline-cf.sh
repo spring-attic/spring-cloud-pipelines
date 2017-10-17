@@ -13,24 +13,9 @@ function logInToPaas() {
 	local cfSpace="${!space}"
 	local api="PAAS_${ENVIRONMENT}_API_URL"
 	local apiUrl="${!api:-api.run.pivotal.io}"
-	local cfInstalled
-	cfInstalled="$("${CF_BIN}" --version || echo "false")"
-	local cfDownloaded
-	cfDownloaded="$(test -r "${CF_BIN}" && echo "true" || echo "false")"
-	echo "CLI Installed? [${cfInstalled}], CLI Downloaded? [${cfDownloaded}]"
-	if [[ ${cfInstalled} == "false" && ${cfDownloaded} == "false" ]]; then
-		echo "Downloading Cloud Foundry CLI"
-		curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
-		cfDownloaded="true"
-	else
-		echo "CLI is already installed"
-	fi
-
-	if [[ ${cfDownloaded} == "true" ]]; then
-		echo "Adding CF to PATH"
-		PATH=${PATH}:$(pwd)
-		chmod +x cf
-	fi
+	echo "Downloading Cloud Foundry CLI"
+	curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
+	chmod +x cf
 
 	echo "Cloud foundry version"
 	"${CF_BIN}" --version

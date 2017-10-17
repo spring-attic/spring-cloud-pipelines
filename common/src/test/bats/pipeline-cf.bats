@@ -47,16 +47,6 @@ function tar {
 	echo "tar $*"
 }
 
-count=1
-function cf_that_fails_first_time {
-	if [[ "${1}" == "--version" && "${count}" == 1 ]]; then
-		return 1
-	else
-		count=count+1
-	fi
-	echo "cf $*"
-}
-
 function cf_that_returns_apps {
 	cat << EOF
 Getting apps in org MyOrg / space sc-pipelines-prod as foo@bar...
@@ -135,58 +125,18 @@ export -f cf_that_returns_test_apps
 export -f cf_that_returns_stage_apps
 export -f cf_that_returns_prod_apps
 export -f cf_that_returns_nothing
-export -f cf_that_fails_first_time
 export -f mockMvnw
 export -f mockGradlew
 
-@test "should download cf if it's missing and connect to cluster [CF]" {
-	export REDOWNLOAD_INFRA="false"
-	export CF_BIN="cf_that_fails_first_time"
-	env="test"
-	cd "${TEMP_DIR}/maven/empty_project"
-	source "${SOURCE_DIR}/pipeline.sh"
-
-	run logInToPaas
-
-	assert_output --partial "CLI Installed? [false], CLI Downloaded? [false]"
-	assert_output --partial "Downloading Cloud Foundry CLI"
-	assert_output --partial "Adding CF to PATH"
-	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_success
-}
-
-@test "should redownload cf if redownload infra flag is set and connect to cluster [CF]" {
-	export REDOWNLOAD_INFRA="true"
-	export CF_BIN="cf_that_fails_first_time"
-	env="test"
-	cd "${TEMP_DIR}/maven/empty_project"
-	touch "${CF_BIN}"
-	source "${SOURCE_DIR}/pipeline.sh"
-
-	run logInToPaas
-
-	assert_output --partial "CLI Installed? [false], CLI Downloaded? [true]"
-	refute_output --partial "Downloading Cloud Foundry CLI"
-	assert_output --partial "Adding CF to PATH"
-	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_success
-}
-
-@test "should not redownload cf if redownload infra flag is not set and cf was downloaded and connect to cluster [CF]" {
-	export REDOWNLOAD_INFRA="false"
+@test "should download cf and connect to cluster [CF]" {
 	export CF_BIN="cf"
 	env="test"
 	cd "${TEMP_DIR}/maven/empty_project"
-	touch "${CF_BIN}"
 	source "${SOURCE_DIR}/pipeline.sh"
 
 	run logInToPaas
 
-	assert_output --partial "CLI Installed? [cf --version], CLI Downloaded? [true]"
-	refute_output --partial "Downloading Cloud Foundry CLI"
-	assert_output --partial "Adding CF to PATH"
+	assert_output --partial "Downloading Cloud Foundry CLI"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_success
@@ -219,7 +169,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing [CF][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -246,7 +195,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment with additional services [CF][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -306,7 +254,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing [CF][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -335,7 +282,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment with additional services [CF][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -397,7 +343,6 @@ export -f mockGradlew
 }
 
 @test "should prepare and execute smoke tests [CF][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -415,7 +360,6 @@ export -f mockGradlew
 }
 
 @test "should prepare and execute smoke tests [CF][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -435,7 +379,6 @@ export -f mockGradlew
 }
 
 @test "should skip rollback deploy step if there are no tags [CF]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -453,7 +396,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment for rollback testing [CF][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -488,7 +430,6 @@ export -f mockGradlew
 }
 
 @test "should deploy app to test environment for rollback testing [CF][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -525,7 +466,6 @@ export -f mockGradlew
 }
 
 @test "should skip rollback testing step if there are no tags [CF]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -543,7 +483,6 @@ export -f mockGradlew
 }
 
 @test "should prepare and execute rollback tests [CF][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -562,7 +501,6 @@ export -f mockGradlew
 }
 
 @test "should prepare and execute rollback tests [CF][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -584,7 +522,6 @@ export -f mockGradlew
 
 @test "should deploy app to stage environment without additional services if pipeline descriptor is missing [CF][Maven]" {
 	export ENVIRONMENT="stage"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -612,7 +549,6 @@ export -f mockGradlew
 
 @test "should deploy app to stage environment with additional services [CF][Maven]" {
 	export ENVIRONMENT="stage"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -660,7 +596,6 @@ export -f mockGradlew
 
 @test "should deploy app to stage environment without additional services if pipeline descriptor is missing [CF][Gradle]" {
 	export ENVIRONMENT="STAGE"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -690,7 +625,6 @@ export -f mockGradlew
 
 @test "should deploy app to stage environment with additional services [CF][Gradle]" {
 	export ENVIRONMENT="STAGE"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -739,7 +673,6 @@ export -f mockGradlew
 }
 
 @test "should prepare and execute e2e tests [CF][Maven]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -757,7 +690,6 @@ export -f mockGradlew
 }
 
 @test "should prepare and execute e2e tests [CF][Gradle]" {
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -776,7 +708,6 @@ export -f mockGradlew
 
 @test "should deploy app to prod environment [CF][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -804,7 +735,6 @@ export -f mockGradlew
 
 @test "should deploy app to prod environment without additional services if pipeline descriptor is missing [CF][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -834,7 +764,6 @@ export -f mockGradlew
 
 @test "should complete switch over on prod [CF][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -854,7 +783,6 @@ export -f mockGradlew
 
 @test "should complete switch over on prod [CF][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -875,7 +803,6 @@ export -f mockGradlew
 
 @test "should complete switch over on prod without doing anything if app is missing [CF][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf_that_returns_nothing"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -896,7 +823,6 @@ export -f mockGradlew
 
 @test "should complete switch over on prod without doing anything if app is missing [CF][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf_that_returns_nothing"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -918,7 +844,6 @@ export -f mockGradlew
 
 @test "should rollback to blue instance on prod [CF][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -939,7 +864,6 @@ export -f mockGradlew
 
 @test "should rollback to blue instance on prod [CF][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
@@ -961,7 +885,6 @@ export -f mockGradlew
 
 @test "should not rollback to blue if blue is missing [CF][Maven]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf_that_returns_nothing"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
@@ -982,7 +905,6 @@ export -f mockGradlew
 
 @test "should not rollback to blue if blue is missing [CF][Gradle]" {
 	export ENVIRONMENT="PROD"
-	export REDOWNLOAD_INFRA="false"
 	export CF_BIN="cf_that_returns_nothing"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
