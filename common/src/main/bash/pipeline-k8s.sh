@@ -734,7 +734,11 @@ export KUBERNETES_NAMESPACE="${PAAS_NAMESPACE}"
 export SYSTEM
 SYSTEM="$(system)"
 export KUBE_CONFIG_PATH
-KUBE_CONFIG_PATH="${KUBE_CONFIG_PATH:-.kube/config}"
+KUBE_CONFIG_PATH="${KUBE_CONFIG_PATH}"
+if [[ ! -z "${KUBE_CONFIG_PATH}" ]]; then
+	KUBE_CONFIG_PATH="$(mktemp -d 2>/dev/null || mktemp -d -t 'sc-pipelines-k8s')"
+	trap '{ rm -f ${KUBE_CONFIG_PATH}; }' EXIT
+fi
 export KUBECTL_BIN
 KUBECTL_BIN="${KUBECTL_BIN:-kubectl}"
 
