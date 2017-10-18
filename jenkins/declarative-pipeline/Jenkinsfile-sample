@@ -10,7 +10,7 @@ pipeline {
 				checkout([
 					$class: 'GitSCM',
 					branches: [
-						[name: env.GIT_BRANCH_NAME ?: '*/master']
+						[name: "*/${env.GIT_BRANCH_NAME ?: 'master'}"]
 					],
 					extensions: [
 						[$class: 'WipeWorkspace'],
