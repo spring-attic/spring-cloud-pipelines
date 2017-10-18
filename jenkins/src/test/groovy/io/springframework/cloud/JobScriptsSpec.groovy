@@ -74,6 +74,136 @@ class JobScriptsSpec extends Specification {
 		scripts.jobs.collect { it.jobName }.containsAll(["jenkins-pipeline-cf-seed", "jenkins-pipeline-k8s-seed"])
 	}
 
+	def 'should parse REPOS with no special entries'() {
+		given:
+			MemoryJobManagement jm = new MemoryJobManagement()
+			defaultStubbing(jm)
+			jm.parameters << [
+				SCRIPTS_DIR: 'foo',
+				JENKINSFILE_DIR: 'foo',
+				REPOS: 'http://foo/bar'
+			]
+			DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+				new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+			noExceptionThrown()
+
+		and:
+			jm.savedConfigs.find { it.key == "bar-pipeline-build" }.with {
+				assert it.value.contains("<url>http://foo/bar</url>")
+				assert it.value.contains("<name>master</name>")
+				return it
+			}
+	}
+
+	def 'should parse REPOS with custom project name only'() {
+		given:
+			MemoryJobManagement jm = new MemoryJobManagement()
+			defaultStubbing(jm)
+			jm.parameters << [
+				SCRIPTS_DIR: 'foo',
+				JENKINSFILE_DIR: 'foo',
+				REPOS: 'http://foo/bar$custom'
+			]
+			DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+				new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+			noExceptionThrown()
+
+		and:
+			jm.savedConfigs.find { it.key == "custom-pipeline-build" }.with {
+				assert it.value.contains("<url>http://foo/bar</url>")
+				assert it.value.contains("<name>master</name>")
+				return it
+			}
+	}
+
+	def 'should parse REPOS with custom branch name only'() {
+		given:
+			MemoryJobManagement jm = new MemoryJobManagement()
+			defaultStubbing(jm)
+			jm.parameters << [
+				SCRIPTS_DIR: 'foo',
+				JENKINSFILE_DIR: 'foo',
+				REPOS: 'http://foo/bar#custom'
+			]
+			DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+				new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+			noExceptionThrown()
+
+		and:
+			jm.savedConfigs.find { it.key == "bar-pipeline-build" }.with {
+				assert it.value.contains("<url>http://foo/bar</url>")
+				assert it.value.contains("<name>custom</name>")
+				return it
+			}
+	}
+
+	def 'should parse REPOS with custom branch name and project name'() {
+		given:
+			MemoryJobManagement jm = new MemoryJobManagement()
+			defaultStubbing(jm)
+			jm.parameters << [
+				SCRIPTS_DIR: 'foo',
+				JENKINSFILE_DIR: 'foo',
+				REPOS: 'http://foo/bar#customBranch$customName'
+			]
+			DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+				new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+			noExceptionThrown()
+
+		and:
+			jm.savedConfigs.find { it.key == "customName-pipeline-build" }.with {
+				assert it.value.contains("<url>http://foo/bar</url>")
+				assert it.value.contains("<name>customBranch</name>")
+				return it
+			}
+	}
+
+	def 'should parse REPOS with custom project name and branch name'() {
+		given:
+			MemoryJobManagement jm = new MemoryJobManagement()
+			defaultStubbing(jm)
+			jm.parameters << [
+				SCRIPTS_DIR: 'foo',
+				JENKINSFILE_DIR: 'foo',
+				REPOS: 'http://foo/bar$customName#customBranch'
+			]
+			DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+				new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+			noExceptionThrown()
+
+		and:
+			jm.savedConfigs.find { it.key == "customName-pipeline-build" }.with {
+				assert it.value.contains("<url>http://foo/bar</url>")
+				assert it.value.contains("<name>customBranch</name>")
+				return it
+			}
+	}
+
 	def 'should not include stage jobs when that option was unchecked'() {
 		given:
 		MemoryJobManagement jm = new MemoryJobManagement()

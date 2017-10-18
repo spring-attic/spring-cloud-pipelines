@@ -133,12 +133,12 @@ case $1 in
 		fi
 		wget -P "${GCLOUD_PARENT_PATH}/" \
                 "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${GCLOUD_ARCHIVE}"
-		pushd "${GCLOUD_PARENT_PATH}/"
+		pushd "${GCLOUD_PARENT_PATH}/" || exit
 		tar xvf "${GCLOUD_ARCHIVE}"
 		rm -vf -- "${GCLOUD_ARCHIVE}"
 		echo "Running the installer"
 		"${GCLOUD_PATH}/install.sh"
-		popd
+		popd || exit
 		;;
 
 	delete-all-apps)

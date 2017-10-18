@@ -89,19 +89,41 @@ envs["DOCKER_EMAIL"] = binding.variables["DOCKER_EMAIL"] ?: "change@me.com"
 envs["DOCKER_REGISTRY_URL"] = binding.variables["DOCKER_REGISTRY_URL"] ?: "https://index.docker.io/v1/"
 
 parsedRepos.each {
-	List<String> parsedEntry = it.split('\\$')
-	String gitRepoName
-	String fullGitRepo
-	if (parsedEntry.size() > 1) {
-		gitRepoName = parsedEntry[0]
-		fullGitRepo = parsedEntry[1]
-	} else {
-		gitRepoName = parsedEntry[0].split('/').last()
-		fullGitRepo = parsedEntry[0]
+	String gitRepoName = it.split('/').last()
+	String fullGitRepo = it
+	String branchName = "master"
+	int customNameIndex = it.indexOf('$')
+	int customBranchIndex = it.indexOf('#')
+	if (customNameIndex == -1 && customBranchIndex == -1) {
+		// url
+		fullGitRepo = it
+		branchName = "master"
+	} else if (customNameIndex > -1 && (customNameIndex < customBranchIndex || customBranchIndex == -1)) {
+		fullGitRepo = it.substring(0, customNameIndex)
+		if (customNameIndex < customBranchIndex) {
+			// url$newName#someBranch
+			gitRepoName = it.substring(customNameIndex + 1, customBranchIndex)
+			branchName = it.substring(customBranchIndex + 1)
+		} else if (customBranchIndex == -1) {
+			// url$newName
+			gitRepoName = it.substring(customNameIndex + 1)
+		}
+	} else if (customBranchIndex > -1) {
+		fullGitRepo = it.substring(0, customBranchIndex)
+		if (customBranchIndex < customNameIndex) {
+			// url#someBranch$newName
+			gitRepoName = it.substring(customNameIndex + 1)
+			branchName = it.substring(customBranchIndex + 1, customNameIndex)
+		} else if (customNameIndex == -1) {
+			// url#someBranch
+			gitRepoName = it.substring(it.lastIndexOf("/") + 1, customBranchIndex)
+			branchName = it.substring(customBranchIndex + 1)
+		}
 	}
 	String projectName = "${gitRepoName}-declarative-pipeline"
 	
 	envs['GIT_REPOSITORY'] = fullGitRepo
+	envs['GIT_BRANCH_NAME'] = branchName
 
 	dsl.pipelineJob(projectName) {
 		wrappers {
