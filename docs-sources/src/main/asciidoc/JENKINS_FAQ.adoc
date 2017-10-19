@@ -218,6 +218,15 @@ This can be done by placing a file called `public.key` containing your public ke
 and a file called `private.key` containing your private key in the `seed` directory.
 These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
 
+=== Using SSH keys for git
+
+The seed job checks if an env variable `GIT_USE_SSH_KEY` is set to `true`. If that's the case
+then env variable `GIT_SSH_CREDENTIAL_ID` will be chosen as the one that contains the
+id of the credential that contains SSH private key. By default `GIT_CREDENTIAL_ID` will be picked
+as the one that contains username and password to connect to git.
+
+You can set these values in the seed job by filling out the form / toggling a checkbox.
+
 === Deploy to stage fails and doesn't redeploy a service (Kubernetes)
 
 There can be a number of reason but remember that for stage we

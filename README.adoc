@@ -1470,6 +1470,8 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 |======================
 |Property Name  | Property Description | Default value
 |GIT_CREDENTIAL_ID    | Credential ID used to tag a git repo | git
+|GIT_SSH_CREDENTIAL_ID    | SSH credential ID used to tag a git repo | gitSsh
+|GIT_USE_SSH_KEY    | if `true` will pick to use the SSH credential id | false
 |REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
 |PAAS_TEST_CREDENTIAL_ID  | Credential ID for CF Test env access | cf-test
 |PAAS_STAGE_CREDENTIAL_ID   | Credential ID for CF Stage env access | cf-stage
@@ -2221,6 +2223,15 @@ To do this you will need to import your GPG keys into the Docker image running J
 This can be done by placing a file called `public.key` containing your public key
 and a file called `private.key` containing your private key in the `seed` directory.
 These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
+
+=== Using SSH keys for git
+
+The seed job checks if an env variable `GIT_USE_SSH_KEY` is set to `true`. If that's the case
+then env variable `GIT_SSH_CREDENTIAL_ID` will be chosen as the one that contains the
+id of the credential that contains SSH private key. By default `GIT_CREDENTIAL_ID` will be picked
+as the one that contains username and password to connect to git.
+
+You can set these values in the seed job by filling out the form / toggling a checkbox.
 
 === Deploy to stage fails and doesn't redeploy a service (Kubernetes)
 

@@ -187,6 +187,8 @@ In your scripts we reference the credentials via IDs. These are the defaults for
 |======================
 |Property Name  | Property Description | Default value
 |GIT_CREDENTIAL_ID    | Credential ID used to tag a git repo | git
+|GIT_SSH_CREDENTIAL_ID    | SSH credential ID used to tag a git repo | gitSsh
+|GIT_USE_SSH_KEY    | if `true` will pick to use the SSH credential id | false
 |REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
 |PAAS_TEST_CREDENTIAL_ID  | Credential ID for CF Test env access | cf-test
 |PAAS_STAGE_CREDENTIAL_ID   | Credential ID for CF Stage env access | cf-stage
