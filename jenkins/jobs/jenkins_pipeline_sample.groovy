@@ -12,7 +12,7 @@ String cronValue = "H H * * 7" //every Sunday - I guess you should run it more o
 String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].join(",")
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
 String gitSshCredentials = binding.variables["GIT_SSH_CREDENTIAL_ID"] ?: "gitSsh"
-boolean gitUseSshKey = binding.variables["GIT_USE_SSH_KEY"] == null ? true : Boolean.parseBoolean(binding.variables["GIT_USE_SSH_KEY"])
+boolean gitUseSshKey = binding.variables["GIT_USE_SSH_KEY"] == null ? false : Boolean.parseBoolean(binding.variables["GIT_USE_SSH_KEY"])
 String repoWithBinariesCredentials = binding.variables["REPO_WITH_BINARIES_CREDENTIAL_ID"] ?: ""
 String dockerCredentials = binding.variables["DOCKER_REGISTRY_CREDENTIAL_ID"] ?: ""
 String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
