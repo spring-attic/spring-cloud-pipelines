@@ -67,6 +67,8 @@ factory.job('jenkins-pipeline-cf-seed') {
 				"Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
 					"first provide the name and separate the url with \$ sign")
 			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
+			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
+			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
 			stringParam('JDK_VERSION', 'jdk8', 'ID of Git installation')
 			stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
 			stringParam('REPO_WITH_BINARIES', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs")
@@ -134,6 +136,8 @@ factory.job('jenkins-pipeline-cf-declarative-seed') {
 				"Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
 					"first provide the name and separate the url with \$ sign")
 			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
+			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
+			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
 			stringParam('JDK_VERSION', 'jdk8', 'ID of Git installation')
 			stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
 			stringParam('REPO_WITH_BINARIES', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs")
@@ -203,6 +207,8 @@ factory.job('jenkins-pipeline-k8s-seed') {
 				"Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
 					"first provide the name and separate the url with \$ sign")
 			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
+			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
+			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
 			stringParam('JDK_VERSION', 'jdk8', 'ID of Git installation')
 			stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
 			stringParam('REPO_WITH_BINARIES', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs")
@@ -295,6 +301,8 @@ factory.job('jenkins-pipeline-k8s-declarative-seed') {
 				"Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
 					"first provide the name and separate the url with \$ sign")
 			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
+			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
+			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
 			stringParam('JDK_VERSION', 'jdk8', 'ID of Git installation')
 			stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
 			stringParam('REPO_WITH_BINARIES', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs")

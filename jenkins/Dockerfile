@@ -25,9 +25,12 @@ USER root
 # files there
 RUN printf "%s" "${gituser}" > /usr/share/jenkins/gituser && \
     printf "%s" "${gitpass}" > /usr/share/jenkins/gitpass && \
+    printf "%s" "${gitsshkey}" > /usr/share/jenkins/gitsshkey && \
     printf "%s" "${dockerRegistryUser}" > /usr/share/jenkins/dockerRegistryUser && \
     printf "%s" "${dockerRegistryPass}" > /usr/share/jenkins/dockerRegistryPass && \
     printf "%s" "${dockerRegistryEmail}" > /usr/share/jenkins/dockerRegistryEmail
+
+RUN chmod 400 /usr/share/jenkins/gitsshkey
 
 # Default mysql credentials - you can modify them as you please. You can
 # parametrize them so that values are not hardcoded

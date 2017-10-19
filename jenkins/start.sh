@@ -24,6 +24,8 @@ export DOCKER_REGISTRY_USERNAME="${5}"
 export DOCKER_REGISTRY_PASSWORD="${6}"
 export DOCKER_REGISTRY_EMAIL="${7}"
 export EXTERNAL_IP="${8}"
+# uncomment the line below and change it to read it from your local file
+# export PIPELINE_GIT_SSH_KEY="$( cat ~/.ssh/your_key )"
 
 if [[ -z "${EXTERNAL_IP}" ]]; then
     EXTERNAL_IP=`echo ${DOCKER_HOST} | cut -d ":" -f 2 | cut -d "/" -f 3`

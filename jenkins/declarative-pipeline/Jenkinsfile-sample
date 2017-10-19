@@ -9,6 +9,7 @@ pipeline {
 			steps {
 				checkout([
 					$class: 'GitSCM',
+					clearWorkspace: true,
 					branches: [
 						[name: "*/${env.GIT_BRANCH_NAME ?: 'master'}"]
 					],
@@ -16,7 +17,8 @@ pipeline {
 						[$class: 'WipeWorkspace'],
 					],
 					userRemoteConfigs: [
-						[credentialsId: env.GIT_CREDENTIAL_ID, url: env.GIT_REPOSITORY]
+						[credentialsId: Boolean.parseBoolean(env.GIT_USE_SSH_KEY) == Boolean.TRUE ?
+							env.GIT_SSH_CREDENTIAL_ID : env.GIT_CREDENTIAL_ID, url: env.GIT_REPOSITORY]
 					]
 				])
 
@@ -109,10 +111,17 @@ pipeline {
 						)
 					]
 				}
-
-				sh '''#!/bin/bash
-				${WORKSPACE}@tools/common/src/main/bash/build_and_upload.sh
-				'''
+				sh """#!/bin/bash
+				${
+					if (Boolean.parseBoolean(env.GIT_USE_SSH_KEY) == Boolean.TRUE) {
+						return """
+						eval "\$(ssh-agent -s)"
+						ssh-add /usr/share/jenkins/gitsshkey
+						"""
+					}	
+				}
+				\${WORKSPACE}@tools/common/src/main/bash/build_and_upload.sh
+				"""
 			}
 		}
 
@@ -195,12 +204,23 @@ pipeline {
 			}
 			steps {
 				sh """
-				# https://issues.jenkins-ci.org/browse/JENKINS-28335
-				git config --local credential.helper cache
-				echo 'protocol=https\nhost=github.com\nusername=${GIT_USERNAME}\npassword=${GIT_PASSWORD}\n\n' | git credential approve
-				git tag prod/\${PIPELINE_VERSION}
-				git push --tags
-				"""
+					${
+						if (Boolean.parseBoolean(env.GIT_USE_SSH_KEY) == Boolean.TRUE) {
+							return """
+							eval "\$(ssh-agent -s)"
+							ssh-add /usr/share/jenkins/gitsshkey
+							"""
+						} else {
+							return """
+							# https://issues.jenkins-ci.org/browse/JENKINS-28335
+							git config --local credential.helper cache
+							echo 'protocol=https\nhost=github.com\nusername=${GIT_USERNAME}\npassword=${GIT_PASSWORD}\n\n' | git credential approve
+							"""
+						}
+					}
+					git tag prod/\${PIPELINE_VERSION}
+					git push --tags
+					"""
 
 				sh '''#!/bin/bash
 				${WORKSPACE}@tools/common/src/main/bash/prod_deploy.sh

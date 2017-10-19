@@ -6,6 +6,7 @@ services:
       args:
         gituser: "${PIPELINE_GIT_USERNAME}"
         gitpass: "${PIPELINE_GIT_PASSWORD}"
+        gitsshkey: "${PIPELINE_GIT_SSH_KEY}"
         dockerRegistryOrg: "${DOCKER_REGISTRY_ORGANIZATION}"
         dockerRegistryUser: "${DOCKER_REGISTRY_USERNAME}"
         dockerRegistryPass: "${DOCKER_REGISTRY_PASSWORD}"

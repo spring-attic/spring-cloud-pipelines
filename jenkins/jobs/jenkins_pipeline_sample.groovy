@@ -11,6 +11,8 @@ String cronValue = "H H * * 7" //every Sunday - I guess you should run it more o
 // TODO: this doesn't scale too much
 String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].join(",")
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
+String gitSshCredentials = binding.variables["GIT_SSH_CREDENTIAL_ID"] ?: "gitSsh"
+boolean gitUseSshKey = binding.variables["GIT_USE_SSH_KEY"] == null ? true : Boolean.parseBoolean(binding.variables["GIT_USE_SSH_KEY"])
 String repoWithBinariesCredentials = binding.variables["REPO_WITH_BINARIES_CREDENTIAL_ID"] ?: ""
 String dockerCredentials = binding.variables["DOCKER_REGISTRY_CREDENTIAL_ID"] ?: ""
 String jdkVersion = binding.variables["JDK_VERSION"] ?: "jdk8"
@@ -48,7 +50,7 @@ String repos = binding.variables["REPOS"] ?:
 		 "https://github.com/marcingrzejszczak/github-webhook"].join(",")
 List<String> parsedRepos = repos.split(",")
 parsedRepos.each {
-	String gitRepoName = it.split('/').last()
+	String gitRepoName = it.split('/').last() - '.git'
 	String fullGitRepo
 	String branchName = "master"
 	int customNameIndex = it.indexOf('$')
@@ -112,7 +114,7 @@ parsedRepos.each {
 					name('origin')
 					url(fullGitRepo)
 					branch(branchName)
-					credentials(gitCredentials)
+					credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
 				}
 				extensions {
 					wipeOutWorkspace()
@@ -184,7 +186,7 @@ parsedRepos.each {
 						name('origin')
 						url(fullGitRepo)
 						branch(branchName)
-						credentials(gitCredentials)
+						credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
 					}
 					extensions {
 						wipeOutWorkspace()
@@ -667,7 +669,7 @@ parsedRepos.each {
 					name('origin')
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
-					credentials(gitCredentials)
+					credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
 				}
 				extensions {
 					wipeOutWorkspace()
@@ -744,7 +746,7 @@ parsedRepos.each {
 					name('origin')
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
-					credentials(gitCredentials)
+					credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
 				}
 				extensions {
 					wipeOutWorkspace()
@@ -790,7 +792,7 @@ parsedRepos.each {
 					name('origin')
 					url(fullGitRepo)
 					branch('dev/${PIPELINE_VERSION}')
-					credentials(gitCredentials)
+					credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
 				}
 				extensions {
 					wipeOutWorkspace()

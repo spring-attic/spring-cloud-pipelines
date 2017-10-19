@@ -4,6 +4,8 @@ DslFactory dsl = this
 
 // Git credentials to use
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
+String gitSshCredentials = binding.variables["GIT_SSH_CREDENTIAL_ID"] ?: "gitSsh"
+Boolean gitUseSshKey= Boolean.parseBoolean(binding.variables["GIT_USE_SSH_KEY"] ?: "false")
 // we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables["REPOS"] ?: [
 		"https://github.com/spring-cloud-samples/github-analytics",
@@ -17,6 +19,8 @@ envs['PIPELINE_VERSION_FORMAT'] = binding.variables["PIPELINE_VERSION_FORMAT"] ?
 envs['PIPELINE_VERSION_PREFIX'] = binding.variables["PIPELINE_VERSION_PREFIX"] ?: '''1.0.0.M1'''
 envs['PIPELINE_VERSION'] = binding.variables["PIPELINE_VERSION"] ?: ""
 envs['GIT_CREDENTIAL_ID'] = gitCredentials
+envs['GIT_SSH_CREDENTIAL_ID'] = gitSshCredentials
+envs['GIT_USE_SSH_KEY'] = gitUseSshKey
 envs['JDK_VERSION'] = binding.variables["JDK_VERSION"] ?: "jdk8"
 envs['GIT_EMAIL'] = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
 envs['GIT_NAME'] = binding.variables["GIT_NAME"] ?: "Pivo Tal"
@@ -89,7 +93,7 @@ envs["DOCKER_EMAIL"] = binding.variables["DOCKER_EMAIL"] ?: "change@me.com"
 envs["DOCKER_REGISTRY_URL"] = binding.variables["DOCKER_REGISTRY_URL"] ?: "https://index.docker.io/v1/"
 
 parsedRepos.each {
-	String gitRepoName = it.split('/').last()
+	String gitRepoName = it.split('/').last() - '.git'
 	String fullGitRepo = it
 	String branchName = "master"
 	int customNameIndex = it.indexOf('$')

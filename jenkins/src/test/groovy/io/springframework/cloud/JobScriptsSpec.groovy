@@ -100,6 +100,32 @@ class JobScriptsSpec extends Specification {
 			}
 	}
 
+	def 'should parse REPOS with no special entries for ssh based authentication'() {
+		given:
+			MemoryJobManagement jm = new MemoryJobManagement()
+			defaultStubbing(jm)
+			jm.parameters << [
+				SCRIPTS_DIR: 'foo',
+				JENKINSFILE_DIR: 'foo',
+				REPOS: 'git@github.com:marcingrzejszczak/github-analytics-kubernetes.git'
+			]
+			DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+				new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+			noExceptionThrown()
+
+		and:
+			jm.savedConfigs.find { it.key == "github-analytics-kubernetes-pipeline-build" }.with {
+				assert it.value.contains("<url>git@github.com:marcingrzejszczak/github-analytics-kubernetes.git")
+				assert it.value.contains("<name>master</name>")
+				return it
+			}
+	}
+
 	def 'should parse REPOS with custom project name only'() {
 		given:
 			MemoryJobManagement jm = new MemoryJobManagement()

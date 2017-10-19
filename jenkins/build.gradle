@@ -24,6 +24,7 @@ dependencies {
 
     // for init.groovy
     compile 'org.jenkins-ci.plugins:credentials:2.1.13@jar'
+    compile 'org.jenkins-ci.plugins:ssh-credentials:1.13@jar'
     compile 'org.jenkins-ci.plugins:groovy:1.30@jar'
     compile 'org.jenkins-ci.main:jenkins-core:2.19.1'
     // for Intellij not to throw exceptions

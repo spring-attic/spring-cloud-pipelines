@@ -1,11 +1,14 @@
+import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey
+import com.cloudbees.plugins.credentials.CredentialsScope
+import com.cloudbees.plugins.credentials.SystemCredentialsProvider
+import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl
+import hudson.model.JDK
+import hudson.plugins.groovy.Groovy
 import javaposse.jobdsl.dsl.DslScriptLoader
 import javaposse.jobdsl.plugin.JenkinsJobManagement
-import com.cloudbees.plugins.credentials.*
-import com.cloudbees.plugins.credentials.impl.*
-import hudson.model.*
-import jenkins.model.*
-import hudson.plugins.groovy.*
-import java.nio.file.*
+import jenkins.model.Jenkins
+
+import java.nio.file.Files
 
 def jobScript = new File('/usr/share/jenkins/jenkins_pipeline.groovy')
 def jobManagement = new JenkinsJobManagement(System.out, [:], new File('.'))
@@ -19,6 +22,18 @@ Closure setCredsIfMissing = { String id, String descr, String user, String pass 
 		SystemCredentialsProvider.getInstance().getCredentials().add(
 			new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, id,
 				descr, user, pass))
+		SystemCredentialsProvider.getInstance().save()
+	}
+}
+Closure setSshCredsIfMissing = { String id, String descr, String gitUser, String gitSshKey ->
+	boolean credsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
+		it.getDescriptor().getId() == id
+	}.empty
+	if (credsMissing) {
+		println "Credential [${id}] is missing - will create it"
+		SystemCredentialsProvider.getInstance().getCredentials().add(
+			new BasicSSHUserPrivateKey(CredentialsScope.GLOBAL, id,
+				gitUser, new BasicSSHUserPrivateKey.DirectEntryPrivateKeySource(gitSshKey), '', descr))
 		SystemCredentialsProvider.getInstance().save()
 	}
 }
@@ -91,7 +106,11 @@ if (publicKey.exists()) {
 
 String gitUser = new File('/usr/share/jenkins/gituser')?.text ?: "changeme"
 String gitPass = new File('/usr/share/jenkins/gitpass')?.text ?: "changeme"
+String gitSshKey = new File('/usr/share/jenkins/gitsshkey')?.text ?: ""
 
+if (gitSshKey) {
+	setSshCredsIfMissing("gitSsh", "GIT SSH credential", gitUser, gitSshKey)
+}
 setCredsIfMissing("git", "GIT credential", gitUser, gitPass)
 
 // remove::start[K8S]
