@@ -1,0 +1,122 @@
+[[concourse-pipeline-k8s]]
+== Concourse Pipeline (Kubernetes)
+
+IMPORTANT: In this chapter we assume that you perform deployment of your application
+to Kubernetes PaaS
+
+[[concourse]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.concourse-ci.org/display/JENKINS/Job+DSL+Plugin[Concourse Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+
+All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+
+- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
+- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
+- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+
+[[step-by-step-k8s]]
+=== Step by step
+
+This is a guide for Concourse pipeline.
+
+If you want to just run the demo as far as possible using PCF Dev and Docker Compose
+
+- <<concourse-fork-k8s,Fork repos>>
+- <<concourse-start-k8s,Start Concourse and Artifactory>>
+- <<concourse-deploy-k8s,Deploy infra to Artifactory>>
+- <<concourse-minikube-k8s,Start Minikube (if you don't want to use an existing one)>>
+- <<concourse-seed-k8s,Run the seed job>>
+- <<concourse-pipeline-k8s,Run the `github-webhook` pipeline>>
+
+[[fork-repos-k8s]]
+==== Fork repos
+
+[[concourse-fork-k8s]] There are 4 apps that are composing the pipeline
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-classpath-stubs[Github Stub Runner Boot]
+
+You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+
+[[start-concourse-k8s]]
+==== Start Concourse and Artifactory (locally)
+
+[[concourse-start-k8s]] Concourse + Artifactory can be ran locally. To do that just execute the
+`start.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/concourse
+./start.sh
+----
+Then Concourse will be running on port `8080` and Artifactory `8081`.
+The provided parameters will be passed as env variables to Concourse VM
+and credentials will be set in your set. That way you don't have to do
+any manual work on the Concourse side. In the above parameters, the third parameter
+could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
+contain your GitHub org in which you have the forked repos.
+
+You need to pass the credentials for the Docker organization (by default we will
+search for the Docker images at Docker Hub) so that the pipeline will be able
+to push images to your org.
+
+[[deploy-infra-k8s]]
+===== Deploy the infra JARs to Artifactory (locally)
+
+[[concourse-deploy-k8s]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+
+[source,bash]
+----
+git clone https://github.com/spring-cloud/spring-cloud-pipelines
+cd spring-cloud-pipelines/
+./tools/deploy-infra-k8s.sh
+----
+
+As a result both `eureka` and `stub runner` repos will be cloned, built,
+uploaded to Artifactory and their docker images will be built.
+
+IMPORTANT: Your local Docker process will be reused by the Concourse instance running
+in Docker. That's why you don't have to push these images to Docker Hub. On the
+other hand if you run this sample in a remote Kubernetes cluster the driver
+will not be shared by the Concourse workers so you can consider pushing these
+Docker images to Docker Hub too.
+
+=== Concourse in K8S (Kubernetes)
+
+The simplest way to deploy Concourse to K8S is to use https://github.com/kubernetes/helm[Helm].
+Once you have Helm installed and your `kubectl` is pointing to the
+cluster, just type this command to install the Concourse cluster in your K8S cluster.
+
+[source,bash]
+----
+$ helm install stable/concourse --name concourse
+----
+
+Once it's done you'll see the following output
+
+[source,bash]
+----
+1. Concourse can be accessed:
+
+  * Within your cluster, at the following DNS name at port 8080:
+
+    concourse-web.default.svc.cluster.local
+
+  * From outside the cluster, run these commands in the same shell:
+
+    export POD_NAME=$(kubectl get pods --namespace default -l "app=concourse-web" -o jsonpath="{.items[0].metadata.name}")
+    echo "Visit http://127.0.0.1:8080 to use Concourse"
+    kubectl port-forward --namespace default $POD_NAME 8080:8080
+
+2. Login with the following credentials
+
+  Username: concourse
+  Password: concourse
+----
+
+Just follow these steps and log in to Concourse.

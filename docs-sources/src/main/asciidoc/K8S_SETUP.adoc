@@ -1,0 +1,125 @@
+== Kubernetes setup
+
+=== Kubernetes CLI Installation
+
+First you'll need to install the `kubectl` CLI.
+
+[[kubernetes-cli-script]]
+==== Script Installation
+
+You can use the `tools/k8s-helper.sh` script to install `kubectl`. Just call
+
+```bash
+$ ./tools/minikube-helper download-kubectl
+```
+
+and then the `kubectl` will get downloaded
+
+[[kubernetes-cli-manual]]
+==== Manual Installation
+
+Example for OSX
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+```
+
+Example for Linux
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+```
+
+Check out https://kubernetes.io/docs/tasks/tools/install-kubectl/[this page] for more information.
+
+[[start-minikube-k8s]]
+=== Kubernetes Cluster setup
+
+We need a cluster of Kubernetes. The best choice will be https://github.com/kubernetes/minikube[Minikube].
+
+TIP: You can skip this step if you have Kubernetes cluster installed and don't
+want to use Minikube The only thing you have to do is to set up spaces.
+
+WARNING: It's more than likely that you'll run out of resources when you reach stage step.
+Don't worry! Keep calm and <<jenkins-resources-k8s,clear some apps from Minikube and continue>>.
+
+[[kubernetes-minikube-script]]
+==== Script Installation
+
+You can use the `tools/k8s-helper.sh` script to install `Minikube`. Just call
+
+```bash
+$ ./tools/minikube-helper download-minikube
+```
+
+and then the `Minikube` cluster will get downloaded
+
+[[kubernetes-minikube-manual]]
+==== Manual Installation
+
+Example for OSX
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-darwin-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like to add minikube to your path manually.
+
+Example for Linux
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Feel free to leave off the `sudo mv minikube /usr/local/bin` if you would like to add minikube to your path manually.
+Check out https://github.com/kubernetes/minikube/releases[this page] for more info on the installation.
+
+=== Run Minikube
+
+Just type in `minikube start` to start Kubernetes on your local box.
+
+To add the dashboard just execute `minikube dashboard`
+
+=== Certificates and Workers
+
+==== Minikube Certificates and Workers
+
+By default if you install Minikube all the certificates get installed in your
+`~/.minikube` folder. Your `kubectl` configuration under `~/.kube/config` will also
+get updated to use Minikube.
+
+==== Manual Certificates and Workers Setup
+
+IMPORTANT: If you just want to run the default, demo setup you can skip this section
+
+To target a given Kubernetes instance one needs to pass around Certificate Authority
+key and also user keys.
+
+You can read more about the instructions on how to generate those keys https://coreos.com/kubernetes/docs/latest/openssl.html[here].
+ Generally speaking if you have a Kubernetes installation (e.g. `minikube`) this step
+ has already been done for you. Time to reuse those keys on the workers.
+
+Extracted from the https://coreos.com/kubernetes/docs/latest/configure-kubectl.html[official docs].
+
+Configure kubectl to connect to the target cluster using the following commands, replacing several values as indicated:
+
+- Replace `${MASTER_HOST}` with the master node address or name used in previous steps
+- Replace `${CA_CERT}` with the absolute path to the `ca.pem` created in previous steps
+- Replace `${ADMIN_KEY}` with the absolute path to the `admin-key.pem` created in previous steps
+- Replace `${ADMIN_CERT}` with the absolute path to the `admin.pem` created in previous steps
+
+```
+$ kubectl config set-cluster default-cluster --server=https://${MASTER_HOST} --certificate-authority=${CA_CERT}
+$ kubectl config set-credentials default-admin --certificate-authority=${CA_CERT} --client-key=${ADMIN_KEY} --client-certificate=${ADMIN_CERT}
+$ kubectl config set-context default-system --cluster=default-cluster --user=default-admin
+$ kubectl config use-context default-system
+```
+
+=== Generate Minikube namespaces
+
+With the running Minikube cluster we need to generate namespaces. Just execute the
+`./tools/k8s-helper.sh setup-namespaces` to do this.
