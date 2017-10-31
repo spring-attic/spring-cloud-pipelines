@@ -14,9 +14,9 @@ setup() {
 	export KUBE_CONFIG_PATH="${PIPELINES_TEST_DIR}/.kube/config"
 	mkdir -p "${KUBE_CONFIG_PATH}"
 
-	export PAAS_TEST_CA="${PIPELINES_TEST_DIR}/ca"
-	export PAAS_TEST_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
-	export PAAS_TEST_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
+	export PAAS_TEST_CA_PATH="${PIPELINES_TEST_DIR}/ca"
+	export PAAS_TEST_CLIENT_CERT_PATH="${PIPELINES_TEST_DIR}/client_cert"
+	export PAAS_TEST_CLIENT_KEY_PATH="${PIPELINES_TEST_DIR}/client_key"
 	export PAAS_TEST_CLIENT_TOKEN_PATH=""
 	export TOKEN=""
 	export PAAS_TEST_CLUSTER_USERNAME="cluster_username"
@@ -24,9 +24,9 @@ setup() {
 	export PAAS_TEST_SYSTEM_NAME="cluster_name"
 	export PAAS_TEST_API_URL="1.2.3.4:8765"
 
-	export PAAS_STAGE_CA="${PIPELINES_TEST_DIR}/ca"
-	export PAAS_STAGE_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
-	export PAAS_STAGE_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
+	export PAAS_STAGE_CA_PATH="${PIPELINES_TEST_DIR}/ca"
+	export PAAS_STAGE_CLIENT_CERT_PATH="${PIPELINES_TEST_DIR}/client_cert"
+	export PAAS_STAGE_CLIENT_KEY_PATH="${PIPELINES_TEST_DIR}/client_key"
 	export PAAS_STAGE_CLIENT_TOKEN_PATH=""
 	export TOKEN=""
 	export PAAS_STAGE_CLUSTER_USERNAME="cluster_username"
@@ -34,9 +34,9 @@ setup() {
 	export PAAS_STAGE_SYSTEM_NAME="cluster_name"
 	export PAAS_STAGE_API_URL="1.2.3.4:8765"
 
-	export PAAS_PROD_CA="${PIPELINES_TEST_DIR}/ca"
-	export PAAS_PROD_CLIENT_CERT="${PIPELINES_TEST_DIR}/client_cert"
-	export PAAS_PROD_CLIENT_KEY="${PIPELINES_TEST_DIR}/client_key"
+	export PAAS_PROD_CA_PATH="${PIPELINES_TEST_DIR}/ca"
+	export PAAS_PROD_CLIENT_CERT_PATH="${PIPELINES_TEST_DIR}/client_cert"
+	export PAAS_PROD_CLIENT_KEY_PATH="${PIPELINES_TEST_DIR}/client_key"
 	export PAAS_PROD_CLIENT_TOKEN_PATH=""
 	export TOKEN=""
 	export PAAS_PROD_CLUSTER_USERNAME="cluster_username"
@@ -102,8 +102,8 @@ export -f mockGradlew
 	assert_output --partial "CLI Installed? [false], CLI Downloaded? [false]"
 	assert_output --partial "curl -LO https://storage.googleapis.com"
 	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
-	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA_PATH} --embed-certs=true"
+	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA_PATH} --client-key=${PAAS_TEST_CLIENT_KEY_PATH} --client-certificate=${PAAS_TEST_CLIENT_CERT_PATH}"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
 }
 
@@ -120,8 +120,8 @@ export -f mockGradlew
 	assert_output --partial "CLI Installed? [false], CLI Downloaded? [true]"
 	assert_output --partial "curl -LO https://storage.googleapis.com"
 	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
-	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA_PATH} --embed-certs=true"
+	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA_PATH} --client-key=${PAAS_TEST_CLIENT_KEY_PATH} --client-certificate=${PAAS_TEST_CLIENT_CERT_PATH}"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
 }
 
@@ -137,8 +137,8 @@ export -f mockGradlew
 	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
 	refute_output --partial "curl -LO https://storage.googleapis.com"
 	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
-	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA_PATH} --embed-certs=true"
+	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA_PATH} --client-key=${PAAS_TEST_CLIENT_KEY_PATH} --client-certificate=${PAAS_TEST_CLIENT_CERT_PATH}"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
 }
 
@@ -155,7 +155,7 @@ export -f mockGradlew
 	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
 	refute_output --partial "curl -LO https://storage.googleapis.com"
 	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA_PATH} --embed-certs=true"
 	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
 }
@@ -174,7 +174,7 @@ export -f mockGradlew
 	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
 	refute_output --partial "curl -LO https://storage.googleapis.com"
 	assert_output --partial "Adding CLI to PATH"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true"
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA_PATH} --embed-certs=true"
 	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO"
 	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username"
 }

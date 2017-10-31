@@ -1,4 +1,4 @@
-== FAQ
+== Jenkins FAQ
 
 Below you can find the answers to most frequently asked questions.
 

@@ -6,7 +6,8 @@ load 'test_helper/bats-assert/load'
 
 setup() {
 	export TEMP_DIR="$( mktemp -d )"
-	
+	export TEST_MODE="true"
+
 	export MAVENW_BIN="mockMvnw"
 	export GRADLEW_BIN="mockGradlew"
 
@@ -21,9 +22,9 @@ setup() {
 	export DOCKER_PASSWORD=DOCKER_PASSWORD
 	export DOCKER_EMAIL=DOCKER_EMAIL
 
-	export PAAS_TEST_CA="${TEMP_DIR}/ca"
-	export PAAS_TEST_CLIENT_CERT="${TEMP_DIR}/client_cert"
-	export PAAS_TEST_CLIENT_KEY="${TEMP_DIR}/client_key"
+	export PAAS_TEST_CA_PATH="${TEMP_DIR}/ca"
+	export PAAS_TEST_CLIENT_CERT_PATH="${TEMP_DIR}/client_cert"
+	export PAAS_TEST_CLIENT_KEY_PATH="${TEMP_DIR}/client_key"
 	export PAAS_TEST_CLIENT_TOKEN_PATH=""
 	export TOKEN=""
 	export PAAS_TEST_CLUSTER_USERNAME="cluster_username"
@@ -31,9 +32,9 @@ setup() {
 	export PAAS_TEST_SYSTEM_NAME="cluster_name"
 	export PAAS_TEST_API_URL="1.2.3.4:8765"
 
-	export PAAS_STAGE_CA="${TEMP_DIR}/ca"
-	export PAAS_STAGE_CLIENT_CERT="${TEMP_DIR}/client_cert"
-	export PAAS_STAGE_CLIENT_KEY="${TEMP_DIR}/client_key"
+	export PAAS_STAGE_CA_PATH="${TEMP_DIR}/ca"
+	export PAAS_STAGE_CLIENT_CERT_PATH="${TEMP_DIR}/client_cert"
+	export PAAS_STAGE_CLIENT_KEY_PATH="${TEMP_DIR}/client_key"
 	export PAAS_STAGE_CLIENT_TOKEN_PATH=""
 	export TOKEN=""
 	export PAAS_STAGE_CLUSTER_USERNAME="cluster_username"
@@ -41,9 +42,9 @@ setup() {
 	export PAAS_STAGE_SYSTEM_NAME="cluster_name"
 	export PAAS_STAGE_API_URL="1.2.3.4:8765"
 
-	export PAAS_PROD_CA="${TEMP_DIR}/ca"
-	export PAAS_PROD_CLIENT_CERT="${TEMP_DIR}/client_cert"
-	export PAAS_PROD_CLIENT_KEY="${TEMP_DIR}/client_key"
+	export PAAS_PROD_CA_PATH="${TEMP_DIR}/ca"
+	export PAAS_PROD_CLIENT_CERT_PATH="${TEMP_DIR}/client_cert"
+	export PAAS_PROD_CLIENT_KEY_PATH="${TEMP_DIR}/client_key"
 	export PAAS_PROD_CLIENT_TOKEN_PATH=""
 	export TOKEN=""
 	export PAAS_PROD_CLUSTER_USERNAME="cluster_username"
@@ -64,6 +65,10 @@ function curl {
 }
 
 function kubectl {
+	if [[ "${*}" != *"--kubeconfig="* ]]; then
+		echo "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
+		return 1
+	fi
 	echo "kubectl $*"
 }
 
@@ -112,6 +117,20 @@ export -f kubectl_that_returns_empty_string_and_returns_1
 export -f mockMvnw
 export -f mockGradlew
 
+@test "should pass if kubectl has kubeconfig passed" {
+	run kubectl foo --kubeconfig=bar
+
+	assert_output "kubectl foo --kubeconfig=bar"
+	assert_success
+}
+
+@test "should fail if kubectl doesn't have kubeconfig passed" {
+	run kubectl foo
+
+	assert_output "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
+	assert_failure
+}
+
 @test "should pass docker related properties to the build [K8S][Maven]" {
 	export ENVIRONMENT=BUILD
 	cd "${TEMP_DIR}/maven/empty_project"
@@ -128,26 +147,30 @@ export -f mockGradlew
 	assert_output --partial "DOCKER_USERNAME=DOCKER_USERNAME"
 	assert_output --partial "DOCKER_PASSWORD=DOCKER_PASSWORD"
 	assert_output --partial "DOCKER_EMAIL=DOCKER_EMAIL"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
 @test "should download kubectl and connect to cluster [K8S]" {
+	export TEST_MODE="false"
 	cd "${TEMP_DIR}/maven/empty_project"
+	cp "${FIXTURES_DIR}/printing_kubectl" "${TEMP_DIR}/maven/empty_project/kubectl"
 	source "${SOURCE_DIR}/pipeline.sh"
 
 	run logInToPaas
 
 	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
 	assert_output --partial "curl -LO https://storage.googleapis.com"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true" --kubeconfig=
-	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA} --client-key=${PAAS_TEST_CLIENT_KEY} --client-certificate=${PAAS_TEST_CLIENT_CERT}" --kubeconfig=
-	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username" --kubeconfig=
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA_PATH} --embed-certs=true --kubeconfig="
+	assert_output --partial "kubectl config set-credentials cluster_username --certificate-authority=${PAAS_TEST_CA_PATH} --client-key=${PAAS_TEST_CLIENT_KEY_PATH} --client-certificate=${PAAS_TEST_CLIENT_CERT_PATH} --kubeconfig="
+	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username --kubeconfig="
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
-@test "should use token from env var to connect to the cluster [K8S]" {
+@test "should create a temporary file with CA when CA data got passed [K8S]" {
 	export KUBECTL_BIN="kubectl"
-	export TOKEN="FOO"
+	export PAAS_TEST_CA="foo"
 	cd "${TEMP_DIR}/maven/empty_project"
 	touch "${KUBECTL_BIN}"
 	source "${SOURCE_DIR}/pipeline.sh"
@@ -155,10 +178,28 @@ export -f mockGradlew
 	run logInToPaas
 
 	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
-	assert_output --partial "curl -LO https://storage.googleapis.com"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true" --kubeconfig=
-	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO" --kubeconfig=
-	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username" --kubeconfig=
+	refute_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA_PATH} --embed-certs=true --kubeconfig="
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority="
+	assert_output --partial "/ca --embed-certs=true --kubeconfig"
+	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username --kubeconfig="
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
+	assert_success
+}
+
+@test "should use token from client token env var to connect to the cluster [K8S]" {
+	export KUBECTL_BIN="kubectl"
+	export PAAS_TEST_CLIENT_TOKEN="FOO"
+	cd "${TEMP_DIR}/maven/empty_project"
+	touch "${KUBECTL_BIN}"
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	run logInToPaas
+
+	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA_PATH} --embed-certs=true --kubeconfig="
+	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO --kubeconfig="
+	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username --kubeconfig="
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -173,10 +214,10 @@ export -f mockGradlew
 	run logInToPaas
 
 	assert [ ! -f "${KUBE_CONFIG_PATH}" ]
-	assert_output --partial "curl -LO https://storage.googleapis.com"
-	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA} --embed-certs=true" --kubeconfig=
-	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO" --kubeconfig=
-	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username" --kubeconfig=
+	assert_output --partial "kubectl config set-cluster cluster_name --server=https://1.2.3.4:8765 --certificate-authority=${PAAS_TEST_CA_PATH} --embed-certs=true --kubeconfig="
+	assert_output --partial "kubectl config set-credentials cluster_username --token=FOO --kubeconfig="
+	assert_output --partial "kubectl config set-context cluster_name --cluster=cluster_name --user=cluster_username --kubeconfig="
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -200,8 +241,9 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -225,8 +267,9 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -252,16 +295,17 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/mysql-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/eureka-service.yml"
-	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].port}"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret stubrunner-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/stubrunner-service.yml"
-	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].port}"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -287,16 +331,17 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/mysql-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/eureka-service.yml"
-	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret stubrunner-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/stubrunner-service.yml"
-	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -320,8 +365,9 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -347,16 +393,17 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/mysql-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/eureka-service.yml"
-	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].port}"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret stubrunner-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/stubrunner-service.yml"
-	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].port}"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -382,16 +429,17 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/mysql-service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret eureka-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/eureka-service.yml"
-	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "eureka-github-webhook -o jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete secret stubrunner-github-webhook"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test replace --force -f ${OUTPUT_DIR}/k8s/stubrunner-service.yml"
-	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "stubrunner-github-webhook -o jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -411,6 +459,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -430,6 +479,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -449,6 +499,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -468,6 +519,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -493,8 +545,9 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -520,8 +573,9 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -547,8 +601,9 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-test create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -589,6 +644,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -609,6 +665,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -629,6 +686,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -649,6 +707,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -673,8 +732,9 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -699,8 +759,9 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].port}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].port}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -725,8 +786,9 @@ export -f mockGradlew
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage delete -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/deployment.yml"
 	assert_output --partial "kubectl --context=context --namespace=sc-pipelines-stage create -f ${OUTPUT_DIR}/k8s/service.yml"
-	assert_output --partial "jsonpath={.spec.ports[0].nodePort}/health"
+	assert_output --partial "jsonpath={.spec.ports[0].nodePort}"
 	assert_output --partial "App started successfully!"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -747,6 +809,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Pe2e"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -767,6 +830,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew e2e"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -787,6 +851,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Pe2e"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -807,6 +872,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew e2e"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -825,6 +891,7 @@ export -f mockGradlew
 	run escapeValueForDns "a-b-1-2-3"
 
 	assert_output "a-b-1-2-3"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -835,6 +902,7 @@ export -f mockGradlew
 	result="$( objectDeployed "service" "bar" )"
 
 	assert_equal "${result}" "false"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -845,6 +913,7 @@ export -f mockGradlew
 	result="$( objectDeployed "service" "bar" )"
 
 	assert_equal "${result}" "true"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -865,6 +934,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -885,6 +955,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -906,6 +977,7 @@ export -f mockGradlew
 	refute_output --partial "kubectl config use-context cluster_name"
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "Green already deployed. Please complete switch over first"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_failure
 }
 
@@ -927,6 +999,7 @@ export -f mockGradlew
 	refute_output --partial "kubectl config use-context cluster_name"
 	refute_output --partial "kubectl --context=context --namespace=sc-pipelines-prod create -f ${OUTPUT_DIR}/k8s/service.yml"
 	assert_output --partial "Green already deployed. Please complete switch over first"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_failure
 }
 
@@ -948,6 +1021,7 @@ export -f mockGradlew
 	result="$( otherDeployedInstances "github-webhook" "github-webhook-1-0-0-m1-170923-142938-version" )"
 
 	assert_equal "${result}" "${expected}"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -958,6 +1032,7 @@ export -f mockGradlew
 	result="$( otherDeployedInstances "github-webhook" "github-webhook-1-0-0-m1-170923-142938-version" )"
 
 	assert_equal "${result}" ""
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -969,6 +1044,7 @@ export -f mockGradlew
 	result="$( oldestDeployment "${deployments}" )"
 
 	assert_equal "${result}" ""
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -980,6 +1056,7 @@ export -f mockGradlew
 	result="$( oldestDeployment "${deployments}" )"
 
 	assert_equal "${result}" "github-webhook-1-0-0-m1-170923-142938-version"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -1000,6 +1077,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "delete deployment"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -1020,6 +1098,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "delete deployment"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -1040,6 +1119,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "delete deployment"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -1060,6 +1140,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "delete deployment"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -1080,6 +1161,7 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "scale deployment"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
 
@@ -1100,5 +1182,6 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "scale deployment"
+	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }

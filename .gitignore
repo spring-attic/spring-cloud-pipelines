@@ -31,3 +31,7 @@ Session.vim
 
 *.crt
 *.key
+
+credentials.yml
+credentials-cf.yml
+credentials-k8s.yml

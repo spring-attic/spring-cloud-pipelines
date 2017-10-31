@@ -7,12 +7,12 @@ GRADLE_CACHE="${ROOT_FOLDER}/gradle"
 
 echo "Generating symbolic links for caches"
 
-[[ -d $M2_CACHE && ! -d $M2_HOME ]] && ln -s $M2_CACHE $M2_HOME
-[[ -d $GRADLE_CACHE && ! -d $GRADLE_HOME ]] && ln -s $GRADLE_CACHE $GRADLE_HOME
+[[ -d "${M2_CACHE}" && ! -d "${M2_HOME}" ]] && ln -s "${M2_CACHE}" "${M2_HOME}"
+[[ -d "${GRADLE_CACHE}" && ! -d "${GRADLE_HOME}" ]] && ln -s "${GRADLE_CACHE}" "${GRADLE_HOME}"
 
 echo "Writing maven settings to [${M2_HOME}/settings.xml]"
 
-cat > $M2_HOME/settings.xml <<EOF
+cat > "${M2_HOME}/settings.xml" <<EOF
 
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>

@@ -110,7 +110,7 @@ and pass that value here)
 * Run `./deploy_infra.sh` to upload to your Artifactory the infrastructure apps (`eureka` and `stub runner`)
 * Run `./login.sh 192.168.99.100` to log in to your Concourse (where `192.168.99.100` is you Docker Machine ip -
 if you're using `localhost` you don't have to provide that value)
-* Setup your `credentials.yml` basing on the provided `credentials-sample.yml` (point to your forked [Github Webhook](https://github.com/spring-cloud-samples/github-webhook))
+* Setup your `credentials.yml` basing on the provided `credentials-sample-cf.yml` (point to your forked [Github Webhook](https://github.com/spring-cloud-samples/github-webhook))
 * Run `./set-pipeline.sh` to setup pipeline for `github-webhook`
 * Unpause and run the pipeline in Concourse!
 * Once the pipeline passes you can setup a new pipeline for `github-analytics`

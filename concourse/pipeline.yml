@@ -28,6 +28,7 @@ jobs:
     - get: tools
     - get: version
   - task: generate-version
+    privileged: true
     file: tools/concourse/tasks/generate-version/task.yml
     params:
       GIT_EMAIL: ((git-email))
@@ -48,6 +49,7 @@ jobs:
       - generate-version
       trigger: true
   - task: build-and-upload
+    privileged: true
     file: tools/concourse/tasks/build-and-upload/task.yml
     params:
       <<: *common-params
@@ -69,6 +71,7 @@ jobs:
       - build-and-upload
       trigger: true
   - task: build-api-compatibility-check
+    privileged: true
     file: tools/concourse/task.yml
     params:
       MESSAGE: "Deploying the built application on test environment"
@@ -87,6 +90,7 @@ jobs:
       - build-api-compatibility-check
       trigger: true
   - task: test-deploy
+    privileged: true
     file: tools/concourse/task.yml
     params:
       MESSAGE: "Deploying the built application on test environment"
@@ -107,6 +111,7 @@ jobs:
       - test-deploy
       trigger: true
   - task: test-smoke
+    privileged: true
     file: tools/concourse/task.yml
     params:
       MESSAGE: "Testing the built application on test environment"
@@ -126,6 +131,7 @@ jobs:
       - test-smoke
       trigger: true
   - task: test-rollback-deploy
+    privileged: true
     file: tools/concourse/task.yml
     params:
       MESSAGE: "Deploying the built application on test environment"
@@ -146,6 +152,7 @@ jobs:
       - test-rollback-deploy
       trigger: true
   - task: test-rollback-smoke
+    privileged: true
     file: tools/concourse/task.yml
     params:
       MESSAGE: "Testing the rolled back built application on test environment"
@@ -165,6 +172,7 @@ jobs:
       - test-rollback-smoke
       trigger: false
   - task: stage-deploy
+    privileged: true
     file: tools/concourse/task.yml
     params:
       MESSAGE: "Deploying the built application on test environment"
@@ -185,6 +193,7 @@ jobs:
       - stage-deploy
       trigger: false
   - task: stage-smoke
+    privileged: true
     file: tools/concourse/task.yml
     params:
       MESSAGE: "Testing the built application on stage environment"
@@ -204,6 +213,7 @@ jobs:
       - stage-e2e
       trigger: false
   - task: prod-deploy
+    privileged: true
     file: tools/concourse/tasks/prod-deploy/task.yml
     params:
       <<: *common-params
@@ -227,6 +237,7 @@ jobs:
       - prod-deploy
       trigger: false
   - task: prod-rollback
+    privileged: true
     file: tools/concourse/task.yml
     params:
       MESSAGE: "Rolling back to previous instance"
@@ -247,6 +258,7 @@ jobs:
       - prod-deploy
       trigger: false
   - task: prod-complete
+    privileged: true
     file: tools/concourse/task.yml
     params:
       MESSAGE: "Completing the switch over"
@@ -265,24 +277,66 @@ common-params: &common-params
   M2_SETTINGS_REPO_USERNAME: ((m2-settings-repo-username))
   PAAS_TYPE: ((paas-type))
   REPO_WITH_BINARIES: ((repo-with-binaries))
+  # remove::start[K8S]
+  KUBERNETES-MINIKUBE: ((kubernetes-minikube))
+  MYSQL_ROOT_PASSWORD: ((mysql-root-password))
+  MYSQL_USER: ((mysql-user))
+  MYSQL_PASSWORD: ((mysql-password))
+  DOCKER_USERNAME: ((docker-username))
+  DOCKER_PASSWORD: ((docker-password))
+  DOCKER_SERVER_ID: ((docker-server-id))
+  DOCKER_EMAIL: ((docker-email))
+  DOCKER_REGISTRY_ORGANIZATION: ((docker-registry-organization))
+  DOCKER_REGISTRY_URL: ((docker-registry-url))
+  # remove::end[K8S]
 
 paas-prod-params: &paas-prod-params
   PAAS_PROD_API_URL: ((paas-prod-api-url))
+  # remove::start[CF]
   PAAS_PROD_ORG: ((paas-prod-org))
   PAAS_PROD_PASSWORD: ((paas-prod-password))
   PAAS_PROD_SPACE: ((paas-prod-space))
   PAAS_PROD_USERNAME: ((paas-prod-username))
+  # remove::end[CF]
+  # remove::start[K8S]
+  PAAS_PROD_CA: ((paas-prod-ca))
+  PAAS_PROD_CLIENT_TOKEN: ((paas-prod-client-token))
+  PAAS_PROD_SYSTEM_NAME: ((paas-prod-system-name))
+  PAAS_PROD_CLUSTER_NAME: ((paas-prod-cluster-name))
+  PAAS_PROD_CLUSTER_USERNAME: ((paas-prod-cluster-username))
+  PAAS_PROD_NAMESPACE: ((paas-prod-namespace))
+  # remove::end[K8S]
 
 paas-stage-params: &paas-stage-params
   PAAS_STAGE_API_URL: ((paas-stage-api-url))
+  # remove::start[CF]
   PAAS_STAGE_ORG: ((paas-stage-org))
   PAAS_STAGE_PASSWORD: ((paas-stage-password))
   PAAS_STAGE_SPACE: ((paas-stage-space))
   PAAS_STAGE_USERNAME: ((paas-stage-username))
+  # remove::end[CF]
+  # remove::start[K8S]
+  PAAS_STAGE_CA: ((paas-stage-ca))
+  PAAS_STAGE_CLIENT_TOKEN: ((paas-stage-client-token))
+  PAAS_STAGE_SYSTEM_NAME: ((paas-stage-system-name))
+  PAAS_STAGE_CLUSTER_NAME: ((paas-stage-cluster-name))
+  PAAS_STAGE_CLUSTER_USERNAME: ((paas-stage-cluster-username))
+  PAAS_STAGE_NAMESPACE: ((paas-stage-namespace))
+  # remove::end[K8S]
 
 paas-test-params: &paas-test-params
   PAAS_TEST_API_URL: ((paas-test-api-url))
+  # remove::start[CF]
   PAAS_TEST_ORG: ((paas-test-org))
   PAAS_TEST_PASSWORD: ((paas-test-password))
   PAAS_TEST_SPACE: ((paas-test-space))
   PAAS_TEST_USERNAME: ((paas-test-username))
+  # remove::end[CF]
+  # remove::start[K8S]
+  PAAS_TEST_CA: ((paas-test-ca))
+  PAAS_TEST_CLIENT_TOKEN: ((paas-test-client-token))
+  PAAS_TEST_SYSTEM_NAME: ((paas-test-system-name))
+  PAAS_TEST_CLUSTER_NAME: ((paas-test-cluster-name))
+  PAAS_TEST_CLUSTER_USERNAME: ((paas-test-cluster-username))
+  PAAS_TEST_NAMESPACE: ((paas-test-namespace))
+  # remove::end[K8S]

@@ -124,15 +124,15 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_TEST_API_URL | URL of the API of the Kubernetes cluster for test environment | 192.168.99.100:8443
 |PAAS_STAGE_API_URL | URL of the API of the Kubernetes cluster for stage environment  | 192.168.99.100:8443
 |PAAS_PROD_API_URL | URL of the API of the Kubernetes cluster for prod environment | 192.168.99.100:8443
-|PAAS_TEST_CA | Path to the certificate authority for test environment | /usr/share/jenkins/cert/ca.crt
-|PAAS_STAGE_CA | Path to the certificate authority for stage environment | /usr/share/jenkins/cert/ca.crt
-|PAAS_PROD_CA | Path to the certificate authority for prod environment | /usr/share/jenkins/cert/ca.crt
-|PAAS_TEST_CLIENT_CERT | Path to the client certificate for test environment | /usr/share/jenkins/cert/apiserver.crt
-|PAAS_STAGE_CLIENT_CERT | Path to the client certificate for stage environment | /usr/share/jenkins/cert/apiserver.crt
-|PAAS_PROD_CLIENT_CERT | Path to the client certificate for prod environment | /usr/share/jenkins/cert/apiserver.crt
-|PAAS_TEST_CLIENT_KEY | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
-|PAAS_STAGE_CLIENT_KEY | Path to the client key for stage environment | /usr/share/jenkins/cert/apiserver.key
-|PAAS_PROD_CLIENT_KEY | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_TEST_CA_PATH | Path to the certificate authority for test environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_STAGE_CA_PATH | Path to the certificate authority for stage environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_PROD_CA_PATH | Path to the certificate authority for prod environment | /usr/share/jenkins/cert/ca.crt
+|PAAS_TEST_CLIENT_CERT_PATH | Path to the client certificate for test environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_STAGE_CLIENT_CERT_PATH | Path to the client certificate for stage environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_PROD_CLIENT_CERT_PATH | Path to the client certificate for prod environment | /usr/share/jenkins/cert/apiserver.crt
+|PAAS_TEST_CLIENT_KEY_PATH | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_STAGE_CLIENT_KEY_PATH | Path to the client key for stage environment | /usr/share/jenkins/cert/apiserver.key
+|PAAS_PROD_CLIENT_KEY_PATH | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
 |PAAS_TEST_CLIENT_TOKEN_PATH | Path to the file containing the token for test env |
 |PAAS_STAGE_CLIENT_TOKEN_PATH | Path to the file containing the token for stage env |
 |PAAS_PROD_CLIENT_TOKEN_PATH | Path to the file containing the token for prod env |
@@ -209,6 +209,8 @@ the instructions on how to do it here - https://cloud.google.com/compute/docs/di
 
 === Connecting to a Kubo or GCE cluster
 
+IMPORTANT: Skip this step if you're not using Kubo or GCE
+
 In this section a description of steps required to deploy Jenkins and
 Artifactory to a Kubernetes cluster deployed via Kubo.
 
@@ -238,17 +240,17 @@ image::{jenkins-root-docs}/kubo_credentials.png[caption="Click `Global credentia
 ** `PAAS_STAGE_API_URL`
 ** `PAAS_PROD_API_URL`
 * Put `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt` data here
-** `PAAS_TEST_CA`
-** `PAAS_STAGE_CA`
-** `PAAS_PROD_CA`
+** `PAAS_TEST_CA_PATH`
+** `PAAS_STAGE_CA_PATH`
+** `PAAS_PROD_CA_PATH`
 * Uncheck the `Kubernetes Minikube` value
 * Clear the following vars
-** `PAAS_TEST_CLIENT_CERT`
-** `PAAS_STAGE_CLIENT_CERT`
-** `PAAS_PROD_CLIENT_CERT`
-** `PAAS_TEST_CLIENT_KEY`
-** `PAAS_STAGE_CLIENT_KEY`
-** `PAAS_PROD_CLIENT_KEY`
+** `PAAS_TEST_CLIENT_CERT_PATH`
+** `PAAS_STAGE_CLIENT_CERT_PATH`
+** `PAAS_PROD_CLIENT_CERT_PATH`
+** `PAAS_TEST_CLIENT_KEY_PATH`
+** `PAAS_STAGE_CLIENT_KEY_PATH`
+** `PAAS_PROD_CLIENT_KEY_PATH`
 * Set `/var/run/secrets/kubernetes.io/serviceaccount/token` value to these vars
 ** `PAAS_TEST_CLIENT_TOKEN_PATH`
 ** `PAAS_STAGE_CLIENT_TOKEN_PATH`

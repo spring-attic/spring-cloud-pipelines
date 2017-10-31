@@ -42,50 +42,6 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
 
-[[start-concourse-k8s]]
-==== Start Concourse and Artifactory (locally)
-
-[[concourse-start-k8s]] Concourse + Artifactory can be ran locally. To do that just execute the
-`start.sh` script from this repo.
-
-[source,bash]
-----
-git clone https://github.com/spring-cloud/spring-cloud-pipelines
-cd spring-cloud-pipelines/concourse
-./start.sh
-----
-Then Concourse will be running on port `8080` and Artifactory `8081`.
-The provided parameters will be passed as env variables to Concourse VM
-and credentials will be set in your set. That way you don't have to do
-any manual work on the Concourse side. In the above parameters, the third parameter
-could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
-contain your GitHub org in which you have the forked repos.
-
-You need to pass the credentials for the Docker organization (by default we will
-search for the Docker images at Docker Hub) so that the pipeline will be able
-to push images to your org.
-
-[[deploy-infra-k8s]]
-===== Deploy the infra JARs to Artifactory (locally)
-
-[[concourse-deploy-k8s]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
-
-[source,bash]
-----
-git clone https://github.com/spring-cloud/spring-cloud-pipelines
-cd spring-cloud-pipelines/
-./tools/deploy-infra-k8s.sh
-----
-
-As a result both `eureka` and `stub runner` repos will be cloned, built,
-uploaded to Artifactory and their docker images will be built.
-
-IMPORTANT: Your local Docker process will be reused by the Concourse instance running
-in Docker. That's why you don't have to push these images to Docker Hub. On the
-other hand if you run this sample in a remote Kubernetes cluster the driver
-will not be shared by the Concourse workers so you can consider pushing these
-Docker images to Docker Hub too.
-
 === Concourse in K8S (Kubernetes)
 
 The simplest way to deploy Concourse to K8S is to use https://github.com/kubernetes/helm[Helm].
@@ -119,4 +75,173 @@ Once it's done you'll see the following output
   Password: concourse
 ----
 
-Just follow these steps and log in to Concourse.
+Just follow these steps and log in to Concourse under http://127.0.0.1:8080.
+
+=== Deploying Artifactory to K8S
+
+We can use Helm also to deploy Artifactory to K8S
+
+[source,bash]
+----
+$ helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss stable/artifactory
+----
+
+After executing this you'll see the following output
+
+[source,bash]
+----
+NOTES:
+Congratulations. You have just deployed JFrog Artifactory Pro!
+
+1. Get the Artifactory URL by running these commands:
+
+   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+         You can watch the status of the service by running 'kubectl get svc -w nginx'
+   export SERVICE_IP=$(kubectl get svc --namespace default nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   echo http://$SERVICE_IP/
+
+2. Open Artifactory in your browser
+   Default credential for Artifactory:
+   user: admin
+   password: password
+----
+
+Next, we need to set up the repositories.
+
+First, access the Artifactory URL and log in with
+user, `admin` and `password` password.
+
+image::{concourse-root-docs}/artfactory_quick_setup.png[title="Click on the `Quick Setup`"]
+
+Then, click on the Maven setup and click `Create`.
+
+image::{concourse-root-docs}/artfactory_maven_repo.png[title="Create the `Maven` Repository"]
+
+[[concourse-pipeline-fly-k8s]]
+==== Setup the `fly` CLI
+
+[[fly]] If you go to Concourse website you should see sth like this:
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/running_concourse.png[]
+
+{nbsp}
+{nbsp}
+
+You can click one of the icons (depending on your OS) to download `fly`, which is the Concourse CLI. Once you've downloaded that (and maybe added to your PATH) you can run:
+
+[source,bash]
+----
+fly --version
+----
+
+If `fly` is properly installed then it should print out the version.
+
+[[concourse-pipeline-credentials-k8s]]
+==== Setup your `credentials.yml`
+
+There is a sample credentials file called `credentials-sample-k8s.yml`
+prepared for `k8s`. You can use it as a base for your `credentials.yml`.
+
+To allow the Concourse worker's spawned container to connect to
+Kubernetes cluster you will need to pass the CA contents and the
+auth token.
+
+To get the contents of CA for GCE just execute
+
+[source,bash]
+----
+$ kubectl get secret $(kubectl get secret | grep default-token | awk '{print $1}') -o jsonpath='{.data.ca\.crt}' | base64 --decode
+----
+
+To get the token just type:
+
+[source,bash]
+----
+$ kubectl get secret $(kubectl get secret | grep default-token | awk '{print $1}') -o jsonpath='{.data.token}' | base64 --decode
+----
+
+Set that value under `paas-test-client-token`, `paas-stage-client-token` and `paas-prod-client-token`
+
+[[concourse-pipeline-build-k8s]]
+==== Build the pipeline
+
+After running Concourse you should get the following output in your terminal
+
+[bash,source]
+----
+$ export POD_NAME=$(kubectl get pods --namespace default -l "app=concourse-web" -o jsonpath="{.items[0].metadata.name}")
+$ echo "Visit http://127.0.0.1:8080 to use Concourse"
+$ kubectl port-forward --namespace default $POD_NAME 8080:8080
+Visit http://127.0.0.1:8080 to use Concourse
+----
+
+Log in (e.g. for Concourse running at `127.0.0.1` - if you don't provide any value then `localhost` is assumed). If you execute this script  (it assumes that either `fly` is on your `PATH` or it's in the same folder as the script is):
+
+[source,bash]
+----
+$ fly -t k8s login -c http://localhost:8080 -u concourse -p concourse
+----
+
+Next run the command to create the pipeline.
+
+[source,bash]
+----
+$ ./set_pipeline.sh github-webhook k8s credentials-k8s.yml
+----
+
+[[concourse-pipeline-run-k8s]]
+==== Run the `github-webhook` pipeline
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_login.png[caption="Step 1: ", title="Click `Login`"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_team_main.png[caption="Step 2: ", title="Pick `main` team"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_user_pass.png[caption="Step 3: ", title="Log in with `concourse` user and `concourse` password"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_pipeline.png[caption="Step 4: ", title="Your screen should look more or less like this"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/start_pipeline.png[caption="Step 5: ", title="Unpause the pipeline by clicking in the top lefr corner and then clicking the `play` button"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/generate_version.png[caption="Step 6: ", title="Click 'generate-version'"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/run_pipeline.png[caption="Step 7: ", title="Click `+` sign to start a new build"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_pending.png[caption="Step 8: ", title="The job is pending"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/job_running.png[caption="Step 9: ", title="Job is pending in the main screen"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Job is running in the main screen"]
+

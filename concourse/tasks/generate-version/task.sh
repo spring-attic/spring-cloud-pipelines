@@ -2,7 +2,7 @@
 
 set -e -u
 
-VERSION=1.0.0.M1-`date +%Y%m%d_%H%M%S`-VERSION
+VERSION="1.0.0.M1-$(date +%Y%m%d_%H%M%S)-VERSION"
 MESSAGE="[Concourse CI] Bump to Next Version ($VERSION)"
 
 git clone version updated-version

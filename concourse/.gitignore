@@ -12,6 +12,8 @@
 hs_err_pid*
 
 credentials.yml
+credentials-cf.yml
+credentials-k8s.yml
 .idea
 keys/
 target

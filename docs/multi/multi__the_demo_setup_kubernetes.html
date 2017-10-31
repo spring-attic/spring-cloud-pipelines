@@ -1,35 +1,21 @@
-== The demo setup (Kubernetes)
-
-https://github.com/spring-cloud-samples/github-webhook-kubernetes/[Github webhook code]
-
-https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github analytics code]
-
-include::DEMO_SETUP.adoc[]
-
-=== Deploying production applications to Minikube
-
-In the real world scenario we wouldn't want to automatically provision services like
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>13.&nbsp;The demo setup (Kubernetes)</title><link rel="stylesheet" type="text/css" href="css/manual-multipage.css"><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"><link rel="home" href="multi_spring-cloud-pipelines.html" title="Spring Cloud Pipelines"><link rel="up" href="multi_spring-cloud-pipelines.html" title="Spring Cloud Pipelines"><link rel="prev" href="multi__the_demo_setup_cloud_foundry.html" title="12.&nbsp;The demo setup (Cloud Foundry)"><link rel="next" href="multi__building_the_project.html" title="14.&nbsp;Building the project"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">13.&nbsp;The demo setup (Kubernetes)</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="multi__the_demo_setup_cloud_foundry.html">Prev</a>&nbsp;</td><th width="60%" align="center">&nbsp;</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="multi__building_the_project.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="_the_demo_setup_kubernetes" href="#_the_demo_setup_kubernetes"></a>13.&nbsp;The demo setup (Kubernetes)</h1></div></div></div><p><a class="link" href="https://github.com/spring-cloud-samples/github-webhook-kubernetes/" target="_top">Github webhook code</a></p><p><a class="link" href="https://github.com/spring-cloud-samples/github-analytics-kubernetes/" target="_top">Github analytics code</a></p><div class="figure"><a name="d0e5649" href="#d0e5649"></a><p class="title"><b>Figure&nbsp;13.1.&nbsp;Github Webhook listens to HTTP calls and sends a message to Github Analytics</b></p><div class="figure-contents"><div class="mediaobject"><img src="https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs-sources/src/main/asciidoc/images/demo/demo.png" alt="demo"></div></div></div><br class="figure-break"><p>&nbsp;
+&nbsp;</p><p>For the demo scenario we have two applications. <code class="literal">Github Analytics</code> and <code class="literal">Github Webhook</code>.
+Let&#8217;s imagine a case where Github is emitting events via HTTP. <code class="literal">Github Webhook</code> has
+an API that could register to such hooks and receive those messages. Once this happens
+ <code class="literal">Github Webhook</code> sends a message by RabbitMQ to a channel. <code class="literal">Github Analytics</code> is
+ listening to those messages and stores them in a MySQL database.</p><div class="figure"><a name="d0e5677" href="#d0e5677"></a><p class="title"><b>Figure&nbsp;13.2.&nbsp;Github Analytics exposes metrics that are polled by Prometheus</b></p><div class="figure-contents"><div class="mediaobject"><img src="https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs-sources/src/main/asciidoc/images/demo/demo_metrics.png" alt="demo metrics"></div></div></div><br class="figure-break"><p>&nbsp;
+&nbsp;</p><p><code class="literal">Github Analytics</code> has its KPIs (Key Performance Indicators) monitored. In the case
+of that application the KPI is number of issues.</p><div class="figure"><a name="d0e5692" href="#d0e5692"></a><p class="title"><b>Figure&nbsp;13.3.&nbsp;Grafana alerts Slack over Prometheus metrics</b></p><div class="figure-contents"><div class="mediaobject"><img src="https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs-sources/src/main/asciidoc/images/demo/demo_alerting.png" alt="demo alerting"></div></div></div><br class="figure-break"><p>&nbsp;
+&nbsp;</p><p>Let&#8217;s assume that if we go below the threshold of X issues then an alert should be
+sent to Slack.</p><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_deploying_production_applications_to_minikube" href="#_deploying_production_applications_to_minikube"></a>13.1&nbsp;Deploying production applications to Minikube</h2></div></div></div><p>In the real world scenario we wouldn&#8217;t want to automatically provision services like
 RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
 production is provisioned manually (using automated solutions). In our case, before
-you deploy to production you can provision the `sc-pipelines-prod` namespace using the
- `k8s-helper.sh`. Just call
-
-[source,bash]
-----
-$ ./k8s-helper.sh setup-prod-infra
-----
-
-=== Running Prometheus on Kubernetes
-
-Use Helm to install Prometheus. We will point it to the services
-deployed to our cluster.
-
-Create a file called `values.yaml`.
-
-.values.yaml
-[source,yml]
-----
-rbac:
+you deploy to production you can provision the <code class="literal">sc-pipelines-prod</code> namespace using the
+ <code class="literal">k8s-helper.sh</code>. Just call</p><pre class="programlisting">$ ./k8s-helper.sh setup-prod-infra</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_running_prometheus_on_kubernetes" href="#_running_prometheus_on_kubernetes"></a>13.2&nbsp;Running Prometheus on Kubernetes</h2></div></div></div><p>Use Helm to install Prometheus. We will point it to the services
+deployed to our cluster.</p><p>Create a file called <code class="literal">values.yaml</code>.</p><p><b>values.yaml.&nbsp;</b>
+</p><pre class="programlisting">rbac:
   create: false
 
 alertmanager:
@@ -136,11 +122,11 @@ alertmanager:
     size: 2Gi
 
     ## alertmanager data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
+    ## If defined, storageClassName: &lt;storageClass&gt;
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
     ## If undefined (the default) or set to null, no storageClassName spec is
     ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
+    ##   GKE, AWS &amp; OpenStack)
     ##
     # storageClass: "-"
 
@@ -309,7 +295,7 @@ nodeExporter:
   ##
   podAnnotations: {}
 
-  ## node-exporter resource limits & requests
+  ## node-exporter resource limits &amp; requests
   ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
@@ -453,11 +439,11 @@ server:
     size: 8Gi
 
     ## Prometheus server data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
+    ## If defined, storageClassName: &lt;storageClass&gt;
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
     ## If undefined (the default) or set to null, no storageClassName spec is
     ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
+    ##   GKE, AWS &amp; OpenStack)
     ##
     # storageClass: "-"
 
@@ -646,12 +632,12 @@ serverFiles:
         # Default to scraping over https. If required, just disable this or change to
         # `http`.
         scheme: https
-        # This TLS & bearer token file config is used to connect to the actual scrape
+        # This TLS &amp; bearer token file config is used to connect to the actual scrape
         # endpoints for cluster components. This is separate to discovery auth
-        # configuration because discovery & scraping are two separate concerns in
+        # configuration because discovery &amp; scraping are two separate concerns in
         # Prometheus. The discovery auth config is automatic if Prometheus runs inside
         # the cluster. Otherwise, more config options have to be provided within the
-        # <kubernetes_sd_config>.
+        # &lt;kubernetes_sd_config&gt;.
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           # If your node certificates are self-signed or use a different CA to the
@@ -673,12 +659,12 @@ serverFiles:
         # Default to scraping over https. If required, just disable this or change to
         # `http`.
         scheme: https
-        # This TLS & bearer token file config is used to connect to the actual scrape
+        # This TLS &amp; bearer token file config is used to connect to the actual scrape
         # endpoints for cluster components. This is separate to discovery auth
-        # configuration because discovery & scraping are two separate concerns in
+        # configuration because discovery &amp; scraping are two separate concerns in
         # Prometheus. The discovery auth config is automatic if Prometheus runs inside
         # the cluster. Otherwise, more config options have to be provided within the
-        # <kubernetes_sd_config>.
+        # &lt;kubernetes_sd_config&gt;.
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           # If your node certificates are self-signed or use a different CA to the
@@ -707,7 +693,7 @@ serverFiles:
       #
       # * `prometheus.io/scrape`: Only scrape services that have a value of `true`
       # * `prometheus.io/scheme`: If the metrics endpoint is secured then you will need
-      # to set this to `https` & most likely set the `tls_config` of the scrape config.
+      # to set this to `https` &amp; most likely set the `tls_config` of the scrape config.
       # * `prometheus.io/path`: If the metrics path is not `/metrics` override this.
       # * `prometheus.io/port`: If the metrics are exposed on a different port to the
       # service then set this appropriately.
@@ -810,103 +796,55 @@ serverFiles:
 networkPolicy:
   ## Enable creation of NetworkPolicy resources.
   ##
-  enabled: false
-----
-
-Next, let's create the prometheus installation with the predefined values.
-
-[source,bash]
-----
-$ helm install --name sc-pipelines-prometheus stable/prometheus -f values.yaml
-----
-
-Then you should see the following output
-
-[source,bash]
-----
-NOTES:
-The Prometheus server can be accessed via port 80 on the following DNS name from within your cluster:
+  enabled: false</pre><p>
+</p><p>Next, let&#8217;s create the prometheus installation with the predefined values.</p><pre class="programlisting">$ helm install --name sc-pipelines-prometheus stable/prometheus -f values.yaml</pre><p>Then you should see the following output</p><pre class="programlisting">NOTES:
+The Prometheus server can be accessed via port <span class="hl-number">80</span> on the following DNS name from within your cluster:
 sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local
 
 
 Get the Prometheus server URL by running these commands in the same shell:
-  export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
-  kubectl --namespace default port-forward $POD_NAME 9090
+  <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">export</span> POD_NAME=$(kubectl get pods --namespace default -l <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"app=prometheus,component=server"</span> -o jsonpath=<span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"{.items[0].metadata.name}"</span>)
+  kubectl --namespace default port-forward $POD_NAME <span class="hl-number">9090</span>
 
 
-The Prometheus alertmanager can be accessed via port 80 on the following DNS name from within your cluster:
+The Prometheus alertmanager can be accessed via port <span class="hl-number">80</span> on the following DNS name from within your cluster:
 sc-pipelines-prometheus-prometheus-alertmanager.default.svc.cluster.local
 
 
 Get the Alertmanager URL by running these commands in the same shell:
-  export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=alertmanager" -o jsonpath="{.items[0].metadata.name}")
-  kubectl --namespace default port-forward $POD_NAME 9093
+  <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">export</span> POD_NAME=$(kubectl get pods --namespace default -l <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"app=prometheus,component=alertmanager"</span> -o jsonpath=<span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"{.items[0].metadata.name}"</span>)
+  kubectl --namespace default port-forward $POD_NAME <span class="hl-number">9093</span>
 
 
-The Prometheus PushGateway can be accessed via port 9091 on the following DNS name from within your cluster:
+The Prometheus PushGateway can be accessed via port <span class="hl-number">9091</span> on the following DNS name from within your cluster:
 sc-pipelines-prometheus-prometheus-pushgateway.default.svc.cluster.local
 
 
 Get the PushGateway URL by running these commands in the same shell:
-  export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
-  kubectl --namespace default port-forward $POD_NAME 9093
+  <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">export</span> POD_NAME=$(kubectl get pods --namespace default -l <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"app=prometheus,component=pushgateway"</span> -o jsonpath=<span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"{.items[0].metadata.name}"</span>)
+  kubectl --namespace default port-forward $POD_NAME <span class="hl-number">9093</span>
 
 For more information on running Prometheus, visit:
-https://prometheus.io/
-----
+https://prometheus.io/</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_running_grafana_on_kubernetes" href="#_running_grafana_on_kubernetes"></a>13.3&nbsp;Running Grafana on Kubernetes</h2></div></div></div><p>Use Helm to install Grafana</p><pre class="programlisting">$ helm install --name sc-pipelines-grafana stable/grafana</pre><pre class="programlisting">NOTES:
+<span class="hl-number">1.</span> Get your <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">'admin'</span> user password by running:
 
-=== Running Grafana on Kubernetes
+   kubectl get secret --namespace default sc-pipelines-grafana-grafana -o jsonpath=<span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"{.data.grafana-admin-password}"</span> | base64 --decode ; <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">echo</span>
 
-Use Helm to install Grafana
-
-[source,bash]
-----
-$ helm install --name sc-pipelines-grafana stable/grafana
-----
-
-[source,bash]
-----
-NOTES:
-1. Get your 'admin' user password by running:
-
-   kubectl get secret --namespace default sc-pipelines-grafana-grafana -o jsonpath="{.data.grafana-admin-password}" | base64 --decode ; echo
-
-2. The Grafana server can be accessed via port 80 on the following DNS name from within your cluster:
+<span class="hl-number">2.</span> The Grafana server can be accessed via port <span class="hl-number">80</span> on the following DNS name from within your cluster:
 
    sc-pipelines-grafana-grafana.default.svc.cluster.local
 
    Get the Grafana URL to visit by running these commands in the same shell:
 
-     export POD_NAME=$(kubectl get pods --namespace default -l "app=sc-pipelines-grafana-grafana,component=grafana" -o jsonpath="{.items[0].metadata.name}")
-     kubectl --namespace default port-forward $POD_NAME 3000
+     <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">export</span> POD_NAME=$(kubectl get pods --namespace default -l <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"app=sc-pipelines-grafana-grafana,component=grafana"</span> -o jsonpath=<span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"{.items[0].metadata.name}"</span>)
+     kubectl --namespace default port-forward $POD_NAME <span class="hl-number">3000</span>
 
-3. Login with the password from step 1 and the username: admin
-----
-
-Perform the aforementioned steps and add the Grafana's datasource
-as Prometheus with URL `http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local`
-
-You can pick the dashboard via the Grafana ID (2471). This is the
-default dashboard for the Spring Cloud Pipelines demo apps.
-
-If you have both apps (`github-webhook` and `github-analytics`) running on production
+<span class="hl-number">3.</span> Login with the password from step <span class="hl-number">1</span> and the username: admin</pre><p>Perform the aforementioned steps and add the Grafana&#8217;s datasource
+as Prometheus with URL <code class="literal"><a class="link" href="http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local" target="_top">http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local</a></code></p><p>You can pick the dashboard via the Grafana ID (2471). This is the
+default dashboard for the Spring Cloud Pipelines demo apps.</p><p>If you have both apps (<code class="literal">github-webhook</code> and <code class="literal">github-analytics</code>) running on production
 we can now trigger the messages. Download the JSON with a sample request
-from https://github.com/marcingrzejszczak/github-webhook-kubernetes/blob/master/src/test/resources/github-webhook-input/hook-created.json[the github-webhook repository].
-Next, pick one of the `github-webhook` pods and forward its port
-locally to a port `9876` like this:
-
-[source,bash]
-----
-$ kubectl port-forward --namespace=sc-pipelines-prod $( kubectl get pods --namespace=sc-pipelines-prod | grep github-webhook | head -1 | awk '{print $1}' ) 9876:8080
-----
-
-next send a couple of requests (more than 4).
-
-[source,bash]
-----
-$ curl -X POST http://localhost:9876/ -d @path/to/issue-created.json \
---header "Content-Type: application/json"
-----
-
-Then if you check out Grafana you'll see that you went above the
-threshold.
+from <a class="link" href="https://github.com/marcingrzejszczak/github-webhook-kubernetes/blob/master/src/test/resources/github-webhook-input/hook-created.json" target="_top">the github-webhook repository</a>.
+Next, pick one of the <code class="literal">github-webhook</code> pods and forward its port
+locally to a port <code class="literal">9876</code> like this:</p><pre class="programlisting">$ kubectl port-forward --namespace=sc-pipelines-prod $( kubectl get pods --namespace=sc-pipelines-prod | grep github-webhook | head -<span class="hl-number">1</span> | awk <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">'{print $1}'</span> ) <span class="hl-number">9876</span>:<span class="hl-number">8080</span></pre><p>next send a couple of requests (more than 4).</p><pre class="programlisting">$ curl -X POST http://localhost:<span class="hl-number">9876</span>/ -d @path/to/issue-created.json \
+--header <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"Content-Type: application/json"</span></pre><p>Then if you check out Grafana you&#8217;ll see that you went above the
+threshold.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="multi__the_demo_setup_cloud_foundry.html">Prev</a>&nbsp;</td><td width="20%" align="center">&nbsp;</td><td width="40%" align="right">&nbsp;<a accesskey="n" href="multi__building_the_project.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">12.&nbsp;The demo setup (Cloud Foundry)&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="multi_spring-cloud-pipelines.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;14.&nbsp;Building the project</td></tr></table></div></body></html>

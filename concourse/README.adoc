@@ -3,7 +3,9 @@
 :demo-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/demo
 :concourse-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/concourse
 :intro-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/intro
-== Concourse Pipeline [[concourse]]
+// remove::start[CF]
+[[concourse-pipeline-cf]]
+== Concourse Pipeline (Cloud Foundry)
 
 The repository contains an opinionated pipeline that will build and deploy  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook] application.
 
@@ -14,6 +16,7 @@ All in all there are the following projects taking part in the whole `microservi
 - https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
 - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
 
+[[concourse-pipeline-step-by-step-cf]]
 === Step by step
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
@@ -35,6 +38,7 @@ just check out the section on how to update the URL to Artifactory)>>
 - <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
 - <<credentials,Setup Jenkins credentials>>
 
+[[concourse-pipeline-fork-cf]]
 ==== Fork repos
 
 [[fork]] There are 4 apps that are composing the pipeline
@@ -49,6 +53,7 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
+[[concourse-pipeline-start-cf]]
 ==== Start Concourse and Artifactory
 
 [[start]] Concourse + Artifactory can be run locally. To do that just execute the
@@ -70,6 +75,7 @@ The `192.168.99.100` param is an example of an external URL of Concourse
 
 Then Concourse will be running on port `8080` and Artifactory `8081`.
 
+[[concourse-pipeline-deploy-cf]]
 ===== Deploy the infra JARs to Artifactory
 
 [[deploy]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
@@ -84,6 +90,7 @@ cd spring-cloud-pipelines/
 As a result both `eureka` and `stub runner` repos will be cloned, built
 and uploaded to Artifactory.
 
+[[concourse-pipeline-pcf-dev-cf]]
 ==== Start PCF Dev
 
 [[pcfdev]] TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
@@ -129,6 +136,7 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 
 You can also execute the `./tools/cf-helper.sh setup-spaces` to do this.
 
+[[concourse-pipeline-fly-cf]]
 ==== Setup the `fly` CLI
 
 [[fly]] If you go to Concourse website you should see sth like this:
@@ -150,9 +158,10 @@ fly --version
 
 If `fly` is properly installed then it should print out the version.
 
+[[concourse-pipeline-credentials-cf]]
 ==== Setup your `credentials.yml`
 
-[[creds]] The repo comes with `credentials-sample.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo jus setup:
+[[creds]] The repo comes with `credentials-sample-cf.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo just setup:
 
   - `app-url` - url pointing to your forked `github-webhook` repo
   - `github-private-key` - your private key to clone / tag GitHub repos
@@ -162,7 +171,7 @@ If you don't have a Docker Machine just execute `./whats_my_ip.sh` script to
 get an external IP that you can pass to your `repo-with-binaries` instead of the default
 Docker Machine IP.
 
-Below you can see what environment variables are required by the scripts. To the right hand side you can see the default values for PCF Dev that we set in the `credentials-sample.yml`.
+Below you can see what environment variables are required by the scripts. To the right hand side you can see the default values for PCF Dev that we set in the `credentials-sample-cf.yml`.
 
 [frame="topbot",options="header,footer"]
 |======================
@@ -184,6 +193,7 @@ Below you can see what environment variables are required by the scripts. To the
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
+[[concourse-pipeline-build-cf]]
 ==== Build the pipeline
 
 Log in (e.g. for Concourse running at `192.168.99.100` - if you don't provide any value then `localhost` is assumed). If you execute this script  (it assumes that either `fly` is on your `PATH` or it's in the same folder as the script is):
@@ -203,6 +213,7 @@ Next run the command to create the pipeline.
 Then you'll create a `github-webhook` pipeline under the `docker` alias, using the provided `credentials.yml` file.
 You can override these values in exactly that order (e.g. `./set-pipeline.sh some-project another-target some-other-credentials.yml`)
 
+[[concourse-pipeline-run-cf]]
 ==== Run the `github-webhook` pipeline
 
 {nbsp}
@@ -254,41 +265,272 @@ image::{concourse-root-docs}/job_running.png[caption="Step 9: ", title="Job is p
 {nbsp}
 
 image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Job is running in the main screen"]
+// remove::end[CF]
 
-=== FAQ
+// remove::start[K8S]
+[[concourse-pipeline-k8s]]
+== Concourse Pipeline (Kubernetes)
 
-[[faq]]
+IMPORTANT: In this chapter we assume that you perform deployment of your application
+to Kubernetes PaaS
 
-==== Can I use the pipeline for some other repos?
+[[concourse]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.concourse-ci.org/display/JENKINS/Job+DSL+Plugin[Concourse Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+
+All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+
+- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
+- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
+- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+
+[[step-by-step-k8s]]
+=== Step by step
+
+This is a guide for Concourse pipeline.
+
+If you want to just run the demo as far as possible using PCF Dev and Docker Compose
+
+- <<concourse-fork-k8s,Fork repos>>
+- <<concourse-start-k8s,Start Concourse and Artifactory>>
+- <<concourse-deploy-k8s,Deploy infra to Artifactory>>
+- <<concourse-minikube-k8s,Start Minikube (if you don't want to use an existing one)>>
+- <<concourse-seed-k8s,Run the seed job>>
+- <<concourse-pipeline-k8s,Run the `github-webhook` pipeline>>
+
+[[fork-repos-k8s]]
+==== Fork repos
+
+[[concourse-fork-k8s]] There are 4 apps that are composing the pipeline
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-classpath-stubs[Github Stub Runner Boot]
+
+You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+
+  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+
+=== Concourse in K8S (Kubernetes)
+
+The simplest way to deploy Concourse to K8S is to use https://github.com/kubernetes/helm[Helm].
+Once you have Helm installed and your `kubectl` is pointing to the
+cluster, just type this command to install the Concourse cluster in your K8S cluster.
+
+[source,bash]
+----
+$ helm install stable/concourse --name concourse
+----
+
+Once it's done you'll see the following output
+
+[source,bash]
+----
+1. Concourse can be accessed:
+
+  * Within your cluster, at the following DNS name at port 8080:
+
+    concourse-web.default.svc.cluster.local
+
+  * From outside the cluster, run these commands in the same shell:
+
+    export POD_NAME=$(kubectl get pods --namespace default -l "app=concourse-web" -o jsonpath="{.items[0].metadata.name}")
+    echo "Visit http://127.0.0.1:8080 to use Concourse"
+    kubectl port-forward --namespace default $POD_NAME 8080:8080
+
+2. Login with the following credentials
+
+  Username: concourse
+  Password: concourse
+----
+
+Just follow these steps and log in to Concourse under http://127.0.0.1:8080.
+
+=== Deploying Artifactory to K8S
+
+We can use Helm also to deploy Artifactory to K8S
+
+[source,bash]
+----
+$ helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss stable/artifactory
+----
+
+After executing this you'll see the following output
+
+[source,bash]
+----
+NOTES:
+Congratulations. You have just deployed JFrog Artifactory Pro!
+
+1. Get the Artifactory URL by running these commands:
+
+   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+         You can watch the status of the service by running 'kubectl get svc -w nginx'
+   export SERVICE_IP=$(kubectl get svc --namespace default nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   echo http://$SERVICE_IP/
+
+2. Open Artifactory in your browser
+   Default credential for Artifactory:
+   user: admin
+   password: password
+----
+
+Next, we need to set up the repositories.
+
+First, access the Artifactory URL and log in with
+user, `admin` and `password` password.
+
+image::{concourse-root-docs}/artfactory_quick_setup.png[title="Click on the `Quick Setup`"]
+
+Then, click on the Maven setup and click `Create`.
+
+image::{concourse-root-docs}/artfactory_maven_repo.png[title="Create the `Maven` Repository"]
+
+[[concourse-pipeline-fly-k8s]]
+==== Setup the `fly` CLI
+
+[[fly]] If you go to Concourse website you should see sth like this:
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/running_concourse.png[]
+
+{nbsp}
+{nbsp}
+
+You can click one of the icons (depending on your OS) to download `fly`, which is the Concourse CLI. Once you've downloaded that (and maybe added to your PATH) you can run:
+
+[source,bash]
+----
+fly --version
+----
+
+If `fly` is properly installed then it should print out the version.
+
+[[concourse-pipeline-credentials-k8s]]
+==== Setup your `credentials.yml`
+
+There is a sample credentials file called `credentials-sample-k8s.yml`
+prepared for `k8s`. You can use it as a base for your `credentials.yml`.
+
+To allow the Concourse worker's spawned container to connect to
+Kubernetes cluster you will need to pass the CA contents and the
+auth token.
+
+To get the contents of CA for GCE just execute
+
+[source,bash]
+----
+$ kubectl get secret $(kubectl get secret | grep default-token | awk '{print $1}') -o jsonpath='{.data.ca\.crt}' | base64 --decode
+----
+
+To get the token just type:
+
+[source,bash]
+----
+$ kubectl get secret $(kubectl get secret | grep default-token | awk '{print $1}') -o jsonpath='{.data.token}' | base64 --decode
+----
+
+Set that value under `paas-test-client-token`, `paas-stage-client-token` and `paas-prod-client-token`
+
+[[concourse-pipeline-build-k8s]]
+==== Build the pipeline
+
+After running Concourse you should get the following output in your terminal
+
+[bash,source]
+----
+$ export POD_NAME=$(kubectl get pods --namespace default -l "app=concourse-web" -o jsonpath="{.items[0].metadata.name}")
+$ echo "Visit http://127.0.0.1:8080 to use Concourse"
+$ kubectl port-forward --namespace default $POD_NAME 8080:8080
+Visit http://127.0.0.1:8080 to use Concourse
+----
+
+Log in (e.g. for Concourse running at `127.0.0.1` - if you don't provide any value then `localhost` is assumed). If you execute this script  (it assumes that either `fly` is on your `PATH` or it's in the same folder as the script is):
+
+[source,bash]
+----
+$ fly -t k8s login -c http://localhost:8080 -u concourse -p concourse
+----
+
+Next run the command to create the pipeline.
+
+[source,bash]
+----
+$ ./set_pipeline.sh github-webhook k8s credentials-k8s.yml
+----
+
+[[concourse-pipeline-run-k8s]]
+==== Run the `github-webhook` pipeline
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_login.png[caption="Step 1: ", title="Click `Login`"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_team_main.png[caption="Step 2: ", title="Pick `main` team"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_user_pass.png[caption="Step 3: ", title="Log in with `concourse` user and `concourse` password"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_pipeline.png[caption="Step 4: ", title="Your screen should look more or less like this"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/start_pipeline.png[caption="Step 5: ", title="Unpause the pipeline by clicking in the top lefr corner and then clicking the `play` button"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/generate_version.png[caption="Step 6: ", title="Click 'generate-version'"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/run_pipeline.png[caption="Step 7: ", title="Click `+` sign to start a new build"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/concourse_pending.png[caption="Step 8: ", title="The job is pending"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/job_running.png[caption="Step 9: ", title="Job is pending in the main screen"]
+
+{nbsp}
+{nbsp}
+
+image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Job is running in the main screen"]
+
+// remove::end[K8S]
+
+[[concourse-faq]]
+== Concourse FAQ
+
+=== Can I use the pipeline for some other repos?
 
 Sure! Just change the `app-url` in `credentials.yml`!
 
-==== Will this work for ANY project out of the box?
+=== Will this work for ANY project out of the box?
 
 Not really. This is an `opinionated pipeline` that's why we took some
-opinionated decisions like:
+opinionated decisions. Check out the documentation to see
+what those decisions are.
 
-- usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
-- application deployment to Cloud Foundry
-- For Maven:
-    * usage of Maven Wrapper
-    * artifacts deployment by `./mvnw clean deploy`
-    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
-    * running smoke tests on a deployed app via the `smoke` Maven profile
-    * running end to end tests on a deployed app via the `e2e` Maven profile
-- For Gradle (in the `github-analytics` application check the `gradle/pipeline.gradle` file):
-    * usage of Gradlew Wrapper
-    * `deploy` task for artifacts deployment
-    * running smoke tests on a deployed app via the `smoke` task
-    * running end to end tests on a deployed app via the `e2e` task
-    * `groupId` task to retrieve group id
-    * `artifactId` task to retrieve artifact id
-    * `currentVersion` task to retrieve the current version
-    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
-
-This is the initial approach that can be easily changed in the future.
-
-==== Can I modify this to reuse in my project?
+=== Can I modify this to reuse in my project?
 
 Sure! It's open-source! The important thing is that the core part of the logic is written in
 Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
@@ -296,10 +538,9 @@ whole pipeline. https://github.com/spring-cloud/spring-cloud-pipelines/tree/mast
 
 Furthermore, if you only want to customize a particular function under `common/src/main/bash`, you can provide your own
 function under `common/src/main/bash/<some custom identifier>` where `<some custom identifier>` is equal to the value of
-the `CUSTOM_SCRIPT_IDENTIFIER` environment variable. For more on this technique, see
-<<../common/README.adoc#Override specific project type pipeline functions,Override specific project type pipeline functions>>.
+the `CUSTOM_SCRIPT_IDENTIFIER` environment variable. It defaults to `custom`.
 
-==== I ran out of resources!!
+=== I ran out of resources!! (PCF Dev)
 
 [[resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
  solve it is to kill some apps from test / stage env. To achieve that just call
@@ -315,7 +556,7 @@ cf stop stubrunner
 You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove
 all demo-related apps deployed to PCF dev.
 
-==== The rollback step fails due to missing JAR ?!
+=== The rollback step fails due to missing JAR ?!
 
 You must have pushed some tags and have removed the Artifactory volume that
 contained them. To fix this, just remove the tags
@@ -325,16 +566,16 @@ contained them. To fix this, just remove the tags
 git tag -l | xargs -n 1 git push --delete origin
 ----
 
-==== Can I see the output of a job from the terminal?
+=== Can I see the output of a job from the terminal?
 
-Yes! Assuming that pieline name is `github-webhook` and job name is `build-and-upload` you can running
+Yes! Assuming that pipeline name is `github-webhook` and job name is `build-and-upload` you can running
 
 [source,bash]
 ----
 fly watch --job github-webhook/build-and-upload -t docker
 ----
 
-==== I clicked the job and it's constantly pending...
+=== I clicked the job and it's constantly pending...
 
 Don't worry... most likely you've just forgotten to click the `play` button to
 unpause the pipeline. Click to the top left, expand the list of pipelines and click
@@ -345,7 +586,7 @@ Concourse will wait for the `version` branch to appear in your repo. So in order
 the pipeline to start ensure that when doing some git operations you haven't
 forgotten to create / copy the `version` branch too.
 
-==== The route is already in use
+=== The route is already in use (CF)
 
 If you play around with Jenkins / Concourse you might end up with the routes occupied
 
@@ -372,7 +613,25 @@ yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 
 You can also execute the `./tools/cf-helper.sh delete-routes`
 
-==== I'm unauthorized to deploy infrastructure jars
+=== I'm unauthorized to deploy infrastructure jars
 
 Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
 setup. Check out <<settings,this section of the docs and update your `settings.xml`>>.
+
+=== `version` resource is broken
+
+When I click on it it looks like this:
+
+[source,bash]
+----
+resource script '/opt/resource/check []' failed: exit status 128
+
+stderr:
+Identity added: /tmp/git-resource-private-key (/tmp/git-resource-private-key)
+Cloning into '/tmp/git-resource-repo-cache'...
+warning: Could not find remote branch version to clone.
+fatal: Remote branch version not found in upstream origin
+----
+
+That means that your repo doesn't have the `version` branch. Please
+set it up.
