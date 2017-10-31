@@ -4,11 +4,11 @@
 IMPORTANT: In this chapter we assume that you perform deployment of your application
 to Kubernetes PaaS
 
-[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job DSL plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
 - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
 - https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
 - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
@@ -16,7 +16,7 @@ All in all there are the following projects taking part in the whole `microservi
 [[step-by-step-k8s]]
 === Step by step
 
-This is a guide for Jenkins JOB Dsl based pipeline.
+This is a guide for Jenkins Job DSL based pipeline.
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
@@ -108,7 +108,7 @@ IMPORTANT: All the steps below are not necessary to run the demo. They are neede
 when you want to do some custom changes.
 
 [[all-env-vars-k8s]]
-===== All env vars
+==== All env vars
 
 The env vars that are used in all of the jobs are as follows:
 

@@ -115,26 +115,18 @@ we'll split it into pieces and describe every piece independently.
 So we're on the same page let's define some common vocabulary. We discern 4 typical
 environments in terms of running the pipeline.
 
-- build
-- test
-- stage
-- prod
-
-*Build* environment is a machine where the building of the application takes place.
+- *build* environment is a machine where the building of the application takes place.
 It's a CI / CD tool worker.
-
-*Test* is an environment where you can deploy an application to test it. It doesn’t
+- *test* is an environment where you can deploy an application to test it. It doesn’t
 resemble production, we can't be sure of it's state (which application is deployed there
 and in which version). It can be used by multiple teams at the same time.
-
-*Stage* is an environment that does resemble production. Most likely applications
- are deployed there in versions that correspond to those deployed to production.
- Typically databases there are filled up with (obfuscated) production data. Most
- often this environment is a single, shared one between many teams. In other
- words in order to run some performance, user acceptance tests you have to block
- and wait until the environment is free.
-
-*Prod* is a production environment where we want our tested applications to be deployed
+- *stage* is an environment that does resemble production. Most likely applications
+are deployed there in versions that correspond to those deployed to production.
+Typically databases there are filled up with (obfuscated) production data. Most
+often this environment is a single, shared one between many teams. In other
+words in order to run some performance, user acceptance tests you have to block
+and wait until the environment is free.
+- *prod* is a production environment where we want our tested applications to be deployed
 for our customers.
 
 === Tests
@@ -582,11 +574,16 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 [[concourse-pipeline-cf]]
 == Concourse Pipeline (Cloud Foundry)
 
-The repository contains an opinionated pipeline that will build and deploy  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook] application.
+IMPORTANT: In this chapter we assume that you perform deployment of your application
+to Cloud Foundry PaaS
+
+[[concourse]] The Spring Cloud Pipelines repository contains opinionated
+Concourse pipeline definition. Those jobs will form an empty pipeline and a
+sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-analytics[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
 - https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
 - https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
 - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
@@ -688,7 +685,7 @@ space: pcfdev-space
 api: api.local.pcfdev.io
 ----
 
-You can start the PCF dev like this:
+You can start the PCF Dev like this:
 
 [source,bash]
 ----
@@ -849,11 +846,13 @@ image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Jo
 IMPORTANT: In this chapter we assume that you perform deployment of your application
 to Kubernetes PaaS
 
-[[concourse]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.concourse-ci.org/display/JENKINS/Job+DSL+Plugin[Concourse Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+[[concourse]] The Spring Cloud Pipelines repository contains opinionated
+Concourse pipeline definition. Those jobs will form an empty pipeline and a
+sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
 - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
 - https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
 - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
@@ -1015,7 +1014,7 @@ Set that value under `paas-test-client-token`, `paas-stage-client-token` and `pa
 
 After running Concourse you should get the following output in your terminal
 
-[bash,source]
+[source,bash]
 ----
 $ export POD_NAME=$(kubectl get pods --namespace default -l "app=concourse-web" -o jsonpath="{.items[0].metadata.name}")
 $ echo "Visit http://127.0.0.1:8080 to use Concourse"
@@ -1129,7 +1128,7 @@ cf stop stubrunner
 ----
 
 You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove
-all demo-related apps deployed to PCF dev.
+all demo-related apps deployed to PCF Dev.
 
 === The rollback step fails due to missing JAR ?!
 
@@ -1451,11 +1450,11 @@ corresponding to stable releases that you can use as well.
 IMPORTANT: In this chapter we assume that you perform deployment of your application
 to Cloud Foundry PaaS
 
-[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job DSL plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-analytics[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
 - https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
 - https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
 - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
@@ -1463,7 +1462,7 @@ All in all there are the following projects taking part in the whole `microservi
 [[step-by-step-cf]]
 === Step by step
 
-This is a guide for Jenkins JOB Dsl based pipeline.
+This is a guide for Jenkins Job DSL based pipeline.
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
@@ -1546,7 +1545,7 @@ space: pcfdev-space
 api: api.local.pcfdev.io
 ----
 
-You can start the PCF dev like this:
+You can start the PCF Dev like this:
 
 [source,bash]
 ----
@@ -1714,7 +1713,7 @@ for more information.
 when you want to do some custom changes.
 
 [[all-env-vars-cf]]
-===== All env vars
+==== All env vars
 
 The env vars that are used in all of the jobs are as follows:
 
@@ -1778,11 +1777,11 @@ TIP: Check out the `cf-helper` script for all the configuration options!
 IMPORTANT: In this chapter we assume that you perform deployment of your application
 to Kubernetes PaaS
 
-[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job DSL plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
 - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
 - https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
 - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
@@ -1790,7 +1789,7 @@ All in all there are the following projects taking part in the whole `microservi
 [[step-by-step-k8s]]
 === Step by step
 
-This is a guide for Jenkins JOB Dsl based pipeline.
+This is a guide for Jenkins Job DSL based pipeline.
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
@@ -2005,7 +2004,7 @@ IMPORTANT: All the steps below are not necessary to run the demo. They are neede
 when you want to do some custom changes.
 
 [[all-env-vars-k8s]]
-===== All env vars
+==== All env vars
 
 The env vars that are used in all of the jobs are as follows:
 
@@ -2423,7 +2422,7 @@ cf stop stubrunner
 ----
 
 You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove all demo-related apps
-deployed to PCF dev.
+deployed to PCF Dev.
 
 === Deploying to test / stage / prod fails - error finding space (Cloud Foundry)
 

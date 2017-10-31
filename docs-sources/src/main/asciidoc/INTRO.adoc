@@ -92,26 +92,18 @@ we'll split it into pieces and describe every piece independently.
 So we're on the same page let's define some common vocabulary. We discern 4 typical
 environments in terms of running the pipeline.
 
-- build
-- test
-- stage
-- prod
-
-*Build* environment is a machine where the building of the application takes place.
+- *build* environment is a machine where the building of the application takes place.
 It's a CI / CD tool worker.
-
-*Test* is an environment where you can deploy an application to test it. It doesn’t
+- *test* is an environment where you can deploy an application to test it. It doesn’t
 resemble production, we can't be sure of it's state (which application is deployed there
 and in which version). It can be used by multiple teams at the same time.
-
-*Stage* is an environment that does resemble production. Most likely applications
- are deployed there in versions that correspond to those deployed to production.
- Typically databases there are filled up with (obfuscated) production data. Most
- often this environment is a single, shared one between many teams. In other
- words in order to run some performance, user acceptance tests you have to block
- and wait until the environment is free.
-
-*Prod* is a production environment where we want our tested applications to be deployed
+- *stage* is an environment that does resemble production. Most likely applications
+are deployed there in versions that correspond to those deployed to production.
+Typically databases there are filled up with (obfuscated) production data. Most
+often this environment is a single, shared one between many teams. In other
+words in order to run some performance, user acceptance tests you have to block
+and wait until the environment is free.
+- *prod* is a production environment where we want our tested applications to be deployed
 for our customers.
 
 === Tests
