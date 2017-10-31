@@ -60,9 +60,11 @@ Spring Cloud Pipelines comes with the following features
 
 * opinionated microservice pipeline for Jenkins using Job DSL plugin
 
-* empty template of a pipeline for Jenkins using Job DSL Plugin
+* opinionated microservice pipeline for Jenkins using the Declarative Pipeline (Jenkinsfile)
 
-* empty template of a pipeline for Jenkins using `Jenkinsfiles`
+* Cloud Foundry PaaS support
+
+* Kubernetes PaaS support
 
 The opinionated pipelines look like this:
 
@@ -80,10 +82,10 @@ The opinionated pipelines look like this:
 
 <script type="text/javascript">{% include custom.js %}</script>
 
-### Running the demo
+### Running the demo for Cloud Foundry
 
 You can easily start by running the default demo setup to run the whole system locally using
-Docker and PCF Dev.
+Docker / PCF Dev or Minikube.
 
 We are providing a demo pipeline that will build and deploy - [Github Webhook](https://github.com/spring-cloud-samples/github-webhook) application.
 
@@ -115,6 +117,8 @@ if you're using `localhost` you don't have to provide that value)
 * Unpause and run the pipeline in Concourse!
 * Once the pipeline passes you can setup a new pipeline for `github-analytics`
 
+For the Kubernetes step by step guide just check out the http://cloud.spring.io/spring-cloud-pipelines/single/spring-cloud-pipelines.html#concourse-pipeline-k8s[documentation].
+
 #### Jenkins
 
 * Fork the [Github Webhook](https://github.com/spring-cloud-samples/github-webhook) and [Github-Analytics](https://github.com/spring-cloud-samples/github-analytics) repository
@@ -127,6 +131,8 @@ are your Github credentials required by the pipeline to tag the forked repo that
 * Go to Jenkins and click the `jenkins-pipeline-seed` in order to generate the pipeline jobs
 * Go to the `github-webhook` pipeline view and click the `play` button to run the pipeline
 
+For the Kubernetes step by step guide just check out the http://cloud.spring.io/spring-cloud-pipelines/single/spring-cloud-pipelines.html#jenkins-pipeline-k8s[documentation].
+
 ### Adjusting the pipelines to your needs
 
 This repository can be treated as a template for your pipeline. We provide some opinionated
@@ -138,15 +144,16 @@ Example for using the code from `master` branch. You can use a tag for example `
 `https://github.com/spring-cloud/spring-cloud-pipelines/archive/1.0.0.M2.zip` .
 
 ```
-curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.zip
-unzip master.zip
-cd spring-cloud-pipelines-master
-git init
-# modify the pipelines to suit your needs
-git add .
-git commit -m "Initial commit"
-git remote add origin ${YOUR_REPOSITORY_URL}
-git push origin master
+$ curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.zip
+$ unzip master.zip
+$ cd spring-cloud-pipelines-master
+$ git init
+$ ./gradlew customize
+$ # modify the pipelines to suit your needs
+$ git add .
+$ git commit -m "Initial commit"
+$ git remote add origin ${YOUR_REPOSITORY_URL}
+$ git push origin master
 ```
 
 Why aren't you simply cloning the repo? This is meant to be a seed

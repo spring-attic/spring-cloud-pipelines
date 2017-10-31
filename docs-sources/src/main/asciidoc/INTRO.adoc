@@ -48,6 +48,34 @@ NOTE: Why aren't you simply cloning the repo? This is meant to be a seed
 for building new, versioned pipelines for you. You don't want to have all of our
 history dragged along with you, don't you?
 
+==== Centralized pipeline creation
+
+You can use Spring Cloud Pipelines to generate pipelines
+for all projects in your system. You can scan all your
+repositories (e.g. call the Stash / Github API and retrieve the list of repos)
+and then...
+
+* For Jenkins, call the seed job and pass the `REPOS`
+parameter that would contain the list of repositories
+* For Concourse, you'd have to call `fly` and set
+pipeline for every single repo
+
+==== Pipeline per repository
+
+You can use Spring Cloud Pipelines in such a way that
+each project contains its own pipeline definition in
+its code. Spring Cloud Pipelines clones the code with
+the pipeline definitions (the bash scripts) so the
+only piece of logic that could be there in your application's
+repository would be how the pipeline should look like.
+
+* For Jenkins, you'd have to either set up the `Jenkinsfile`
+or the jobs using Jenkins Job DSL plugin in your repo.
+Then in Jenkins whenever you set up a new pipeline for a repo
+then you reference the pipeline definition in that repo.
+* For Concourse, each project contains its own pipeline steps
+and it's up to the project to set up the pipeline.
+
 === The flow
 
 Let's take a look at the flow of the opinionated pipeline

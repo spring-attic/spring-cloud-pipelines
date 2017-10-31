@@ -77,7 +77,7 @@ Once it's done you'll see the following output
 
 Just follow these steps and log in to Concourse under http://127.0.0.1:8080.
 
-=== Deploying Artifactory to K8S
+==== Deploying Artifactory to K8S
 
 We can use Helm also to deploy Artifactory to K8S
 
@@ -111,11 +111,11 @@ Next, we need to set up the repositories.
 First, access the Artifactory URL and log in with
 user, `admin` and `password` password.
 
-image::{concourse-root-docs}/artfactory_quick_setup.png[title="Click on the `Quick Setup`"]
+image::{concourse-root-docs}/artifactory_quick_setup.png[title="Click on the `Quick Setup`"]
 
 Then, click on the Maven setup and click `Create`.
 
-image::{concourse-root-docs}/artfactory_maven_repo.png[title="Create the `Maven` Repository"]
+image::{concourse-root-docs}/artifactory_maven_repo.png[title="Create the `Maven` Repository"]
 
 [[concourse-pipeline-fly-k8s]]
 ==== Setup the `fly` CLI

@@ -1,8 +1,8 @@
 == The demo setup (Cloud Foundry)
 
-https://github.com/spring-cloud-samples/github-webhook/[Github webhook code]
-
-https://github.com/spring-cloud-samples/github-analytics/[Github analytics code]
+The demo uses 2 applications. https://github.com/spring-cloud-samples/github-webhook/[Github Webhook]
+and https://github.com/spring-cloud-samples/github-analytics/[Github analytics code]. Below you can
+see an image of how these application communicate with each other.
 
 include::DEMO_SETUP.adoc[]
 

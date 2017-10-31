@@ -71,6 +71,34 @@ NOTE: Why aren't you simply cloning the repo? This is meant to be a seed
 for building new, versioned pipelines for you. You don't want to have all of our
 history dragged along with you, don't you?
 
+==== Centralized pipeline creation
+
+You can use Spring Cloud Pipelines to generate pipelines
+for all projects in your system. You can scan all your
+repositories (e.g. call the Stash / Github API and retrieve the list of repos)
+and then...
+
+* For Jenkins, call the seed job and pass the `REPOS`
+parameter that would contain the list of repositories
+* For Concourse, you'd have to call `fly` and set
+pipeline for every single repo
+
+==== Pipeline per repository
+
+You can use Spring Cloud Pipelines in such a way that
+each project contains its own pipeline definition in
+its code. Spring Cloud Pipelines clones the code with
+the pipeline definitions (the bash scripts) so the
+only piece of logic that could be there in your application's
+repository would be how the pipeline should look like.
+
+* For Jenkins, you'd have to either set up the `Jenkinsfile`
+or the jobs using Jenkins Job DSL plugin in your repo.
+Then in Jenkins whenever you set up a new pipeline for a repo
+then you reference the pipeline definition in that repo.
+* For Concourse, each project contains its own pipeline steps
+and it's up to the project to set up the pipeline.
+
 === The flow
 
 Let's take a look at the flow of the opinionated pipeline
@@ -736,7 +764,7 @@ Below you can see what environment variables are required by the scripts. To the
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |PAAS_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
 |APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
-|JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+|JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 |
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
@@ -894,7 +922,7 @@ Once it's done you'll see the following output
 
 Just follow these steps and log in to Concourse under http://127.0.0.1:8080.
 
-=== Deploying Artifactory to K8S
+==== Deploying Artifactory to K8S
 
 We can use Helm also to deploy Artifactory to K8S
 
@@ -928,11 +956,11 @@ Next, we need to set up the repositories.
 First, access the Artifactory URL and log in with
 user, `admin` and `password` password.
 
-image::{concourse-root-docs}/artfactory_quick_setup.png[title="Click on the `Quick Setup`"]
+image::{concourse-root-docs}/artifactory_quick_setup.png[title="Click on the `Quick Setup`"]
 
 Then, click on the Maven setup and click `Create`.
 
-image::{concourse-root-docs}/artfactory_maven_repo.png[title="Create the `Maven` Repository"]
+image::{concourse-root-docs}/artifactory_maven_repo.png[title="Create the `Maven` Repository"]
 
 [[concourse-pipeline-fly-k8s]]
 ==== Setup the `fly` CLI
@@ -1715,7 +1743,7 @@ The env vars that are used in all of the jobs are as follows:
 |DB_ROLLBACK_STEP_REQUIRED | Should DB rollback step be present | true
 |DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
 |APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
-|JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1
+|JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 |
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |BINARY_EXTENSION | Extension of the binary uploaded to Artifactory / Nexus. Example: change this to `war` for WAR artifacts | jar
 |======================
@@ -2585,9 +2613,9 @@ With the running Minikube cluster we need to generate namespaces. Just execute t
 // remove::start[CF]
 == The demo setup (Cloud Foundry)
 
-https://github.com/spring-cloud-samples/github-webhook/[Github webhook code]
-
-https://github.com/spring-cloud-samples/github-analytics/[Github analytics code]
+The demo uses 2 applications. https://github.com/spring-cloud-samples/github-webhook/[Github Webhook]
+and https://github.com/spring-cloud-samples/github-analytics/[Github analytics code]. Below you can
+see an image of how these application communicate with each other.
 
 image::{demo-root-docs}/demo.png[caption="The overview of the demo: ", title="Github Webhook listens to HTTP calls and sends a message to Github Analytics"]
 
@@ -2710,9 +2738,9 @@ A deployed version for the Spring Cloud Pipelines demo is available https://sc-p
 // remove::start[K8S]
 == The demo setup (Kubernetes)
 
-https://github.com/spring-cloud-samples/github-webhook-kubernetes/[Github webhook code]
-
-https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github analytics code]
+The demo uses 2 applications. https://github.com/spring-cloud-samples/github-webhook-kubernetes/[Github Webhook]
+and https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github analytics code]. Below you can
+see an image of how these application communicate with each other.
 
 image::{demo-root-docs}/demo.png[caption="The overview of the demo: ", title="Github Webhook listens to HTTP calls and sends a message to Github Analytics"]
 

@@ -1,8 +1,8 @@
 == The demo setup (Kubernetes)
 
-https://github.com/spring-cloud-samples/github-webhook-kubernetes/[Github webhook code]
-
-https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github analytics code]
+The demo uses 2 applications. https://github.com/spring-cloud-samples/github-webhook-kubernetes/[Github Webhook]
+and https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github analytics code]. Below you can
+see an image of how these application communicate with each other.
 
 include::DEMO_SETUP.adoc[]
 
