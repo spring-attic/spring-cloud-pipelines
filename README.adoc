@@ -3730,7 +3730,7 @@ Once you have installed all the prerequisites you can execute
 
 [source,bash]
 ----
-./gradlew clean build
+$ ./gradlew clean build
 ----
 
 to build and test the project.
@@ -3741,7 +3741,18 @@ To generate docs just run
 
 [source,bash]
 ----
-./gradlew generateDocs
+$ ./gradlew generateDocs
+----
+
+=== Making a release
+
+It's enough to execute the `release` task that will automatically
+change the versions, build the docs, upload them to Spring Cloud Static,
+tag the repo and then revert the changed versions back to default.
+
+[source,bash]
+----
+$ ./gradlew release -PnewVersion=1.0.0.RELEASE
 ----
 
 == Customizing the project

@@ -1,9 +1,9 @@
 buildscript {
-    repositories { jcenter() }
+	repositories { jcenter() }
 
-    dependencies {
-        classpath 'com.github.jruby-gradle:jruby-gradle-plugin:1.5.0'
-    }
+	dependencies {
+		classpath 'com.github.jruby-gradle:jruby-gradle-plugin:1.5.0'
+	}
 }
 
 apply plugin: "com.github.jruby-gradle.base"
@@ -14,123 +14,124 @@ import com.github.jrubygradle.JRubyExec
 import java.util.concurrent.TimeUnit
 
 dependencies {
-    jrubyExec "rubygems:asciidoctor:1.5.4"
+	jrubyExec "rubygems:asciidoctor:1.5.4"
 }
 
 repositories {
-    jcenter()
-    maven { url "http://rubygems-proxy.torquebox.org/releases/" }
+	jcenter()
+	maven { url "http://rubygems-proxy.torquebox.org/releases/" }
 }
 
+version = project.findProperty("newVersion") ?: project.findProperty("defaultVersion")
+
 ext {
+	isCommandAvailable = { String cmd ->
+		try {
+			cmd.execute()
+			return true
+		} catch (IOException e) {
+		}
+		return false
+	}
 
-    isCommandAvailable = { String cmd ->
-        try {
-            cmd.execute()
-            return true
-        } catch (IOException e) {
-        }
-        return false
-    }
+	isShellcheckPresent = {
+		isCommandAvailable("shellcheck -V")
+	}
 
-    isShellcheckPresent = {
-        isCommandAvailable("shellcheck -V")
-    }
+	shellcheckFile = isShellcheckPresent() ? new File("shellcheck") :
+		new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck")
 
-    shellcheckFile = isShellcheckPresent() ? new File("shellcheck") :
-        new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck")
+	shellcheckVersionWithoutPrefix = "${shellcheckVersion}".startsWith("v") ? "${shellcheckVersion}".substring(1) : "${shellcheckVersion}"
 
-    shellcheckVersionWithoutPrefix = "${shellcheckVersion}".startsWith("v") ? "${shellcheckVersion}".substring(1) : "${shellcheckVersion}"
+	assertShellcheckVersion = {
+		String output = ""
+		new ByteArrayOutputStream().withStream { os ->
+			String cmd = shellcheckFile.path + " -V"
+			project.logger.lifecycle("Executing cmd [${cmd}]")
+			Process p = cmd.execute()
+			p.consumeProcessOutput(os, os)
+			p.waitFor(5L, TimeUnit.SECONDS)
+			output = os.toString()
+		}
+		project.logger.lifecycle("Checking if shellcheck version is [${shellcheckVersionWithoutPrefix}]")
+		boolean versionIsOk = output.contains("version: ${shellcheckVersionWithoutPrefix}")
+		if (!versionIsOk) {
+			logger.info("Shellcheck is in wrong version. The output of checking version is \n\n[${output}]")
+		}
+	}
 
-    assertShellcheckVersion = {
-        String output = ""
-        new ByteArrayOutputStream().withStream { os ->
-            String cmd = shellcheckFile.path + " -V"
-            project.logger.lifecycle("Executing cmd [${cmd}]")
-            Process p = cmd.execute()
-            p.consumeProcessOutput(os, os)
-            p.waitFor(5L, TimeUnit.SECONDS)
-            output = os.toString()
-        }
-        project.logger.lifecycle("Checking if shellcheck version is [${shellcheckVersionWithoutPrefix}]")
-        boolean versionIsOk = output.contains("version: ${shellcheckVersionWithoutPrefix}")
-        if (!versionIsOk) {
-            logger.info("Shellcheck is in wrong version. The output of checking version is \n\n[${output}]")
-        }
-    }
-
-    isShellcheckDownloaded = {
-        shellcheckFile.exists()
-    }
+	isShellcheckDownloaded = {
+		shellcheckFile.exists()
+	}
 }
 
 subprojects {
-    apply plugin: 'java'
+	apply plugin: 'java'
 
-    task installShellcheckIfMissing {
-        doLast {
-            boolean shellcheckInstalled = isShellcheckPresent() || isShellcheckDownloaded()
-            exec {
-                if (shellcheckInstalled) {
-                    assertShellcheckVersion()
-                    commandLine "echo", "Shellcheck installed in version [${shellcheckVersionWithoutPrefix}] - continuing"
-                } else {
-                    logger.lifecycle("Shellcheck is missing. Will install it.")
-                    commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
-                }
-            }
-        }
-    }
+	task installShellcheckIfMissing {
+		doLast {
+			boolean shellcheckInstalled = isShellcheckPresent() || isShellcheckDownloaded()
+			exec {
+				if (shellcheckInstalled) {
+					assertShellcheckVersion()
+					commandLine "echo", "Shellcheck installed in version [${shellcheckVersionWithoutPrefix}] - continuing"
+				} else {
+					logger.lifecycle("Shellcheck is missing. Will install it.")
+					commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-shellcheck"
+				}
+			}
+		}
+	}
 
-    task shellcheck {
-        doLast {
-            boolean shellcheckInstalled = isShellcheckPresent()
-            String pathToShellcheck = "shellcheck"
-            if (!shellcheckInstalled) {
-                pathToShellcheck = new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck").path
-            }
-            sourceSets*.resources.srcDirs*.each { srcDir ->
-                fileTree(relativePath(srcDir))
-                    .include('**/*.sh')
-                    .exclude("**/build/**")
-                    .each { File script ->
-                    exec {
-                        commandLine pathToShellcheck, script
-                    }
-                }
-            }
-        }
-    }
+	task shellcheck {
+		doLast {
+			boolean shellcheckInstalled = isShellcheckPresent()
+			String pathToShellcheck = "shellcheck"
+			if (!shellcheckInstalled) {
+				pathToShellcheck = new File(project.rootProject.buildDir, "shellcheck-${shellcheckVersion}/shellcheck").path
+			}
+			sourceSets*.resources.srcDirs*.each { srcDir ->
+				fileTree(relativePath(srcDir))
+					.include('**/*.sh')
+					.exclude("**/build/**")
+					.each { File script ->
+					exec {
+						commandLine pathToShellcheck, script
+					}
+				}
+			}
+		}
+	}
 
-    task initalizeSubModules() {
-        doLast {
-            exec {
-                commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "initialize-submodules"
-            }
-        }
-    }
+	task initalizeSubModules() {
+		doLast {
+			exec {
+				commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "initialize-submodules"
+			}
+		}
+	}
 
-    shellcheck.dependsOn("installShellcheckIfMissing")
-    build.dependsOn("shellcheck")
+	shellcheck.dependsOn("installShellcheckIfMissing")
+	build.dependsOn("shellcheck")
 }
 
 // DOCUMENTATION -- start
 
 jruby {
-    defaultRepositories false
+	defaultRepositories false
 }
 
 // remove::start[JENKINS]
 task generateJenkinsReadme(type: JRubyExec) {
-    script "${projectDir}/tools/coalesce-readme.rb"
-    scriptArgs "-i ${projectDir}/docs-sources/src/main/asciidoc/JENKINS.adoc", "-o ${projectDir}/jenkins/README.adoc"
+	script "${projectDir}/tools/coalesce-readme.rb"
+	scriptArgs "-i ${projectDir}/docs-sources/src/main/asciidoc/JENKINS.adoc", "-o ${projectDir}/jenkins/README.adoc"
 }
 // remove::end[JENKINS]
 
 // remove::start[CONCOURSE]
 task generateConcourseReadme(type: JRubyExec) {
-    script "${projectDir}/tools/coalesce-readme.rb"
-    scriptArgs "-i ${projectDir}/docs-sources/src/main/asciidoc/CONCOURSE.adoc", "-o ${projectDir}/concourse/README.adoc"
+	script "${projectDir}/tools/coalesce-readme.rb"
+	scriptArgs "-i ${projectDir}/docs-sources/src/main/asciidoc/CONCOURSE.adoc", "-o ${projectDir}/concourse/README.adoc"
 }
 //remove::end[CONCOURSE]
 
@@ -142,39 +143,68 @@ projects << "generateJenkinsReadme"
 projects << "generateConcourseReadme"
 //remove::end[CONCOURSE]
 
-task generateIndex(dependsOn: [projects]) {
-    doLast {
-        exec {
-            workingDir project(":docs-sources").projectDir.path
-            commandLine "./mvnw", "clean", "install", "-Pdocs"
-        }
-    }
+task setMavenVersion(dependsOn: [projects]) {
+	doLast {
+		exec {
+			workingDir project(":docs-sources").projectDir.path
+			commandLine "./mvnw", "org.codehaus.mojo:versions-maven-plugin:2.3:set", "-DnewVersion=${project.version}"
+		}
+	}
+}
+
+task generateIndex(dependsOn: [setMavenVersion]) {
+	doLast {
+		exec {
+			workingDir project(":docs-sources").projectDir.path
+			commandLine "./mvnw", "clean", "install", "-Pdocs"
+		}
+	}
 }
 
 task cleanDocs(type: Delete) {
-    delete project(":docs").projectDir.path
+	delete project(":docs").projectDir.path
 }
 
 task copyJekyll(type: Copy) {
-    dependsOn(["cleanDocs"])
-    from new File(project(":docs-sources").projectDir, "src/main/jekyll").path
-    into project(":docs").projectDir.path
+	dependsOn(["cleanDocs"])
+	from new File(project(":docs-sources").projectDir, "src/main/jekyll").path
+	into project(":docs").projectDir.path
 }
 
 task copyGeneratedSources(type: Copy) {
-    dependsOn(["cleanDocs", "generateIndex"])
-    from(new File(project(":docs-sources").projectDir, "target/generated-docs").path) {
-        exclude "spring-cloud-pipelines.xml"
-    }
-    into project(":docs").projectDir.path
+	dependsOn(["cleanDocs", "generateIndex"])
+	from(new File(project(":docs-sources").projectDir, "target/generated-docs").path) {
+		exclude "spring-cloud-pipelines.xml"
+	}
+	into project(":docs").projectDir.path
 }
 
 task generateDocs(dependsOn: ["copyJekyll", "copyGeneratedSources"]) {
-    description = "Creates documentation for the project"
+	description = "Creates documentation for the project"
+}
+
+task release(dependsOn: "generateDocs") {
+	description = "Pushes the generated docs to sc-static and rolls back docs pom.xml version to the default one"
+	onlyIf {
+		!project.version.toString().contains("SNAPSHOT")
+	}
+	doLast {
+		try {
+			exec {
+				workingDir project.rootDir
+				commandLine "./docs-sources/src/main/bash/release.sh", "${project.version}"
+			}
+		} finally {
+			exec {
+				workingDir project(":docs-sources").projectDir.path
+				commandLine "./docs-sources/src/main/bash/cleanup.sh", "${project.findProperty("defaultVersion")}"
+			}
+		}
+	}
 }
 
 // DOCUMENTATION -- end
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.5'
+	gradleVersion = '3.5'
 }
