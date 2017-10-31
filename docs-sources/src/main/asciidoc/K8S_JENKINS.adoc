@@ -185,7 +185,7 @@ proper Google account and log in.
 
 Pick an existing project or create a new one.
 
-Go to your platform page in GCP and connect to your cluster
+Go to your platform page (click on `Container Engine`) in GCP and connect to your cluster
 
 ```bash
 $ CLUSTER_NAME=...
