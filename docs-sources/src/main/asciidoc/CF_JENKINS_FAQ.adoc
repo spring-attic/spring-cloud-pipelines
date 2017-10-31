@@ -12,7 +12,7 @@ cf stop stubrunner
 ----
 
 You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove all demo-related apps
-deployed to PCF dev.
+deployed to PCF Dev.
 
 === Deploying to test / stage / prod fails - error finding space (Cloud Foundry)
 

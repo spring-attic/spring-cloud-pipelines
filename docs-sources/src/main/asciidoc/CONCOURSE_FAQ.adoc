@@ -35,7 +35,7 @@ cf stop stubrunner
 ----
 
 You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove
-all demo-related apps deployed to PCF dev.
+all demo-related apps deployed to PCF Dev.
 
 === The rollback step fails due to missing JAR ?!
 

@@ -7,11 +7,16 @@
 [[concourse-pipeline-cf]]
 == Concourse Pipeline (Cloud Foundry)
 
-The repository contains an opinionated pipeline that will build and deploy  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook] application.
+IMPORTANT: In this chapter we assume that you perform deployment of your application
+to Cloud Foundry PaaS
+
+[[concourse]] The Spring Cloud Pipelines repository contains opinionated
+Concourse pipeline definition. Those jobs will form an empty pipeline and a
+sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-analytics[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
 - https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
 - https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
 - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
@@ -113,7 +118,7 @@ space: pcfdev-space
 api: api.local.pcfdev.io
 ----
 
-You can start the PCF dev like this:
+You can start the PCF Dev like this:
 
 [source,bash]
 ----
@@ -274,11 +279,13 @@ image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Jo
 IMPORTANT: In this chapter we assume that you perform deployment of your application
 to Kubernetes PaaS
 
-[[concourse]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.concourse-ci.org/display/JENKINS/Job+DSL+Plugin[Concourse Job Dsl plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+[[concourse]] The Spring Cloud Pipelines repository contains opinionated
+Concourse pipeline definition. Those jobs will form an empty pipeline and a
+sample, opinionated one that you can use in your company.
 
 All in all there are the following projects taking part in the whole `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github-Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
+- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
 - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
 - https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
 - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
@@ -440,7 +447,7 @@ Set that value under `paas-test-client-token`, `paas-stage-client-token` and `pa
 
 After running Concourse you should get the following output in your terminal
 
-[bash,source]
+[source,bash]
 ----
 $ export POD_NAME=$(kubectl get pods --namespace default -l "app=concourse-web" -o jsonpath="{.items[0].metadata.name}")
 $ echo "Visit http://127.0.0.1:8080 to use Concourse"
@@ -554,7 +561,7 @@ cf stop stubrunner
 ----
 
 You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove
-all demo-related apps deployed to PCF dev.
+all demo-related apps deployed to PCF Dev.
 
 === The rollback step fails due to missing JAR ?!
 
