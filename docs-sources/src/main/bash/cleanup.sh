@@ -7,10 +7,9 @@ set -o errtrace
 set -o pipefail
 
 VERSION="${1:?YOU MUST PASS THE VERSION AS AN ARGUMENT OF THIS SCRIPT!!}"
-TAG_NAME="v${VERSION}"
 
 echo "Setting back the version and building old docs"
-pusdh docs-sources
+pushd docs-sources
 ./mvnw org.codehaus.mojo:versions-maven-plugin:2.3:set -DnewVersion="${VERSION}"
 ./mvnw clean install -Pdocs
 popd
@@ -18,6 +17,6 @@ popd
 echo "Committing changes"
 git add .
 git commit -a -m "Going back to snapshots"
-git push origin "${TAG_NAME}"
+git push origin master
 
 echo "Done!"

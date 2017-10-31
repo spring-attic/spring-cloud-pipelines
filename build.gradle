@@ -196,7 +196,7 @@ task release(dependsOn: "generateDocs") {
 			}
 		} finally {
 			exec {
-				workingDir project(":docs-sources").projectDir.path
+				workingDir project.rootDir
 				commandLine "./docs-sources/src/main/bash/cleanup.sh", "${project.findProperty("defaultVersion")}"
 			}
 		}
