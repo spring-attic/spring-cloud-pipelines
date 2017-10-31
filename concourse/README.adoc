@@ -299,10 +299,10 @@ If you want to just run the demo as far as possible using PCF Dev and Docker Com
 
 - <<concourse-fork-k8s,Fork repos>>
 - <<concourse-start-k8s,Start Concourse and Artifactory>>
-- <<concourse-deploy-k8s,Deploy infra to Artifactory>>
-- <<concourse-minikube-k8s,Start Minikube (if you don't want to use an existing one)>>
-- <<concourse-seed-k8s,Run the seed job>>
-- <<concourse-pipeline-k8s,Run the `github-webhook` pipeline>>
+- <<concourse-pipeline-fly-k8s,Setup the `fly` CLI >>
+- <<concourse-pipeline-credentials-k8s,Setup your `credentials.yml` >>
+- <<concourse-pipeline-build-k8s,Setup the pipeline >>
+- <<concourse-pipeline-run-k8s,Run the `github-webhook` pipeline>>
 
 [[fork-repos-k8s]]
 ==== Fork repos
@@ -319,6 +319,7 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
 
+[[concourse-start-k8s]]
 === Concourse in K8S (Kubernetes)
 
 The simplest way to deploy Concourse to K8S is to use https://github.com/kubernetes/helm[Helm].

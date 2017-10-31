@@ -7,6 +7,7 @@ set -o errtrace
 set -o pipefail
 
 VERSION="${1:?YOU MUST PASS THE VERSION AS AN ARGUMENT OF THIS SCRIPT!!}"
+TAG_NAME="v${VERSION}"
 
 echo "Setting back the version and building old docs"
 pusdh docs-sources

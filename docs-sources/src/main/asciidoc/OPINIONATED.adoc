@@ -144,7 +144,7 @@ Here we're
 In this section we will go through the assumptions we've made in the project
 structure and project properties.
 
-=== CF project opinions
+=== Cloud Foundry project opinions
 
 We've taken the following opinionated decisions for a Cloud Foundry based project:
 
