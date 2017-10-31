@@ -10,9 +10,11 @@ step and describe it in details.</p><div class="section"><div class="titlepage">
 scripts are reused by both Concourse and Jenkins pipelines.</p><p>In the <code class="literal">concourse</code> folder you can find all the necessary scripts and setup to run Concourse demo.</p><p>In the <code class="literal">docs</code> section you have the whole documentation of the project.</p><p>In the <code class="literal">jenkins</code> folder you can find all the necessary scripts and setup to run Jenkins demo.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_how_to_use_it" href="#_how_to_use_it"></a>1.2&nbsp;How to use it?</h2></div></div></div><p>This repository can be treated as a template for your pipeline. We provide some opinionated
 implementation that you can alter to suit your needs. The best approach to use it
 to build your production projects would be to download the Spring Cloud Pipelines repository as ZIP, then
-init a Git project there and modify it as you wish.</p><pre class="programlisting">$ curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/v1.<span class="hl-number">0.0</span>.M6.zip
-$ unzip v1.<span class="hl-number">0.0</span>.M6.zip
-$ <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">cd</span> spring-cloud-pipelines-v1.<span class="hl-number">0.0</span>.M6
+init a Git project there and modify it as you wish.</p><pre class="programlisting">$ <span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># pass the branch (e.g. master) or a particular tag (e.g. v1.0.0.RELEASE)</span>
+$ SC_PIPELINES_RELEASE=...
+$ curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/${SC_PIPELINES_RELEASE}.zip
+$ unzip ${SC_PIPELINES_RELEASE}.zip
+$ <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">cd</span> spring-cloud-pipelines-${SC_PIPELINES_RELEASE}
 $ git init
 $ <span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># modify the pipelines to suit your needs</span>
 $ git add .

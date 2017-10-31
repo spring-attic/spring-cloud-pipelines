@@ -3,8 +3,8 @@
 For the demo purposes we're providing Docker Compose setup with Artifactory and Concourse / Jenkins tools.
 Regardless of the picked CD application for the pipeline to pass one needs either
 
-- *[CLOUD FOUNDRY]* a Cloud Foundry instance (for example https://run.pivotal.io/[Pivotal Web Services] or https://pivotal.io/pcf-dev[PCF Dev])
-- *[KUBERNETES]* a Kubernetes cluster (for example https://github.com/kubernetes/minikube[Minikube])
+- a Cloud Foundry instance (for example https://run.pivotal.io/[Pivotal Web Services] or https://pivotal.io/pcf-dev[PCF Dev])
+- a Kubernetes cluster (for example https://github.com/kubernetes/minikube[Minikube])
 - the infrastructure applications deployed to the JAR hosting application (for the demo we're providing Artifactory).
     - `Eureka` for Service Discovery
     - `Stub Runner Boot` for running Spring Cloud Contract stubs.
@@ -23,7 +23,7 @@ In this step we're generating a version of the pipeline, next we're
 
 - publishing a fat jar of the application
 - publishing a Spring Cloud Contract jar containing stubs of the application
-- *[KUBERNETES]* uploading a Docker image of the application
+- for Kubernetes - uploading a Docker image of the application
 
 During this phase we're executing a `Maven` build using Maven Wrapper or a `Gradle` build using Gradle Wrapper
 , with unit and integration tests. We're also *tagging* the repository with `dev/${version}` format. That way in each

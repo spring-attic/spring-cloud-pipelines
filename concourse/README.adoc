@@ -26,27 +26,19 @@ All in all there are the following projects taking part in the whole `microservi
 
 If you want to just run the demo as far as possible using PCF Dev and Docker Compose
 
-- <<fork,Fork repos>>
-- <<start,Start Concourse and Artifactory>>
-- <<deploy,Deploy infra to Artifactory>>
-- <<pcfdev,Start PCF Dev (if you don't want to use an existing one)>>
-- <<fly,Setup the `fly` CLI>>
-- <<creds,Setup your `credentials.yml`>>
-- <<seed,Run the seed job>>
-- <<pipeline,Run the `github-webhook` pipeline>>
+- <<concourse-fork-cf,Fork repos>>
+- <<concourse-start-cf,Start Concourse and Artifactory>>
+- <<concourse-deploy-cf,Deploy infra to Artifactory>>
+- <<concourse-pcfdev-cf,Start PCF Dev (if you don't want to use an existing one)>>
+- <<concourse-fly-cf,Setup the `fly` CLI>>
+- <<concourse-credentials-cf,Setup your `credentials.yml`>>
+- <<concourse-build-cf,Run the seed job>>
+- <<concourse-run-cf,Run the `github-webhook` pipeline>>
 
-Below you can find <<optional,optional>> steps needed to be taken when you want to customize the pipeline
-
-- <<env,Setup Jenkins env vars (if you want to use the demo defaults and you're using Docker Machine
-just check out the section on how to update the URL to Artifactory)>>
-- <<settings,Add `settings.xml` for Jenkins' master (you can skip this if you want to use our defaults)>>
-- <<misc,Setup Jenkins miscs (JDK installation, Groovy macro processing etc.)>>
-- <<credentials,Setup Jenkins credentials>>
-
-[[concourse-pipeline-fork-cf]]
+[[concourse-fork-cf]]
 ==== Fork repos
 
-[[fork]] There are 4 apps that are composing the pipeline
+There are 4 apps that are composing the pipeline
 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
@@ -58,10 +50,10 @@ You need to fork only these. That's because only then will your user be able to 
   - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
   - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
-[[concourse-pipeline-start-cf]]
+[[concourse-start-cf]]
 ==== Start Concourse and Artifactory
 
-[[start]] Concourse + Artifactory can be run locally. To do that just execute the
+Concourse + Artifactory can be run locally. To do that just execute the
 `start.sh` script from this repo.
 
 [source,bash]
@@ -80,10 +72,10 @@ The `192.168.99.100` param is an example of an external URL of Concourse
 
 Then Concourse will be running on port `8080` and Artifactory `8081`.
 
-[[concourse-pipeline-deploy-cf]]
+[[concourse-deploy-cf]]
 ===== Deploy the infra JARs to Artifactory
 
-[[deploy]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
 
 [source,bash]
 ----
@@ -95,10 +87,10 @@ cd spring-cloud-pipelines/
 As a result both `eureka` and `stub runner` repos will be cloned, built
 and uploaded to Artifactory.
 
-[[concourse-pipeline-pcf-dev-cf]]
+[[concourse-pcfdev-cf]]
 ==== Start PCF Dev
 
-[[pcfdev]] TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
+TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
 The only thing you have to do is to set up spaces.
 
 WARNING: It's more than likely that you'll run out of resources when you reach stage step.
@@ -141,10 +133,10 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 
 You can also execute the `./tools/cf-helper.sh setup-spaces` to do this.
 
-[[concourse-pipeline-fly-cf]]
+[[concourse-fly-cf]]
 ==== Setup the `fly` CLI
 
-[[fly]] If you go to Concourse website you should see sth like this:
+If you go to Concourse website you should see sth like this:
 
 {nbsp}
 {nbsp}
@@ -163,10 +155,10 @@ fly --version
 
 If `fly` is properly installed then it should print out the version.
 
-[[concourse-pipeline-credentials-cf]]
+[[concourse-credentials-cf]]
 ==== Setup your `credentials.yml`
 
-[[creds]] The repo comes with `credentials-sample-cf.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo just setup:
+The repo comes with `credentials-sample-cf.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo just setup:
 
   - `app-url` - url pointing to your forked `github-webhook` repo
   - `github-private-key` - your private key to clone / tag GitHub repos
@@ -198,7 +190,7 @@ Below you can see what environment variables are required by the scripts. To the
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
-[[concourse-pipeline-build-cf]]
+[[concourse-build-cf]]
 ==== Build the pipeline
 
 Log in (e.g. for Concourse running at `192.168.99.100` - if you don't provide any value then `localhost` is assumed). If you execute this script  (it assumes that either `fly` is on your `PATH` or it's in the same folder as the script is):
@@ -218,7 +210,7 @@ Next run the command to create the pipeline.
 Then you'll create a `github-webhook` pipeline under the `docker` alias, using the provided `credentials.yml` file.
 You can override these values in exactly that order (e.g. `./set-pipeline.sh some-project another-target some-other-credentials.yml`)
 
-[[concourse-pipeline-run-cf]]
+[[concourse-run-cf]]
 ==== Run the `github-webhook` pipeline
 
 {nbsp}

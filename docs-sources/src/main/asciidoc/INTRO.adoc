@@ -33,9 +33,11 @@ init a Git project there and modify it as you wish.
 
 [source,bash]
 ----
-$ curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/v1.0.0.M6.zip
-$ unzip v1.0.0.M6.zip
-$ cd spring-cloud-pipelines-v1.0.0.M6
+$ # pass the branch (e.g. master) or a particular tag (e.g. v1.0.0.RELEASE)
+$ SC_PIPELINES_RELEASE=...
+$ curl -LOk https://github.com/spring-cloud/spring-cloud-pipelines/archive/${SC_PIPELINES_RELEASE}.zip
+$ unzip ${SC_PIPELINES_RELEASE}.zip
+$ cd spring-cloud-pipelines-${SC_PIPELINES_RELEASE}
 $ git init
 $ # modify the pipelines to suit your needs
 $ git add .
