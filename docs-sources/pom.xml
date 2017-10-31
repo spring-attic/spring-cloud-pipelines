@@ -11,7 +11,7 @@
         <!-- lookup parent from repository -->
     </parent>
     <artifactId>spring-cloud-pipelines-docs</artifactId>
-    <version>1.0.0.M7</version>
+    <version>1.0.0.BUILD-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
         <docs.main>spring-cloud-pipelines</docs.main>
