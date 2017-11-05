@@ -188,7 +188,8 @@ function deployMySql() {
 	if [[ "${foundApp}" == "false" ]]; then
 		local hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
 		("${CF_BIN}" cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
-		("${CF_BIN}" cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev")
+		("${CF_BIN}" cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev") ||
+                ("${CF_BIN}" cs cleardb spark "${serviceName}" && echo "Started MySQL using ClearDB")
 	else
 		echo "Service [${serviceName}] already started"
 	fi
