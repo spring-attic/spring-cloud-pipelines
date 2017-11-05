@@ -336,7 +336,7 @@ function deployEureka() {
 function deployBrokeredService() {
         local sbServiceName="${1}"
         local sbPlanName="${2}"
-        local serviceName=="${3}"
+        local serviceName="${3}"
         echo "Deploying [${serviceName}] via Service Broker. Options - sb service name [${sbServiceName}], sb plan name [${sb-plan-name}], env [${env}]"
         if [[ "${sbServiceName}" == "p-config-server" ]]; then
                 local cfgGitUri="https://github.com/ciberkleid/app-config"
