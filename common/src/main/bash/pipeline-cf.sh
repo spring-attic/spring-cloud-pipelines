@@ -90,6 +90,12 @@ function deployService() {
 			downloadAppBinary "${REPO_WITH_BINARIES}" "${EUREKA_GROUP_ID}" "${EUREKA_ARTIFACT_ID}" "${EUREKA_VERSION}"
 			deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
 		;;
+                service-broker)
+                        local PREVIOUS_IFS="${IFS}"
+                        IFS=${coordinatesSeparator} read -r SB_SERVICE_NAME SB_PLAN_NAME <<<"${serviceCoordinates}"
+                        IFS="${PREVIOUS_IFS}"
+                        deployBrokeredService "${SB_SERVICE_NAME}" "${SB_PLAN_NAME}" "${serviceName}"
+                ;;
 		stubrunner)
 			local eurekaName
 			eurekaName="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/')"
@@ -281,6 +287,9 @@ function deployAppWithName() {
 	setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${applicationDomain}"
 	# TODO: This is very JVM specific
 	setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
+        # TODO: Only needed for Spring Cloud Services
+        local cfApi=`cf api | head -1 | cut -c 25-${lastIndex}`
+        setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
 }
 
 function deleteAppInstance() {
@@ -322,6 +331,20 @@ function deployEureka() {
 	deployAppWithName "${appName}" "${jarName}" "${env}"
 	restartApp "${appName}"
 	createServiceWithName "${appName}"
+}
+
+function deployBrokeredService() {
+        local sbServiceName="${1}"
+        local sbPlanName="${2}"
+        local serviceName=="${3}"
+        echo "Deploying [${serviceName}] via Service Broker. Options - sb service name [${sbServiceName}], sb plan name [${sb-plan-name}], env [${env}]"
+        if [[ "${sbServiceName}" == "p-config-server" ]]; then
+                local cfgGitUri="https://github.com/ciberkleid/app-config"
+                echo "{\"git\": {\"uri\": \"${cfgGitUri}\"}}" > cloud-config-uri.json
+                "${CF_BIN}" cs "${sbServiceName}" "${sbPlanName}" "${serviceName}" -c cloud-config-uri.json
+        else
+                "${CF_BIN}" cs "${sbServiceName}" "${sbPlanName}" "${serviceName}" 
+        fi
 }
 
 function deployStubRunnerBoot() {

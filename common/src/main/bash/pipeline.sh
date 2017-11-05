@@ -174,6 +174,19 @@ function deployServices() {
 	# retrieve the space separated type, name and coordinates
 	done <<<"$(echo "${PARSED_YAML}" | \
 				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"')"
+        waitForServicesToInitialize
+}
+
+function waitForServicesToInitialize() {
+        # Wait until services are ready
+        i=`cf services | grep "in progress" | wc -l`
+        while [ $i -gt 0 ]
+          do
+            sleep 5
+            echo "Waiting for services to initialize..."
+            i=`cf services | grep "in progress" | wc -l`
+          done
+
 }
 
 # Converts YAML to JSON - uses ruby
