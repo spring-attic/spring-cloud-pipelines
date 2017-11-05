@@ -452,6 +452,8 @@ function performGreenDeployment() {
 	# Log in to CF to start deployment
 	logInToPaas
 
+        deployServices
+
 	# deploy app
 	performGreenDeploymentOfTestedApplication "${appName}"
 }
