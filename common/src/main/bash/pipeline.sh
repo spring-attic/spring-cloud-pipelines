@@ -162,7 +162,7 @@ function deployServices() {
 
 	while read -r serviceType serviceName serviceCoordinates; do
 		if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-			deleteService "${serviceType}" "${serviceName}"
+			# deleteService "${serviceType}" "${serviceName}"
 			deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
 		else
 			if [[ "$(serviceExists "${serviceName}")" == "true" ]]; then
@@ -174,7 +174,7 @@ function deployServices() {
 	# retrieve the space separated type, name and coordinates
 	done <<<"$(echo "${PARSED_YAML}" | \
 				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"')"
-        waitForServicesToInitialize
+        # waitForServicesToInitialize
 }
 
 function waitForServicesToInitialize() {
