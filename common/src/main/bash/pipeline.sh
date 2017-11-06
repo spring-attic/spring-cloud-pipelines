@@ -179,14 +179,14 @@ function deployServices() {
 
 function waitForServicesToInitialize() {
         # Wait until services are ready
-        i=`cf services | grep "in progress" | wc -l`
+        i=$(cf services | grep "in progress" | wc -l)
         while [ $i -gt 0 ]
           do
-            sleep 5
+            sleep 10 
             echo "Waiting for services to initialize..."
-            i=`cf services | grep "in progress" | wc -l`
+            i=$(cf services | grep "in progress" | wc -l)
           done
-
+        echo "Service initialization - complete"
 }
 
 # Converts YAML to JSON - uses ruby

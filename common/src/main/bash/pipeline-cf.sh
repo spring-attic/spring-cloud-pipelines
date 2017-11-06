@@ -288,7 +288,7 @@ function deployAppWithName() {
 	# TODO: This is very JVM specific
 	setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
         # TODO: Only needed for Spring Cloud Services
-        local cfApi=`cf api | head -1 | cut -c 25-${lastIndex}`
+        local cfApi=$(cf api | head -1 | cut -c 25-${lastIndex})
         setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
 }
 
