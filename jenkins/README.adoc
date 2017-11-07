@@ -841,6 +841,8 @@ The env vars that are used in all of the jobs are as follows:
 |KUBERNETES_MINIKUBE | Will you connect to Minikube? | true
 |REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
 |REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
+|DEPLOYMENT_PROJECT_NAME | Name of the Maven module or Gradle subproject that you want to deploy |
+
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |JDK_VERSION | The name of the JDK installation | jdk8
 |PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
