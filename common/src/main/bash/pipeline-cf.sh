@@ -30,7 +30,9 @@ function testDeploy() {
 	local projectGroupId
 	projectGroupId=$(retrieveGroupId)
 	local appName
-	appName=$(retrieveAppName)
+	appName=$(retrieveAppName ${DEPLOYMENT_PROJECT_NAME})
+	local projectArtifactId
+	projectArtifactId=$(retrieveArtifactId ${DEPLOYMENT_PROJECT_NAME})
 	# Log in to PaaS to start deployment
 	logInToPaas
 
@@ -40,7 +42,7 @@ function testDeploy() {
 	deployServices
 
 	# deploy app
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${projectArtifactId}" "${PIPELINE_VERSION}" "${appName}"
 	deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${PIPELINE_VERSION}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
 	propagatePropertiesForTests "${appName}"
 }
@@ -51,13 +53,15 @@ function testRollbackDeploy() {
 	local projectGroupId
 	projectGroupId=$(retrieveGroupId)
 	local appName
-	appName=$(retrieveAppName)
+	appName=$(retrieveAppName ${DEPLOYMENT_PROJECT_NAME})
+	local projectArtifactId
+	projectArtifactId=$(retrieveArtifactId ${DEPLOYMENT_PROJECT_NAME})
 	# shellcheck disable=SC2119
 	parsePipelineDescriptor
 	# Downloading latest jar
 	local LATEST_PROD_VERSION=${latestProdTag#prod/}
 	echo "Last prod version equals ${LATEST_PROD_VERSION}"
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${projectArtifactId}" "${LATEST_PROD_VERSION}" "${appName}"
 	logInToPaas
 	deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${LATEST_PROD_VERSION}"
 	propagatePropertiesForTests "${appName}"
@@ -414,13 +418,15 @@ function stageDeploy() {
 	local projectGroupId
 	projectGroupId=$(retrieveGroupId)
 	local appName
-	appName=$(retrieveAppName)
+	appName=$(retrieveAppName ${DEPLOYMENT_PROJECT_NAME})
+	local projectArtifactId
+	projectArtifactId=$(retrieveArtifactId ${DEPLOYMENT_PROJECT_NAME})
 	# Log in to PaaS to start deployment
 	logInToPaas
 
 	deployServices
 
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${appName}"
 
 	# deploy app
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
@@ -444,10 +450,12 @@ function performGreenDeployment() {
 	local projectGroupId
 	projectGroupId="$(retrieveGroupId)"
 	local appName
-	appName="$(retrieveAppName)"
+	appName=$(retrieveAppName ${DEPLOYMENT_PROJECT_NAME})
+	local projectArtifactId
+	projectArtifactId=$(retrieveArtifactId ${DEPLOYMENT_PROJECT_NAME})
 
 	# download app
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${appName}"
 	# Log in to CF to start deployment
 	logInToPaas
 

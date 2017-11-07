@@ -12,11 +12,15 @@ function downloadAppBinary() {
 	local groupId="${2}"
 	local artifactId="${3}"
 	local version="${4}"
+	local appName="${5}"
+	if [[ -z "${appName}" ]]; then
+		appName="${artifactId}"
+	fi
 	local destination
 	local changedGroupId
 	local pathToJar
 
-	destination="$(pwd)/${OUTPUT_FOLDER}/${artifactId}-${version}.${BINARY_EXTENSION}"
+	destination="$(pwd)/${OUTPUT_FOLDER}/${appName}-${version}.${BINARY_EXTENSION}"
 	changedGroupId="$(echo "${groupId}" | tr . /)"
 	pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	mkdir -p "${OUTPUT_FOLDER}"
