@@ -118,12 +118,20 @@ function deleteService() {
 	exit 1
 }
 
-function deployService() {
+function deployService_Deprecated() {
 	local serviceType="${1}"
 	local serviceName="${2}"
 	local serviceCoordinates="${3}"
 	echo "Should deploy a service of type [${serviceType}], name [${serviceName}] and coordinates [${serviceCoordinates}]
 	Example: deployService eureka foo-eureka groupid:artifactid:1.0.0.RELEASE"
+	exit 1
+}
+
+function deployService() {
+	local serviceType="${1}"
+	local serviceName="${2}"
+	echo "Should deploy a service of type [${serviceType}], name [${serviceName}]
+	Example: deployService eureka foo-eureka"
 	exit 1
 }
 
@@ -151,7 +159,7 @@ function parsePipelineDescriptor() {
 # For TEST environment first deletes, then deploys services
 # For other environments only deploys a service if it wasn't there.
 # Uses ruby and jq
-function deployServices() {
+function deployServices_Deprecated() {
 
 	# shellcheck disable=SC2119
 	parsePipelineDescriptor
@@ -174,6 +182,36 @@ function deployServices() {
 	# retrieve the space separated type, name and coordinates
 	done <<<"$(echo "${PARSED_YAML}" | \
 				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"')"
+        # waitForServicesToInitialize
+}
+
+# Deploys services assuming that pipeline descriptor exists
+# For TEST environment first deletes, then deploys services
+# For other environments only deploys a service if it wasn't there.
+# Uses ruby and jq
+function deployServices() {
+
+	# shellcheck disable=SC2119
+	parsePipelineDescriptor
+
+	if [[ -z "${PARSED_YAML}" ]]; then
+		return
+	fi
+
+	while read -r serviceType serviceName; do
+		if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+			# deleteService "${serviceType}" "${serviceName}"
+			deployService "${serviceType}" "${serviceName}"
+		else
+			if [[ "$(serviceExists "${serviceName}")" == "true" ]]; then
+				echo "Skipping deployment since service is already deployed"
+			else
+				deployService "${serviceType}" "${serviceName}"
+			fi
+		fi
+	# retrieve the space separated name and type
+	done <<<"$(echo "${PARSED_YAML}" | \
+				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.name) \(.type)"')"
         # waitForServicesToInitialize
 }
 

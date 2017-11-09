@@ -14,14 +14,16 @@ function logInToPaas() {
 	local api="PAAS_${ENVIRONMENT}_API_URL"
 	local apiUrl="${!api:-api.run.pivotal.io}"
 	echo "Downloading Cloud Foundry CLI"
+	#TODO: is there a way to get this from PCF rather than the latest release? Like fly... Would ensure parity with foundation version...
 	curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
 	chmod +x cf
 
-	echo "Cloud foundry version"
+	echo "Cloud Foundry CLI version"
 	"${CF_BIN}" --version
 
 	echo "Logging in to CF to org [${cfOrg}], space [${cfSpace}]"
 	"${CF_BIN}" api --skip-ssl-validation "${apiUrl}"
+	#TODO Create space if it doesn't exist, at least in Test? Can we assume the user will have space creation permissions? If not, where in the automated flow would that happen?
 	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
 }
 
@@ -35,13 +37,13 @@ function testDeploy() {
 	logInToPaas
 
 	# First delete the app instance to remove all bindings
-	deleteAppInstance "${appName}"
+	deleteApp "${appName}"
 
 	deployServices
 
 	# deploy app
 	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
-	deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${PIPELINE_VERSION}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
+	deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${PIPELINE_VERSION}"
 	propagatePropertiesForTests "${appName}"
 }
 
@@ -66,46 +68,54 @@ function testRollbackDeploy() {
 }
 
 function deployService() {
-	local serviceType
-	serviceType=$(toLowerCase "${1}")
-	local serviceName="${2}"
-	local serviceCoordinates
-	serviceCoordinates=$(if [[ "${3}" == "null" ]]; then
-		echo "";
-	else
-		echo "${3}";
-	fi)
-	local coordinatesSeparator=":"
+	local serviceName="${1}"
+
+	local serviceType="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .type' | sed 's/^"\(.*\)"$/\1/')"
+	serviceType=$(toLowerCase "${serviceType}")
+
 	case ${serviceType} in
-		rabbitmq)
-			deployRabbitMq "${serviceName}"
+		brokered)
+		    local servicePlan="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .plan' | sed 's/^"\(.*\)"$/\1/')"
+			#TODO: Implement params retrieval and processing
+			#local params="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .params' | sed 's/^"\(.*\)"$/\1/')"
+
+#			local PREVIOUS_IFS="${IFS}"
+#			IFS=${coordinatesSeparator} read -r SB_SERVICE_NAME SB_PLAN_NAME <<<"${serviceCoordinates}"
+#			IFS="${PREVIOUS_IFS}"
+#			deployBrokeredService "${SB_SERVICE_NAME}" "${SB_PLAN_NAME}" "${serviceName}"
 		;;
-		mysql)
-			deployMySql "${serviceName}"
-		;;
-		eureka)
+		app)
+		    local serviceCoordinates="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
-			IFS=${coordinatesSeparator} read -r EUREKA_GROUP_ID EUREKA_ARTIFACT_ID EUREKA_VERSION <<<"${serviceCoordinates}"
+			IFS=${coordinatesSeparator} read -r APP_GROUP_ID APP_ARTIFACT_ID APP_VERSION <<<"${serviceCoordinates}"
 			IFS="${PREVIOUS_IFS}"
-			downloadAppBinary "${REPO_WITH_BINARIES}" "${EUREKA_GROUP_ID}" "${EUREKA_ARTIFACT_ID}" "${EUREKA_VERSION}"
-			deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
+			downloadAppBinary "${REPO_WITH_BINARIES}" "${APP_GROUP_ID}" "${APP_ARTIFACT_ID}" "${APP_VERSION}"
+			deployAppAsService "${APP_ARTIFACT_ID}-${APP_VERSION}" "${serviceName}" "${ENVIRONMENT}"
 		;;
-                service-broker)
-                        local PREVIOUS_IFS="${IFS}"
-                        IFS=${coordinatesSeparator} read -r SB_SERVICE_NAME SB_PLAN_NAME <<<"${serviceCoordinates}"
-                        IFS="${PREVIOUS_IFS}"
-                        deployBrokeredService "${SB_SERVICE_NAME}" "${SB_PLAN_NAME}" "${serviceName}"
-                ;;
+		static)
+			#TODO: implement: cf cups...
+			# Usage: cf create-user-provided-service SERVICE_INSTANCE [-p CREDENTIALS] [-l SYSLOG_DRAIN_URL] [-r ROUTE_SERVICE_URL]
+#			local credentials="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .credentials' | sed 's/^"\(.*\)"$/\1/')"
+#			local syslogDrainUrl="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .syslogDrainUrl' | sed 's/^"\(.*\)"$/\1/')"
+#			local routeServiceurl="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .routeServiceurl' | sed 's/^"\(.*\)"$/\1/')"
+#			# TODO: or leave it more freeform in the services sc-pipeline.yml?? just a json params file?
+# 			forces storing credentials in a git repo... not good...
+		;;
 		stubrunner)
+			local serviceCoordinates="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			local coordinatesSeparator=":"
+			local PREVIOUS_IFS="${IFS}"
+			IFS="${coordinatesSeparator}" read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
+			IFS="${PREVIOUS_IFS}"
+
 			local eurekaName
 			eurekaName="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/')"
 			local rabbitMqName
 			rabbitMqName="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/')"
-			local PREVIOUS_IFS="${IFS}"
-			IFS="${coordinatesSeparator}" read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
-			IFS="${PREVIOUS_IFS}"
+
 			local parsedStubRunnerUseClasspath
-			parsedStubRunnerUseClasspath="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/')"
+			parsedStubRunnerUseClasspath="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/')"
 			local stubRunnerUseClasspath
 			stubRunnerUseClasspath=$(if [[ "${parsedStubRunnerUseClasspath}" == "null" ]]; then
 				echo "false";
@@ -116,7 +126,7 @@ function deployService() {
 			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${rabbitMqName}" "${eurekaName}" "${ENVIRONMENT}" "${serviceName}" "${stubRunnerUseClasspath}"
 		;;
 		*)
-			echo "Unknown service with type [${serviceType}] and name [${serviceName}]"
+			echo "Unknown service type [${serviceType}] for service name [${serviceName}]"
 			return 1
 		;;
 	esac
@@ -126,80 +136,24 @@ function deleteService() {
 	local serviceType
 	serviceType=$(toLowerCase "${1}")
 	local serviceName="${2}"
-	case ${serviceType} in
-		mysql)
-			deleteMySql "${serviceName}"
-		;;
-		rabbitmq)
-			deleteRabbitMq "${serviceName}"
-		;;
-		*)
-			deleteServiceWithName "${serviceName}" || echo "Failed to delete service with type [${serviceType}] and name [${serviceName}]"
-		;;
-	esac
-}
-
-function deployRabbitMq() {
-	local serviceName="${1:-rabbitmq-github}"
-	echo "Waiting for RabbitMQ to start"
-	local foundApp
-	foundApp=$(serviceExists "rabbitmq" "${serviceName}")
-	if [[ "${foundApp}" == "false" ]]; then
-		local hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
-		("${CF_BIN}" cs cloudamqp lemur "${serviceName}" && echo "Started RabbitMQ") ||
-		("${CF_BIN}" cs p-rabbitmq standard "${serviceName}" && echo "Started RabbitMQ for PCF Dev")
-	else
-		echo "Service [${serviceName}] already started"
+	# If service is a cups pointing to an app, delte the app first
+	if [[ "${serviceType}" == "app" ]]; then
+		"${CF_BIN}" delete -f "${serviceName}" || echo "Failed to delete app [${serviceName}]"
 	fi
-}
-
-function findAppByName() {
-	local serviceName="${1}"
-	"${CF_BIN}" s | awk -v "app=${serviceName}" '$1 == app {print($0)}'
-}
-
-function serviceExists() {
-	local serviceType="${1}"
-	local serviceName="${2}"
-	local foundApp
-	foundApp=$(findAppByName "${serviceName}")
-	if [[ "${foundApp}" == "" ]]; then
-		echo "false"
-	else
-		echo "true"
-	fi
-}
-
-function deleteMySql() {
-	local serviceName="${1:-mysql-github}"
-	deleteServiceWithName "${serviceName}"
-}
-
-function deleteRabbitMq() {
-	local serviceName="${1:-rabbitmq-github}"
-	deleteServiceWithName "${serviceName}"
-}
-
-function deleteServiceWithName() {
-	local serviceName="${1}"
-	"${CF_BIN}" delete -f "${serviceName}" || echo "Failed to delete app [${serviceName}]"
+	# Delete the service
 	"${CF_BIN}" delete-service -f "${serviceName}" || echo "Failed to delete service [${serviceName}]"
 }
 
-function deployMySql() {
-	local serviceName="${1:-mysql-github}"
-	echo "Waiting for MySQL to start"
-	local foundApp
-	foundApp=$(serviceExists "mysql" "${serviceName}")
-	if [[ "${foundApp}" == "false" ]]; then
-		local hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
-		("${CF_BIN}" cs p-mysql 100mb "${serviceName}" && echo "Started MySQL") ||
-		("${CF_BIN}" cs p-mysql 512mb "${serviceName}" && echo "Started MySQL for PCF Dev") ||
-                ("${CF_BIN}" cs cleardb spark "${serviceName}" && echo "Started MySQL using ClearDB")
-	else
-		echo "Service [${serviceName}] already started"
-	fi
-}
+#function serviceExists() {
+#	local serviceName="${1}"
+#	local foundApp
+#	foundApp=$("${CF_BIN}" services | awk -v "app=${serviceName}" '$1 == app {print($0)}')
+#	if [[ "${foundApp}" == "" ]]; then
+#		echo "false"
+#	else
+#		echo "true"
+#	fi
+#}
 
 function deployAndRestartAppWithName() {
 	local appName="${1}"
@@ -219,7 +173,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
 	local profiles="cloud,smoke"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
-	deleteAppInstance "${appName}"
+	deleteApp "${appName}"
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
 	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'false'
 	echo "Binding all services from the pipeline descriptor"
@@ -229,18 +183,6 @@ function deployAndRestartAppWithNameForSmokeTests() {
 				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.name)"')"
 	setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
 	restartApp "${appName}"
-}
-
-function eurekaName() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
-}
-
-function rabbitMqName() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
-}
-
-function mySqlName() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
 }
 
 function appHost() {
@@ -287,12 +229,12 @@ function deployAppWithName() {
 	setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${applicationDomain}"
 	# TODO: This is very JVM specific
 	setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
-        # TODO: Only needed for Spring Cloud Services
-        local cfApi=$(cf api | head -1 | cut -c 25-${lastIndex})
-        setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
+    # TODO: Only needed for Spring Cloud Services
+    local cfApi=$(cf api | head -1 | cut -c 25-${lastIndex})
+    setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
 }
 
-function deleteAppInstance() {
+function deleteApp() {
 	local serviceName="${1}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${serviceName}")
@@ -323,11 +265,11 @@ function restartApp() {
 	"${CF_BIN}" restart "${appName}"
 }
 
-function deployEureka() {
+function deployAppAsService() {
 	local jarName="${1}"
 	local appName="${2}"
 	local env="${3}"
-	echo "Deploying Eureka. Options - jar name [${jarName}], app name [${appName}], env [${env}]"
+	echo "Deploying app as service. Options - jar name [${jarName}], app name [${appName}], env [${env}]"
 	deployAppWithName "${appName}" "${jarName}" "${env}"
 	restartApp "${appName}"
 	createServiceWithName "${appName}"
