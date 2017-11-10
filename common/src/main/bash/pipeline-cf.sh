@@ -73,6 +73,9 @@ function deployService() {
 	local serviceType="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .type' | sed 's/^"\(.*\)"$/\1/')"
 	serviceType=$(toLowerCase "${serviceType}")
 
+	echo "PARSED_YAML: ${PARSED_YAML}"
+	echo "Creating service ${serviceName} of type ${serviceType}"
+
 	case ${serviceType} in
 		brokered)
 		    local broker="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.service == "${serviceName}") | .broker' | sed 's/^"\(.*\)"$/\1/')"
