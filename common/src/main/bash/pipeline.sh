@@ -111,10 +111,10 @@ function extractVersionFromProdTag() {
 }
 
 function deleteService() {
-	local serviceType="${1}"
-	local serviceName="${2}"
-	echo "Should delete a service of type [${serviceType}] and name [${serviceName}]
-	Example: deleteService mysql foo-mysql"
+	local serviceName="${1}"
+	local serviceType="${2}"
+	echo "Should delete a service with name [${serviceName}] and type [${serviceType}]
+	Example: deleteService foo-eureka eureka"
 	exit 1
 }
 
@@ -128,10 +128,10 @@ function deployService_Deprecated() {
 }
 
 function deployService() {
-	local serviceType="${1}"
-	local serviceName="${2}"
-	echo "Should deploy a service of type [${serviceType}], name [${serviceName}]
-	Example: deployService eureka foo-eureka"
+	local serviceName="${1}"
+	local serviceType="${2}"
+	echo "Should deploy a service with name [${serviceName}] and type [${serviceType}]
+	Example: deployService foo-eureka eureka"
 	exit 1
 }
 
@@ -198,15 +198,16 @@ function deployServices() {
 		return
 	fi
 
-	while read -r serviceType serviceName; do
+	while read -r serviceName serviceType; do
+	    serviceType=$(toLowerCase "${serviceType}")
 		if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-			# deleteService "${serviceType}" "${serviceName}"
-			deployService "${serviceType}" "${serviceName}"
+			# deleteService "${serviceName}" "${serviceType}"
+			deployService "${serviceName}" "${serviceType}"
 		else
 			if [[ "$(serviceExists "${serviceName}")" == "true" ]]; then
 				echo "Skipping deployment since service is already deployed"
 			else
-				deployService "${serviceType}" "${serviceName}"
+				deployService "${serviceName}" "${serviceType}"
 			fi
 		fi
 	# retrieve the space separated name and type

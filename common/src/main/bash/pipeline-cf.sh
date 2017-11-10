@@ -69,13 +69,7 @@ function testRollbackDeploy() {
 
 function deployService() {
 	local serviceName="${1}"
-
-	local serviceType="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .type' | sed 's/^"\(.*\)"$/\1/')"
-	echo "raw type: ${servictType}"
-	serviceType=$(toLowerCase "${serviceType}")
-
-	echo "PARSED_YAML: ${PARSED_YAML}"
-	echo "lowercase type:  ${serviceName} of type ${serviceType}"
+	local serviceType="${2}"
 
 	case ${serviceType} in
 		brokered)
