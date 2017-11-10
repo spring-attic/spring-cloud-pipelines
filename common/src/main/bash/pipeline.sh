@@ -216,18 +216,6 @@ function deployServices() {
         # waitForServicesToInitialize
 }
 
-function waitForServicesToInitialize() {
-        # Wait until services are ready
-        i="$(cf services | grep 'in progress' | wc -l)"
-        while [ "${i}" -gt 0 ]
-          do
-            sleep 10 
-            echo "Waiting for services to initialize..."
-            i="$(cf services | grep 'in progress' | wc -l)"
-          done
-        echo "Service initialization - complete"
-}
-
 # Converts YAML to JSON - uses ruby
 function yaml2json() {
 	ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load(ARGF))' "$@"

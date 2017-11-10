@@ -71,6 +71,9 @@ function deployService() {
 	local serviceName="${1}"
 	local serviceType="${2}"
 
+	echo "Parsed YAML:"
+	echo "${PARSED_YAML}"
+
 	case ${serviceType} in
 		brokered)
 		    local broker="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.service == "${serviceName}") | .broker' | sed 's/^"\(.*\)"$/\1/')"
@@ -279,8 +282,8 @@ function deployBrokeredService() {
         local serviceName="${1}"
         local broker="${2}"
         local plan="${3}"
-#        local params="${4}"
-        echo "Deploying [${serviceName}] via Service Broker. Options - broker [${broker}], plan [${plan}], env [${env}]"
+#       local params="${4}"
+        echo "Deploying [${serviceName}] via Service Broker. Options - broker [${broker}], plan [${plan}], env [${LOWERCASE_ENV}]"
         if [[ "${broker}" == "p-config-server" ]]; then
                 local cfgGitUri="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .params | .gitUri' | sed 's/^"\(.*\)"$/\1/')"
                 echo "{\"git\": {\"uri\": \"${cfgGitUri}\"}}" > cloud-config-uri.json
@@ -490,6 +493,18 @@ function propagatePropertiesForTests() {
 	echo "STUBRUNNER_URL=${host}" >>"${fileLocation}"
 	echo "Resolved properties"
 	cat "${fileLocation}"
+}
+
+function waitForServicesToInitialize() {
+        # Wait until services are ready
+        i="$(cf services | grep 'in progress' | wc -l)"
+        while [ "${i}" -gt 0 ]
+          do
+            sleep 10
+            echo "Waiting for services to initialize..."
+            i="$(cf services | grep 'in progress' | wc -l)"
+          done
+        echo "Service initialization - complete"
 }
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
