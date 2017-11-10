@@ -75,14 +75,16 @@ function deployService() {
 
 	case ${serviceType} in
 		brokered)
-		    local servicePlan="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .plan' | sed 's/^"\(.*\)"$/\1/')"
-			#TODO: Implement params retrieval and processing
-			#local params="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .params' | sed 's/^"\(.*\)"$/\1/')"
+		    local broker="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.service == "${serviceName}") | .broker' | sed 's/^"\(.*\)"$/\1/')"
+			local plan="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.plan == "${serviceName}") | .plan' | sed 's/^"\(.*\)"$/\1/')"
+            #TODO check how to handle sublist of yml, pass params to deployBrokeredService
+            local params="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .params' | sed 's/^"\(.*\)"$/\1/')"
+			echo "Params: ${params}"
 
 #			local PREVIOUS_IFS="${IFS}"
 #			IFS=${coordinatesSeparator} read -r SB_SERVICE_NAME SB_PLAN_NAME <<<"${serviceCoordinates}"
 #			IFS="${PREVIOUS_IFS}"
-#			deployBrokeredService "${SB_SERVICE_NAME}" "${SB_PLAN_NAME}" "${serviceName}"
+			deployBrokeredService "${serviceName}" "${broker}" "${plan}"
 		;;
 		app)
 		    local serviceCoordinates="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
@@ -276,16 +278,17 @@ function deployAppAsService() {
 }
 
 function deployBrokeredService() {
-        local sbServiceName="${1}"
-        local sbPlanName="${2}"
-        local serviceName="${3}"
-        echo "Deploying [${serviceName}] via Service Broker. Options - sb service name [${sbServiceName}], sb plan name [${sb-plan-name}], env [${env}]"
-        if [[ "${sbServiceName}" == "p-config-server" ]]; then
-                local cfgGitUri="https://github.com/ciberkleid/app-config"
+        local serviceName="${1}"
+        local broker="${2}"
+        local plan="${3}"
+#        local params="${4}"
+        echo "Deploying [${serviceName}] via Service Broker. Options - broker [${broker}], plan [${plan}], env [${env}]"
+        if [[ "${broker}" == "p-config-server" ]]; then
+                local cfgGitUri="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .params | .gitUri' | sed 's/^"\(.*\)"$/\1/')"
                 echo "{\"git\": {\"uri\": \"${cfgGitUri}\"}}" > cloud-config-uri.json
-                "${CF_BIN}" cs "${sbServiceName}" "${sbPlanName}" "${serviceName}" -c cloud-config-uri.json
+                "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c cloud-config-uri.json
         else
-                "${CF_BIN}" cs "${sbServiceName}" "${sbPlanName}" "${serviceName}" 
+                "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}"
         fi
 }
 
