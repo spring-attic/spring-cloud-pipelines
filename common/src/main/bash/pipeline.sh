@@ -201,7 +201,7 @@ function deployServices() {
 	while read -r serviceName serviceType; do
 	    serviceType=$(toLowerCase "${serviceType}")
 		if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-			# deleteService "${serviceName}" "${serviceType}"
+			#  deleteService "${serviceName}" "${serviceType}"
 			deployService "${serviceName}" "${serviceType}"
 		else
 			if [[ "$(serviceExists "${serviceName}")" == "true" ]]; then

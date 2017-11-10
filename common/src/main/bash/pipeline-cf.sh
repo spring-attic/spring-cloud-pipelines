@@ -75,7 +75,7 @@ function deployService() {
 		brokered)
 		    local broker="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.service == "${serviceName}") | .broker' | sed 's/^"\(.*\)"$/\1/')"
 			local plan="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.plan == "${serviceName}") | .plan' | sed 's/^"\(.*\)"$/\1/')"
-            #TODO check how to handle sublist of yml, pass params to deployBrokeredService
+            # TODO check how to handle sublist of yml, pass params to deployBrokeredService
             local params="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .params' | sed 's/^"\(.*\)"$/\1/')"
 			echo "Params: ${params}"
 
