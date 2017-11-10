@@ -135,7 +135,7 @@ function deployService() {
 	esac
 }
 
-function deleteService() {
+function deleteService() { 
 	local serviceType
 	serviceType=$(toLowerCase "${1}")
 	local serviceName="${2}"
