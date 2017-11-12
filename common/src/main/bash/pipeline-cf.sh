@@ -13,6 +13,7 @@ function logInToPaas() {
 	local cfSpace="${!space}"
 	local api="PAAS_${ENVIRONMENT}_API_URL"
 	local apiUrl="${!api:-api.run.pivotal.io}"
+
 	echo "Downloading Cloud Foundry CLI"
 	#TODO: is there a way to get this from PCF rather than the latest release? Like fly... Would ensure parity with foundation version...
 	curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
@@ -23,8 +24,38 @@ function logInToPaas() {
 
 	echo "Logging in to CF to org [${cfOrg}], space [${cfSpace}]"
 	"${CF_BIN}" api --skip-ssl-validation "${apiUrl}"
-	#TODO Create space if it doesn't exist, at least in Test? Can we assume the user will have space creation permissions? If not, where in the automated flow would that happen?
-	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
+	# TODO: make sure this works... logging in from a script without specifying space
+	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}"
+	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+		cfSpace="${PAAS_TEST_SPACE_VERSIONED}"
+		"${CF_BIN}" create-space "${cfSpace}"
+	fi
+	"${CF_BIN}" target -s "${cfSpace}"
+}
+
+function setTestSpaceName() {
+	if [[ "${ENVIRONMENT}" != "TEST" ]]; then
+		echo "Current environment is [${ENVIRONMENT}]. Cannot generate space name for non-test environment"
+		return 1;
+	fi
+	local appName="${1}"
+	local space="PAAS_${ENVIRONMENT}_SPACE"
+	local cfSpacePrefix="${!space}"
+	local cfSpace="${cfSpacePrefix}"-"${PAAS_HOSTNAME_UUID}"-"${appName}"-"${VERSION}"
+	export PAAS_TEST_SPACE_VERSIONED="${cfSpace}"
+}
+
+function cleanUpTestSpace() {
+	if [[ "${ENVIRONMENT}" != "TEST" ]]; then
+		return;
+	fi
+
+	#TODO Assuming user will have space creation permissions. If not, provide alternative...
+	# Delete and re-create the space
+	local cfSpace="${PAAS_TEST_SPACE_VERSIONED}"
+	"${CF_BIN}" delete-space -f "${cfSpace}"
+	"${CF_BIN}" create-space "${cfSpace}"
+	"${CF_BIN}" target -s "${cfSpace}"
 }
 
 function testDeploy() {
@@ -34,9 +65,16 @@ function testDeploy() {
 	local appName
 	appName=$(retrieveAppName)
 	# Log in to PaaS to start deployment
+	setTestSpaceName "${appName}"
 	logInToPaas
 
+	# Clean up the test space
+	cleanUpTestSpace
+
 	# First delete the app instance to remove all bindings
+	# TODO: take this out!!!!!
+	# TODO: don't need this if space is created anew for test
+	# TODO: provide option to delete just app or juset services individually?
 	deleteApp "${appName}"
 
 	deployServices
@@ -128,9 +166,10 @@ function deleteService() {
 	local serviceType
 	serviceType=$(toLowerCase "${1}")
 	local serviceName="${2}"
-	# If service is a cups pointing to an app, delte the app first
+	# If service is a cups pointing to an app, delete the app first
 	if [[ "${serviceType}" == "app" ]]; then
-		"${CF_BIN}" delete -f "${serviceName}" || echo "Failed to delete app [${serviceName}]"
+		# Delete app and route
+		"${CF_BIN}" delete -f -r "${serviceName}" || echo "Failed to delete app [${serviceName}]"
 	fi
 	# Delete the service
 	"${CF_BIN}" delete-service -f "${serviceName}" || echo "Failed to delete service [${serviceName}]"
@@ -232,7 +271,8 @@ function deleteApp() {
 	lowerCaseAppName=$(toLowerCase "${serviceName}")
 	local APP_NAME="${lowerCaseAppName}"
 	echo "Deleting application [${APP_NAME}]"
-	"${CF_BIN}" delete -f "${APP_NAME}" || echo "Failed to delete the app. Continuing with the script"
+	# Delete app and route
+	"${CF_BIN}" delete -f -r "${APP_NAME}" || echo "Failed to delete the app. Continuing with the script"
 }
 
 function setEnvVarIfMissing() {
@@ -469,6 +509,7 @@ function deleteBlueInstance() {
 	local appPresent="no"
 	"${CF_BIN}" app "${oldName}" && appPresent="yes"
 	if [[ "${appPresent}" == "yes" ]]; then
+		# Delete app only, not route
 		"${CF_BIN}" delete "${oldName}" -f
 	else
 		echo "Will not remove the old application cause it's not there"

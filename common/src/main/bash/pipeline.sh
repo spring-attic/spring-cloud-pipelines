@@ -110,20 +110,12 @@ function extractVersionFromProdTag() {
 	echo "${tag#prod/}"
 }
 
+# TODO: maybe don't need this if space is created anew for test????
 function deleteService() {
 	local serviceName="${1}"
 	local serviceType="${2}"
 	echo "Should delete a service with name [${serviceName}] and type [${serviceType}]
 	Example: deleteService foo-eureka eureka"
-	exit 1
-}
-
-function deployService_Deprecated() {
-	local serviceType="${1}"
-	local serviceName="${2}"
-	local serviceCoordinates="${3}"
-	echo "Should deploy a service of type [${serviceType}], name [${serviceName}] and coordinates [${serviceCoordinates}]
-	Example: deployService eureka foo-eureka groupid:artifactid:1.0.0.RELEASE"
 	exit 1
 }
 
@@ -174,6 +166,7 @@ function deployServices() {
 	while read -r serviceName serviceType; do
 	    serviceType=$(toLowerCase "${serviceType}")
 		if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+			# TODO: maybe don't need this if space is created anew for test????
 			#  deleteService "${serviceName}" "${serviceType}"
 			deployService "${serviceName}" "${serviceType}"
 		else
