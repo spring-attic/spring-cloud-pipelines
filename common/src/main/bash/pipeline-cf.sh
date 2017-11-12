@@ -71,24 +71,18 @@ function deployService() {
 	local serviceName="${1}"
 	local serviceType="${2}"
 
-	echo "Parsed YAML:"
-	echo "${PARSED_YAML}"
-
 	case ${serviceType} in
 		brokered)
-			local broker ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .broker' | sed 's/^"\(.*\)"$/\1/')"
-			local plan ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .plan' | sed 's/^"\(.*\)"$/\1/')"
-			# TODO check how to handle sublist of yml, pass params to deployBrokeredService
-			local params ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
+			local broker="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .broker' | sed 's/^"\(.*\)"$/\1/')"
+			local plan="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .plan' | sed 's/^"\(.*\)"$/\1/')"
+
+			local params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
 			echo "Params: ${params}"
 
-#			local PREVIOUS_IFS="${IFS}"
-#			IFS=${coordinatesSeparator} read -r SB_SERVICE_NAME SB_PLAN_NAME <<<"${serviceCoordinates}"
-#			IFS="${PREVIOUS_IFS}"
-			deployBrokeredService "${serviceName}" "${broker}" "${plan}"
+			deployBrokeredService "${serviceName}" "${broker}" "${plan}" "${params}"
 		;;
 		app)
-			local serviceCoordinates ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			local serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
 			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
 			IFS=${coordinatesSeparator} read -r APP_GROUP_ID APP_ARTIFACT_ID APP_VERSION <<<"${serviceCoordinates}"
@@ -97,16 +91,14 @@ function deployService() {
 			deployAppAsService "${APP_ARTIFACT_ID}-${APP_VERSION}" "${serviceName}" "${ENVIRONMENT}"
 		;;
 		static)
-			#TODO: implement: cf cups...
+			#TODO: implement: cf cups... Can Creds be read from somewhere else? Credhub Concourse integration? Other?
 			# Usage: cf create-user-provided-service SERVICE_INSTANCE [-p CREDENTIALS] [-l SYSLOG_DRAIN_URL] [-r ROUTE_SERVICE_URL]
-			local credentials ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .credentials' | sed 's/^"\(.*\)"$/\1/')"
-			local syslogDrainUrl ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .syslogDrainUrl' | sed 's/^"\(.*\)"$/\1/')"
-			local routeServiceurl ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .routeServiceurl' | sed 's/^"\(.*\)"$/\1/')"
-#			# TODO: or leave it more freeform in the services sc-pipeline.yml?? just a json params file?
-# 			forces storing credentials in a git repo... not good...
+			local credentials="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .credentials' | sed 's/^"\(.*\)"$/\1/')"
+			local syslogDrainUrl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .syslogDrainUrl' | sed 's/^"\(.*\)"$/\1/')"
+			local routeServiceurl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .routeServiceurl' | sed 's/^"\(.*\)"$/\1/')"
 		;;
 		stubrunner)
-			local serviceCoordinates ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			local serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
 			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
 			IFS="${coordinatesSeparator}" read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
@@ -282,16 +274,24 @@ function deployBrokeredService() {
         local serviceName="${1}"
         local broker="${2}"
         local plan="${3}"
-#       local params="${4}"
-        echo "Deploying [${serviceName}] via Service Broker. Options - broker [${broker}], plan [${plan}], env [${LOWERCASE_ENV}]"
-        if [[ "${broker}" == "p-config-server" ]]; then
-        		#TODO Remove hard-coding, make temp dir for config json file
-                local cfgGitUri="https://github.com/ciberkleid/app-config"
-                echo "{\"git\": {\"uri\": \"${cfgGitUri}\"}}" > cloud-config-uri.json
-                "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c cloud-config-uri.json
-        else
-                "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}"
-        fi
+        local params="${4}"
+        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}], params [${params}]"
+
+        if [[ -z "${params}" ]]; then
+			"${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}"
+		else
+			"${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c '"${params}"'
+#		    TODO If -c <json-string> doesn't work, try:
+#			local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-config.json"
+#			mkdir -p "${OUTPUT_FOLDER}"
+#			echo "Current folder is [$(pwd)]; Writing params to [${destination}]"
+#			echo "${params}" > "${destination}"
+#			"${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c "${destination}"
+
+#			TODO: Best-practice - is code more readable with create-service instead of cs, generally?
+#			TODO: For create-service, there is a -t tags parameter -  add support for this? Also, what if it's an update to an existing service in upstream env?
+#			TODO: For cups, do we need to consider cf uups instead of cf cups??? general service param updates for services that already exist?
+		fi
 }
 
 function deployStubRunnerBoot() {

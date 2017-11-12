@@ -159,40 +159,13 @@ function parsePipelineDescriptor() {
 # For TEST environment first deletes, then deploys services
 # For other environments only deploys a service if it wasn't there.
 # Uses ruby and jq
-function deployServices_Deprecated() {
-
-	# shellcheck disable=SC2119
-	parsePipelineDescriptor
-
-	if [[ -z "${PARSED_YAML}" ]]; then
-		return
-	fi
-
-	while read -r serviceType serviceName serviceCoordinates; do
-		if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-			# deleteService "${serviceType}" "${serviceName}"
-			deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
-		else
-			if [[ "$(serviceExists "${serviceName}")" == "true" ]]; then
-				echo "Skipping deployment since service is already deployed"
-			else
-				deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
-			fi
-		fi
-	# retrieve the space separated type, name and coordinates
-	done <<<"$(echo "${PARSED_YAML}" | \
-				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"')"
-        # waitForServicesToInitialize
-}
-
-# Deploys services assuming that pipeline descriptor exists
-# For TEST environment first deletes, then deploys services
-# For other environments only deploys a service if it wasn't there.
-# Uses ruby and jq
 function deployServices() {
 
 	# shellcheck disable=SC2119
 	parsePipelineDescriptor
+
+	echo "Parsed YAML:"
+	echo "${PARSED_YAML}"
 
 	if [[ -z "${PARSED_YAML}" ]]; then
 		return
