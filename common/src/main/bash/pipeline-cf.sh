@@ -287,8 +287,8 @@ function deployBrokeredService() {
            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c "${destination}"
 
 #           TODO: Best-practice - is code more readable with create-service instead of cs, generally?
-#           TODO: For create-service, there is a -t tags parameter -  add support for this? Also, what if it's an update to an existing service in upstream env?
-#           TODO: For cups, do we need to consider cf uups instead of cf cups??? general service param updates for services that already exist?
+#           TODO: For create-service, there is a -t tags parameter -  add support for this?
+#           TODO: For create-service and cups, do we need to consider updates for services that already exist?
         fi
 }
 
