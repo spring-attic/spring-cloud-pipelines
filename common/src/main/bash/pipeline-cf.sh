@@ -76,10 +76,10 @@ function deployService() {
 
 	case ${serviceType} in
 		brokered)
-		    local broker="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .broker' | sed 's/^"\(.*\)"$/\1/')"
-			local plan="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .plan' | sed 's/^"\(.*\)"$/\1/')"
-            # TODO check how to handle sublist of yml, pass params to deployBrokeredService
-            local params="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .params' | sed 's/^"\(.*\)"$/\1/')"
+			local broker ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .broker' | sed 's/^"\(.*\)"$/\1/')"
+			local plan ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .plan' | sed 's/^"\(.*\)"$/\1/')"
+			# TODO check how to handle sublist of yml, pass params to deployBrokeredService
+			local params ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
 			echo "Params: ${params}"
 
 #			local PREVIOUS_IFS="${IFS}"
@@ -88,7 +88,7 @@ function deployService() {
 			deployBrokeredService "${serviceName}" "${broker}" "${plan}"
 		;;
 		app)
-		    local serviceCoordinates="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			local serviceCoordinates ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
 			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
 			IFS=${coordinatesSeparator} read -r APP_GROUP_ID APP_ARTIFACT_ID APP_VERSION <<<"${serviceCoordinates}"
@@ -99,14 +99,14 @@ function deployService() {
 		static)
 			#TODO: implement: cf cups...
 			# Usage: cf create-user-provided-service SERVICE_INSTANCE [-p CREDENTIALS] [-l SYSLOG_DRAIN_URL] [-r ROUTE_SERVICE_URL]
-#			local credentials="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .credentials' | sed 's/^"\(.*\)"$/\1/')"
-#			local syslogDrainUrl="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .syslogDrainUrl' | sed 's/^"\(.*\)"$/\1/')"
-#			local routeServiceurl="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .routeServiceurl' | sed 's/^"\(.*\)"$/\1/')"
+			local credentials ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .credentials' | sed 's/^"\(.*\)"$/\1/')"
+			local syslogDrainUrl ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .syslogDrainUrl' | sed 's/^"\(.*\)"$/\1/')"
+			local routeServiceurl ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .routeServiceurl' | sed 's/^"\(.*\)"$/\1/')"
 #			# TODO: or leave it more freeform in the services sc-pipeline.yml?? just a json params file?
 # 			forces storing credentials in a git repo... not good...
 		;;
 		stubrunner)
-			local serviceCoordinates="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			local serviceCoordinates ="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
 			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
 			IFS="${coordinatesSeparator}" read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
@@ -135,7 +135,7 @@ function deployService() {
 	esac
 }
 
-function deleteService() { 
+function deleteService() {
 	local serviceType
 	serviceType=$(toLowerCase "${1}")
 	local serviceName="${2}"
@@ -285,7 +285,8 @@ function deployBrokeredService() {
 #       local params="${4}"
         echo "Deploying [${serviceName}] via Service Broker. Options - broker [${broker}], plan [${plan}], env [${LOWERCASE_ENV}]"
         if [[ "${broker}" == "p-config-server" ]]; then
-                local cfgGitUri="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "${serviceName}") | .params | .gitUri' | sed 's/^"\(.*\)"$/\1/')"
+        		#TODO Remove hard-coding, make temp dir for config json file
+                local cfgGitUri="https://github.com/ciberkleid/app-config"
                 echo "{\"git\": {\"uri\": \"${cfgGitUri}\"}}" > cloud-config-uri.json
                 "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c cloud-config-uri.json
         else
