@@ -75,10 +75,7 @@ function deployService() {
 		brokered)
 			local broker="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .broker' | sed 's/^"\(.*\)"$/\1/')"
 			local plan="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .plan' | sed 's/^"\(.*\)"$/\1/')"
-
 			local params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
-			echo "Params: ${params}"
-
 			deployBrokeredService "${serviceName}" "${broker}" "${plan}" "${params}"
 		;;
 		app)
@@ -275,18 +272,19 @@ function deployBrokeredService() {
         local broker="${2}"
         local plan="${3}"
         local params="${4}"
-        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}], params [${params}]"
-
         if [[ -z "${params}" || "${params}" == "null" ]]; then
-            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}"
+	        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}]"
+		    "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}"
         else
-            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c '"${params}"'
-#           TODO If -c <json-string> doesn't work, try:
-#           local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-config.json"
-#           mkdir -p "${OUTPUT_FOLDER}"
+	        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}], params:"
+	        echo "${params}"
+#            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c '"${params}"'
+            # Write params to file:
+           local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
+           mkdir -p "${OUTPUT_FOLDER}"
             echo "Current folder is [$(pwd)]; Writing params to [${destination}]"
-#           echo "${params}" > "${destination}"
-#           "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c "${destination}"
+           echo "${params}" > "${destination}"
+           "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c "${destination}"
 
 #           TODO: Best-practice - is code more readable with create-service instead of cs, generally?
 #           TODO: For create-service, there is a -t tags parameter -  add support for this? Also, what if it's an update to an existing service in upstream env?
