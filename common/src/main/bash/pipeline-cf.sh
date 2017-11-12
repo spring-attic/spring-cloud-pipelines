@@ -277,21 +277,21 @@ function deployBrokeredService() {
         local params="${4}"
         echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}], params [${params}]"
 
-        if [[ -z "${params}" ]]; then
-			"${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}"
-		else
-			"${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c '"${params}"'
-#		    TODO If -c <json-string> doesn't work, try:
-#			local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-config.json"
-#			mkdir -p "${OUTPUT_FOLDER}"
-#			echo "Current folder is [$(pwd)]; Writing params to [${destination}]"
-#			echo "${params}" > "${destination}"
-#			"${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c "${destination}"
+        if [[ -z "${params}" || "${params}" == "null" ]]; then
+            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}"
+        else
+            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c '"${params}"'
+#           TODO If -c <json-string> doesn't work, try:
+#           local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-config.json"
+#           mkdir -p "${OUTPUT_FOLDER}"
+            echo "Current folder is [$(pwd)]; Writing params to [${destination}]"
+#           echo "${params}" > "${destination}"
+#           "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c "${destination}"
 
-#			TODO: Best-practice - is code more readable with create-service instead of cs, generally?
-#			TODO: For create-service, there is a -t tags parameter -  add support for this? Also, what if it's an update to an existing service in upstream env?
-#			TODO: For cups, do we need to consider cf uups instead of cf cups??? general service param updates for services that already exist?
-		fi
+#           TODO: Best-practice - is code more readable with create-service instead of cs, generally?
+#           TODO: For create-service, there is a -t tags parameter -  add support for this? Also, what if it's an update to an existing service in upstream env?
+#           TODO: For cups, do we need to consider cf uups instead of cf cups??? general service param updates for services that already exist?
+        fi
 }
 
 function deployStubRunnerBoot() {
