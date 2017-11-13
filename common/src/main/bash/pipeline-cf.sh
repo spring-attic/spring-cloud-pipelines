@@ -80,6 +80,7 @@ function testDeploy() {
 	deleteApp "${appName}"
 
 	deployServices
+	waitForServicesToInitialize
 
 	# deploy app
 	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
@@ -430,6 +431,7 @@ function stageDeploy() {
 	logInToPaas
 
 	deployServices
+	waitForServicesToInitialize
 
 	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
 
@@ -463,6 +465,7 @@ function performGreenDeployment() {
 	logInToPaas
 
     deployServices
+    waitForServicesToInitialize
 
 	# deploy app
 	performGreenDeploymentOfTestedApplication "${appName}"
@@ -539,12 +542,10 @@ function propagatePropertiesForTests() {
 
 function waitForServicesToInitialize() {
 	# Wait until services are ready
-	i="$(cf services | grep 'in progress' | wc -l)"
-	while [ "${i}" -gt 0 ]
+	while cf services | grep 'in progress'
 	  do
 		sleep 10
 		echo "Waiting for services to initialize..."
-		i="$(cf services | grep 'in progress' | wc -l)"
 	  done
 	echo "Service initialization - complete"
 }

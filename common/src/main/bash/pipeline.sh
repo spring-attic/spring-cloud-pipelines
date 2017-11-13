@@ -127,11 +127,6 @@ function deployService() {
 	exit 1
 }
 
-function waitForServicesToInitialize {
-	echo "Should check that services are initialized and then return"
-	exit 1
-}
-
 function serviceExists() {
 	local serviceType="${1}"
 	local serviceName="${2}"
@@ -161,9 +156,6 @@ function deployServices() {
 	# shellcheck disable=SC2119
 	parsePipelineDescriptor
 
-	echo "Parsed YAML:"
-	echo "${PARSED_YAML}"
-
 	if [[ -z "${PARSED_YAML}" ]]; then
 		return
 	fi
@@ -184,7 +176,6 @@ function deployServices() {
 	# retrieve the space separated name and type
 	done <<<"$(echo "${PARSED_YAML}" | \
 				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.name) \(.type)"')"
-        waitForServicesToInitialize
 }
 
 # Converts YAML to JSON - uses ruby
