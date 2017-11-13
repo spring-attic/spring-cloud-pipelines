@@ -42,7 +42,7 @@ function setTestSpaceName() {
 	local appName="${1}"
 	local space="PAAS_${ENVIRONMENT}_SPACE"
 	local cfSpacePrefix="${!space}"
-	local cfSpace="${cfSpacePrefix}"-"${PAAS_HOSTNAME_UUID}"-"${appName}"-"${PIPELINE_VERSION}"
+	local cfSpace="${cfSpacePrefix}"-"${appName}"-"${PIPELINE_VERSION}"
 	export PAAS_TEST_SPACE_VERSIONED="${cfSpace}"
 }
 
@@ -461,7 +461,7 @@ function performGreenDeployment() {
 	# Log in to CF to start deployment
 	logInToPaas
 
-        deployServices
+    deployServices
 
 	# deploy app
 	performGreenDeploymentOfTestedApplication "${appName}"
