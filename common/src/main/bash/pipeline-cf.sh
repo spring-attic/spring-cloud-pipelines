@@ -27,22 +27,24 @@ function logInToPaas() {
 	# TODO: This only works if space exists. OK for stage and prod. or test, is there a way to avoid this?
 	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
 	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-		cfSpace="${PAAS_TEST_SPACE_VERSIONED}"
+		cfSpace=$(getTestSpaceName)
+		echo "Targeting CF space [${cfSpace}]"
+		# TODO check if it exists, only create if it does not exist
 		"${CF_BIN}" create-space "${cfSpace}"
 		"${CF_BIN}" target -s "${cfSpace}"
 	fi
 }
 
-function setTestSpaceName() {
+function getTestSpaceName() {
 	if [[ "${ENVIRONMENT}" != "TEST" ]]; then
 		echo "Current environment is [${ENVIRONMENT}]. Cannot generate space name for non-test environment"
 		return 1;
 	fi
-	local appName="${1}"
+	local appName=$(retrieveAppName)
 	local space="PAAS_${ENVIRONMENT}_SPACE"
 	local cfSpacePrefix="${!space}"
 	local cfSpace="${cfSpacePrefix}"-"${appName}"-"${PIPELINE_VERSION}"
-	export PAAS_TEST_SPACE_VERSIONED="${cfSpace}"
+	echo "${cfSpace}"
 }
 
 function cleanUpTestSpace() {
@@ -53,7 +55,7 @@ function cleanUpTestSpace() {
 
 	#TODO Assuming user will have space creation permissions. If not, provide alternative...
 	# Delete and re-create the space
-	local cfSpace="${PAAS_TEST_SPACE_VERSIONED}"
+	local cfSpace=$(getTestSpaceName)
 	"${CF_BIN}" delete-space -f "${cfSpace}"
 	"${CF_BIN}" create-space "${cfSpace}"
 	"${CF_BIN}" target -s "${cfSpace}"
@@ -67,7 +69,6 @@ function testDeploy() {
 	appName=$(retrieveAppName)
 
 	# Log in to PaaS to start deployment
-	setTestSpaceName "${appName}"
 	logInToPaas
 
 	# Clean up the test space
