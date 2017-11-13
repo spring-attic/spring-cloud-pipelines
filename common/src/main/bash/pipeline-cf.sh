@@ -25,12 +25,13 @@ function logInToPaas() {
 	echo "Logging in to CF to org [${cfOrg}], space [${cfSpace}]"
 	"${CF_BIN}" api --skip-ssl-validation "${apiUrl}"
 	# TODO: make sure this works... logging in from a script without specifying space
-	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}"
+	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
 	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
 		cfSpace="${PAAS_TEST_SPACE_VERSIONED}"
 		"${CF_BIN}" create-space "${cfSpace}"
+		"${CF_BIN}" target -s "${cfSpace}"
 	fi
-	"${CF_BIN}" target -s "${cfSpace}"
+
 }
 
 function setTestSpaceName() {
@@ -41,7 +42,7 @@ function setTestSpaceName() {
 	local appName="${1}"
 	local space="PAAS_${ENVIRONMENT}_SPACE"
 	local cfSpacePrefix="${!space}"
-	local cfSpace="${cfSpacePrefix}"-"${PAAS_HOSTNAME_UUID}"-"${appName}"-"${VERSION}"
+	local cfSpace="${cfSpacePrefix}"-"${PAAS_HOSTNAME_UUID}"-"${appName}"-"${PIPELINE_VERSION}"
 	export PAAS_TEST_SPACE_VERSIONED="${cfSpace}"
 }
 
