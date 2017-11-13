@@ -24,14 +24,13 @@ function logInToPaas() {
 
 	echo "Logging in to CF to org [${cfOrg}], space [${cfSpace}]"
 	"${CF_BIN}" api --skip-ssl-validation "${apiUrl}"
-	# TODO: make sure this works... logging in from a script without specifying space
+	# TODO: This only works if space exists. OK for stage and prod. or test, is there a way to avoid this?
 	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
 	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
 		cfSpace="${PAAS_TEST_SPACE_VERSIONED}"
 		"${CF_BIN}" create-space "${cfSpace}"
 		"${CF_BIN}" target -s "${cfSpace}"
 	fi
-
 }
 
 function setTestSpaceName() {
@@ -48,6 +47,7 @@ function setTestSpaceName() {
 
 function cleanUpTestSpace() {
 	if [[ "${ENVIRONMENT}" != "TEST" ]]; then
+		echo "Current environment is [${ENVIRONMENT}]. Cannot run cleanUpTestSpace for non-test environment"
 		return;
 	fi
 
@@ -65,6 +65,7 @@ function testDeploy() {
 	projectGroupId=$(retrieveGroupId)
 	local appName
 	appName=$(retrieveAppName)
+
 	# Log in to PaaS to start deployment
 	setTestSpaceName "${appName}"
 	logInToPaas
@@ -75,7 +76,7 @@ function testDeploy() {
 	# First delete the app instance to remove all bindings
 	# TODO: take this out!!!!!
 	# TODO: don't need this if space is created anew for test
-	# TODO: provide option to delete just app or juset services individually?
+	# TODO: provide option to delete just app or just services individually?
 	deleteApp "${appName}"
 
 	deployServices
@@ -537,15 +538,15 @@ function propagatePropertiesForTests() {
 }
 
 function waitForServicesToInitialize() {
-        # Wait until services are ready
-        i="$(cf services | grep 'in progress' | wc -l)"
-        while [ "${i}" -gt 0 ]
-          do
-            sleep 10
-            echo "Waiting for services to initialize..."
-            i="$(cf services | grep 'in progress' | wc -l)"
-          done
-        echo "Service initialization - complete"
+	# Wait until services are ready
+	i="$(cf services | grep 'in progress' | wc -l)"
+	while [ "${i}" -gt 0 ]
+	  do
+		sleep 10
+		echo "Waiting for services to initialize..."
+		i="$(cf services | grep 'in progress' | wc -l)"
+	  done
+	echo "Service initialization - complete"
 }
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
