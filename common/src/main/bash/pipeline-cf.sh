@@ -195,6 +195,7 @@ function deployAndRestartAppWithName() {
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	local jarName="${2}"
+	#TODO Handle additional profiles in manifest
 	local profiles="cloud,e2e"
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
 	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'true'
@@ -231,13 +232,6 @@ function deployAppWithName() {
 	local appName="${1}"
 	local artifactName="${2}"
 	local env="${3}"
-	local useManifest="${4:-false}"
-	local manifestOption
-	manifestOption=$(if [[ "${useManifest}" == "false" ]]; then
-		echo "--no-manifest";
-	else
-		echo "";
-	fi)
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	local hostname="${lowerCaseAppName}"
@@ -250,21 +244,22 @@ function deployAppWithName() {
 	if [[ ${env} != "PROD" ]]; then
 		hostname="${hostname}-${env}"
 	fi
-	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] with manifest [${useManifest}] and host [${hostname}]"
-	if [[ ! -z "${manifestOption}" ]]; then
-		# TODO: This is very JVM specific
-		"${CF_BIN}" push "${lowerCaseAppName}" -m "${memory}" -i 1 -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}" "${manifestOption}"
-	else
-		# TODO: This is very JVM specific
-		"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}"
-	fi
+	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
+	# TODO: This is very JVM specific
+	# TODO: cyi - remove -b parameter, it can be set in the manifest
+	# TODO set "i 1" for test? and stage?
+	# TODO - hostname - set or get from manifest?
+	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}"
 	local applicationDomain
 	applicationDomain="$(appHost "${lowerCaseAppName}")"
 	echo "Determined that application_domain for [${lowerCaseAppName}] is [${applicationDomain}]"
+	# TODO: cyi - get from manifest?
 	setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${applicationDomain}"
 	# TODO: This is very JVM specific
+	# TODO: cyi - get from manifest?
 	setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
     # TODO: Only needed for Spring Cloud Services
+    # TODO: cyi - get from manifest?
     local cfApi=$(cf api | head -1 | cut -c 25-${lastIndex})
     setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
 }
