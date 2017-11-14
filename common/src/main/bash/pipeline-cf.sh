@@ -74,12 +74,6 @@ function testDeploy() {
 	# Clean up the test space
 	cleanUpTestSpace
 
-	# First delete the app instance to remove all bindings
-	# TODO: take this out!!!!!
-	# TODO: don't need this if space is created anew for test
-	# TODO: provide option to delete just app or just services individually?
-	deleteApp "${appName}"
-
 	deployServices
 	waitForServicesToInitialize
 
@@ -103,6 +97,7 @@ function testRollbackDeploy() {
 	echo "Last prod version equals ${LATEST_PROD_VERSION}"
 	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}"
 	logInToPaas
+	# TODO - delete app first? this was in former deployAndRestartAppWithNameForSmokeTests...
 	deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${LATEST_PROD_VERSION}"
 	propagatePropertiesForTests "${appName}"
 	# Adding latest prod tag
@@ -192,33 +187,42 @@ function deleteService() {
 
 function deployAndRestartAppWithName() {
 	local appName="${1}"
+	local jarName="${2}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
-	local jarName="${2}"
-	#TODO Handle additional profiles in manifest
-	local profiles="cloud,e2e"
-	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
+
+	local profiles
+	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+		profiles="cloud,smoke"
+	elif [[ "${ENVIRONMENT}" == "STAGE" ]]; then
+		profiles="cloud,e2e"
+	fi
+	local manifestProfiles="$(getProfilesFromManifest)"
+	if [[ ! -z "${manifestProfiles}" && "${manifestProfiles}" != "null" ]]; then
+		profiles="${profiles},${manifestProfiles}"
+	fi
+
+	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
+	# TODO - true boolean????
 	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'true'
-	setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
+
+	# Use SPRING_PROFILES_ACTIVE? what if set in manifest and programmatically? conflict? precendence? happens elsewhere in this code
+	# TODO Changed spring.profiles.active to SPRING_PROFILES_ACTIVE...  consequences? can user put spring.profiles.active in manifest? handle that?
+	setEnvVar "${lowerCaseAppName}" 'SPRING_PROFILES_ACTIVE' "${profiles}"
 	restartApp "${appName}"
 }
 
+function getProfilesFromManifest() {
+	if [[ "${PARSED_APP_MANIFEST_YAML}" == "" ]]; then
+		parseAppManifest
+	fi
+	local manifestProfiles="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq '.applications[] | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/')"
+	echo "${manifestProfiles}"
+}
+
 function deployAndRestartAppWithNameForSmokeTests() {
-	local appName="${1}"
-	local jarName="${2}"
-	local profiles="cloud,smoke"
-	local lowerCaseAppName
-	lowerCaseAppName=$(toLowerCase "${appName}")
-	deleteApp "${appName}"
-	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
-	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'false'
-	echo "Binding all services from the pipeline descriptor"
-	while read -r serviceName; do
-		bindService "${serviceName}" "${appName}"
-	done <<<"$(echo "${PARSED_YAML}" | \
-				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.name)"')"
-	setEnvVar "${lowerCaseAppName}" 'spring.profiles.active' "${profiles}"
-	restartApp "${appName}"
+	# TODO Delete this method after resolving comment above (search code for "deployAndRestartAppWithNameForSmokeTests")
+	deployAndRestartAppWithName "${1}" "${2}"
 }
 
 function appHost() {
@@ -235,9 +239,6 @@ function deployAppWithName() {
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	local hostname="${lowerCaseAppName}"
-	local memory="${APP_MEMORY_LIMIT:-256m}"
-	# TODO: This is very JVM specific
-	local buildPackUrl="${JAVA_BUILDPACK_URL:-https://github.com/cloudfoundry/java-buildpack.git#v3.8.1}"
 	if [[ "${PAAS_HOSTNAME_UUID}" != "" ]]; then
 		hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
 	fi
@@ -245,22 +246,17 @@ function deployAppWithName() {
 		hostname="${hostname}-${env}"
 	fi
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
-	# TODO: This is very JVM specific
-	# TODO: cyi - remove -b parameter, it can be set in the manifest
 	# TODO set "i 1" for test? and stage?
 	# TODO - hostname - set or get from manifest?
-	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start -b "${buildPackUrl}"
+	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start
 	local applicationDomain
 	applicationDomain="$(appHost "${lowerCaseAppName}")"
 	echo "Determined that application_domain for [${lowerCaseAppName}] is [${applicationDomain}]"
 	# TODO: cyi - get from manifest?
 	setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${applicationDomain}"
-	# TODO: This is very JVM specific
-	# TODO: cyi - get from manifest?
-	setEnvVar "${lowerCaseAppName}" 'JAVA_OPTS' '-Djava.security.egd=file:///dev/urandom'
     # TODO: Only needed for Spring Cloud Services
     # TODO: cyi - get from manifest?
-    local cfApi=$(cf api | head -1 | cut -c 25-${lastIndex})
+    local cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-"${lastIndex}")
     setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
 }
 
@@ -315,15 +311,16 @@ function deployBrokeredService() {
 	        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}]"
 		    "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}"
         else
+
 	        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}], params:"
 	        echo "${params}"
 #            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c '"${params}"'
             # Write params to file:
-           local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
-           mkdir -p "${OUTPUT_FOLDER}"
+            local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
+            mkdir -p "${OUTPUT_FOLDER}"
             echo "Current folder is [$(pwd)]; Writing params to [${destination}]"
-           echo "${params}" > "${destination}"
-           "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c "${destination}"
+            echo "${params}" > "${destination}"
+            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c "${destination}"
 
 #           TODO: Best-practice - is code more readable with create-service instead of cs, generally?
 #           TODO: For create-service, there is a -t tags parameter -  add support for this?
@@ -541,6 +538,21 @@ function waitForServicesToInitialize() {
 		echo "Waiting for services to initialize..."
 	  done
 	echo "Service initialization - complete"
+}
+
+
+# Sets the environment variable with contents of the parsed app manifest file
+# shellcheck disable=SC2120
+function parseAppManifest() {
+	# TODO: allow a different manifest name?? set in credentials...
+	APP_MANIFEST="${APP_MANIFEST:-manifest.yml}"
+	export APP_MANIFEST
+	if [[ ! -f "${APP_MANIFEST}" ]]; then
+		echo "App manifest file not found. Expected manifest file name: ["${APP_MANIFEST}"]."
+		return 1
+	fi
+	export PARSED_APP_MANIFEST_YAML
+	PARSED_APP_MANIFEST_YAML=$(yaml2json "${PARSED_APP_MANIFEST_YAML}")
 }
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
