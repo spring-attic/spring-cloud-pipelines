@@ -26,10 +26,9 @@ function logInToPaas() {
 	"${CF_BIN}" api --skip-ssl-validation "${apiUrl}"
 	# TODO: This only works if space exists. OK for stage and prod. or test, is there a way to avoid this?
 	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
+	# If environment is TEST, switch to an isolated, versioned space
 	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
 		cfSpace=$(getTestSpaceName)
-		echo "Targeting CF space [${cfSpace}]"
-		# TODO check if it exists, only create if it does not exist
 		"${CF_BIN}" create-space "${cfSpace}"
 		"${CF_BIN}" target -s "${cfSpace}"
 	fi
@@ -37,7 +36,7 @@ function logInToPaas() {
 
 function getTestSpaceName() {
 	if [[ "${ENVIRONMENT}" != "TEST" ]]; then
-		echo "Current environment is [${ENVIRONMENT}]. Cannot generate space name for non-test environment"
+		echo "Current environment is [${ENVIRONMENT}]. Function getTestSpaceName() is invalid for non-test environment"
 		return 1;
 	fi
 	local appName=$(retrieveAppName)
@@ -47,18 +46,10 @@ function getTestSpaceName() {
 	echo "${cfSpace}"
 }
 
-function cleanUpTestSpace() {
-	if [[ "${ENVIRONMENT}" != "TEST" ]]; then
-		echo "Current environment is [${ENVIRONMENT}]. Cannot run cleanUpTestSpace for non-test environment"
-		return;
-	fi
-
-	#TODO Assuming user will have space creation permissions. If not, provide alternative...
-	# Delete and re-create the space
-	local cfSpace=$(getTestSpaceName)
+function testCleanup() {
+	cfSpace=$(getTestSpaceName)
+	logInToPaas
 	"${CF_BIN}" delete-space -f "${cfSpace}"
-	"${CF_BIN}" create-space "${cfSpace}"
-	"${CF_BIN}" target -s "${cfSpace}"
 }
 
 function testDeploy() {
@@ -68,11 +59,9 @@ function testDeploy() {
 	local appName
 	appName=$(retrieveAppName)
 
-	# Log in to PaaS to start deployment
+	# Delete test space, then call loginToPaas, which will recreate it
+	testCleanup
 	logInToPaas
-
-	# Clean up the test space
-	cleanUpTestSpace
 
 	deployServices
 	waitForServicesToInitialize
@@ -532,7 +521,7 @@ function propagatePropertiesForTests() {
 
 function waitForServicesToInitialize() {
 	# Wait until services are ready
-	while cf services | grep 'in progress'
+	while "${CF_BIN}" services | grep 'in progress'
 	  do
 		sleep 10
 		echo "Waiting for services to initialize..."

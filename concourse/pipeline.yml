@@ -160,6 +160,26 @@ jobs:
       <<: *common-params
       <<: *paas-test-params
 
+- name: test-cleanup
+  serial: false
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: version
+      passed:
+      - test-rollback-smoke
+      trigger: false
+  - task: test-cleanup
+    privileged: true
+    file: tools/concourse/task.yml
+    params:
+      MESSAGE: "Cleaning up test environment"
+      SCRIPT_TO_RUN: "test_cleanup.sh"
+      <<: *common-params
+      <<: *paas-test-params
+
 - name: stage-deploy
   serial: true
   public: false
