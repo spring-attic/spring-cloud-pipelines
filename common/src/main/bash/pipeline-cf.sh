@@ -345,6 +345,15 @@ deployCupsService() {
 	"${CF_BIN}" cups "${serviceName}" ${cupsOption} "${cupsValue}"
 }
 
+function createServiceWithName() {
+	local name="${1}"
+	echo "Creating service with name [${name}]"
+	APPLICATION_DOMAIN="$("${CF_BIN}" apps | grep "${name}" | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1)"
+	JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
+	# TODO leverage method deployCupsService? Does || echo really help? Add it to deployCupsService?
+	"${CF_BIN}" cups "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
+}
+
 function deployStubRunnerBoot() {
 	local jarName="${1}"
 	local repoWithJars="${2}"
@@ -383,14 +392,6 @@ function bindService() {
 		echo "Binding service [${serviceName}] to app [${appName}]"
 		"${CF_BIN}" bind-service "${appName}" "${serviceName}"
 	fi
-}
-
-function createServiceWithName() {
-	local name="${1}"
-	echo "Creating service with name [${name}]"
-	APPLICATION_DOMAIN="$("${CF_BIN}" apps | grep "${name}" | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1)"
-	JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
-	"${CF_BIN}" create-user-provided-service "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
 }
 
 function prepareForSmokeTests() {
