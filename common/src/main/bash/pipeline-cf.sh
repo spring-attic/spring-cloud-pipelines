@@ -43,7 +43,7 @@ function testCleanup() {
 	cfSpacePrefix=$(getTestSpaceNamePrefix)
 	local cfSpace
 	"${CF_BIN}" spaces | grep "${cfSpacePrefix}" | while read -r cfSpace ; do
-		echo "Deleting test space from previous pipeline execution: "${cfSpace}""
+		echo "Deleting test space from previous pipeline execution: ${cfSpace}"
 		"${CF_BIN}" delete-space -f "${cfSpace}"
 	done
 }
@@ -602,11 +602,13 @@ function propagatePropertiesForTests() {
 function waitForServicesToInitialize() {
 	# Wait until services are ready
 	while "${CF_BIN}" services | grep 'create in progress'
-	  do
+	do
 		sleep 10
 		echo "Waiting for services to initialize..."
-	  done
-	if [[ "${CF_BIN}" services | grep 'create failed' ]]; then
+	done
+
+	# Check to see if any services failed to create
+	if "${CF_BIN}" services | grep 'create failed'; then
 		echo "Service initialization - failed. Exiting."
 		return 1
 	fi
