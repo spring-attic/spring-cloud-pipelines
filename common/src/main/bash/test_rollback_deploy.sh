@@ -16,5 +16,15 @@ echo "Last prod tag equals [${LATEST_PROD_TAG}]"
 if [[ -z "${LATEST_PROD_TAG}" ]]; then
 	echo "No prod release took place - skipping this step"
 else
+
+#	scPipelinesChanged=""
+#	scPipelinesFileName="${PIPELINE_DESCRIPTOR}"
+#	git diff "${LATEST_PROD_TAG}:${scPipelinesFileName} ${scPipelinesFileName}" | grep index && scPipelinesChanged="true"
+#	if [[ "${scPipelinesChanged}" == "true" ]]; then
+#	  echo "MAKE A GIGANTIC SIGN ABOUT THIS"
+#	fi
+
+# TODO Also, when test jobs start, re-set mechanism to make sure service updates were done. Or include git version in approval file
+
 	testRollbackDeploy "${LATEST_PROD_TAG}"
 fi

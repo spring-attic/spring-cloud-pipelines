@@ -43,11 +43,6 @@ function runSmokeTests() {
 	exit 1
 }
 
-function testCleanup() {
-	echo "Clean up test environment"
-	exit 1
-}
-
 # ---- STAGE PHASE ----
 
 function stageDeploy() {

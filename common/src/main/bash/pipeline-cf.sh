@@ -50,9 +50,18 @@ function getTestSpaceName() {
 }
 
 function testCleanup() {
-	cfSpace=$(getTestSpaceName)
 	logInToPaas
-	"${CF_BIN}" delete-space -f "${cfSpace}"
+	local appName
+	appName=$(retrieveAppName)
+	local space="PAAS_${ENVIRONMENT}_SPACE"
+	local cfSpacePrefix="${!space}"
+	cfSpacePrefix="${cfSpacePrefix}"-"${appName}"-
+	
+	"${CF_BIN}" spaces | grep "${cfSpacePrefix}" | while read -r oldCfSpace ; do
+		echo "Deleting leftover space from previous pipeline execution: ${oldCfSpace}"
+		"${CF_BIN}" delete-space -f "${oldCfSpace}"
+	done
+	
 }
 
 function testDeploy() {
