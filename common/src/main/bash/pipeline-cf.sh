@@ -32,7 +32,9 @@ function logInToPaas() {
 	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
 		local cfSpacePrefix
 		cfSpacePrefix=$(getTestSpaceNamePrefix)
-		cfSpace="${cfSpacePrefix}${PIPELINE_VERSION}"
+		# TODO Comment back in???
+		cfSpace="${cfSpacePrefix}"
+		#cfSpace="${cfSpacePrefix}${PIPELINE_VERSION}"
 		"${CF_BIN}" create-space "${cfSpace}"
 		"${CF_BIN}" target -s "${cfSpace}"
 	fi
@@ -40,12 +42,17 @@ function logInToPaas() {
 
 function testCleanup() {
 	logInToPaas
-	cfSpacePrefix=$(getTestSpaceNamePrefix)
-	local cfSpace
-	"${CF_BIN}" spaces | grep "${cfSpacePrefix}" | while read -r cfSpace ; do
-		echo "Deleting test space from previous pipeline execution: ${cfSpace}"
-		"${CF_BIN}" delete-space -f "${cfSpace}"
-	done
+#	cfSpacePrefix=$(getTestSpaceNamePrefix)
+#	local cfSpace
+#	"${CF_BIN}" spaces | grep "${cfSpacePrefix}" | while read -r cfSpace ; do
+#		echo "Deleting test space from previous pipeline execution: ${cfSpace}"
+#		"${CF_BIN}" delete-space -f "${cfSpace}"
+#	done
+	# TODO: Clean up space without relying on plug-ins???
+	# TODO: re-enable functionality to delete services too...
+	cf install-plugin do-all -r "CF-Community" -f
+	cf do-all delete {} -r -f
+
 }
 
 function getTestSpaceNamePrefix() {
@@ -57,7 +64,9 @@ function getTestSpaceNamePrefix() {
 	appName=$(retrieveAppName)
 	appName=$(toLowerCase "${appName}")
 	local space="PAAS_${ENVIRONMENT}_SPACE"
-	local cfSpacePrefix="${!space}"-"${appName}"-
+	# TODO Comment back in???
+	#local cfSpacePrefix="${!space}"-"${appName}"-
+	local cfSpacePrefix="${!space}"-"${appName}"
 	echo "${cfSpacePrefix}"
 }
 
