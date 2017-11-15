@@ -197,7 +197,7 @@ function deployAndRestartAppWithName() {
 	elif [[ "${ENVIRONMENT}" == "STAGE" ]]; then
 		profiles="cloud,e2e"
 	fi
-	local manifestProfiles="$(getProfilesFromManifest ${appName})"
+	local manifestProfiles="$(getValueFromManifest ${appName} "profiles")"
 	if [[ ! -z "${manifestProfiles}" && "${manifestProfiles}" != "null" ]]; then
 		profiles="${profiles},${manifestProfiles}"
 	fi
@@ -208,26 +208,43 @@ function deployAndRestartAppWithName() {
 
 	# Use SPRING_PROFILES_ACTIVE? what if set in manifest and programmatically? conflict? precendence? happens elsewhere in this code
 	# TODO Changed spring.profiles.active to SPRING_PROFILES_ACTIVE...  consequences? can user put spring.profiles.active in manifest? handle that?
+	# TODO Pull an additional profile from credentials? Or add test, stage, prod profiles by default? Otherwise, handle different manifest names?
 	setEnvVar "${lowerCaseAppName}" 'SPRING_PROFILES_ACTIVE' "${profiles}"
 	restartApp "${appName}"
 }
 
-function getProfilesFromManifest() {
+# Function to get specific values from app manifest
+function getValueFromManifest() {
 	local appName="${1}"
-	if [[ "${PARSED_APP_MANIFEST_YAML}" == "" ]]; then
-		parseAppManifest
-	fi
-	local manifestProfiles="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/')"
-	echo "${manifestProfiles}"
-}
+	local key="${2}"
+	local value
 
-function getAppHostFromManifest() {
-	local appName="${1}"
-	if [[ "${PARSED_APP_MANIFEST_YAML}" == "" ]]; then
-		parseAppManifest
+	if [ "${PARSED_APP_MANIFEST_YAML:-unset}" = unset ]; then
+		# TODO: allow a different manifest name?? set in credentials? or insist on manifest.yml?
+		if [[ ! -f "manifest.yml" ]]; then
+			echo "App manifest.yml file not found"
+			return 1
+		fi
+		export PARSED_APP_MANIFEST_YAML
+		PARSED_APP_MANIFEST_YAML=$(yaml2json "manifest.yml")
 	fi
-	local manifestHost="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .host' | sed 's/^"\(.*\)"$/\1/')"
-	echo "${manifestHost}"
+
+	case ${key} in
+	profiles)
+		value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/')"
+	;;
+	host)
+		value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .host' | sed 's/^"\(.*\)"$/\1/')"
+	;;
+	instances)
+		value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .instances' | sed 's/^"\(.*\)"$/\1/')"
+	;;
+	*)
+		echo "Unknown manifest key [${key}] for app name [${appName}]"
+		return 1
+	;;
+	esac
+	echo "${value}"
 }
 
 function getAppHostFromPaas() {
@@ -248,8 +265,9 @@ function deployAppWithName() {
 	local env="${3}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
-	# TODO: getting hostname rom manifest - consult with Marcin
-	local hostname="$(getAppHostFromManifest "${appName}")"
+
+	# TODO: getting hostname from manifest - consult with Marcin
+	local hostname="$(getValueFromManifest "${appName}" "host")"
 	if [[ -z "${hostname}" || "${hostname}" == "null" ]]; then
 		local hostname="${lowerCaseAppName}"
 	fi
@@ -259,23 +277,24 @@ function deployAppWithName() {
 	if [[ ${env} != "PROD" ]]; then
 		hostname="${hostname}-${env}"
 	fi
-	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
-	# TODO set "i 1" for test? and stage?
-	local manifestOverrideOptions=""
-	if [[ ${env} == "TEST" ]]; then
-		local manifestOverrideOptions="-i 1"
+
+	# TODO set "i 1" for test only or stage as well? Use different value for stage?
+	local instances="$(getValueFromManifest "${appName}" "instances")"
+	if [[ ${env} == "TEST" || -z "${instances}" || "${instances}" == "null" ]]; then
+		instances=1
 	fi
-	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" "${manifestOverrideOptions}" --no-start
+
+	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
+	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
 
 	local applicationDomain
 	applicationDomain="$(getAppHostFromPaas "${lowerCaseAppName}")"
 	echo "Determined that application_domain for [${lowerCaseAppName}] is [${applicationDomain}]"
-	# TODO: cyi - get from manifest?
 	# TODO: ask Marcin - what is this env var for?
 	setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${applicationDomain}"
 
     # TODO: Only needed for Spring Cloud Services
-    # TODO: cyi - get from manifest?
+    # TODO: cyi - let user set this in the manifest? would the value ever be different?
     local cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-"${lastIndex}")
     setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
 }
@@ -582,19 +601,6 @@ function waitForServicesToInitialize() {
 		echo "Waiting for services to initialize..."
 	  done
 	echo "Service initialization - complete"
-}
-
-# shellcheck disable=SC2120
-function parseAppManifest() {
-	# TODO: allow a different manifest name?? set in credentials? or insist on manifest.yml?
-	APP_MANIFEST="${APP_MANIFEST:-manifest.yml}"
-	export APP_MANIFEST
-	if [[ ! -f "${APP_MANIFEST}" ]]; then
-		echo "App manifest file not found. Expected manifest file name: ["${APP_MANIFEST}"]."
-		return 1
-	fi
-	export PARSED_APP_MANIFEST_YAML
-	PARSED_APP_MANIFEST_YAML=$(yaml2json "${PARSED_APP_MANIFEST_YAML}")
 }
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
