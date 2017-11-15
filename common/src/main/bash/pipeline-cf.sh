@@ -119,17 +119,17 @@ function deployService() {
 			#TODO: Can Creds be read from somewhere else? Credhub Concourse integration? Other?
 			# Usage: cf cups SERVICE_INSTANCE -p CREDENTIALS (or credentials file)
 			local params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
-			deployCupsService "-p" "${params}"
+			deployCupsService "${serviceName}" "-p" "${params}"
 		;;
 		syslogDrain)
 			# Usage: cf cups SERVICE_INSTANCE -l SYSLOG_DRAIN_URL
 			local syslogDrainUrl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
-			deployCupsService "-l" "${syslogDrainUrl}"
+			deployCupsService "${serviceName}" "-l" "${syslogDrainUrl}"
 		;;
 		routeService)
 			# Usage: cf cups SERVICE_INSTANCE -r ROUTE_SERVICE_URL
 			local routeServiceurl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
-			deployCupsService "-r" "${routeServiceurl}"
+			deployCupsService "${serviceName}" "-r" "${routeServiceurl}"
 		;;
 		stubrunner)
 			local serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
@@ -349,8 +349,9 @@ function deployBrokeredService() {
 
 deployCupsService() {
 	# cupsOption should be -l, -r, or -p
-	local cupsOption="${1}"
-	local cupsValue="${2}"
+	local serviceName="${1}"
+	local cupsOption="${2}"
+	local cupsValue="${3}"
 	# TODO: reconsider printing credentials to log file, or writing them to a file? Also forcing user to put creds in sc-pipeline.yml
 	echo "Deploying [${serviceName}] via cups in [${LOWERCASE_ENV}] env. Options - [${cupsOption} ${cupsValue}]"
 	# TODO: reevaluate if a file is necessary
@@ -362,16 +363,21 @@ deployCupsService() {
 		echo "${cupsValue}" > "${destination}"
 		cupsValue="${destination}"
 	fi
-	"${CF_BIN}" cups "${serviceName}" ${cupsOption} "${cupsValue}"
+	# TODO - consult Marcin - add below:  || echo "Service already created. Proceeding with the script"
+	"${CF_BIN}" cups "${serviceName}" "${cupsOption}" "${cupsValue}"
 }
 
 function createServiceWithName() {
 	local name="${1}"
 	echo "Creating service with name [${name}]"
-	APPLICATION_DOMAIN="$("${CF_BIN}" apps | grep "${name}" | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1)"
+	# TODO run edit by marcin
+	#APPLICATION_DOMAIN="$("${CF_BIN}" apps | grep "${name}" | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1)"
+	APPLICATION_DOMAIN=="$(getAppHostFromPaas "${name}")"
 	JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
 	# TODO leverage method deployCupsService? Does || echo really help? Add it to deployCupsService?
-	"${CF_BIN}" cups "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
+	# TODO run edit by marcin
+	deployCupsService "${name}" "-p" "${JSON}"
+	#"${CF_BIN}" cups "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
 }
 
 function deployStubRunnerBoot() {
