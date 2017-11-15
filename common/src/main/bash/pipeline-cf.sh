@@ -33,6 +33,8 @@ function logInToPaas() {
 		local cfSpacePrefix
 		cfSpacePrefix=$(getTestSpaceNamePrefix)
 		# TODO Comment back in???
+		# TODO go back to original model? or rename space with optional delete services?
+		# TODO Add app version as env variable?
 		cfSpace="${cfSpacePrefix}"
 		#cfSpace="${cfSpacePrefix}${PIPELINE_VERSION}"
 		"${CF_BIN}" create-space "${cfSpace}"
@@ -52,7 +54,6 @@ function testCleanup() {
 	# TODO: re-enable functionality to delete services too...
 	cf install-plugin do-all -r "CF-Community" -f
 	cf do-all delete {} -r -f
-
 }
 
 function getTestSpaceNamePrefix() {
