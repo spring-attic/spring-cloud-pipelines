@@ -197,7 +197,7 @@ function deployAndRestartAppWithName() {
 	elif [[ "${ENVIRONMENT}" == "STAGE" ]]; then
 		profiles="cloud,e2e"
 	fi
-	local manifestProfiles="$(getProfilesFromManifest)"
+	local manifestProfiles="$(getProfilesFromManifest ${appName})"
 	if [[ ! -z "${manifestProfiles}" && "${manifestProfiles}" != "null" ]]; then
 		profiles="${profiles},${manifestProfiles}"
 	fi
@@ -213,23 +213,33 @@ function deployAndRestartAppWithName() {
 }
 
 function getProfilesFromManifest() {
+	local appName="${1}"
 	if [[ "${PARSED_APP_MANIFEST_YAML}" == "" ]]; then
 		parseAppManifest
 	fi
-	local manifestProfiles="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq '.applications[] | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/')"
+	local manifestProfiles="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/')"
 	echo "${manifestProfiles}"
+}
+
+function getAppHostFromManifest() {
+	local appName="${1}"
+	if [[ "${PARSED_APP_MANIFEST_YAML}" == "" ]]; then
+		parseAppManifest
+	fi
+	local manifestHost="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .host' | sed 's/^"\(.*\)"$/\1/')"
+	echo "${manifestHost}"
+}
+
+function getAppHostFromPaas() {
+	local appName="${1}"
+	local lowerCase
+	lowerCase="$(toLowerCase "${appName}")"
+	"${CF_BIN}" apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
 }
 
 function deployAndRestartAppWithNameForSmokeTests() {
 	# TODO Delete this method after resolving comment above (search code for "deployAndRestartAppWithNameForSmokeTests")
 	deployAndRestartAppWithName "${1}" "${2}"
-}
-
-function appHost() {
-	local appName="${1}"
-	local lowerCase
-	lowerCase="$(toLowerCase "${appName}")"
-	"${CF_BIN}" apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
 }
 
 function deployAppWithName() {
@@ -238,7 +248,11 @@ function deployAppWithName() {
 	local env="${3}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
-	local hostname="${lowerCaseAppName}"
+	# TODO: getting hostname rom manifest - consult with Marcin
+	local hostname="$(getAppHostFromManifest "${appName}")"
+	if [[ -z "${hostname}" || "${hostname}" == "null" ]]; then
+		local hostname="${lowerCaseAppName}"
+	fi
 	if [[ "${PAAS_HOSTNAME_UUID}" != "" ]]; then
 		hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
 	fi
@@ -247,13 +261,19 @@ function deployAppWithName() {
 	fi
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
 	# TODO set "i 1" for test? and stage?
-	# TODO - hostname - set or get from manifest?
-	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" --no-start
+	local manifestOverrideOptions=""
+	if [[ ${env} == "TEST" ]]; then
+		local manifestOverrideOptions="-i 1"
+	fi
+	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" "${manifestOverrideOptions}" --no-start
+
 	local applicationDomain
-	applicationDomain="$(appHost "${lowerCaseAppName}")"
+	applicationDomain="$(getAppHostFromPaas "${lowerCaseAppName}")"
 	echo "Determined that application_domain for [${lowerCaseAppName}] is [${applicationDomain}]"
 	# TODO: cyi - get from manifest?
+	# TODO: ask Marcin - what is this env var for?
 	setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${applicationDomain}"
+
     # TODO: Only needed for Spring Cloud Services
     # TODO: cyi - get from manifest?
     local cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-"${lastIndex}")
@@ -538,10 +558,10 @@ function propagatePropertiesForTests() {
 	# we have to store them in a file that will be picked as properties
 	rm -rf "${fileLocation}"
 	local host=
-	host="$(appHost "${projectArtifactId}")"
+	host="$(getAppHostFromPaas "${projectArtifactId}")"
 	export APPLICATION_URL="${host}"
 	echo "APPLICATION_URL=${host}" >>"${fileLocation}"
-	host=$(appHost "${stubRunnerHost}")
+	host=$(getAppHostFromPaas "${stubRunnerHost}")
 	export STUBRUNNER_URL="${host}"
 	echo "STUBRUNNER_URL=${host}" >>"${fileLocation}"
 	echo "Resolved properties"
@@ -558,11 +578,9 @@ function waitForServicesToInitialize() {
 	echo "Service initialization - complete"
 }
 
-
-# Sets the environment variable with contents of the parsed app manifest file
 # shellcheck disable=SC2120
 function parseAppManifest() {
-	# TODO: allow a different manifest name?? set in credentials...
+	# TODO: allow a different manifest name?? set in credentials? or insist on manifest.yml?
 	APP_MANIFEST="${APP_MANIFEST:-manifest.yml}"
 	export APP_MANIFEST
 	if [[ ! -f "${APP_MANIFEST}" ]]; then
