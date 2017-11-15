@@ -16,6 +16,7 @@ function logInToPaas() {
 
 	echo "Downloading Cloud Foundry CLI"
 	#TODO: is there a way to get this from PCF rather than the latest release? Like fly... Would ensure parity with foundation version...
+	#TODO: offline mode for when there is no internet connection
 	curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
 	chmod +x cf
 
@@ -26,6 +27,7 @@ function logInToPaas() {
 	"${CF_BIN}" api --skip-ssl-validation "${apiUrl}"
 	# TODO: This only works if space exists. OK for stage and prod. or test, is there a way to avoid this?
 	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
+
 	# If environment is TEST, switch to an isolated, versioned space
 	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
 		cfSpace=$(getTestSpaceName)
@@ -114,11 +116,20 @@ function deployService() {
 			deployAppAsService "${APP_ARTIFACT_ID}-${APP_VERSION}" "${serviceName}" "${ENVIRONMENT}"
 		;;
 		static)
-			#TODO: implement: cf cups... Can Creds be read from somewhere else? Credhub Concourse integration? Other?
-			# Usage: cf create-user-provided-service SERVICE_INSTANCE [-p CREDENTIALS] [-l SYSLOG_DRAIN_URL] [-r ROUTE_SERVICE_URL]
-			local credentials="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .credentials' | sed 's/^"\(.*\)"$/\1/')"
-			local syslogDrainUrl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .syslogDrainUrl' | sed 's/^"\(.*\)"$/\1/')"
-			local routeServiceurl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .routeServiceurl' | sed 's/^"\(.*\)"$/\1/')"
+			#TODO: Can Creds be read from somewhere else? Credhub Concourse integration? Other?
+			# Usage: cf cups SERVICE_INSTANCE -p CREDENTIALS (or credentials file)
+			local params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
+			deployCupsService "-p" "${params}"
+		;;
+		syslogDrain)
+			# Usage: cf cups SERVICE_INSTANCE -l SYSLOG_DRAIN_URL
+			local syslogDrainUrl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
+			deployCupsService "-l" "${syslogDrainUrl}"
+		;;
+		routeService)
+			# Usage: cf cups SERVICE_INSTANCE -r ROUTE_SERVICE_URL
+			local routeServiceurl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
+			deployCupsService "-r" "${routeServiceurl}"
 		;;
 		stubrunner)
 			local serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
@@ -298,23 +309,40 @@ function deployBrokeredService() {
         local params="${4}"
         if [[ -z "${params}" || "${params}" == "null" ]]; then
 	        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}]"
-		    "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}"
+		    "${CF_BIN}" create-service "${broker}" "${plan}" "${serviceName}"
         else
 
 	        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}], params:"
 	        echo "${params}"
-#            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c '"${params}"'
             # Write params to file:
             local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
             mkdir -p "${OUTPUT_FOLDER}"
-            echo "Current folder is [$(pwd)]; Writing params to [${destination}]"
+            echo "Writing params to [${destination}]"
             echo "${params}" > "${destination}"
-            "${CF_BIN}" cs "${broker}" "${plan}" "${serviceName}" -c "${destination}"
+            "${CF_BIN}" create-service "${broker}" "${plan}" "${serviceName}" -c "${destination}"
 
 #           TODO: Best-practice - is code more readable with create-service instead of cs, generally?
 #           TODO: For create-service, there is a -t tags parameter -  add support for this?
 #           TODO: For create-service and cups, do we need to consider updates for services that already exist?
         fi
+}
+
+deployCupsService() {
+	# cupsOption should be -l, -r, or -p
+	local cupsOption="${1}"
+	local cupsValue="${2}"
+	# TODO: reconsider printing credentials to log file, or writing them to a file? Also forcing user to put creds in sc-pipeline.yml
+	echo "Deploying [${serviceName}] via cups in [${LOWERCASE_ENV}] env. Options - [${cupsOption} ${cupsValue}]"
+	# TODO: reevaluate if a file is necessary
+	if [[ "${cupsOption}" == "-p" ]]; then
+		# Write params to file:
+		local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
+		mkdir -p "${OUTPUT_FOLDER}"
+		echo "Writing params to [${destination}]"
+		echo "${cupsValue}" > "${destination}"
+		cupsValue="${destination}"
+	fi
+	"${CF_BIN}" cups "${serviceName}" ${cupsOption} "${cupsValue}"
 }
 
 function deployStubRunnerBoot() {
