@@ -30,38 +30,35 @@ function logInToPaas() {
 
 	# If environment is TEST, switch to an isolated, versioned space
 	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-		cfSpace=$(getTestSpaceName)
+		local cfSpacePrefix
+		cfSpacePrefix=$(getTestSpaceNamePrefix)
+		cfSpace="${cfSpacePrefix}${PIPELINE_VERSION}"
 		"${CF_BIN}" create-space "${cfSpace}"
 		"${CF_BIN}" target -s "${cfSpace}"
 	fi
 }
 
-function getTestSpaceName() {
+function testCleanup() {
+	logInToPaas
+	cfSpacePrefix=$(getTestSpaceNamePrefix)
+	local cfSpace
+	"${CF_BIN}" spaces | grep "${cfSpacePrefix}" | while read -r cfSpace ; do
+		echo "Deleting test space from previous pipeline execution: "${cfSpace}""
+		"${CF_BIN}" delete-space -f "${cfSpace}"
+	done
+}
+
+function getTestSpaceNamePrefix() {
 	if [[ "${ENVIRONMENT}" != "TEST" ]]; then
-		echo "Current environment is [${ENVIRONMENT}]. Function getTestSpaceName() is invalid for non-test environment"
+		echo "Current environment is [${ENVIRONMENT}]. Function getTestSpaceNamePrefix() is invalid for non-test environment"
 		return 1;
 	fi
 	local appName
 	appName=$(retrieveAppName)
+	appName=$(toLowerCase "${appName}")
 	local space="PAAS_${ENVIRONMENT}_SPACE"
-	local cfSpacePrefix="${!space}"
-	local cfSpace="${cfSpacePrefix}"-"${appName}"-"${PIPELINE_VERSION}"
-	echo "${cfSpace}"
-}
-
-function testCleanup() {
-	logInToPaas
-	local appName
-	appName=$(retrieveAppName)
-	local space="PAAS_${ENVIRONMENT}_SPACE"
-	local cfSpacePrefix="${!space}"
-	cfSpacePrefix="${cfSpacePrefix}"-"${appName}"-
-	
-	"${CF_BIN}" spaces | grep "${cfSpacePrefix}" | while read -r oldCfSpace ; do
-		echo "Deleting leftover space from previous pipeline execution: ${oldCfSpace}"
-		"${CF_BIN}" delete-space -f "${oldCfSpace}"
-	done
-	
+	local cfSpacePrefix="${!space}"-"${appName}"-
+	echo "${cfSpacePrefix}"
 }
 
 function testDeploy() {
@@ -604,12 +601,16 @@ function propagatePropertiesForTests() {
 
 function waitForServicesToInitialize() {
 	# Wait until services are ready
-	while "${CF_BIN}" services | grep 'in progress'
+	while "${CF_BIN}" services | grep 'create in progress'
 	  do
 		sleep 10
 		echo "Waiting for services to initialize..."
 	  done
-	echo "Service initialization - complete"
+	if [[ "${CF_BIN}" services | grep 'create failed' ]]; then
+		echo "Service initialization - failed. Exiting."
+		return 1
+	fi
+	echo "Service initialization - successful"
 }
 
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
