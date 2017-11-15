@@ -41,7 +41,8 @@ function getTestSpaceName() {
 		echo "Current environment is [${ENVIRONMENT}]. Function getTestSpaceName() is invalid for non-test environment"
 		return 1;
 	fi
-	local appName=$(retrieveAppName)
+	local appName
+	appName=$(retrieveAppName)
 	local space="PAAS_${ENVIRONMENT}_SPACE"
 	local cfSpacePrefix="${!space}"
 	local cfSpace="${cfSpacePrefix}"-"${appName}"-"${PIPELINE_VERSION}"
@@ -70,7 +71,7 @@ function testDeploy() {
 
 	# deploy app
 	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
-	deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${PIPELINE_VERSION}"
+	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 	propagatePropertiesForTests "${appName}"
 }
 
@@ -88,8 +89,10 @@ function testRollbackDeploy() {
 	echo "Last prod version equals ${LATEST_PROD_VERSION}"
 	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}"
 	logInToPaas
-	# TODO - delete app first? this was in former deployAndRestartAppWithNameForSmokeTests...
-	deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${LATEST_PROD_VERSION}"
+	# TODO Add deleteApp here to be sure app is deployed only once
+	##########
+	##########
+	deployAndRestartAppWithName "${appName}" "${appName}-${LATEST_PROD_VERSION}"
 	propagatePropertiesForTests "${appName}"
 	# Adding latest prod tag
 	echo "LATEST_PROD_TAG=${latestProdTag}" >>"${OUTPUT_FOLDER}/test.properties"
@@ -100,14 +103,18 @@ function deployService() {
 	local serviceType="${2}"
 
 	case ${serviceType} in
-		brokered)
-			local broker="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .broker' | sed 's/^"\(.*\)"$/\1/')"
-			local plan="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .plan' | sed 's/^"\(.*\)"$/\1/')"
-			local params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
+		broker)
+			local broker
+			broker="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .broker' | sed 's/^"\(.*\)"$/\1/')"
+			local plan
+			plan="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .plan' | sed 's/^"\(.*\)"$/\1/')"
+			local params
+			params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
 			deployBrokeredService "${serviceName}" "${broker}" "${plan}" "${params}"
 		;;
 		app)
-			local serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			local serviceCoordinates
+			serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
 			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
 			IFS=${coordinatesSeparator} read -r APP_GROUP_ID APP_ARTIFACT_ID APP_VERSION <<<"${serviceCoordinates}"
@@ -115,24 +122,28 @@ function deployService() {
 			downloadAppBinary "${REPO_WITH_BINARIES}" "${APP_GROUP_ID}" "${APP_ARTIFACT_ID}" "${APP_VERSION}"
 			deployAppAsService "${APP_ARTIFACT_ID}-${APP_VERSION}" "${serviceName}" "${ENVIRONMENT}"
 		;;
-		static)
-			#TODO: Can Creds be read from somewhere else? Credhub Concourse integration? Other?
+		cups)
+			#TODO: Can Creds be read from somewhere else? Marcin: "it's just test and maybe stage. If sensitive in stage, can be set manually." Credhub Concourse integration? Other?
 			# Usage: cf cups SERVICE_INSTANCE -p CREDENTIALS (or credentials file)
-			local params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
+			local params
+			params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
 			deployCupsService "${serviceName}" "-p" "${params}"
 		;;
-		syslogDrain)
+		cupsSyslog)
 			# Usage: cf cups SERVICE_INSTANCE -l SYSLOG_DRAIN_URL
-			local syslogDrainUrl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
+			local syslogDrainUrl
+			syslogDrainUrl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
 			deployCupsService "${serviceName}" "-l" "${syslogDrainUrl}"
 		;;
-		routeService)
+		cupsRoute)
 			# Usage: cf cups SERVICE_INSTANCE -r ROUTE_SERVICE_URL
-			local routeServiceurl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
+			local routeServiceurl
+			routeServiceurl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
 			deployCupsService "${serviceName}" "-r" "${routeServiceurl}"
 		;;
 		stubrunner)
-			local serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			local serviceCoordinates
+			serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
 			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
 			IFS="${coordinatesSeparator}" read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
@@ -174,17 +185,6 @@ function deleteService() {
 	"${CF_BIN}" delete-service -f "${serviceName}" || echo "Failed to delete service [${serviceName}]"
 }
 
-#function serviceExists() {
-#	local serviceName="${1}"
-#	local foundApp
-#	foundApp=$("${CF_BIN}" services | awk -v "app=${serviceName}" '$1 == app {print($0)}')
-#	if [[ "${foundApp}" == "" ]]; then
-#		echo "false"
-#	else
-#		echo "true"
-#	fi
-#}
-
 function deployAndRestartAppWithName() {
 	local appName="${1}"
 	local jarName="${2}"
@@ -193,22 +193,21 @@ function deployAndRestartAppWithName() {
 
 	local profiles
 	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-		profiles="cloud,smoke"
+		profiles="cloud,smoke,test"
 	elif [[ "${ENVIRONMENT}" == "STAGE" ]]; then
-		profiles="cloud,e2e"
+		profiles="cloud,e2e,stage"
+	elif [[ "${ENVIRONMENT}" == "PROD" ]]; then
+		profiles="cloud,prod"
 	fi
-	local manifestProfiles="$(getValueFromManifest ${appName} "profiles")"
+	local manifestProfiles
+	manifestProfiles="$(getValueFromManifest "${appName}" "profiles")"
 	if [[ ! -z "${manifestProfiles}" && "${manifestProfiles}" != "null" ]]; then
 		profiles="${profiles},${manifestProfiles}"
 	fi
 
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
-	# TODO - true boolean????
-	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}" 'true'
+	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}"
 
-	# Use SPRING_PROFILES_ACTIVE? what if set in manifest and programmatically? conflict? precendence? happens elsewhere in this code
-	# TODO Changed spring.profiles.active to SPRING_PROFILES_ACTIVE...  consequences? can user put spring.profiles.active in manifest? handle that?
-	# TODO Pull an additional profile from credentials? Or add test, stage, prod profiles by default? Otherwise, handle different manifest names?
 	setEnvVar "${lowerCaseAppName}" 'SPRING_PROFILES_ACTIVE' "${profiles}"
 	restartApp "${appName}"
 }
@@ -219,29 +218,28 @@ function getValueFromManifest() {
 	local key="${2}"
 	local value
 
-	if [ "${PARSED_APP_MANIFEST_YAML:-unset}" = unset ]; then
-		# TODO: allow a different manifest name?? set in credentials? or insist on manifest.yml?
+	if [ -z "${PARSED_APP_MANIFEST_YAML}" ]; then
 		if [[ ! -f "manifest.yml" ]]; then
 			echo "App manifest.yml file not found"
 			return 1
 		fi
 		export PARSED_APP_MANIFEST_YAML
-		PARSED_APP_MANIFEST_YAML=$(yaml2json "manifest.yml")
+		PARSED_APP_MANIFEST_YAML="$(yaml2json "manifest.yml")"
 	fi
 
 	case ${key} in
-	profiles)
-		value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/')"
-	;;
-	host)
-		value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .host' | sed 's/^"\(.*\)"$/\1/')"
-	;;
-	instances)
-		value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .instances' | sed 's/^"\(.*\)"$/\1/')"
-	;;
-	*)
-		echo "Unknown manifest key [${key}] for app name [${appName}]"
-		return 1
+		profiles)
+			value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/')"
+		;;
+		host)
+			value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .host' | sed 's/^"\(.*\)"$/\1/')"
+		;;
+		instances)
+			value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .instances' | sed 's/^"\(.*\)"$/\1/')"
+		;;
+		*)
+			echo "Unknown manifest key [${key}] for app name [${appName}]"
+			return 1
 	;;
 	esac
 	echo "${value}"
@@ -254,11 +252,6 @@ function getAppHostFromPaas() {
 	"${CF_BIN}" apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
 }
 
-function deployAndRestartAppWithNameForSmokeTests() {
-	# TODO Delete this method after resolving comment above (search code for "deployAndRestartAppWithNameForSmokeTests")
-	deployAndRestartAppWithName "${1}" "${2}"
-}
-
 function deployAppWithName() {
 	local appName="${1}"
 	local artifactName="${2}"
@@ -267,19 +260,22 @@ function deployAppWithName() {
 	lowerCaseAppName=$(toLowerCase "${appName}")
 
 	# TODO: getting hostname from manifest - consult with Marcin
-	local hostname="$(getValueFromManifest "${appName}" "host")"
+	local hostname
+	hostname="$(getValueFromManifest "${appName}" "host")"
 	if [[ -z "${hostname}" || "${hostname}" == "null" ]]; then
 		local hostname="${lowerCaseAppName}"
 	fi
+	# Even if host is specified in the manifest, append the hostname uuid from the credentials file
 	if [[ "${PAAS_HOSTNAME_UUID}" != "" ]]; then
 		hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
 	fi
 	if [[ ${env} != "PROD" ]]; then
-		hostname="${hostname}-${env}"
+		hostname="${hostname}-${LOWERCASE_ENV}"
 	fi
 
-	# TODO set "i 1" for test only or stage as well? Use different value for stage?
-	local instances="$(getValueFromManifest "${appName}" "instances")"
+	# TODO set "i 1" for test only, leave manifest value for stage and prod
+	local instances
+	instances="$(getValueFromManifest "${appName}" "instances")"
 	if [[ ${env} == "TEST" || -z "${instances}" || "${instances}" == "null" ]]; then
 		instances=1
 	fi
@@ -291,11 +287,13 @@ function deployAppWithName() {
 	applicationDomain="$(getAppHostFromPaas "${lowerCaseAppName}")"
 	echo "Determined that application_domain for [${lowerCaseAppName}] is [${applicationDomain}]"
 	# TODO: ask Marcin - what is this env var for?
+	# TODO Marcin: "try without it, if it works, delete it"
 	setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${applicationDomain}"
 
     # TODO: Only needed for Spring Cloud Services
     # TODO: cyi - let user set this in the manifest? would the value ever be different?
-    local cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-"${lastIndex}")
+    local cfApi
+    cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-)
     setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
 }
 
@@ -354,15 +352,16 @@ function deployBrokeredService() {
 	        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}], params:"
 	        echo "${params}"
             # Write params to file:
-            local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
+            local destination
+            destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
             mkdir -p "${OUTPUT_FOLDER}"
             echo "Writing params to [${destination}]"
             echo "${params}" > "${destination}"
             "${CF_BIN}" create-service "${broker}" "${plan}" "${serviceName}" -c "${destination}"
 
-#           TODO: Best-practice - is code more readable with create-service instead of cs, generally?
 #           TODO: For create-service, there is a -t tags parameter -  add support for this?
 #           TODO: For create-service and cups, do we need to consider updates for services that already exist?
+			# TODO: Marcin discussion - decision: hanlde the update using a diff in test-rollback
         fi
 }
 
@@ -371,12 +370,13 @@ deployCupsService() {
 	local serviceName="${1}"
 	local cupsOption="${2}"
 	local cupsValue="${3}"
-	# TODO: reconsider printing credentials to log file, or writing them to a file? Also forcing user to put creds in sc-pipeline.yml
+	# This means credentials are in sc-pipeline.yml, but only for test and potentially stage, not prod
 	echo "Deploying [${serviceName}] via cups in [${LOWERCASE_ENV}] env. Options - [${cupsOption} ${cupsValue}]"
 	# TODO: reevaluate if a file is necessary
 	if [[ "${cupsOption}" == "-p" ]]; then
 		# Write params to file:
-		local destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
+		local destination
+		destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
 		mkdir -p "${OUTPUT_FOLDER}"
 		echo "Writing params to [${destination}]"
 		echo "${cupsValue}" > "${destination}"
@@ -389,9 +389,9 @@ deployCupsService() {
 function createServiceWithName() {
 	local name="${1}"
 	echo "Creating service with name [${name}]"
-	# TODO run edit by marcin
+	# TODO run edit by marcin - DO IT!
 	#APPLICATION_DOMAIN="$("${CF_BIN}" apps | grep "${name}" | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1)"
-	APPLICATION_DOMAIN=="$(getAppHostFromPaas "${name}")"
+	APPLICATION_DOMAIN="$(getAppHostFromPaas "${name}")"
 	JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
 	# TODO leverage method deployCupsService? Does || echo really help? Add it to deployCupsService?
 	# TODO run edit by marcin
@@ -408,7 +408,7 @@ function deployStubRunnerBoot() {
 	local stubRunnerName="${6:-stubrunner}"
 	local stubRunnerUseClasspath="${7:-false}"
 	echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}]"
-	deployAppWithName "${stubRunnerName}" "${jarName}" "${env}" "false"
+	deployAppWithName "${stubRunnerName}" "${jarName}" "${env}"
 	local prop
 	prop="$(retrieveStubRunnerIds)"
 	echo "Found following stub runner ids [${prop}]"
