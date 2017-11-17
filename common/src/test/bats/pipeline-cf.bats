@@ -219,7 +219,7 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
+	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
 
 	run "${SOURCE_DIR}/test_deploy.sh"
 
@@ -284,7 +284,7 @@ export -f mockGradlew
 	projectName="gradlew artifactid -q"
 	projectNameUppercase="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
+	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
 
 	run "${SOURCE_DIR}/test_deploy.sh"
 
@@ -356,7 +356,7 @@ export -f mockGradlew
 	export LATEST_PROD_TAG=""
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
+	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
@@ -443,7 +443,7 @@ export -f mockGradlew
 	export LATEST_PROD_TAG=""
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
+	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
@@ -523,7 +523,7 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="stage"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
+	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
 	cp "${FIXTURES_DIR}/manifest.yml" .
 
 	run "${SOURCE_DIR}/stage_deploy.sh"
@@ -592,7 +592,7 @@ export -f mockGradlew
 	projectName="gradlew artifactid -q"
 	projectNameUppercase="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" .
+	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
 	cp "${FIXTURES_DIR}/manifest.yml" .
 
 	run "${SOURCE_DIR}/stage_deploy.sh"

@@ -93,10 +93,10 @@ function testRollbackDeploy() {
 }
 
 function deployService() {
-	local serviceType
-	serviceType="$(toLowerCase "${1}")"
 	local serviceName
 	serviceName="${2}"
+	local serviceType
+	serviceType="$(toLowerCase "${2}")"
 	local serviceCoordinates
 	serviceCoordinates="$(if [[ "${3}" == "null" ]]; then
 		echo "";
