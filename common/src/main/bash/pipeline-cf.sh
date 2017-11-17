@@ -37,9 +37,11 @@ function logInToPaas() {
 		# TODO Add app version as env variable?
 		cfSpace="${cfSpacePrefix}"
 		#cfSpace="${cfSpacePrefix}${PIPELINE_VERSION}"
+		# TODO keep things simple - just use space from credentials file
 		"${CF_BIN}" create-space "${cfSpace}"
 		"${CF_BIN}" target -s "${cfSpace}"
 	fi
+
 }
 
 function testCleanup() {
@@ -54,6 +56,8 @@ function testCleanup() {
 	# TODO: re-enable functionality to delete services too...
 	cf install-plugin do-all -r "CF-Community" -f
 	cf do-all delete {} -r -f
+
+	# Add aggressive mode - delete a service too - force recreate based on sc-pipelines flag per service and master override
 }
 
 function getTestSpaceNamePrefix() {
@@ -105,9 +109,7 @@ function testRollbackDeploy() {
 	echo "Last prod version equals ${LATEST_PROD_VERSION}"
 	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}"
 	logInToPaas
-	# TODO Add deleteApp here to be sure app is deployed only once
-	##########
-	##########
+	deleteApp "${appName}"
 	deployAndRestartAppWithName "${appName}" "${appName}-${LATEST_PROD_VERSION}"
 	propagatePropertiesForTests "${appName}"
 	# Adding latest prod tag
@@ -188,19 +190,6 @@ function deployService() {
 	esac
 }
 
-function deleteService() {
-	local serviceType
-	serviceType=$(toLowerCase "${1}")
-	local serviceName="${2}"
-	# If service is a cups pointing to an app, delete the app first
-	if [[ "${serviceType}" == "app" ]]; then
-		# Delete app and route
-		"${CF_BIN}" delete -f -r "${serviceName}" || echo "Failed to delete app [${serviceName}]"
-	fi
-	# Delete the service
-	"${CF_BIN}" delete-service -f "${serviceName}" || echo "Failed to delete service [${serviceName}]"
-}
-
 function deployAndRestartAppWithName() {
 	local appName="${1}"
 	local jarName="${2}"
@@ -215,8 +204,9 @@ function deployAndRestartAppWithName() {
 	elif [[ "${ENVIRONMENT}" == "PROD" ]]; then
 		profiles="cloud,prod"
 	fi
+	parseManifest
 	local manifestProfiles
-	manifestProfiles="$(getValueFromManifest "${appName}" "profiles")"
+	manifestProfiles="$(getProfilesFromManifest "${appName}")"
 	if [[ ! -z "${manifestProfiles}" && "${manifestProfiles}" != "null" ]]; then
 		profiles="${profiles},${manifestProfiles}"
 	fi
@@ -228,12 +218,7 @@ function deployAndRestartAppWithName() {
 	restartApp "${appName}"
 }
 
-# Function to get specific values from app manifest
-function getValueFromManifest() {
-	local appName="${1}"
-	local key="${2}"
-	local value
-
+function parseManifest() {
 	if [ -z "${PARSED_APP_MANIFEST_YAML}" ]; then
 		if [[ ! -f "manifest.yml" ]]; then
 			echo "App manifest.yml file not found"
@@ -242,23 +227,24 @@ function getValueFromManifest() {
 		export PARSED_APP_MANIFEST_YAML
 		PARSED_APP_MANIFEST_YAML="$(yaml2json "manifest.yml")"
 	fi
+}
 
-	case ${key} in
-		profiles)
-			value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/')"
-		;;
-		host)
-			value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .host' | sed 's/^"\(.*\)"$/\1/')"
-		;;
-		instances)
-			value="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .instances' | sed 's/^"\(.*\)"$/\1/')"
-		;;
-		*)
-			echo "Unknown manifest key [${key}] for app name [${appName}]"
-			return 1
-	;;
-	esac
-	echo "${value}"
+function getProfilesFromManifest() {
+	local appName="${1}"
+	local profiles="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/')"
+	echo "${profiles}"
+}
+
+function getHostFromManifest() {
+	local appName="${1}"
+	local host="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .host' | sed 's/^"\(.*\)"$/\1/')"
+	echo "${host}"
+}
+
+function getInstancesFromManifest() {
+	local appName="${1}"
+	local instances="$(echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .instances' | sed 's/^"\(.*\)"$/\1/')"
+	echo "${instances}"
 }
 
 function getAppHostFromPaas() {
@@ -277,7 +263,7 @@ function deployAppWithName() {
 
 	# TODO: getting hostname from manifest - consult with Marcin
 	local hostname
-	hostname="$(getValueFromManifest "${appName}" "host")"
+	hostname="$(getHostFromManifest "${appName}")"
 	if [[ -z "${hostname}" || "${hostname}" == "null" ]]; then
 		local hostname="${lowerCaseAppName}"
 	fi
@@ -291,7 +277,7 @@ function deployAppWithName() {
 
 	# TODO set "i 1" for test only, leave manifest value for stage and prod
 	local instances
-	instances="$(getValueFromManifest "${appName}" "instances")"
+	instances="$(getInstancesFromManifest "${appName}")"
 	if [[ ${env} == "TEST" || -z "${instances}" || "${instances}" == "null" ]]; then
 		instances=1
 	fi
@@ -314,9 +300,9 @@ function deployAppWithName() {
 }
 
 function deleteApp() {
-	local serviceName="${1}"
+	local appName="${1}"
 	local lowerCaseAppName
-	lowerCaseAppName=$(toLowerCase "${serviceName}")
+	lowerCaseAppName=$(toLowerCase "${appName}")
 	local APP_NAME="${lowerCaseAppName}"
 	echo "Deleting application [${APP_NAME}]"
 	# Delete app and route

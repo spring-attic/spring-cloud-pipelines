@@ -148,10 +148,10 @@ export -f mockGradlew
 	cd "${TEMP_DIR}/maven/empty_project"
 	source "${SOURCE_DIR}/pipeline.sh"
 
-	result="$( appHost "github-analytics" )"
+	result="$( getAppHostFromPaas "github-analytics" )"
 	assert_equal "${result}" "github-analytics-sc-pipelines.demo.io"
 
-	result="$( appHost "github-eureka" )"
+	result="$( getAppHostFromPaas "github-eureka" )"
 	assert_equal "${result}" "github-eureka-sc-pipelines-demo.demo.io"
 	assert_success
 }
@@ -167,6 +167,25 @@ export -f mockGradlew
 	assert_success
 }
 
+@test "should fail to deploy app to test environment without additional services if manifest is missing [CF][Maven]" {
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	env="test"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+	rm manifest.yml
+
+	run "${SOURCE_DIR}/test_deploy.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf create-space test-space-my-project"
+    assert_output --partial "cf target -s test-space-my-project"
+	assert_output --partial "App manifest.yml file not found"
+	assert_failure
+}
+
 @test "should deploy app to test environment without additional services if pipeline descriptor is missing [CF][Maven]" {
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
@@ -179,8 +198,11 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf create-space test-space-my-project”
+    assert_output --partial "cf target -s test-space-my-project”
+    assert_output --partial "cf install-plugin do-all -r CF-Community -f”
+    assert_output --partial "cf do-all delete {} -r -f”
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
-	assert_output --partial "cf delete -f my-project"
 	assert_output --partial "cf push my-project"
 	assert_output --partial "cf set-env my-project APPLICATION_DOMAIN"
 	assert_output --partial "cf set-env my-project JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
