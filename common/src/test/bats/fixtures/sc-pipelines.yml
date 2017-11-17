@@ -1,10 +1,14 @@
 test:
   services:
-    - type: rabbitmq
+    - type: broker
       name: rabbitmq-github-webhook
-    - type: mysql
+      broker: foo
+      plan: bar
+    - type: broker
       name: mysql-github-webhook
-    - type: eureka
+      broker: foo
+      plan: bar
+    - type: app
       name: eureka-github-webhook
       coordinates: com.example.eureka:github-eureka:0.0.1.M1
     - type: stubrunner
@@ -13,10 +17,14 @@ test:
       useClasspath: true
 stage:
   services:
-    - type: rabbitmq
+    - type: broker
       name: github-rabbitmq
-    - type: mysql
+      broker: foo
+      plan: bar
+    - type: broker
       name: mysql-github
-    - type: eureka
+      broker: foo
+      plan: bar
+    - type: app
       name: github-eureka
       coordinates: com.example.eureka:github-eureka:0.0.1.M1

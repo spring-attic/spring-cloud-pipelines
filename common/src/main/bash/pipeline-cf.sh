@@ -285,14 +285,7 @@ function deployAppWithName() {
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
 	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
 
-	local applicationDomain
-	applicationDomain="$(getAppHostFromPaas "${lowerCaseAppName}")"
-	echo "Determined that application_domain for [${lowerCaseAppName}] is [${applicationDomain}]"
-	# TODO: ask Marcin - what is this env var for?
-	# TODO Marcin: "try without it, if it works, delete it"
-	setEnvVar "${lowerCaseAppName}" 'APPLICATION_DOMAIN' "${applicationDomain}"
-
-    # TODO: Only needed for Spring Cloud Services
+	# TODO: Only needed for Spring Cloud Services
     # TODO: cyi - let user set this in the manifest? would the value ever be different?
     local cfApi
     cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-)

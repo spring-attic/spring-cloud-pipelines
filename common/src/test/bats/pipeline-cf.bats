@@ -198,19 +198,18 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "cf create-space test-space-my-project”
-    assert_output --partial "cf target -s test-space-my-project”
-    assert_output --partial "cf install-plugin do-all -r CF-Community -f”
-    assert_output --partial "cf do-all delete {} -r -f”
+	assert_output --partial "cf create-space test-space-my-project"
+    assert_output --partial "cf target -s test-space-my-project"
+    assert_output --partial "cf install-plugin do-all -r CF-Community -f"
+    assert_output --partial "cf do-all delete {} -r -f"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "cf push my-project"
-	assert_output --partial "cf set-env my-project APPLICATION_DOMAIN"
-	assert_output --partial "cf set-env my-project JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
 	refute_output --partial "cf bind-service my-project rabbitmq-my-project"
 	refute_output --partial "cf bind-service my-project eureka-my-project"
 	refute_output --partial "cf bind-service my-project mysql-my-project"
-	assert_output --partial "cf set-env my-project spring.profiles.active cloud,smoke"
 	assert_output --partial "cf restart my-project"
+	assert_output --partial "APPLICATION_URL=my-project-sc-pipelines.demo.io"
+	assert_output --partial "STUBRUNNER_URL=stubrunner-my-project-sc-pipelines.demo.io"
 	assert_success
 }
 
@@ -228,45 +227,25 @@ export -f mockGradlew
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
-	assert_output --partial "cf delete -f my-project"
-	# Deletion of services
-	assert_output --partial "cf delete -f rabbitmq-github-webhook"
-	assert_output --partial "cf delete-service -f rabbitmq-github-webhook"
-	assert_output --partial "cf cs cloudamqp lemur rabbitmq-github-webhook"
-	assert_output --partial "cf delete -f mysql-github-webhook"
-	assert_output --partial "cf delete-service -f mysql-github-webhook"
-	assert_output --partial "cf cs p-mysql 100mb mysql-github-webhook"
-	# Pushing services
-	# Eureka
-	assert_output --partial "cf delete -f eureka-github-webhook"
-	assert_output --partial "cf delete-service -f eureka-github-webhook"
-	assert_output --partial "cf push eureka-github-webhook"
-	assert_output --partial "cf set-env eureka-github-webhook APPLICATION_DOMAIN eureka-github-webhook-sc-pipelines.demo.io"
-	assert_output --partial "cf set-env eureka-github-webhook JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
+	# Creation of services
+	assert_output --partial "cf create-service foo bar rabbitmq-github-webhook"
+	assert_output --partial "cf create-service foo bar mysql-github-webhook"
+	assert_output --partial "cf push eureka-github-webhook -p target/github-eureka-0.0.1.M1.jar -n eureka-github-webhook-test -i 1 --no-start"
 	assert_output --partial "cf restart eureka-github-webhook"
-	assert_output --partial 'cf create-user-provided-service eureka-github-webhook -p {"uri":"http://eureka-github-webhook-sc-pipelines.demo.io"}'
+	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
-	assert_output --partial "cf delete -f stubrunner-github-webhook"
-	assert_output --partial "cf delete-service -f stubrunner-github-webhook"
-	assert_output --partial "cf push stubrunner-github-webhook"
-	assert_output --partial "cf set-env stubrunner-github-webhook APPLICATION_DOMAIN stubrunner-github-webhook-sc-pipelines.demo.io"
-	assert_output --partial "cf set-env stubrunner-github-webhook JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
-	assert_output --partial "cf restart stubrunner-github-webhook"
+	assert_output --partial "curl http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
+	assert_output --partial "cf push stubrunner-github-webhook -p target/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-github-webhook-test -i 1 --no-start"
 	assert_output --partial "cf set-env stubrunner-github-webhook stubrunner.ids"
-	assert_output --partial "cf bind-service stubrunner-github-webhook rabbitmq-github-webhook"
-	assert_output --partial "cf set-env stubrunner-github-webhook spring.rabbitmq.addresses"
-	assert_output --partial "cf bind-service stubrunner-github-webhook eureka-github-webhook"
-	assert_output --partial "cf set-env stubrunner-github-webhook eureka.client.serviceUrl.defaultZone"
+	assert_output --partial "cf set-env stubrunner-github-webhook stubrunner.repositoryRoot http://foo"
 	assert_output --partial "cf restart stubrunner-github-webhook"
 	# App
-	assert_output --partial "cf delete -f my-project"
-	assert_output --partial "cf push my-project"
-	assert_output --partial "cf set-env my-project APPLICATION_DOMAIN my-project-sc-pipelines.demo.io"
-	assert_output --partial "cf set-env my-project JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
-	# We don't want exception on jq parsing
-	refute_output --partial "jq: error (at <stdin>:42): Cannot iterate over null (null)"
-	assert_output --partial "cf set-env my-project spring.profiles.active cloud,smoke"
+	assert_output --partial "cf push my-project -p target/my-project-.jar -n my-project-test -i 1 --no-start"
+	assert_output --partial "cf set-env my-project TRUST_CERTS"
+	assert_output --partial "cf set-env my-project SPRING_PROFILES_ACTIVE cloud,smoke,test"
 	assert_output --partial "cf restart my-project"
+	# We don't want exception on jq parsing
+	refute_output --partial "Cannot iterate over null (null)"
 	assert_output --partial "APPLICATION_URL=my-project-sc-pipelines.demo.io"
 	assert_output --partial "STUBRUNNER_URL=stubrunner-my-project-sc-pipelines.demo.io"
 	assert_success
@@ -279,6 +258,7 @@ export -f mockGradlew
 	env="test"
 	# notice lowercase of artifactid (should be artifactId) - but lowercase function gets applied
 	projectName="gradlew artifactid -q"
+	projectNameUppercase="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 
 	run "${SOURCE_DIR}/test_deploy.sh"
@@ -287,15 +267,10 @@ export -f mockGradlew
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
-	assert_output --partial "cf delete -f ${projectName}"
-	assert_output --partial "cf push ${projectName}"
-	assert_output --partial "cf set-env ${projectName} APPLICATION_DOMAIN"
-	assert_output --partial "cf set-env ${projectName} JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
-	refute_output --partial "cf bind-service ${projectName} rabbitmq-${projectName}"
-	refute_output --partial "cf bind-service ${projectName} eureka-${projectName}"
-	refute_output --partial "cf bind-service ${projectName} mysql-${projectName}"
-	assert_output --partial "cf set-env ${projectName} spring.profiles.active cloud,smoke"
-	assert_output --partial "cf restart gradlew artifactId -q"
+	assert_output --partial "cf push ${projectName} -p build/libs/${projectNameUppercase}-.jar -n ${projectName}-test -i 1 --no-start"
+	assert_output --partial "cf set-env ${projectName} TRUST_CERTS"
+	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,smoke,test"
+	assert_output --partial "cf restart ${projectNameUppercase}"
 	assert_success
 }
 
@@ -545,7 +520,6 @@ export -f mockGradlew
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	refute_output --partial "cf delete -f my-project"
 	assert_output --partial "cf push my-project"
-	assert_output --partial "cf set-env my-project APPLICATION_DOMAIN"
 	assert_output --partial "cf set-env my-project JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
 	refute_output --partial "cf bind-service my-project rabbitmq-my-project"
 	refute_output --partial "cf bind-service my-project eureka-my-project"
@@ -725,7 +699,6 @@ export -f mockGradlew
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	refute_output --partial "cf delete -f my-project"
 	assert_output --partial "cf push my-project"
-	assert_output --partial "cf set-env my-project APPLICATION_DOMAIN"
 	assert_output --partial "cf set-env my-project JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
 	refute_output --partial "cf bind-service my-project rabbitmq-my-project"
 	refute_output --partial "cf bind-service my-project eureka-my-project"
