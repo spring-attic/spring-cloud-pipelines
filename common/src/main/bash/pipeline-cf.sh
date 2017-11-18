@@ -221,13 +221,13 @@ function deployAppWithName() {
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 
-	# TODO: getting hostname from manifest - consult with Marcin
 	local hostname
 	hostname="$(getHostFromManifest "${appName}")"
 	if [[ -z "${hostname}" || "${hostname}" == "null" ]]; then
 		local hostname="${lowerCaseAppName}"
 	fi
 	# Even if host is specified in the manifest, append the hostname uuid from the credentials file
+	# TODO Reconsider - now that we are using the manifest, don't need this... also what if random-route is true?
 	if [[ "${PAAS_HOSTNAME_UUID}" != "" ]]; then
 		hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
 	fi
@@ -247,6 +247,7 @@ function deployAppWithName() {
 
 	# TODO: Only needed for Spring Cloud Services
     # TODO: cyi - let user set this in the manifest? would the value ever be different?
+    # TODO Let the value in the manifest take precedence?
     local cfApi
     cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-)
     setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
@@ -491,6 +492,7 @@ function performGreenDeploymentOfTestedApplication() {
 		echo "Will not rename the application cause it's not there"
 	fi
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
+	"${CF_BIN}" stop "${newName}"
 }
 
 function rollbackToPreviousVersion() {
@@ -505,7 +507,14 @@ function rollbackToPreviousVersion() {
 	if [[ "${appPresent}" == "yes" ]]; then
 		echo "Starting blue (if it wasn't started) and stopping the green instance. Only blue instance will be running"
 		"${CF_BIN}" start "${oldName}"
-		"${CF_BIN}" stop "${appName}"
+		# TODO Verify with Marcin
+		# Since we are rolling back, the last update must be bad, so let's get rid of it (just the app, not the route)
+		# Let's also rename venerable back to the original app name, so that prod-deploy will succees,
+		# and prod-complete won't accidentally delete the active prod app
+		#"${CF_BIN}" stop "${appName}"
+		"${CF_BIN}" delete "${appName}" -f
+		"${CF_BIN}" rename "${oldName}" "${appName}"
+
 	else
 		echo "Will not rollback to blue instance cause it's not there"
 		return 1
