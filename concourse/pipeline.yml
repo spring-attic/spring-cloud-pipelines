@@ -170,7 +170,7 @@ jobs:
     - get: version
       passed:
       - test-rollback-smoke
-      trigger: false
+      trigger: true
   - task: stage-deploy
     privileged: true
     file: tools/concourse/task.yml
@@ -191,7 +191,7 @@ jobs:
     - get: version
       passed:
       - stage-deploy
-      trigger: false
+      trigger: true
   - task: stage-smoke
     privileged: true
     file: tools/concourse/task.yml
@@ -211,7 +211,7 @@ jobs:
     - get: version
       passed:
       - stage-e2e
-      trigger: false
+      trigger: true
   - task: prod-deploy
     privileged: true
     file: tools/concourse/tasks/prod-deploy/task.yml
