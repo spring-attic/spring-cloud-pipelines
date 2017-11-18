@@ -25,54 +25,16 @@ function logInToPaas() {
 
 	echo "Logging in to CF to org [${cfOrg}], space [${cfSpace}]"
 	"${CF_BIN}" api --skip-ssl-validation "${apiUrl}"
-	# TODO: This only works if space exists. OK for stage and prod. or test, is there a way to avoid this?
 	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
-
-	# If environment is TEST, switch to an isolated, versioned space
-	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-		local cfSpacePrefix
-		cfSpacePrefix=$(getTestSpaceNamePrefix)
-		# TODO Comment back in???
-		# TODO go back to original model? or rename space with optional delete services?
-		# TODO Add app version as env variable?
-		cfSpace="${cfSpacePrefix}"
-		#cfSpace="${cfSpacePrefix}${PIPELINE_VERSION}"
-		# TODO keep things simple - just use space from credentials file
-		"${CF_BIN}" create-space "${cfSpace}"
-		"${CF_BIN}" target -s "${cfSpace}"
-	fi
-
 }
 
 function testCleanup() {
-	logInToPaas
-#	cfSpacePrefix=$(getTestSpaceNamePrefix)
-#	local cfSpace
-#	"${CF_BIN}" spaces | grep "${cfSpacePrefix}" | while read -r cfSpace ; do
-#		echo "Deleting test space from previous pipeline execution: ${cfSpace}"
-#		"${CF_BIN}" delete-space -f "${cfSpace}"
-#	done
 	# TODO: Clean up space without relying on plug-ins???
-	# TODO: re-enable functionality to delete services too...
 	cf install-plugin do-all -r "CF-Community" -f
 	cf do-all delete {} -r -f
 
-	# Add aggressive mode - delete a service too - force recreate based on sc-pipelines flag per service and master override
-}
-
-function getTestSpaceNamePrefix() {
-	if [[ "${ENVIRONMENT}" != "TEST" ]]; then
-		echo "Current environment is [${ENVIRONMENT}]. Function getTestSpaceNamePrefix() is invalid for non-test environment"
-		return 1;
-	fi
-	local appName
-	appName=$(retrieveAppName)
-	appName=$(toLowerCase "${appName}")
-	local space="PAAS_${ENVIRONMENT}_SPACE"
-	# TODO Comment back in???
-	#local cfSpacePrefix="${!space}"-"${appName}"-
-	local cfSpacePrefix="${!space}"-"${appName}"
-	echo "${cfSpacePrefix}"
+	# TODO: Re-enable functionality to delete services too:
+	# TODO Add aggressive mode - force recreate of servicebased on sc-pipelines flag per service and master override
 }
 
 function testDeploy() {
@@ -82,9 +44,8 @@ function testDeploy() {
 	local appName
 	appName=$(retrieveAppName)
 
-	# Delete test space, then call loginToPaas, which will recreate it
-	testCleanup
 	logInToPaas
+	testCleanup
 
 	deployServices
 	waitForServicesToInitialize
@@ -141,7 +102,6 @@ function deployService() {
 			deployAppAsService "${APP_ARTIFACT_ID}-${APP_VERSION}" "${serviceName}" "${ENVIRONMENT}"
 		;;
 		cups)
-			#TODO: Can Creds be read from somewhere else? Marcin: "it's just test and maybe stage. If sensitive in stage, can be set manually." Credhub Concourse integration? Other?
 			# Usage: cf cups SERVICE_INSTANCE -p CREDENTIALS (or credentials file)
 			local params
 			params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
