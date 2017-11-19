@@ -492,7 +492,12 @@ function performGreenDeploymentOfTestedApplication() {
 		echo "Will not rename the application cause it's not there"
 	fi
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
-	"${CF_BIN}" stop "${newName}"
+	echo "Stopping app [${newName}]"
+	if [[ "${appPresent}" == "yes" ]]; then
+		"${CF_BIN}" stop "${newName}"
+	else
+		echo "Will not stop the application cause it's not there"
+	fi
 }
 
 function rollbackToPreviousVersion() {
