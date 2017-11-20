@@ -180,8 +180,6 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "cf create-space test-space-my-project"
-    assert_output --partial "cf target -s test-space-my-project"
 	assert_output --partial "App manifest.yml file not found"
 	assert_failure
 }
@@ -198,10 +196,8 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "cf create-space test-space-my-project"
-    assert_output --partial "cf target -s test-space-my-project"
-    assert_output --partial "cf install-plugin do-all -r CF-Community -f"
-    assert_output --partial "cf do-all delete {} -r -f"
+	assert_output --partial "cf install-plugin do-all -r CF-Community -f"
+	assert_output --partial "cf do-all delete {} -r -f"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "cf push my-project"
 	refute_output --partial "cf bind-service my-project rabbitmq-my-project"
@@ -226,7 +222,6 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "cf target -s test-space-my-project"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	# Creation of services
 	assert_output --partial "cf create-service foo bar rabbitmq-github-webhook"
@@ -291,7 +286,6 @@ export -f mockGradlew
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "cf target -s test-space-${projectName}"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	# Creation of services
 	assert_output --partial "cf create-service foo bar rabbitmq-github-webhook"
@@ -380,7 +374,6 @@ export -f mockGradlew
 	assert_output --partial "Last prod version equals 1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "cf target -s test-space-my-project"
 	assert_output --partial "cf delete -f -r my-project"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	# Creation of services
@@ -417,7 +410,6 @@ export -f mockGradlew
 	assert_output --partial "Last prod version equals 1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "cf target -s test-space-${projectName}"
 	assert_output --partial "cf delete -f -r ${projectName}"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	# Creation of services
@@ -795,7 +787,6 @@ export -f mockGradlew
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "cf app my-project-venerable"
 	assert_output --partial "cf start my-project-venerable"
-	assert_output --partial "cf stop my-project"
 	assert_success
 }
 
@@ -815,7 +806,6 @@ export -f mockGradlew
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "cf app ${projectName}-venerable"
 	assert_output --partial "cf start ${projectName}-venerable"
-	assert_output --partial "cf stop ${projectName}"
 	assert_success
 }
 

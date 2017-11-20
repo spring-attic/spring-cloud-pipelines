@@ -436,7 +436,7 @@ function retrieveApplicationUrl() {
 	echo "${APPLICATION_URL}"
 }
 
-function performGreenDeployment() {
+function performProductionDeployment() {
 	local projectGroupId
 	projectGroupId="$(retrieveGroupId)"
 	local appName
@@ -448,10 +448,10 @@ function performGreenDeployment() {
 	logInToPaas
 
 	# deploy app
-	performGreenDeploymentOfTestedApplication "${appName}"
+	performProductionDeploymentOfTestedApplication "${appName}"
 }
 
-function performGreenDeploymentOfTestedApplication() {
+function performProductionDeploymentOfTestedApplication() {
 	local appName="${1}"
 	local newName="${appName}-venerable"
 	echo "Renaming the app from [${appName}] -> [${newName}]"
@@ -465,7 +465,7 @@ function performGreenDeploymentOfTestedApplication() {
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 }
 
-function deleteBlueInstance() {
+function completeSwitchOver() {
 	local appName
 	appName="$(retrieveAppName)"
 	# Log in to CF to start deployment

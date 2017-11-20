@@ -101,13 +101,13 @@ teardown() {
 @test "should run prod deployment for prod_deploy" {
 	run "${SOURCE_DIR}/prod_deploy.sh"
 
-	assert_output --partial "performGreenDeployment"
+	assert_output --partial "performProductionDeployment"
 }
 
 @test "should delete blue instance for prod_complete" {
 	run "${SOURCE_DIR}/prod_complete.sh"
 
-	assert_output --partial "deleteBlueInstance"
+	assert_output --partial "completeSwitchOver"
 }
 
 @test "should rollback to blue instance for prod_rollback" {

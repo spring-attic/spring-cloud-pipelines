@@ -124,7 +124,7 @@ function findLatestProdTag {
 	source "${PIPELINES_TEST_DIR}/prod_deploy.sh"
 	run "${PIPELINES_TEST_DIR}/prod_deploy.sh"
 
-	assert_output --partial "performGreenDeployment"
+	assert_output --partial "performProductionDeployment"
 	assert_equal "${ENVIRONMENT}" "PROD"
 }
 
@@ -132,6 +132,6 @@ function findLatestProdTag {
 	source "${PIPELINES_TEST_DIR}/prod_complete.sh"
 	run "${PIPELINES_TEST_DIR}/prod_complete.sh"
 
-	assert_output --partial "deleteBlueInstance"
+	assert_output --partial "completeSwitchOver"
 	assert_equal "${ENVIRONMENT}" "PROD"
 }

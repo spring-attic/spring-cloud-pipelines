@@ -155,7 +155,6 @@ function deployAndRestartAppWithName() {
 	local jarName="${2}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
-
 	local profiles
 	if [[ "${ENVIRONMENT}" == "TEST" ]]; then
 		profiles="cloud,smoke,test"
@@ -170,10 +169,8 @@ function deployAndRestartAppWithName() {
 	if [[ ! -z "${manifestProfiles}" && "${manifestProfiles}" != "null" ]]; then
 		profiles="${profiles},${manifestProfiles}"
 	fi
-
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
 	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}"
-
 	setEnvVar "${lowerCaseAppName}" 'SPRING_PROFILES_ACTIVE' "${profiles}"
 	restartApp "${appName}"
 }
@@ -465,7 +462,7 @@ function retrieveApplicationUrl() {
 	echo "${APPLICATION_URL}"
 }
 
-function performGreenDeployment() {
+function performProductionDeployment() {
 	local projectGroupId
 	projectGroupId="$(retrieveGroupId)"
 	local appName
@@ -477,29 +474,47 @@ function performGreenDeployment() {
 	logInToPaas
 
 	# deploy app
-	performGreenDeploymentOfTestedApplication "${appName}"
+	performProductionDeploymentOfTestedApplication "${appName}"
 }
 
-function performGreenDeploymentOfTestedApplication() {
+# [Clicked DEPLOY] -> APP running, VEN running -> [Click DEPLOY] delete VEN, deploy new APP
+# [Clicked COMPLETE] -> APP running, VEN stopped -> [Click DEPLOY] delete VEN, rename APP -> VEN, deploy APP
+# [Clicked ROLLBACK] -> APP stopped, VEN running, VEN renamed to APP, latest PROD tag removed -> [Click DEPLOY] -> delete APP, deploy new APP, stop VEN
+function performProductionDeploymentOfTestedApplication() {
 	local appName="${1}"
 	local newName="${appName}-venerable"
 	echo "Renaming the app from [${appName}] -> [${newName}]"
 	local appPresent="no"
-	"${CF_BIN}" app "${appName}" && appPresent="yes"
-	if [[ "${appPresent}" == "yes" ]]; then
+	local appRunning="no"
+	local venerableAppPresent="no"
+	local venerableAppRunning="no"
+	local noRunningAppsMsg="There are no running instances"
+	"${CF_BIN}" app "${appName}" | grep -v "${noRunningAppsMsg}" && appRunning="yes"
+	"${CF_BIN}" app "${newName}" && venerableAppPresent="yes"
+	"${CF_BIN}" app "${newName}" | grep -v "${noRunningAppsMsg}" && venerableAppRunning="yes"
+	if [[ "${appRunning}" == "yes" ]]; then
+		if [[ "${venerableAppPresent}" == "yes" ]]; then
+			echo "Old instance is present, will remove it"
+			"${CF_BIN}" delete "${newName}" -f
+		fi
 		"${CF_BIN}" rename "${appName}" "${newName}"
+	elif [[ "${appRunning}" == "no"  && "${venerableAppRunning}" == "yes" ]]; then
+		echo "Deploying new application after rolling back"
+		echo "Removing new instance"
+		"${CF_BIN}" delete "${appName}" -f
+		echo "Renaming old instance to new"
+		"${CF_BIN}" rename "${newName}" "${appName}"
+		echo "Deleting production tag"
+		local tagName="prod/${PIPELINE_VERSION}"
+		git push --delete origin "${tagName}"
+		git tag -d "${tagName}"
 	else
-		echo "Will not rename the application cause it's not there"
+		echo "Will not rename the application cause it's not there and old is not running"
 	fi
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
-	echo "Stopping app [${newName}]"
-	if [[ "${appPresent}" == "yes" ]]; then
-		"${CF_BIN}" stop "${newName}"
-	else
-		echo "Will not stop the application cause it's not there"
-	fi
 }
 
+# [Clicked ROLLBACK] -> APP stopped, VEN running
 function rollbackToPreviousVersion() {
 	local appName
 	appName="$(retrieveAppName)"
@@ -512,21 +527,15 @@ function rollbackToPreviousVersion() {
 	if [[ "${appPresent}" == "yes" ]]; then
 		echo "Starting blue (if it wasn't started) and stopping the green instance. Only blue instance will be running"
 		"${CF_BIN}" start "${oldName}"
-		# TODO Verify with Marcin
-		# Since we are rolling back, the last update must be bad, so let's get rid of it (just the app, not the route)
-		# Let's also rename venerable back to the original app name, so that prod-deploy will succees,
-		# and prod-complete won't accidentally delete the active prod app
-		#"${CF_BIN}" stop "${appName}"
-		"${CF_BIN}" delete "${appName}" -f
-		"${CF_BIN}" rename "${oldName}" "${appName}"
-
+		"${CF_BIN}" stop "${appName}"
 	else
 		echo "Will not rollback to blue instance cause it's not there"
 		return 1
 	fi
 }
 
-function deleteBlueInstance() {
+# [Clicked COMPLETE] -> APP running, VEN stopped
+function completeSwitchOver() {
 	local appName
 	appName="$(retrieveAppName)"
 	# Log in to CF to start deployment

@@ -59,12 +59,12 @@ function runE2eTests() {
 
 # ---- PRODUCTION PHASE ----
 
-function performGreenDeployment() {
-    echo "performGreenDeployment"
+function performProductionDeployment() {
+    echo "performProductionDeployment"
 }
 
-function deleteBlueInstance() {
-    echo "deleteBlueInstance"
+function completeSwitchOver() {
+    echo "completeSwitchOver"
 }
 
 function rollbackToPreviousVersion() {
@@ -82,6 +82,6 @@ export -f runSmokeTests
 export -f stageDeploy
 export -f prepareForE2eTests
 export -f runE2eTests
-export -f performGreenDeployment
-export -f deleteBlueInstance
+export -f performProductionDeployment
+export -f completeSwitchOver
 export -f rollbackToPreviousVersion
