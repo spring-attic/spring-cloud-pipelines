@@ -37,6 +37,14 @@ function testCleanup() {
 	# TODO Add aggressive mode - force recreate of servicebased on sc-pipelines flag per service and master override
 }
 
+function deleteService() {
+	local serviceName
+	serviceName=$(toLowerCase "${1}")
+	local serviceType="${2}"
+	"${CF_BIN}" delete -f "${serviceName}" || echo "Failed to delete app [${serviceName}]"
+	"${CF_BIN}" delete-service -f "${serviceName}" || echo "Failed to delete service [${serviceName}]"
+}
+
 function testDeploy() {
 	# TODO: Consider making it less JVM specific
 	local projectGroupId

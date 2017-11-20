@@ -163,8 +163,7 @@ function deployServices() {
 	while read -r serviceName serviceType; do
 	    serviceType=$(toLowerCase "${serviceType}")
 		if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-			# TODO: maybe don't need this if space is created anew for test????
-			#  deleteService "${serviceName}" "${serviceType}"
+			deleteService "${serviceName}" "${serviceType}"
 			deployService "${serviceName}" "${serviceType}"
 		else
 			if [[ "$(serviceExists "${serviceName}")" == "true" ]]; then
