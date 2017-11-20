@@ -372,7 +372,7 @@ export -f mockGradlew
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project/"
+	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project/sc-pipelines.yml"
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
@@ -409,7 +409,7 @@ export -f mockGradlew
 	projectName="gradlew artifactid -q"
 	projectNameUppercase="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project/"
+	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project/sc-pipelines.yml"
 
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
