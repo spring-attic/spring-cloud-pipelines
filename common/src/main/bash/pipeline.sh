@@ -160,9 +160,9 @@ function deployServices() {
 		return
 	fi
 
-	while read -r serviceName serviceType; do
+	while read -r serviceName serviceType useExisting; do
 	    serviceType=$(toLowerCase "${serviceType}")
-		if [[ "${ENVIRONMENT}" == "TEST" ]]; then
+		if [[ "${ENVIRONMENT}" == "TEST" && "${useExisting}" != "true" ]]; then
 			deleteService "${serviceName}" "${serviceType}"
 			deployService "${serviceName}" "${serviceType}"
 		else
@@ -174,7 +174,7 @@ function deployServices() {
 		fi
 	# retrieve the space separated name and type
 	done <<<"$(echo "${PARSED_YAML}" | \
-				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.name) \(.type)"')"
+				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.name) \(.type) \(.useExisting)"')"
 }
 
 # Converts YAML to JSON - uses ruby
