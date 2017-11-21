@@ -19,7 +19,7 @@ function downloadAppBinary() {
 	changedGroupId="$(echo "${groupId}" | tr . /)"
 	pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	mkdir -p "${OUTPUT_FOLDER}"
-	echo "Current folder is [$(pwd)]; Downloading [${pathToJar}] to [${destination}]"
+	echo "Current folder is [$(pwd)]; Downloading binary to [${destination}]"
 	local success="false"
 	curl -u "${M2_SETTINGS_REPO_USERNAME}:${M2_SETTINGS_REPO_PASSWORD}" "${pathToJar}" -o "${destination}" --fail && success="true"
 	if [[ "${success}" == "true" ]]; then
