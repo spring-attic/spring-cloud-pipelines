@@ -17,7 +17,7 @@ function downloadAppBinary() {
 	local destination
 	local changedGroupId
 	local pathToJar
-	local repoCredentials
+	local repoCredentials=""
 
 
 	destination="$(pwd)/${OUTPUT_FOLDER}/${artifactId}-${version}.${BINARY_EXTENSION}"
@@ -29,7 +29,7 @@ function downloadAppBinary() {
 		echo "Using basic auth for user [${repoUsername}]"
 		repoCredentials="-u ${repoUsername}:${repoPassword}"
 	fi
-	(curl "${repoCredentials}" "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
+	(curl ${repoCredentials} "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
 
 }
 
