@@ -12,16 +12,24 @@ function downloadAppBinary() {
 	local groupId="${2}"
 	local artifactId="${3}"
 	local version="${4}"
+	local repoUsername="${5}"
+	local repoPassword="${6}"
 	local destination
 	local changedGroupId
 	local pathToJar
+	local repoCredentials
+
 
 	destination="$(pwd)/${OUTPUT_FOLDER}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	changedGroupId="$(echo "${groupId}" | tr . /)"
 	pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	mkdir -p "${OUTPUT_FOLDER}"
 	echo "Current folder is [$(pwd)]; Downloading [${pathToJar}] to [${destination}]"
-	(curl "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
+	if [[ -z "${repoUsername}" || "${repoUsername}" != "" ]]; then
+		echo "Using basic auth for user [${repoUsername}]"
+		repoCredentials="-u ${repoUsername}:${repoPassword}"
+	fi
+	(curl "${repoCredentials}" "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
 
 }
 

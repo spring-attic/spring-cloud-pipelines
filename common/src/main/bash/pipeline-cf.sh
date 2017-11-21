@@ -59,7 +59,7 @@ function testDeploy() {
 	waitForServicesToInitialize
 
 	# deploy app
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 	propagatePropertiesForTests "${appName}"
 }
@@ -76,7 +76,7 @@ function testRollbackDeploy() {
 	# Downloading latest jar
 	local LATEST_PROD_VERSION=${latestProdTag#prod/}
 	echo "Last prod version equals ${LATEST_PROD_VERSION}"
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 	logInToPaas
 	deleteApp "${appName}"
 	deployAndRestartAppWithName "${appName}" "${appName}-${LATEST_PROD_VERSION}"
@@ -106,7 +106,7 @@ function deployService() {
 			local PREVIOUS_IFS="${IFS}"
 			IFS=${coordinatesSeparator} read -r APP_GROUP_ID APP_ARTIFACT_ID APP_VERSION <<<"${serviceCoordinates}"
 			IFS="${PREVIOUS_IFS}"
-			downloadAppBinary "${REPO_WITH_BINARIES}" "${APP_GROUP_ID}" "${APP_ARTIFACT_ID}" "${APP_VERSION}"
+			downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${APP_GROUP_ID}" "${APP_ARTIFACT_ID}" "${APP_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 			deployAppAsService "${APP_ARTIFACT_ID}-${APP_VERSION}" "${serviceName}" "${ENVIRONMENT}"
 		;;
 		cups)
@@ -148,7 +148,7 @@ function deployService() {
 			else
 				echo "${parsedStubRunnerUseClasspath}";
 			fi)
-			downloadAppBinary "${REPO_WITH_BINARIES}" "${STUBRUNNER_GROUP_ID}" "${STUBRUNNER_ARTIFACT_ID}" "${STUBRUNNER_VERSION}"
+			downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${STUBRUNNER_GROUP_ID}" "${STUBRUNNER_ARTIFACT_ID}" "${STUBRUNNER_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${rabbitMqName}" "${eurekaName}" "${ENVIRONMENT}" "${serviceName}" "${stubRunnerUseClasspath}"
 		;;
 		*)
@@ -448,7 +448,7 @@ function stageDeploy() {
 	deployServices
 	waitForServicesToInitialize
 
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 
 	# deploy app
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
@@ -475,7 +475,7 @@ function performProductionDeployment() {
 	appName="$(retrieveAppName)"
 
 	# download app
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 	# Log in to CF to start deployment
 	logInToPaas
 
