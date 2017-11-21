@@ -277,6 +277,7 @@ common-params: &common-params
   M2_SETTINGS_REPO_USERNAME: ((m2-settings-repo-username))
   PAAS_TYPE: ((paas-type))
   REPO_WITH_BINARIES: ((repo-with-binaries))
+  REPO_WITH_BINARIES_FOR_DOWNLOAD: ((repo-with-binaries-for-download))
   # remove::start[K8S]
   KUBERNETES-MINIKUBE: ((kubernetes-minikube))
   MYSQL_ROOT_PASSWORD: ((mysql-root-password))
