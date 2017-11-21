@@ -208,6 +208,11 @@ function getInstancesFromManifest() {
 	echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .instances' | sed 's/^"\(.*\)"$/\1/'
 }
 
+function getTimeoutFromManifest() {
+	local appName="${1}"
+	echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .timeout' | sed 's/^"\(.*\)"$/\1/'
+}
+
 function getAppHostFromPaas() {
 	local appName="${1}"
 	local lowerCase
@@ -241,6 +246,13 @@ function deployAppWithName() {
 	instances="$(getInstancesFromManifest "${appName}")"
 	if [[ ${env} == "TEST" || -z "${instances}" || "${instances}" == "null" ]]; then
 		instances=1
+	fi
+
+	local timeout
+	timeout="$(getTimeoutFromManifest "${appName}")"
+	if [[ ! -z "${timeout}" && "${timeout}" != "null" ]]; then
+		CF_STARTUP_TIMEOUT=$(echo "scale=0; ($timeout+59) / 60" | bc)
+		echo "Setting CF_STARTUP TIMEOUT to value of timeout in manifest: timeout is [${timeout} sec], CF_STARTUP_TIMEOUT is [${CF_STARTUP_TIMEOUT} min] (round up to next minute)"
 	fi
 
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
