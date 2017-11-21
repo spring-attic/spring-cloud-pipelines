@@ -251,9 +251,9 @@ function deployAppWithName() {
 	# TODO: Only needed for Spring Cloud Services
     # TODO: cyi - let user set this in the manifest? would the value ever be different?
     # TODO Let the value in the manifest take precedence?
-    local cfApi
-    cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-)
-    setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
+#    local cfApi
+#    cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-)
+#    setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
 }
 
 function deleteApp() {
