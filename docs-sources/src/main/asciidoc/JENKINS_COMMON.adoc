@@ -132,7 +132,7 @@ Example screen:
 
 image::{jenkins-root-docs}/seed.png[]
 
-In the screenshot we could parametrize the `REPOS` and `REPO_WITH_BINARIES` params.
+In the screenshot we could parametrize the `REPOS` and `REPO_WITH_BINARIES_FOR_UPLOAD` params.
 
 [[global-envs]]
 ===== Global envs

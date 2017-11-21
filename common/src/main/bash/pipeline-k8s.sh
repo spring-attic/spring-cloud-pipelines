@@ -136,7 +136,7 @@ function deployService() {
 			else
 				echo "${parsedStubRunnerUseClasspath}";
 			fi)
-			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${uniqueRabbitName}" "${uniqueEurekaName}" "${serviceName}"
+			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${uniqueRabbitName}" "${uniqueEurekaName}" "${serviceName}"
 		;;
 		*)
 			echo "Unknown service [${serviceType}]"

@@ -40,14 +40,15 @@ teardown() {
 	export CI="CONCOURSE"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
+	export REPO_WITH_BINARIES="baz"
 	cd "${TEMP_DIR}/maven/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run build
 
 	assert_output --partial "from version 1.0.0.BUILD-SNAPSHOT to 100.0.0"
-	assert_output --partial "[echo] foo/bar/bar"
+	assert_output --partial "[echo] foo/bar/baz"
 	assert_output --partial "maven-deploy-plugin"
 	assert_success
 }
@@ -57,7 +58,7 @@ teardown() {
 	export CI="JENKINS"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${TEMP_DIR}/maven/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
@@ -71,14 +72,15 @@ teardown() {
 	export CI="JENKINS"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
+	export REPO_WITH_BINARIES="baz"
 	cd "${TEMP_DIR}/maven/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
 	run build
 
 	assert_output --partial "from version 1.0.0.BUILD-SNAPSHOT to 100.0.0"
-	assert_output --partial "[echo] foo/bar/bar"
+	assert_output --partial "[echo] foo/bar/baz"
 	assert_output --partial "maven-deploy-plugin"
 	assert_success
 }
@@ -88,7 +90,7 @@ teardown() {
 	export CI="CONCOURSE"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${TEMP_DIR}/maven/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 

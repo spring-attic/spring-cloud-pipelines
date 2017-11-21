@@ -18,16 +18,15 @@ function build() {
 	BUILD_OPTIONS="${BUILD_OPTIONS} -DM2_SETTINGS_REPO_USERNAME=${M2_SETTINGS_REPO_USERNAME} -DM2_SETTINGS_REPO_PASSWORD=${M2_SETTINGS_REPO_PASSWORD}"
 	if [[ "${CI}" == "CONCOURSE" ]]; then
 		# shellcheck disable=SC2086
-		"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)
+		"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" -DREPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)
 	else
 		# shellcheck disable=SC2086
-		"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || (echo "Build failed!!!" && return 1)
+		"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" -DREPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} || (echo "Build failed!!!" && return 1)
 	fi
 }
 
 function apiCompatibilityCheck() {
 	echo "Running retrieval of group and artifactid to download all dependencies. It might take a while..."
-
 	# Find latest prod version
 	[[ -z "${LATEST_PROD_TAG}" ]] && LATEST_PROD_TAG="$(findLatestProdTag)"
 	echo "Last prod tag equals [${LATEST_PROD_TAG}]"
@@ -39,10 +38,10 @@ function apiCompatibilityCheck() {
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		if [[ "${CI}" == "CONCOURSE" ]]; then
 			# shellcheck disable=SC2086
-			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)
+			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)
 		else
 			# shellcheck disable=SC2086
-			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" --stacktrace ${BUILD_OPTIONS}
+			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS}
 		fi
 	fi
 }

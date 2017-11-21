@@ -30,11 +30,9 @@ function logInToPaas() {
 
 function testCleanup() {
 	# TODO: Clean up space without relying on plug-ins???
+	#TODO: offline mode for when there is no internet connection
 	cf install-plugin do-all -r "CF-Community" -f
 	cf do-all delete {} -r -f
-
-	# TODO: Re-enable functionality to delete services too:
-	# TODO Add aggressive mode - force recreate of servicebased on sc-pipelines flag per service and master override
 }
 
 function deleteService() {
@@ -59,7 +57,7 @@ function testDeploy() {
 	waitForServicesToInitialize
 
 	# deploy app
-	downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
+	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 	propagatePropertiesForTests "${appName}"
 }
@@ -76,7 +74,7 @@ function testRollbackDeploy() {
 	# Downloading latest jar
 	local LATEST_PROD_VERSION=${latestProdTag#prod/}
 	echo "Last prod version equals ${LATEST_PROD_VERSION}"
-	downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
+	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 	logInToPaas
 	deleteApp "${appName}"
 	deployAndRestartAppWithName "${appName}" "${appName}-${LATEST_PROD_VERSION}"
@@ -106,7 +104,7 @@ function deployService() {
 			local PREVIOUS_IFS="${IFS}"
 			IFS=${coordinatesSeparator} read -r APP_GROUP_ID APP_ARTIFACT_ID APP_VERSION <<<"${serviceCoordinates}"
 			IFS="${PREVIOUS_IFS}"
-			downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${APP_GROUP_ID}" "${APP_ARTIFACT_ID}" "${APP_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
+			downloadAppBinary "${REPO_WITH_BINARIES}" "${APP_GROUP_ID}" "${APP_ARTIFACT_ID}" "${APP_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 			deployAppAsService "${APP_ARTIFACT_ID}-${APP_VERSION}" "${serviceName}" "${ENVIRONMENT}"
 		;;
 		cups)
@@ -148,8 +146,8 @@ function deployService() {
 			else
 				echo "${parsedStubRunnerUseClasspath}";
 			fi)
-			downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${STUBRUNNER_GROUP_ID}" "${STUBRUNNER_ARTIFACT_ID}" "${STUBRUNNER_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
-			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${rabbitMqName}" "${eurekaName}" "${ENVIRONMENT}" "${serviceName}" "${stubRunnerUseClasspath}"
+			downloadAppBinary "${REPO_WITH_BINARIES}" "${STUBRUNNER_GROUP_ID}" "${STUBRUNNER_ARTIFACT_ID}" "${STUBRUNNER_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
+			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${rabbitMqName}" "${eurekaName}" "${ENVIRONMENT}" "${serviceName}" "${stubRunnerUseClasspath}"
 		;;
 		*)
 			echo "Unknown service type [${serviceType}] for service name [${serviceName}]"
@@ -247,13 +245,6 @@ function deployAppWithName() {
 
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
 	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
-
-	# TODO: Only needed for Spring Cloud Services
-    # TODO: cyi - let user set this in the manifest? would the value ever be different?
-    # TODO Let the value in the manifest take precedence?
-#    local cfApi
-#    cfApi=$("${CF_BIN}" api | head -1 | cut -c 25-)
-#    setEnvVar "${lowerCaseAppName}" 'TRUST_CERTS' "${cfApi}"
 }
 
 function deleteApp() {
@@ -448,7 +439,7 @@ function stageDeploy() {
 	deployServices
 	waitForServicesToInitialize
 
-	downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
+	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 
 	# deploy app
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
@@ -475,7 +466,7 @@ function performProductionDeployment() {
 	appName="$(retrieveAppName)"
 
 	# download app
-	downloadAppBinary "${REPO_WITH_BINARIES_FOR_DOWNLOAD}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
+	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 	# Log in to CF to start deployment
 	logInToPaas
 

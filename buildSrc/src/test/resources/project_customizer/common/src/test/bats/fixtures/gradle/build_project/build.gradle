@@ -38,7 +38,7 @@ task publish {
 
 task printProps {
     doLast {
-        println "REPO_WITH_BINARIES [${getProp("REPO_WITH_BINARIES")}]"
+        println "REPO_WITH_BINARIES_FOR_UPLOAD [${getProp("REPO_WITH_BINARIES_FOR_UPLOAD")}]"
         println "latestProductionVersion [${getProp("latestProductionVersion")}]"
         println "application.url [${getProp("application.url")}]"
         println "stubrunner.url [${getProp("stubrunner.url")}]"

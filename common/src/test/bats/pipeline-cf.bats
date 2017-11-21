@@ -213,6 +213,8 @@ export -f mockGradlew
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
+	export M2_SETTINGS_REPO_USERNAME="foo"
+	export M2_SETTINGS_REPO_PASSWORD="bar"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
@@ -230,14 +232,13 @@ export -f mockGradlew
 	assert_output --partial "cf restart eureka-github-webhook"
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
-	assert_output --partial "curl http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
+	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf push stubrunner-github-webhook -p target/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-github-webhook-${env} -i 1 --no-start"
 	assert_output --partial "cf set-env stubrunner-github-webhook stubrunner.ids"
 	assert_output --partial "cf set-env stubrunner-github-webhook stubrunner.repositoryRoot http://foo"
 	assert_output --partial "cf restart stubrunner-github-webhook"
 	# App
 	assert_output --partial "cf push my-project -p target/my-project-.jar -n my-project-${env} -i 1 --no-start"
-	assert_output --partial "cf set-env my-project TRUST_CERTS"
 	assert_output --partial "cf set-env my-project SPRING_PROFILES_ACTIVE cloud,smoke,test"
 	assert_output --partial "cf restart my-project"
 	# We don't want exception on jq parsing
@@ -264,7 +265,6 @@ export -f mockGradlew
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "cf push ${projectName} -p build/libs/${projectNameUppercase}-.jar -n ${projectName}-${env} -i 1 --no-start"
-	assert_output --partial "cf set-env ${projectName} TRUST_CERTS"
 	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,smoke,test"
 	assert_output --partial "cf restart ${projectNameUppercase}"
 	assert_success
@@ -274,6 +274,8 @@ export -f mockGradlew
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
+	export M2_SETTINGS_REPO_USERNAME="foo"
+	export M2_SETTINGS_REPO_PASSWORD="bar"
 	env="test"
 	# notice lowercase of artifactid (should be artifactId) - but lowercase function gets applied
 	projectName="gradlew artifactid -q"
@@ -294,14 +296,13 @@ export -f mockGradlew
 	assert_output --partial "cf restart eureka-github-webhook"
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
-	assert_output --partial "curl http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
+	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf push stubrunner-github-webhook -p build/libs/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-github-webhook-${env} -i 1 --no-start"
 	assert_output --partial "cf set-env stubrunner-github-webhook stubrunner.ids gradlew stubIds -q"
 	assert_output --partial "cf set-env stubrunner-github-webhook stubrunner.repositoryRoot http://foo"
 	assert_output --partial "cf restart stubrunner-github-webhook"
 	# App
 	assert_output --partial "cf push ${projectName} -p build/libs/${projectNameUppercase}-.jar -n ${projectName}-${env} -i 1 --no-start"
-	assert_output --partial "cf set-env ${projectName} TRUST_CERTS"
 	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,smoke,test"
 	assert_output --partial "cf restart ${projectNameUppercase}"
 	# We don't want exception on jq parsing
@@ -382,7 +383,6 @@ export -f mockGradlew
 	refute_output --partial "cf restart stubrunner-github-webhook"
 	# App
 	assert_output --partial "cf push my-project -p target/my-project-1.0.0.FOO.jar -n my-project-${env} -i 1 --no-start"
-	assert_output --partial "cf set-env my-project TRUST_CERTS"
 	assert_output --partial "cf set-env my-project SPRING_PROFILES_ACTIVE cloud,smoke,test"
 	assert_output --partial "cf restart my-project"
 	# We don't want exception on jq parsing
@@ -418,7 +418,6 @@ export -f mockGradlew
 	refute_output --partial "cf restart stubrunner-github-webhook"
 	# App
 	assert_output --partial "cf push ${projectName} -p build/libs/${projectNameUppercase}-1.0.0.FOO.jar -n ${projectName}-${env} -i 1 --no-start"
-	assert_output --partial "cf set-env ${projectName} TRUST_CERTS"
 	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,smoke,test"
 	assert_output --partial "cf restart ${projectNameUppercase}"
 	# We don't want exception on jq parsing
@@ -487,7 +486,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="stage"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/manifest.yml" .
 
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
@@ -516,7 +514,6 @@ export -f mockGradlew
 	env="stage"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
-	cp "${FIXTURES_DIR}/manifest.yml" .
 
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
@@ -536,7 +533,6 @@ export -f mockGradlew
 	refute_output --partial "cf restart stubrunner"
 	# App
 	assert_output --partial "cf push my-project -p target/my-project-.jar -n my-project-${env} -i 2 --no-start"
-	assert_output --partial "cf set-env my-project TRUST_CERTS"
 	assert_output --partial "cf set-env my-project SPRING_PROFILES_ACTIVE cloud,e2e,stage"
 	assert_output --partial "cf restart my-project"
 	# We don't want exception on jq parsing
@@ -556,7 +552,6 @@ export -f mockGradlew
 	projectName="gradlew artifactid -q"
 	projectNameUppercase="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/manifest.yml" .
 
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
@@ -568,7 +563,6 @@ export -f mockGradlew
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "cf push ${projectName} -p build/libs/${projectNameUppercase}-.jar -n ${projectName}-${env} -i 2 --no-start"
-	assert_output --partial "cf set-env ${projectName} TRUST_CERTS"
 	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,e2e,stage"
 	assert_output --partial "cf restart ${projectNameUppercase}"
 	assert_success
@@ -585,7 +579,6 @@ export -f mockGradlew
 	projectNameUppercase="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
-	cp "${FIXTURES_DIR}/manifest.yml" .
 
 	run "${SOURCE_DIR}/stage_deploy.sh"
 
@@ -605,7 +598,6 @@ export -f mockGradlew
 	refute_output --partial "cf restart stubrunner"
 	# App
 	assert_output --partial "cf push ${projectName} -p build/libs/${projectNameUppercase}-.jar -n ${projectName}-${env} -i 2 --no-start"
-	assert_output --partial "cf set-env ${projectName} TRUST_CERTS"
 	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,e2e,stage"
 	assert_output --partial "cf restart ${projectNameUppercase}"
 	# We don't want exception on jq parsing
@@ -652,7 +644,6 @@ export -f mockGradlew
 	export OUTPUT_DIR="target"
 	env="prod"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/manifest.yml" .
 
 	run "${SOURCE_DIR}/prod_deploy.sh"
 
@@ -662,7 +653,6 @@ export -f mockGradlew
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	refute_output --partial "cf delete -f my-project"
 	assert_output --partial "cf push my-project -p target/my-project-.jar -n my-project -i 2 --no-start"
-	assert_output --partial "cf set-env my-project TRUST_CERTS"
 	assert_output --partial "cf set-env my-project SPRING_PROFILES_ACTIVE cloud,prod"
 	assert_output --partial "cf restart my-project"
 	assert_success
@@ -678,7 +668,6 @@ export -f mockGradlew
 	projectName="gradlew artifactid -q"
 	projectNameUppercase="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
-	cp "${FIXTURES_DIR}/manifest.yml" .
 
 	run "${SOURCE_DIR}/prod_deploy.sh"
 
@@ -688,7 +677,6 @@ export -f mockGradlew
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	refute_output --partial "cf delete -f my-project"
 	assert_output --partial "cf push ${projectName} -p build/libs/${projectNameUppercase}-.jar -n ${projectName} -i 2 --no-start"
-	assert_output --partial "cf set-env ${projectName} TRUST_CERTS"
 	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,prod"
 	assert_output --partial "cf restart ${projectNameUppercase}"
 	assert_success

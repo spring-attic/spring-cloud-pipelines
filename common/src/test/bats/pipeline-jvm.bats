@@ -17,7 +17,7 @@ teardown() {
 }
 
 function curl {
-	local repo="${1}"
+	local repo="${@}"
 	if [[ "${repo}" == *failed* ]]; then
 		return 1
 	else

@@ -268,7 +268,6 @@ jobs:
 
 common-params: &common-params
   _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-  APP_MEMORY_LIMIT: ((app-memory-limit))
   BUILD_OPTIONS: ((build-options))
   GIT_EMAIL: ((git-email))
   GIT_NAME: ((git-name))
@@ -276,8 +275,8 @@ common-params: &common-params
   M2_SETTINGS_REPO_PASSWORD: ((m2-settings-repo-password))
   M2_SETTINGS_REPO_USERNAME: ((m2-settings-repo-username))
   PAAS_TYPE: ((paas-type))
+  REPO_WITH_BINARIES_FOR_UPLOAD: ((repo-with-binaries-for-upload))
   REPO_WITH_BINARIES: ((repo-with-binaries))
-  REPO_WITH_BINARIES_FOR_DOWNLOAD: ((repo-with-binaries-for-download))
   # remove::start[K8S]
   KUBERNETES-MINIKUBE: ((kubernetes-minikube))
   MYSQL_ROOT_PASSWORD: ((mysql-root-password))
