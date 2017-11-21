@@ -26,5 +26,6 @@ else
 
 # TODO Also, when test jobs start, re-set mechanism to make sure service updates were done. Or include git version in approval file
 
+	"${GIT_BIN}" checkout "${LATEST_PROD_TAG}"
 	testRollbackDeploy "${LATEST_PROD_TAG}"
 fi
