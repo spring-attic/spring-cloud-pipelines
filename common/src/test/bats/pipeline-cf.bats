@@ -43,6 +43,10 @@ function curl {
 	echo "curl $*"
 }
 
+function git {
+	echo "git $*"
+}
+
 function tar {
 	touch "${CF_BIN}"
 	echo "tar $*"
@@ -119,6 +123,7 @@ function mockGradlew {
 }
 
 export -f curl
+export -f git
 export -f tar
 export -f cf
 export -f cf_that_returns_apps
@@ -349,6 +354,7 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG=""
+	export GIT_BIN="echo 'master'"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
@@ -432,6 +438,7 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG=""
+	export GIT_BIN="echo ''"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" sc-pipelines.yml
@@ -454,6 +461,8 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
+	assert_output --partial "git fetch"
+	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url=stubrunner-my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
@@ -471,6 +480,8 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
+	assert_output --partial "git fetch"
+	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "gradlew artifactId -q"

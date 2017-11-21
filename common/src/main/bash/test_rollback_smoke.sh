@@ -13,11 +13,12 @@ export ENVIRONMENT=TEST
 # Find latest prod version
 export LATEST_PROD_TAG
 [[ -z "${LATEST_PROD_TAG}" ]] && LATEST_PROD_TAG="$(findLatestProdTag)"
-prepareForSmokeTests
 echo "Last prod tag equals [${LATEST_PROD_TAG}]"
 
 if [[ -z "${LATEST_PROD_TAG}" || "${LATEST_PROD_TAG}" == "master" ]]; then
 	echo "No prod release took place - skipping this step"
 else
+	"${GIT_BIN}" fetch && "${GIT_BIN}" checkout "${LATEST_PROD_TAG}"
+	prepareForSmokeTests
 	runSmokeTests
 fi

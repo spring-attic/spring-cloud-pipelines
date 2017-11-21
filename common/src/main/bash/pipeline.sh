@@ -100,7 +100,7 @@ function testResultsAntPattern() {
 # Finds the latest prod tag from git
 function findLatestProdTag() {
 	local LAST_PROD_TAG
-	LAST_PROD_TAG=$(git for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | head -n 1)
+	LAST_PROD_TAG=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | head -n 1)
 	echo "${LAST_PROD_TAG#refs/tags/}"
 }
 
@@ -194,7 +194,9 @@ PAAS_TYPE="$( toLowerCase "${PAAS_TYPE:-cf}" )"
 LOWERCASE_ENV="$(toLowerCase "${ENVIRONMENT}")"
 
 PIPELINE_DESCRIPTOR="${PIPELINE_DESCRIPTOR:-sc-pipelines.yml}"
-export PIPELINE_DESCRIPTOR PAAS_TYPE LOWERCASE_ENV
+GIT_BIN="${GIT_BIN:-git}"
+
+export PIPELINE_DESCRIPTOR PAAS_TYPE LOWERCASE_ENV GIT_BIN
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"
