@@ -352,6 +352,7 @@ function deployStubRunnerBoot() {
 	prop="$(retrieveStubRunnerIds)"
 	echo "Found following stub runner ids [${prop}]"
 	setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
+	setEnvVar "${stubRunnerName}" "REPO_WITH_BINARIES" "${REPO_WITH_BINARIES}"
 	restartApp "${stubRunnerName}"
 }
 
@@ -529,7 +530,7 @@ function completeSwitchOver() {
 
 function propagatePropertiesForTests() {
 	local projectArtifactId="${1}"
-	local stubRunnerHost="${2:-stubrunner-${projectArtifactId}}"
+	local stubRunnerHost="${2}"
 	local fileLocation="${3:-${OUTPUT_FOLDER}/test.properties}"
 	echo "Propagating properties for tests. Project [${projectArtifactId}] stub runner host [${stubRunnerHost}] properties location [${fileLocation}]"
 	# retrieve host of the app / stubrunner
