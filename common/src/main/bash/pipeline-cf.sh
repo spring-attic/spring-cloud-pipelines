@@ -98,6 +98,8 @@ function deployService() {
 			deployBrokeredService "${serviceName}" "${broker}" "${plan}" "${params}"
 		;;
 		app)
+			local pathToManifest
+			pathToManifest="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .pathToManifest' | sed 's/^"\(.*\)"$/\1/')"
 			local serviceCoordinates
 			serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
 			local coordinatesSeparator=":"
@@ -105,7 +107,7 @@ function deployService() {
 			IFS=${coordinatesSeparator} read -r APP_GROUP_ID APP_ARTIFACT_ID APP_VERSION <<<"${serviceCoordinates}"
 			IFS="${PREVIOUS_IFS}"
 			downloadAppBinary "${REPO_WITH_BINARIES}" "${APP_GROUP_ID}" "${APP_ARTIFACT_ID}" "${APP_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
-			deployAppAsService "${APP_ARTIFACT_ID}-${APP_VERSION}" "${serviceName}" "${ENVIRONMENT}"
+			deployAppAsService "${APP_ARTIFACT_ID}-${APP_VERSION}" "${serviceName}" "${pathToManifest}"
 		;;
 		cups)
 			# Usage: cf cups SERVICE_INSTANCE -p CREDENTIALS (or credentials file)
@@ -126,28 +128,16 @@ function deployService() {
 			deployCupsService "${serviceName}" "-r" "${routeServiceurl}"
 		;;
 		stubrunner)
+			local pathToManifest
+			pathToManifest="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .pathToManifest' | sed 's/^"\(.*\)"$/\1/')"
 			local serviceCoordinates
 			serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
 			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
 			IFS="${coordinatesSeparator}" read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
 			IFS="${PREVIOUS_IFS}"
-
-			local eurekaName
-			eurekaName="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/')"
-			local rabbitMqName
-			rabbitMqName="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/')"
-
-			local parsedStubRunnerUseClasspath
-			parsedStubRunnerUseClasspath="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.name == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/')"
-			local stubRunnerUseClasspath
-			stubRunnerUseClasspath=$(if [[ "${parsedStubRunnerUseClasspath}" == "null" ]]; then
-				echo "false";
-			else
-				echo "${parsedStubRunnerUseClasspath}";
-			fi)
 			downloadAppBinary "${REPO_WITH_BINARIES}" "${STUBRUNNER_GROUP_ID}" "${STUBRUNNER_ARTIFACT_ID}" "${STUBRUNNER_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
-			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${rabbitMqName}" "${eurekaName}" "${ENVIRONMENT}" "${serviceName}" "${stubRunnerUseClasspath}"
+			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${serviceName}"  "${pathToManifest}"
 		;;
 		*)
 			echo "Unknown service type [${serviceType}] for service name [${serviceName}]"
@@ -176,7 +166,7 @@ function deployAndRestartAppWithName() {
 		profiles="${profiles},${manifestProfiles}"
 	fi
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
-	deployAppWithName "${appName}" "${jarName}" "${ENVIRONMENT}"
+	deployAppNoStart "${appName}" "${jarName}" "${ENVIRONMENT}"
 	setEnvVar "${lowerCaseAppName}" 'SPRING_PROFILES_ACTIVE' "${profiles}"
 	restartApp "${appName}"
 }
@@ -215,17 +205,20 @@ function getAppHostFromPaas() {
 	"${CF_BIN}" apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
 }
 
-function deployAppWithName() {
+function deployAppNoStart() {
 	local appName="${1}"
 	local artifactName="${2}"
 	local env="${3}"
+	local pathToManifest="${4}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
-
 	local hostname
 	hostname="$(getHostFromManifest "${appName}")"
 	if [[ -z "${hostname}" || "${hostname}" == "null" ]]; then
-		local hostname="${lowerCaseAppName}"
+		hostname="${lowerCaseAppName}"
+	fi
+	if [[ -z "${pathToManifest}" || "${pathToManifest}" == "null" ]]; then
+		pathToManifest="manifest.yml"
 	fi
 	# Even if host is specified in the manifest, append the hostname uuid from the credentials file
 	# TODO Reconsider - now that we are using the manifest, don't need this... also what if random-route is true?
@@ -244,7 +237,7 @@ function deployAppWithName() {
 	fi
 
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
-	"${CF_BIN}" push "${lowerCaseAppName}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
+	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
 }
 
 function deleteApp() {
@@ -282,9 +275,9 @@ function restartApp() {
 function deployAppAsService() {
 	local jarName="${1}"
 	local appName="${2}"
-	local env="${3}"
-	echo "Deploying app as service. Options - jar name [${jarName}], app name [${appName}], env [${env}]"
-	deployAppWithName "${appName}" "${jarName}" "${env}"
+	local pathToManifest="${3}"
+	echo "Deploying app as service. Options - jar name [${jarName}], app name [${appName}], env [${ENVIRONMENT}]"
+	deployAppNoStart "${appName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}"
 	restartApp "${appName}"
 	createServiceWithName "${appName}"
 }
@@ -315,7 +308,7 @@ function deployBrokeredService() {
         fi
 }
 
-deployCupsService() {
+function deployCupsService() {
 	# cupsOption should be -l, -r, or -p
 	local serviceName="${1}"
 	local cupsOption="${2}"
@@ -351,29 +344,14 @@ function createServiceWithName() {
 
 function deployStubRunnerBoot() {
 	local jarName="${1}"
-	local repoWithJars="${2}"
-	local rabbitName="${3}"
-	local eurekaName="${4}"
-	local env="${5:-test}"
-	local stubRunnerName="${6:-stubrunner}"
-	local stubRunnerUseClasspath="${7:-false}"
+	local stubRunnerName="${2}"
+	local pathToManifest="${3}"
 	echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}]"
-	deployAppWithName "${stubRunnerName}" "${jarName}" "${env}"
+	deployAppNoStart "${stubRunnerName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}"
 	local prop
 	prop="$(retrieveStubRunnerIds)"
 	echo "Found following stub runner ids [${prop}]"
 	setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
-	if [[ "${stubRunnerUseClasspath}" == "false" ]]; then
-		setEnvVar "${stubRunnerName}" "stubrunner.repositoryRoot" "${repoWithJars}"
-	fi
-	if [[ "${rabbitName}" != "" ]]; then
-		bindService "${rabbitName}" "${stubRunnerName}"
-		setEnvVar "${stubRunnerName}" "spring.rabbitmq.addresses" "\${vcap.services.${rabbitName}.credentials.uri}"
-	fi
-	if [[ "${eurekaName}" != "" ]]; then
-		bindService "${eurekaName}" "${stubRunnerName}"
-		setEnvVar "${stubRunnerName}" "eureka.client.serviceUrl.defaultZone" "\${vcap.services.${eurekaName}.credentials.uri:http://127.0.0.1:8761}/eureka/"
-	fi
 	restartApp "${stubRunnerName}"
 }
 
