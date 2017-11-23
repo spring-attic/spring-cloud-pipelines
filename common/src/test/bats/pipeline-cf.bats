@@ -461,7 +461,6 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "git fetch"
 	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
@@ -480,7 +479,6 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "git fetch"
 	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"

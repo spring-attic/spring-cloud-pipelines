@@ -648,7 +648,6 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "git fetch"
 	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
@@ -671,7 +670,6 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "git fetch"
 	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
@@ -694,7 +692,6 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "git fetch"
 	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
@@ -717,7 +714,6 @@ export -f mockGradlew
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "git fetch"
 	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
