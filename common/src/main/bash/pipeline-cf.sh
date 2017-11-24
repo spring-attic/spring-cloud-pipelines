@@ -206,10 +206,7 @@ function getAppHostFromPaas() {
 }
 
 function getDomain() {
-	local appName="${1}"
-	local lowerCase
-	lowerCase="$(toLowerCase "${appName}")"
-	"${CF_BIN}" routes | awk -v "app=${lowerCase}" '$2 == app {print($3)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
+	"${CF_BIN}" domains | grep -v tcp | tail -1 | awk '{print $1}'
 }
 
 function deployAppNoStart() {
@@ -230,8 +227,7 @@ function deployAppNoStart() {
 	if [[ ${env} == "TEST" || -z "${instances}" || "${instances}" == "null" ]]; then
 		instances=1
 	fi
-
-	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
+	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}] with manifest file [${pathToManifest}]"
 	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
 	setEnvVar "${lowerCaseAppName}" 'APP_BINARY' "${artifactName}.${BINARY_EXTENSION}"
 }
@@ -240,6 +236,9 @@ function hostname() {
 	local appName="${1}"
 	local env="${2}"
 	local pathToManifest="${3}"
+	if [[ -z "${pathToManifest}" || "${pathToManifest}" == "null" ]]; then
+		pathToManifest="manifest.yml"
+	fi
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	local hostname
@@ -388,7 +387,7 @@ function addPorts() {
 	echo "Hostname for ${stubRunnerName} is ${hostname}"
 	local testSpace="${PAAS_TEST_SPACE}"
 	local domain
-	domain="$( getDomain "${stubRunnerName}" )"
+	domain="$( getDomain )"
 	echo "Domain for ${stubRunnerName} is ${domain}"
 	local previousIfs="${IFS}"
 	local listOfPorts=""
