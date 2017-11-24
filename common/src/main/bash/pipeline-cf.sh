@@ -205,11 +205,38 @@ function getAppHostFromPaas() {
 	"${CF_BIN}" apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
 }
 
+function getDomain() {
+	local appName="${1}"
+	local lowerCase
+	lowerCase="$(toLowerCase "${appName}")"
+	"${CF_BIN}" routes | awk -v "app=${lowerCase}" '$2 == app {print($3)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
+}
+
 function deployAppNoStart() {
 	local appName="${1}"
 	local artifactName="${2}"
 	local env="${3}"
 	local pathToManifest="${4}"
+	local lowerCaseAppName
+	lowerCaseAppName=$(toLowerCase "${appName}")
+	local hostname
+	hostname="$(hostname "${appName}" "${env}" "${pathToManifest}")"
+	# TODO set "i 1" for test only, leave manifest value for stage and prod
+	local instances
+	instances="$(getInstancesFromManifest "${appName}")"
+	if [[ ${env} == "TEST" || -z "${instances}" || "${instances}" == "null" ]]; then
+		instances=1
+	fi
+
+	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
+	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
+	setEnvVar "${lowerCaseAppName}" 'APP_BINARY' "${artifactName}.${BINARY_EXTENSION}"
+}
+
+function hostname() {
+	local appName="${1}"
+	local env="${2}"
+	local pathToManifest="${3}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	local hostname
@@ -228,17 +255,7 @@ function deployAppNoStart() {
 	if [[ ${env} != "PROD" ]]; then
 		hostname="${hostname}-${LOWERCASE_ENV}"
 	fi
-
-	# TODO set "i 1" for test only, leave manifest value for stage and prod
-	local instances
-	instances="$(getInstancesFromManifest "${appName}")"
-	if [[ ${env} == "TEST" || -z "${instances}" || "${instances}" == "null" ]]; then
-		instances=1
-	fi
-
-	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
-	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
-	setEnvVar "${lowerCaseAppName}" 'APP_BINARY' "${artifactName}.${BINARY_EXTENSION}"
+	echo "${hostname}"
 }
 
 function deleteApp() {
@@ -284,29 +301,28 @@ function deployAppAsService() {
 }
 
 function deployBrokeredService() {
-        local serviceName="${1}"
-        local broker="${2}"
-        local plan="${3}"
-        local params="${4}"
-        if [[ -z "${params}" || "${params}" == "null" ]]; then
-	        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}]"
-		    "${CF_BIN}" create-service "${broker}" "${plan}" "${serviceName}"
-        else
+	local serviceName="${1}"
+	local broker="${2}"
+	local plan="${3}"
+	local params="${4}"
+	if [[ -z "${params}" || "${params}" == "null" ]]; then
+		"${CF_BIN}" create-service "${broker}" "${plan}" "${serviceName}"
+		echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}]"
+	else
+		echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}], params:"
+		echo "${params}"
+		# Write params to file:
+		local destination
+		destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
+		mkdir -p "${OUTPUT_FOLDER}"
+		echo "Writing params to [${destination}]"
+		echo "${params}" > "${destination}"
+		"${CF_BIN}" create-service "${broker}" "${plan}" "${serviceName}" -c "${destination}"
 
-	        echo "Deploying [${serviceName}] via Service Broker in [${LOWERCASE_ENV}] env. Options - broker [${broker}], plan [${plan}], params:"
-	        echo "${params}"
-            # Write params to file:
-            local destination
-            destination="$(pwd)/${OUTPUT_FOLDER}/${serviceName}-service-params.json"
-            mkdir -p "${OUTPUT_FOLDER}"
-            echo "Writing params to [${destination}]"
-            echo "${params}" > "${destination}"
-            "${CF_BIN}" create-service "${broker}" "${plan}" "${serviceName}" -c "${destination}"
-
-#           TODO: For create-service, there is a -t tags parameter -  add support for this?
-#           TODO: For create-service and cups, do we need to consider updates for services that already exist?
-			# TODO: Marcin discussion - decision: hanlde the update using a diff in test-rollback
-        fi
+#		   TODO: For create-service, there is a -t tags parameter -  add support for this?
+#		   TODO: For create-service and cups, do we need to consider updates for services that already exist?
+		# TODO: Marcin discussion - decision: hanlde the update using a diff in test-rollback
+	fi
 }
 
 function deployCupsService() {
@@ -352,9 +368,57 @@ function deployStubRunnerBoot() {
 	local prop
 	prop="$(retrieveStubRunnerIds)"
 	echo "Found following stub runner ids [${prop}]"
-	setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
+	if [[ "${prop}" != "" ]]; then
+		addPorts "${stubRunnerName}" "${prop}" "${pathToManifest}"
+		setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
+	fi
 	setEnvVar "${stubRunnerName}" "REPO_WITH_BINARIES" "${REPO_WITH_BINARIES}"
 	restartApp "${stubRunnerName}"
+}
+
+function addPorts() {
+	local stubRunnerName="${1}"
+	local stubrunnerIds="${2}"
+	local pathToManifest="${3}"
+	local hostname
+	hostname="$(hostname "${stubRunnerName}" "${ENVIRONMENT}" "${pathToManifest}")"
+	local testSpace="${PAAS_TEST_SPACE}"
+	local domain
+	domain="$( getDomain "${stubRunnerName}" )"
+	local previousIfs="${IFS}"
+	local listOfPorts=""
+	local applicationName="stubrunner"
+	local appGuid
+	appGuid="$( "${CF_BIN}" curl "/v2/apps?q=name:${applicationName}" -X GET | jq '.resources[0].metadata.guid' | sed 's/^"\(.*\)"$/\1/' )"
+	IFS="," read -ra vals <<< "${stubrunnerIds}"
+	for stub in "${vals[@]}"; do
+		echo "Parsing ${stub}"
+		local port
+		port=${stub##*:}
+		if [[ "${listOfPorts}" == "" ]]; then
+			listOfPorts="${port}"
+		else
+			listOfPorts="${listOfPorts},${port}"
+		fi
+	done
+	echo "List of added ports: [${listOfPorts}]"
+	"${CF_BIN}" curl "/v2/apps/${appGuid}" -X PUT -d "{\"ports\":[8080,${listOfPorts}]}"
+	echo "Successfully updated the list of ports for [${applicationName}]"
+	IFS="," read -ra vals <<< "${stubrunnerIds}"
+	for stub in "${vals[@]}"; do
+		echo "Parsing ${stub}"
+		local port
+		port=${stub##*:}
+		local newHostname="${hostname}-${port}"
+		echo "Creating route with hostname [${newHostname}]"
+		"${CF_BIN}" create-route "${testSpace}" "${domain}" --hostname "${newHostname}"
+		local routeGuid
+		routeGuid="$( "${CF_BIN}" curl -X GET "/v2/routes?q=host:${newHostname}" | jq '.resources[0].metadata.guid' | sed 's/^"\(.*\)"$/\1/' )"
+		echo "GUID of the new route is [${routeGuid}]. Will update the mapping for port [${port}]"
+		"${CF_BIN}" curl "/v2/route_mappings" -X POST -d "{ \"app_guid\": \"${appGuid}\", \"route_guid\": \"${routeGuid}\", \"app_port\": ${port} }"
+		echo "Successfully updated the new route mapping for port [${port}]"
+	done
+	IFS="${previousIfs}"
 }
 
 function bindService() {
