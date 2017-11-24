@@ -238,6 +238,7 @@ function deployAppNoStart() {
 
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}]"
 	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
+	setEnvVar "${lowerCaseAppName}" 'APP_BINARY' "${artifactName}.${BINARY_EXTENSION}"
 }
 
 function deleteApp() {
