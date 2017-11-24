@@ -77,9 +77,7 @@ github-webhook                       started           1/1         1G       1G  
 my-project                           started           1/1         1G       1G     my-project-sc-pipelines.demo.io
 gradlew                              started           1/1         1G       1G     my-project-sc-pipelines.demo.io
 eureka-github-webhook                started           1/1         1G       1G     eureka-github-webhook-sc-pipelines.demo.io
-stubrunner-my-project                started           1/1         1G       1G     stubrunner-my-project-sc-pipelines.demo.io
-stubrunner-gradlew                   started           1/1         1G       1G     stubrunner-my-project-sc-pipelines.demo.io
-stubrunner-github-webhook            started           1/1         1G       1G     stubrunner-github-webhook-sc-pipelines.demo.io
+stubrunner                           started           1/1         1G       1G     stubrunner-my-project-sc-pipelines.demo.io
 EOF
 }
 
@@ -111,19 +109,18 @@ function cf {
 	if [[ "${1}" == "apps" ]]; then
 		cf_that_returns_${LOWERCASE_ENV}_apps
 		return
-	elif [[ "${1}" == "routes" ]]; then
+	elif [[ "${1}" == "domains" ]]; then
 		cat << EOF
-Getting routes for org S1Pdemo12 / space cyi-scp-test-greeting-ui as mgrzejszczak@pivotal.io ...
-
-space                      host                        domain      port   path   type   apps          service
-cyi-scp-test-greeting-ui   stubrunner                  cfapps.io                        stubrunner
-cyi-scp-test-greeting-ui   greeting-ui-cyi-test        cfapps.io                        greeting-ui
-cyi-scp-test-greeting-ui   stubrunner-cyi-test-10000   cfapps.io                        stubrunner
-cyi-scp-test-greeting-ui   stubrunner-cyi-test-10001   cfapps.io                        stubrunner
-cyi-scp-test-greeting-ui   stubrunner-cyi-test-10002   cfapps.io                        stubrunner
+Getting domains in org S1Pdemo12 as mgrzejszczak@pivotal.io...
+name            status   type
+cfapps.io       shared
+cf-tcpapps.io   shared   tcp
 EOF
 		return
 	elif [[ "$*" == *"/v2/apps?q=name"* ]]; then
+		echo '{ "resources": [ { "metadata" : { "guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be" } } ] }'
+		return
+	elif [[ "$*" == *"/v2/routes?q=host"* ]]; then
 		echo '{ "resources": [ { "metadata" : { "guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be" } } ] }'
 		return
 	else
@@ -233,7 +230,7 @@ export -f fakeRetrieveStubRunnerIds
 	refute_output --partial "cf bind-service my-project mysql-my-project"
 	assert_output --partial "cf restart my-project"
 	assert_output --partial "APPLICATION_URL=my-project-sc-pipelines.demo.io"
-	assert_output --partial "STUBRUNNER_URL=stubrunner-my-project-sc-pipelines.demo.io"
+	assert_output --partial "STUBRUNNER_URL="
 	assert_success
 }
 
@@ -261,9 +258,16 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
 	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
-	assert_output --partial "cf push stubrunner-github-webhook -f manifest.yml -p target/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-github-webhook-${env} -i 1 --no-start"
-	assert_output --partial "cf set-env stubrunner-github-webhook stubrunner.ids"
-	assert_output --partial "cf restart stubrunner-github-webhook"
+	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
+	assert_output --partial "[8080,10000,10001,10002"
+	assert_output --partial "cf create-route test-space cfapps.io --hostname stubrunner-test-10000"
+	assert_output --partial "cf curl /v2/route_mappings -X POST -d"
+	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10000'
+	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10001'
+	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10002'
+	assert_output --partial "cf push stubrunner -f foo/manifest.yml -p target/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-${env} -i 1 --no-start"
+	assert_output --partial "cf set-env stubrunner stubrunner.ids"
+	assert_output --partial "cf restart stubrunner"
 	# App
 	assert_output --partial "cf push my-project -f manifest.yml -p target/my-project-.jar -n my-project-${env} -i 1 --no-start"
 	assert_output --partial "cf set-env my-project SPRING_PROFILES_ACTIVE cloud,smoke,test"
@@ -324,9 +328,16 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
 	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
-	assert_output --partial "cf push stubrunner-github-webhook -f manifest.yml -p build/libs/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-github-webhook-${env} -i 1 --no-start"
-	assert_output --partial "cf set-env stubrunner-github-webhook stubrunner.ids gradlew stubIds -q"
-	assert_output --partial "cf restart stubrunner-github-webhook"
+	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
+	assert_output --partial "[8080,10000,10001,10002"
+	assert_output --partial "cf create-route test-space cfapps.io --hostname stubrunner-test-10000"
+	assert_output --partial "cf curl /v2/route_mappings -X POST -d"
+	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10000'
+	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10001'
+	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10002'
+	assert_output --partial "cf push stubrunner -f foo/manifest.yml -p build/libs/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-test -i 1 --no-start"
+	assert_output --partial "cf set-env stubrunner stubrunner.ids"
+	assert_output --partial "cf restart stubrunner"
 	# App
 	assert_output --partial "cf push ${projectName} -f manifest.yml -p build/libs/${projectNameUppercase}-.jar -n ${projectName}-${env} -i 1 --no-start"
 	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,smoke,test"
@@ -348,7 +359,7 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url=stubrunner-my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
+	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
 
@@ -365,7 +376,6 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "gradlew artifactId -q"
-	assert_output --partial "stubrunner-gradlew artifactId -q"
 	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url= -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
@@ -485,7 +495,7 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url=stubrunner-my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
+	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
 
@@ -504,7 +514,6 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "gradlew artifactId -q"
-	assert_output --partial "stubrunner-gradlew artifactId -q"
 	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url= -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }

@@ -202,7 +202,7 @@ function getAppHostFromPaas() {
 	local appName="${1}"
 	local lowerCase
 	lowerCase="$(toLowerCase "${appName}")"
-	"${CF_BIN}" apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | tail -1
+	"${CF_BIN}" apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | head -1
 }
 
 function getDomain() {
@@ -599,8 +599,10 @@ function completeSwitchOver() {
 
 function propagatePropertiesForTests() {
 	local projectArtifactId="${1}"
-	local stubRunnerHost="${2}"
-	local fileLocation="${3:-${OUTPUT_FOLDER}/test.properties}"
+	local serviceType="stubrunner"
+	local stubRunnerName
+	stubRunnerName="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceType}" '.[$x].services[] | select(.name == $y) | .name' | sed 's/^"\(.*\)"$/\1/')"
+	local fileLocation="${OUTPUT_FOLDER}/test.properties}"
 	echo "Propagating properties for tests. Project [${projectArtifactId}] stub runner host [${stubRunnerHost}] properties location [${fileLocation}]"
 	# retrieve host of the app / stubrunner
 	# we have to store them in a file that will be picked as properties
@@ -609,7 +611,7 @@ function propagatePropertiesForTests() {
 	host="$(getAppHostFromPaas "${projectArtifactId}")"
 	export APPLICATION_URL="${host}"
 	echo "APPLICATION_URL=${host}" >>"${fileLocation}"
-	host=$(getAppHostFromPaas "${stubRunnerHost}")
+	host=$(getAppHostFromPaas "${stubRunnerName}")
 	export STUBRUNNER_URL="${host}"
 	echo "STUBRUNNER_URL=${host}" >>"${fileLocation}"
 	echo "Resolved properties"
