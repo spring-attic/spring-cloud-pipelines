@@ -217,6 +217,9 @@ function deployAppNoStart() {
 	local artifactName="${2}"
 	local env="${3}"
 	local pathToManifest="${4}"
+	if [[ -z "${pathToManifest}" || "${pathToManifest}" == "null" ]]; then
+		pathToManifest="manifest.yml"
+	fi
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	local hostname
@@ -243,9 +246,6 @@ function hostname() {
 	hostname="$(getHostFromManifest "${appName}")"
 	if [[ -z "${hostname}" || "${hostname}" == "null" ]]; then
 		hostname="${lowerCaseAppName}"
-	fi
-	if [[ -z "${pathToManifest}" || "${pathToManifest}" == "null" ]]; then
-		pathToManifest="manifest.yml"
 	fi
 	# Even if host is specified in the manifest, append the hostname uuid from the credentials file
 	# TODO Reconsider - now that we are using the manifest, don't need this... also what if random-route is true?
@@ -359,6 +359,9 @@ function createServiceWithName() {
 	#"${CF_BIN}" cups "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
 }
 
+# used for tests
+export RETRIEVE_STUBRUNNER_IDS_FUNCTION="${RETRIEVE_STUBRUNNER_IDS_FUNCTION:-retrieveStubRunnerIds}"
+
 function deployStubRunnerBoot() {
 	local jarName="${1}"
 	local stubRunnerName="${2}"
@@ -366,7 +369,7 @@ function deployStubRunnerBoot() {
 	echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}]"
 	deployAppNoStart "${stubRunnerName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}"
 	local prop
-	prop="$(retrieveStubRunnerIds)"
+	prop="$(${RETRIEVE_STUBRUNNER_IDS_FUNCTION})"
 	echo "Found following stub runner ids [${prop}]"
 	if [[ "${prop}" != "" ]]; then
 		addPorts "${stubRunnerName}" "${prop}" "${pathToManifest}"
@@ -382,14 +385,16 @@ function addPorts() {
 	local pathToManifest="${3}"
 	local hostname
 	hostname="$(hostname "${stubRunnerName}" "${ENVIRONMENT}" "${pathToManifest}")"
+	echo "Hostname for ${stubRunnerName} is ${hostname}"
 	local testSpace="${PAAS_TEST_SPACE}"
 	local domain
 	domain="$( getDomain "${stubRunnerName}" )"
+	echo "Domain for ${stubRunnerName} is ${domain}"
 	local previousIfs="${IFS}"
 	local listOfPorts=""
-	local applicationName="stubrunner"
 	local appGuid
-	appGuid="$( "${CF_BIN}" curl "/v2/apps?q=name:${applicationName}" -X GET | jq '.resources[0].metadata.guid' | sed 's/^"\(.*\)"$/\1/' )"
+	appGuid="$( "${CF_BIN}" curl "/v2/apps?q=name:${stubRunnerName}" -X GET | jq '.resources[0].metadata.guid' | sed 's/^"\(.*\)"$/\1/' )"
+	echo "App GUID for ${stubRunnerName} is ${appGuid}"
 	IFS="," read -ra vals <<< "${stubrunnerIds}"
 	for stub in "${vals[@]}"; do
 		echo "Parsing ${stub}"
@@ -403,7 +408,7 @@ function addPorts() {
 	done
 	echo "List of added ports: [${listOfPorts}]"
 	"${CF_BIN}" curl "/v2/apps/${appGuid}" -X PUT -d "{\"ports\":[8080,${listOfPorts}]}"
-	echo "Successfully updated the list of ports for [${applicationName}]"
+	echo "Successfully updated the list of ports for [${stubRunnerName}]"
 	IFS="," read -ra vals <<< "${stubrunnerIds}"
 	for stub in "${vals[@]}"; do
 		echo "Parsing ${stub}"

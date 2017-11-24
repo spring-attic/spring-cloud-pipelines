@@ -19,6 +19,7 @@ setup() {
 	export PAAS_TEST_ORG="test-org"
 	export PAAS_TEST_SPACE="test-space"
 	export PAAS_TEST_API_URL="test-api"
+	export RETRIEVE_STUBRUNNER_IDS_FUNCTION="fakeRetrieveStubRunnerIds"
 
 	export PAAS_STAGE_USERNAME="stage-username"
 	export PAAS_STAGE_PASSWORD="stage-password"
@@ -110,8 +111,93 @@ function cf {
 	if [[ "${1}" == "apps" ]]; then
 		cf_that_returns_${LOWERCASE_ENV}_apps
 		return
+	elif [[ "${1}" == "routes" ]]; then
+		cat << EOF
+Getting routes for org S1Pdemo12 / space cyi-scp-test-greeting-ui as mgrzejszczak@pivotal.io ...
+
+space                      host                        domain      port   path   type   apps          service
+cyi-scp-test-greeting-ui   stubrunner                  cfapps.io                        stubrunner
+cyi-scp-test-greeting-ui   greeting-ui-cyi-test        cfapps.io                        greeting-ui
+cyi-scp-test-greeting-ui   stubrunner-cyi-test-10000   cfapps.io                        stubrunner
+cyi-scp-test-greeting-ui   stubrunner-cyi-test-10001   cfapps.io                        stubrunner
+cyi-scp-test-greeting-ui   stubrunner-cyi-test-10002   cfapps.io                        stubrunner
+EOF
+		return
+	elif [[ "$*" == *"/v2/apps?q=name"* ]]; then
+		cat << EOF
+{
+   "total_results": 1,
+   "total_pages": 1,
+   "prev_url": null,
+   "next_url": null,
+   "resources": [
+      {
+         "metadata": {
+            "guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be",
+            "url": "/v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be",
+            "created_at": "2017-11-23T16:10:31Z",
+            "updated_at": "2017-11-24T13:14:07Z"
+         },
+         "entity": {
+            "name": "stubrunner",
+            "production": false,
+            "space_guid": "4165b38e-1bfb-4ce2-980e-d3a7eef203cf",
+            "stack_guid": "86205f38-84fc-4bc2-b2b8-af7f55669f04",
+            "buildpack": null,
+            "detected_buildpack": "client-certificate-mapper=1.2.0_RELEASE container-security-provider=1.8.0_RELEASE java-buildpack=\u001B[34mv4.5\u001B[0m-offline-https://github.com/cloudfoundry/java-buildpack.git#ffeefb9 java-main java-opts jvmkill-agent=1.10.0_RELEASE open-jdk-like-jre=1.8.0_1...",
+            "detected_buildpack_guid": "e000b78c-c898-419e-843c-2fd64175527e",
+            "environment_json": {
+               "JAVA_OPTS": "-Djava.security.egd=file:///dev/urandom",
+               "REPO_WITH_BINARIES": "https://ciberkleid:ae71988f8b4ebe8bb4aa9cfe97a08c0d1bc6612d@dl.bintray.com/ciberkleid/maven-repo",
+               "TRUST_CERTS": "api.run.pivotal.io",
+               "stubrunner.ids": "io.pivotal:fortune-service:1.0.0.M1-20171106_012934-VERSION:stubs:13125",
+               "eureka.client.serviceUrl.defaultZone": "${vcap.services.service-registry.credentials.uri}/eureka/"
+            },
+            "memory": 1024,
+            "instances": 1,
+            "disk_quota": 1024,
+            "state": "STOPPED",
+            "version": "8463fe79-e8ed-4467-a91b-2286acd09a0a",
+            "command": null,
+            "console": false,
+            "debug": null,
+            "staging_task_id": "29c9901b-69aa-4b13-b2a7-0c3272e3541a",
+            "package_state": "STAGED",
+            "health_check_type": "port",
+            "health_check_timeout": 120,
+            "health_check_http_endpoint": null,
+            "staging_failed_reason": null,
+            "staging_failed_description": null,
+            "diego": true,
+            "docker_image": null,
+            "docker_credentials": {
+               "username": null,
+               "password": null
+            },
+            "package_updated_at": "2017-11-23T16:10:38Z",
+            "detected_start_command": "JAVA_OPTS=\"-agentpath:$PWD/.java-buildpack/open_jdk_jre/bin/jvmkill-1.10.0_RELEASE=printHeapHistogram=1 -Djava.io.tmpdir=$TMPDIR -Djava.ext.dirs=$PWD/.java-buildpack/container_security_provider:$PWD/.java-buildpack/open_jdk_jre/lib/ext -Djava.security.properties=$PWD/.java-buildpack/security_providers/java.security $JAVA_OPTS\" && CALCULATED_MEMORY=$($PWD/.java-buildpack/open_jdk_jre/bin/java-buildpack-memory-calculator-3.9.0_RELEASE -totMemory=$MEMORY_LIMIT -stackThreads=300 -loadedClasses=24245 -poolType=metaspace -vmOptions=\"$JAVA_OPTS\") && echo JVM Memory Configuration: $CALCULATED_MEMORY && JAVA_OPTS=\"$JAVA_OPTS $CALCULATED_MEMORY\" && SERVER_PORT=$PORT eval exec $PWD/.java-buildpack/open_jdk_jre/bin/java $JAVA_OPTS -cp $PWD/. org.springframework.boot.loader.JarLauncher",
+            "enable_ssh": true,
+            "ports": [
+               8080,
+               10000,
+               10001,
+               10002
+            ],
+            "space_url": "/v2/spaces/4165b38e-1bfb-4ce2-980e-d3a7eef203cf",
+            "stack_url": "/v2/stacks/86205f38-84fc-4bc2-b2b8-af7f55669f04",
+            "routes_url": "/v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be/routes",
+            "events_url": "/v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be/events",
+            "service_bindings_url": "/v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be/service_bindings",
+            "route_mappings_url": "/v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be/route_mappings"
+         }
+      }
+   ]
+}
+EOF
+return
+	else
+		echo "cf $*"
 	fi
-	echo "cf $*"
 }
 
 function mockMvnw {
@@ -120,6 +206,10 @@ function mockMvnw {
 
 function mockGradlew {
 	echo "gradlew $*"
+}
+
+function fakeRetrieveStubRunnerIds() {
+	echo "a:a:version:classifier:10000,b:b:version:classifier:10001,c:c:version:classifier:10002"
 }
 
 export -f curl
@@ -133,6 +223,7 @@ export -f cf_that_returns_prod_apps
 export -f cf_that_returns_nothing
 export -f mockMvnw
 export -f mockGradlew
+export -f fakeRetrieveStubRunnerIds
 
 @test "should download cf and connect to cluster [CF]" {
 	export CF_BIN="cf"

@@ -12,7 +12,7 @@ test:
       name: eureka-github-webhook
       coordinates: com.example.eureka:github-eureka:0.0.1.M1
     - type: stubrunner
-      name: stubrunner-github-webhook
+      name: stubrunner
       coordinates: com.example.github:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
       useClasspath: true
 stage:
