@@ -22,7 +22,7 @@ start_docker || echo "Failed to start docker... Hopefully you know what you're d
 # shellcheck source=/dev/null
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
-pushd "${ROOT_FOLDER}/${REPOTAGS__RESOURCE}" || exit
+pushd "${ROOT_FOLDER}/${REPO_TAGS_RESOURCE}" || exit
 export LATEST_PROD_TAG=$(findLatestProdTag)
 popd
 
