@@ -103,10 +103,11 @@ function findLatestProdTag() {
 		echo "LATEST_PROD_TAG already set to [${LATEST_PROD_TAG}}]. Returning same value."
 		echo "${LATEST_PROD_TAG}"
 	else
-		# TODO talk to Marcin - do we need thsi? is it correct?
 		local LAST_PROD_TAG
-		LAST_PROD_TAG=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | head -n 1)
-		echo "${LAST_PROD_TAG#refs/tags/}"
+		LAST_PROD_TAG=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | tail -1)
+		export LATEST_PROD_TAG
+		LATEST_PROD_TAG="${LAST_PROD_TAG#refs/tags/}"
+		echo "${LATEST_PROD_TAG}"
 	fi
 }
 
