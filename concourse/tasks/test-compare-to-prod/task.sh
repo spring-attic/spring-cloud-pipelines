@@ -23,7 +23,7 @@ start_docker || echo "Failed to start docker... Hopefully you know what you're d
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
 pushd "${ROOT_FOLDER}/${REPOTAGS__RESOURCE}" || exit
-export LATEST_PROD_TAG=findLatestProdTag
+export LATEST_PROD_TAG=$(findLatestProdTag)
 popd
 
 echo "${MESSAGE}"
