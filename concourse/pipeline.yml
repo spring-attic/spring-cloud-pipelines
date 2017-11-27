@@ -7,6 +7,14 @@ resources:
     branch: ((app-branch))
     private_key: ((github-private-key))
 
+- name: repo-with-tags
+  type: git
+  source:
+    uri: ((app-url))
+    branch: ((app-branch))
+    private_key: ((github-private-key))
+    tag_filter: "prod*"
+
 - name: version
   type: git
   source:
@@ -66,13 +74,14 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
+    - get: repo-with-tags
     - get: version
       passed:
       - build-and-upload
       trigger: true
   - task: build-api-compatibility-check
     privileged: true
-    file: tools/concourse/task.yml
+    file: tools/concourse/tasks/test-compare-to-prod/task.yml
     params:
       MESSAGE: "Deploying the built application on test environment"
       SCRIPT_TO_RUN: "build_api_compatibility_check.sh"
@@ -126,13 +135,14 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
+    - get: repo-with-tags
     - get: version
       passed:
       - test-smoke
       trigger: true
   - task: test-rollback-deploy
     privileged: true
-    file: tools/concourse/task.yml
+    file: tools/concourse/tasks/test-compare-to-prod/task.yml
     params:
       MESSAGE: "Deploying the built application on test environment"
       SCRIPT_TO_RUN: "test_rollback_deploy.sh"
@@ -147,13 +157,14 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
+    - get: repo-with-tags
     - get: version
       passed:
       - test-rollback-deploy
       trigger: true
   - task: test-rollback-smoke
     privileged: true
-    file: tools/concourse/task.yml
+    file: tools/concourse/tasks/test-compare-to-prod/task.yml
     params:
       MESSAGE: "Testing the rolled back built application on test environment"
       SCRIPT_TO_RUN: "test_rollback_smoke.sh"
