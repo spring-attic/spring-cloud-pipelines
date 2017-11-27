@@ -25,15 +25,8 @@ source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 echo "Preparing the private key"
 mkdir -p ~/.ssh
 echo "${GITHUB_PRIVATE_KEY}" > ~/.ssh/ida_rsa
-# extract the protocol
-proto="$(echo ${APP_URL} | grep :// | sed -e's,^\(.*://\).*,\1,g')"
-# remove the protocol
-url="$(echo ${APP_URL/$proto/})"
-# extract the user (if any)
-user="$(echo $url | grep @ | cut -d@ -f1)"
-# extract the host
-host="$(echo ${url/$user@/} | cut -d/ -f1 | cut -f1 -d":")"
-echo "Extracted [${host}] from the [${APP_URL}]. Adding it via c"
+host="$( echo ${APP_URL/#git\@/} | cut -d: -f1 )"
+echo "Extracted [${host}] from the [${APP_URL}]"
 ssh-keyscan "${host}" >> ~/.ssh/known_hosts
 
 echo "${MESSAGE}"

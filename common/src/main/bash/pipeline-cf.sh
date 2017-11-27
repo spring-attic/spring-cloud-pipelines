@@ -569,10 +569,10 @@ function rollbackToPreviousVersion() {
 		echo "Starting blue (if it wasn't started) and stopping the green instance. Only blue instance will be running"
 		"${CF_BIN}" start "${oldName}"
 		"${CF_BIN}" stop "${appName}"
-		return 0
+		exit 0
 	else
 		echo "Will not rollback to blue instance cause it's not there"
-		return 1
+		exit 1
 	fi
 }
 
