@@ -24,7 +24,7 @@ source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
 echo "Preparing the private key"
 mkdir -p ~/.ssh
-echo "${GITHUB_PRIVATE_KEY}" > ~/.ssh/ida_rsa
+echo "${GITHUB_PRIVATE_KEY}" > ~/.ssh/id_rsa
 host="$( echo ${APP_URL/#git\@/} | cut -d: -f1 )"
 echo "Extracted [${host}] from the [${APP_URL}]"
 ssh-keyscan "${host}" >> ~/.ssh/known_hosts
