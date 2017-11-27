@@ -23,7 +23,8 @@ start_docker || echo "Failed to start docker... Hopefully you know what you're d
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
 pushd "${ROOT_FOLDER}/${REPO_TAGS_RESOURCE}" || exit
-export LATEST_PROD_TAG=$(findLatestProdTag)
+export LATEST_PROD_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+echo "Latest prod tag is "${LATEST_PROD_TAG}""
 popd
 
 echo "${MESSAGE}"
