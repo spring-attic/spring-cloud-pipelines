@@ -7,7 +7,6 @@ image_resource:
 inputs:
   - name: tools
   - name: repo
-  - name: repo-with-tags
   - name: version
 outputs:
   - name: out

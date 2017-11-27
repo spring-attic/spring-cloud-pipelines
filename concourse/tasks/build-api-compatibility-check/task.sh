@@ -3,7 +3,7 @@
 export ROOT_FOLDER
 ROOT_FOLDER="$( pwd )"
 export REPO_RESOURCE=repo
-export REPO_TAGS_RESOURCE=repo-with-tags
+export REPO_TAGS_RESOURCE=tags
 export TOOLS_RESOURCE=tools
 export VERSION_RESOURCE=version
 export OUTPUT_RESOURCE=out

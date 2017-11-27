@@ -7,7 +7,7 @@ resources:
     branch: ((app-branch))
     private_key: ((github-private-key))
 
-- name: repo-with-tags
+- name: tags
   type: git
   source:
     uri: ((app-url))
@@ -74,7 +74,7 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: repo-with-tags
+    - get: tags
     - get: version
       passed:
       - build-and-upload
@@ -134,12 +134,14 @@ jobs:
   plan:
   - aggregate:
     - get: tools
-    - get: repo-with-tags
+    - get: tags
     - get: version
       passed:
       - test-smoke
       trigger: true
   - task: test-rollback-deploy
+    input_mapping:
+      repo: tags
     privileged: true
     file: tools/concourse/task.yml
     params:
@@ -148,7 +150,6 @@ jobs:
       <<: *common-params
       <<: *paas-test-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
-      REPO_RESOURCE: repo-with-tags
 
 - name: test-rollback-smoke
   serial: true
@@ -156,7 +157,7 @@ jobs:
   plan:
   - aggregate:
     - get: tools
-    - get: repo-with-tags
+    - get: tags
     - get: version
       passed:
       - test-rollback-deploy
@@ -164,12 +165,13 @@ jobs:
   - task: test-rollback-smoke
     privileged: true
     file: tools/concourse/task.yml
+    input_mapping:
+      repo: tags
     params:
       MESSAGE: "Testing the rolled back built application on test environment"
       SCRIPT_TO_RUN: "test_rollback_smoke.sh"
       <<: *common-params
       <<: *paas-test-params
-      REPO_RESOURCE: repo-with-tags
 
 - name: stage-deploy
   serial: true
@@ -242,7 +244,7 @@ jobs:
   plan:
   - aggregate:
     - get: tools
-    - get: repo-with-tags
+    - get: tags
     - get: version
       passed:
       - prod-deploy
@@ -250,16 +252,17 @@ jobs:
   - task: prod-rollback
     privileged: true
     file: tools/concourse/task.yml
+    input_mapping:
+      repo: tags
     params:
       MESSAGE: "Rolling back to previous instance"
       SCRIPT_TO_RUN: "prod_rollback.sh"
       <<: *common-params
       <<: *paas-prod-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
-      REPO_RESOURCE: repo-with-tags
-  - put: repo-with-tags
+  - put: tags
     params:
-      repository: repo-with-tags
+      repository: tags
       only_tag: true
 
 - name: prod-complete
