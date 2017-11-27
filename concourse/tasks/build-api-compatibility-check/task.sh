@@ -22,20 +22,12 @@ start_docker || echo "Failed to start docker... Hopefully you know what you're d
 # shellcheck source=/dev/null
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
-echo "Preparing the private key"
-mkdir -p ~/.ssh
-echo "${GITHUB_PRIVATE_KEY}" > ~/.ssh/id_rsa
-chmod 600 ~/.ssh/id_rsa
-host="$( echo ${APP_URL/#git\@/} | cut -d: -f1 )"
-echo "Extracted [${host}] from the [${APP_URL}]"
-ssh-keyscan "${host}" >> ~/.ssh/known_hosts
+cd "${ROOT_FOLDER}/${REPO_TAGS_RESOURCE}" || exit
+findLatestProdTag
+echo "Latest prod tag is "${LATEST_PROD_TAG}""
 
 echo "${MESSAGE}"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
-git fetch
-git tag
-findLatestProdTag
-echo "Latest prod tag is "${LATEST_PROD_TAG}""
 
 # shellcheck source=/dev/null
 . "${SCRIPTS_OUTPUT_FOLDER}/${SCRIPT_TO_RUN}"

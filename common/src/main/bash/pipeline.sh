@@ -103,10 +103,10 @@ function findLatestProdTag() {
 		echo "LATEST_PROD_TAG already set to [${LATEST_PROD_TAG}}]. Returning same value."
 		echo "${LATEST_PROD_TAG}"
 	else
-		local LAST_PROD_TAG
-		LAST_PROD_TAG=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | tail -1)
+		local latestProdTag
+		latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | tail -1)
 		export LATEST_PROD_TAG
-		LATEST_PROD_TAG="${LAST_PROD_TAG#refs/tags/}"
+		LATEST_PROD_TAG="${latestProdTag#refs/tags/}"
 		echo "${LATEST_PROD_TAG}"
 	fi
 }
