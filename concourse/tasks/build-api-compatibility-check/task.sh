@@ -33,6 +33,7 @@ ssh-keyscan "${host}" >> ~/.ssh/known_hosts
 echo "${MESSAGE}"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 git fetch
+git tag
 findLatestProdTag
 echo "Latest prod tag is "${LATEST_PROD_TAG}""
 
