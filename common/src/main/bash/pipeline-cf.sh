@@ -549,10 +549,6 @@ function performProductionDeploymentOfTestedApplication() {
 		"${CF_BIN}" delete "${appName}" -f
 		echo "Renaming old instance to new"
 		"${CF_BIN}" rename "${newName}" "${appName}"
-		echo "Deleting production tag"
-		local tagName="prod/${PIPELINE_VERSION}"
-		git push --delete origin "${tagName}"
-		git tag -d "${tagName}"
 	else
 		echo "Will not rename the application cause it's not there and old is not running"
 	fi
@@ -573,6 +569,7 @@ function rollbackToPreviousVersion() {
 		echo "Starting blue (if it wasn't started) and stopping the green instance. Only blue instance will be running"
 		"${CF_BIN}" start "${oldName}"
 		"${CF_BIN}" stop "${appName}"
+		return 0
 	else
 		echo "Will not rollback to blue instance cause it's not there"
 		return 1

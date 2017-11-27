@@ -2,7 +2,7 @@
 
 export ROOT_FOLDER
 ROOT_FOLDER="$( pwd )"
-export REPO_RESOURCE=repo
+export REPO_RESOURCE="${REPO_RESOURCE:-repo}"
 export TOOLS_RESOURCE=tools
 export VERSION_RESOURCE=version
 export OUTPUT_RESOURCE=out
@@ -22,6 +22,9 @@ source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
 echo "${MESSAGE}"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
+
+findLatestProdTag
+echo "Latest prod tag is [${LATEST_PROD_TAG}]"
 
 # shellcheck source=/dev/null
 . "${SCRIPTS_OUTPUT_FOLDER}/${SCRIPT_TO_RUN}"

@@ -10,4 +10,12 @@ export ENVIRONMENT=PROD
 [[ -f "${__DIR}/pipeline.sh" ]] && source "${__DIR}/pipeline.sh" ||  \
  echo "No pipeline.sh found"
 
-rollbackToPreviousVersion
+if rollbackToPreviousVersion; then
+	echo "Deleting production tag"
+	tagName="prod/${PIPELINE_VERSION}"
+	if [[ "${CI}" != "CONCOURSE" ]]; then
+		"${GIT_BIN}" push --delete origin "${tagName}"
+	fi
+	"${GIT_BIN}" tag -d "${tagName}"
+fi
+

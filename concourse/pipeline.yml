@@ -13,7 +13,7 @@ resources:
     uri: ((app-url))
     branch: ((app-branch))
     private_key: ((github-private-key))
-    tag_filter: "prod*"
+    tag_filter: "prod**"
 
 - name: version
   type: git
@@ -81,7 +81,7 @@ jobs:
       trigger: true
   - task: build-api-compatibility-check
     privileged: true
-    file: tools/concourse/tasks/test-compare-to-prod/task.yml
+    file: tools/concourse/tasks/build-api-compatibility-check/task.yml
     params:
       MESSAGE: "Deploying the built application on test environment"
       SCRIPT_TO_RUN: "build_api_compatibility_check.sh"
@@ -134,7 +134,6 @@ jobs:
   plan:
   - aggregate:
     - get: tools
-    - get: repo
     - get: repo-with-tags
     - get: version
       passed:
@@ -142,13 +141,14 @@ jobs:
       trigger: true
   - task: test-rollback-deploy
     privileged: true
-    file: tools/concourse/tasks/test-compare-to-prod/task.yml
+    file: tools/concourse/task.yml
     params:
       MESSAGE: "Deploying the built application on test environment"
       SCRIPT_TO_RUN: "test_rollback_deploy.sh"
       <<: *common-params
       <<: *paas-test-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+      REPO_RESOURCE: repo-with-tags
 
 - name: test-rollback-smoke
   serial: true
@@ -156,7 +156,6 @@ jobs:
   plan:
   - aggregate:
     - get: tools
-    - get: repo
     - get: repo-with-tags
     - get: version
       passed:
@@ -164,12 +163,13 @@ jobs:
       trigger: true
   - task: test-rollback-smoke
     privileged: true
-    file: tools/concourse/tasks/test-compare-to-prod/task.yml
+    file: tools/concourse/task.yml
     params:
       MESSAGE: "Testing the rolled back built application on test environment"
       SCRIPT_TO_RUN: "test_rollback_smoke.sh"
       <<: *common-params
       <<: *paas-test-params
+      REPO_RESOURCE: repo-with-tags
 
 - name: stage-deploy
   serial: true
@@ -242,7 +242,7 @@ jobs:
   plan:
   - aggregate:
     - get: tools
-    - get: repo
+    - get: repo-with-tags
     - get: version
       passed:
       - prod-deploy
@@ -256,6 +256,11 @@ jobs:
       <<: *common-params
       <<: *paas-prod-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+      REPO_RESOURCE: repo-with-tags
+  - put: repo-with-tags
+    params:
+      repository: repo-with-tags
+      only_tag: true
 
 - name: prod-complete
   serial: true
