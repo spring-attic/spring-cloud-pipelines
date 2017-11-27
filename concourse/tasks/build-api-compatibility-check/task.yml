@@ -15,4 +15,4 @@ caches:
   - path: gradle
   - path: maven
 run:
-  path: tools/concourse/tasks/test-compare-to-prod/task.sh
+  path: tools/concourse/tasks/build-api-compatibility-check/task.sh

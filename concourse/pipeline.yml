@@ -13,7 +13,7 @@ resources:
     uri: ((app-url))
     branch: ((app-branch))
     private_key: ((github-private-key))
-    tag_filter: "prod**"
+    tag_filter: "*"
 
 - name: version
   type: git
