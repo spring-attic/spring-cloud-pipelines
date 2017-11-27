@@ -25,6 +25,7 @@ source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 pushd "${ROOT_FOLDER}/${REPO_TAGS_RESOURCE}" || exit
 # shellcheck source=/dev/null
 source "${SCRIPTS_OUTPUT_FOLDER}/pipeline.sh"
+findLatestProdTag
 echo "Latest prod tag is "${LATEST_PROD_TAG}""
 popd
 
