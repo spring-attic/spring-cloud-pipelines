@@ -14,7 +14,7 @@ test:
     - type: stubrunner
       name: stubrunner
       coordinates: com.example.github:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
-      useClasspath: true
+      pathToManifest: foo/manifest.yml
 stage:
   services:
     - type: broker
