@@ -205,7 +205,7 @@ jobs:
       passed:
       - stage-deploy
       trigger: true
-  - task: stage-smoke
+  - task: stage-e2e
     privileged: true
     file: tools/concourse/task.yml
     params:
