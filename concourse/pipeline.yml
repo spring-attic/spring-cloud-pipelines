@@ -32,7 +32,17 @@ jobs:
 - name: generate-version
   public: true
   serial_groups:
-  - preventPipelineConcurrency
+  - build-and-upload-tag
+  - build-api-compatibility-check-tag
+  - test-deploy-tag
+  - test-smoke-tag
+  - test-rollback-deploy-tag
+  - test-rollback-smoke-tag
+  - stage-deploy-tag
+  - stage-e2e-tag
+  - prod-deploy-tag
+  - prod-rollback-tag
+  - prod-complete-tag
   plan:
   - aggregate:
     - get: tools
@@ -51,7 +61,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - build-and-upload-tag
   plan:
   - aggregate:
     - get: tools
@@ -75,7 +85,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - build-api-compatibility-check-tag
   plan:
   - aggregate:
     - get: tools
@@ -97,7 +107,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - test-deploy-tag
   plan:
   - aggregate:
     - get: tools
@@ -120,7 +130,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - test-smoke-tag
   plan:
   - aggregate:
     - get: tools
@@ -142,7 +152,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - test-rollback-deploy-tag
   plan:
   - aggregate:
     - get: tools
@@ -167,7 +177,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - test-rollback-smoke-tag
   plan:
   - aggregate:
     - get: tools
@@ -191,7 +201,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - stage-deploy-tag
   plan:
   - aggregate:
     - get: tools
@@ -214,7 +224,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - stage-e2e-tag
   plan:
   - aggregate:
     - get: tools
@@ -236,7 +246,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - prod-deploy-tag
   plan:
   - aggregate:
     - get: tools
@@ -262,7 +272,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - prod-rollback-tag
   plan:
   - aggregate:
     - get: tools
@@ -291,7 +301,7 @@ jobs:
   serial: true
   public: false
   serial_groups:
-  - preventPipelineConcurrency
+  - prod-complete-tag
   plan:
   - aggregate:
     - get: tools
