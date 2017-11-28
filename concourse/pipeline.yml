@@ -31,18 +31,6 @@ resources:
 jobs:
 - name: generate-version
   public: true
-  serial_groups:
-  - build-and-upload-tag
-  - build-api-compatibility-check-tag
-  - test-deploy-tag
-  - test-smoke-tag
-  - test-rollback-deploy-tag
-  - test-rollback-smoke-tag
-  - stage-deploy-tag
-  - stage-e2e-tag
-  - prod-deploy-tag
-  - prod-rollback-tag
-  - prod-complete-tag
   plan:
   - aggregate:
     - get: tools
@@ -60,8 +48,6 @@ jobs:
 - name: build-and-upload
   serial: true
   public: false
-  serial_groups:
-  - build-and-upload-tag
   plan:
   - aggregate:
     - get: tools
@@ -84,8 +70,6 @@ jobs:
 - name: build-api-compatibility-check
   serial: true
   public: false
-  serial_groups:
-  - build-api-compatibility-check-tag
   plan:
   - aggregate:
     - get: tools
@@ -106,8 +90,6 @@ jobs:
 - name: test-deploy
   serial: true
   public: false
-  serial_groups:
-  - test-deploy-tag
   plan:
   - aggregate:
     - get: tools
@@ -129,8 +111,6 @@ jobs:
 - name: test-smoke
   serial: true
   public: false
-  serial_groups:
-  - test-smoke-tag
   plan:
   - aggregate:
     - get: tools
@@ -151,8 +131,6 @@ jobs:
 - name: test-rollback-deploy
   serial: true
   public: false
-  serial_groups:
-  - test-rollback-deploy-tag
   plan:
   - aggregate:
     - get: tools
@@ -176,8 +154,6 @@ jobs:
 - name: test-rollback-smoke
   serial: true
   public: false
-  serial_groups:
-  - test-rollback-smoke-tag
   plan:
   - aggregate:
     - get: tools
@@ -200,8 +176,6 @@ jobs:
 - name: stage-deploy
   serial: true
   public: false
-  serial_groups:
-  - stage-deploy-tag
   plan:
   - aggregate:
     - get: tools
@@ -223,8 +197,6 @@ jobs:
 - name: stage-e2e
   serial: true
   public: false
-  serial_groups:
-  - stage-e2e-tag
   plan:
   - aggregate:
     - get: tools
@@ -245,8 +217,6 @@ jobs:
 - name: prod-deploy
   serial: true
   public: false
-  serial_groups:
-  - prod-deploy-tag
   plan:
   - aggregate:
     - get: tools
@@ -271,8 +241,6 @@ jobs:
 - name: prod-rollback
   serial: true
   public: false
-  serial_groups:
-  - prod-rollback-tag
   plan:
   - aggregate:
     - get: tools
@@ -300,8 +268,6 @@ jobs:
 - name: prod-complete
   serial: true
   public: false
-  serial_groups:
-  - prod-complete-tag
   plan:
   - aggregate:
     - get: tools
