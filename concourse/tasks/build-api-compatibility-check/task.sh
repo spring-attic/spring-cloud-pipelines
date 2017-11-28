@@ -24,7 +24,7 @@ source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
 cd "${ROOT_FOLDER}/${REPO_TAGS_RESOURCE}" || exit
 findLatestProdTag
-echo "Latest prod tag is "${LATEST_PROD_TAG}""
+echo "Latest prod tag is [${LATEST_PROD_TAG}]"
 
 echo "${MESSAGE}"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
