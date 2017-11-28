@@ -31,6 +31,8 @@ resources:
 jobs:
 - name: generate-version
   public: true
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -48,6 +50,8 @@ jobs:
 - name: build-and-upload
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -70,6 +74,8 @@ jobs:
 - name: build-api-compatibility-check
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -90,6 +96,8 @@ jobs:
 - name: test-deploy
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -111,6 +119,8 @@ jobs:
 - name: test-smoke
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -131,6 +141,8 @@ jobs:
 - name: test-rollback-deploy
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -154,6 +166,8 @@ jobs:
 - name: test-rollback-smoke
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -176,6 +190,8 @@ jobs:
 - name: stage-deploy
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -197,6 +213,8 @@ jobs:
 - name: stage-e2e
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -217,6 +235,8 @@ jobs:
 - name: prod-deploy
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -241,6 +261,8 @@ jobs:
 - name: prod-rollback
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
@@ -268,6 +290,8 @@ jobs:
 - name: prod-complete
   serial: true
   public: false
+  serial_groups:
+  - preventPipelineConcurrency
   plan:
   - aggregate:
     - get: tools
