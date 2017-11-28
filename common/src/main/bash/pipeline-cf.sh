@@ -293,7 +293,7 @@ function deployAppAsService() {
 	local jarName="${1}"
 	local appName="${2}"
 	local pathToManifest="${3}"
-	echo "Deploying app as service. Options - jar name [${jarName}], app name [${appName}], env [${ENVIRONMENT}]"
+	echo "Deploying app as service. Options - jar name [${jarName}], app name [${appName}], env [${ENVIRONMENT}], path to manifest [${pathToManifest}]"
 	deployAppNoStart "${appName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}"
 	restartApp "${appName}"
 	createServiceWithName "${appName}"
