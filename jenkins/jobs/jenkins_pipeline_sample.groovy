@@ -185,7 +185,7 @@ parsedRepos.each {
 					remote {
 						name('origin')
 						url(fullGitRepo)
-						branch(branchName)
+						branch('dev/${PIPELINE_VERSION}')
 						credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
 					}
 					extensions {
