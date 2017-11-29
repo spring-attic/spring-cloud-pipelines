@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -o errexit
-
 export ROOT_FOLDER
 ROOT_FOLDER="$( pwd )"
 export REPO_RESOURCE=repo
