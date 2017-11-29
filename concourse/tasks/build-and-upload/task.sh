@@ -1,4 +1,7 @@
 #!/bin/bash
+set -o errexit
+set -o errtrace
+set -o pipefail
 
 export ROOT_FOLDER
 ROOT_FOLDER="$( pwd )"
@@ -27,5 +30,5 @@ cd "${ROOT_FOLDER}"/"${REPO_RESOURCE}" || exit
 . "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
 
 echo "Tagging the project with dev tag"
-#echo "dev/${PIPELINE_VERSION}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
-#cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
+echo "dev/${PIPELINE_VERSION}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
+cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
