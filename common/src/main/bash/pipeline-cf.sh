@@ -348,8 +348,7 @@ function deployCupsService() {
 		echo "${cupsValue}" > "${destination}"
 		cupsValue="${destination}"
 	fi
-	# TODO - consult Marcin - add below:  || echo "Service already created. Proceeding with the script"
-	"${CF_BIN}" cups "${serviceName}" "${cupsOption}" "${cupsValue}"
+	"${CF_BIN}" cups "${serviceName}" "${cupsOption}" "${cupsValue}" || echo "Service already created. Proceeding with the script"
 }
 
 function createServiceWithName() {
