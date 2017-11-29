@@ -1,0 +1,10 @@
+---
+applications:
+- name: github-eureka
+  services:
+    - github-rabbitmq
+  env:
+    SPRING_PROFILES_ACTIVE: cloud
+    DEBUG: "true"
+    # TODO: Remove this from github eureka codebases
+    APPLICATION_DOMAIN: github-eureka-sc-pipelines-test.cfapps.io

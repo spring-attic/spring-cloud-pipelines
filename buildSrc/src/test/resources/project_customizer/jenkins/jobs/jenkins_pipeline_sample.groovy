@@ -763,7 +763,7 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "PAAS_STAGE_API_URL")
 		setIfPresent(envs, variables, "PAAS_PROD_API_URL")
 		setIfPresent(envs, variables, "PAAS_TEST_ORG")
-		setIfPresent(envs, variables, "PAAS_TEST_SPACE")
+		setIfPresent(envs, variables, "PAAS_TEST_SPACE_PREFIX")
 		setIfPresent(envs, variables, "PAAS_STAGE_ORG")
 		setIfPresent(envs, variables, "PAAS_STAGE_SPACE")
 		setIfPresent(envs, variables, "PAAS_PROD_ORG")

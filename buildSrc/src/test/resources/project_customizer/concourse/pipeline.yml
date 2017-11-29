@@ -258,5 +258,5 @@ paas-test-params: &paas-test-params
   PAAS_TEST_API_URL: ((paas-test-api-url))
   PAAS_TEST_ORG: ((paas-test-org))
   PAAS_TEST_PASSWORD: ((paas-test-password))
-  PAAS_TEST_SPACE: ((paas-test-space))
+  PAAS_TEST_SPACE_PREFIX: ((paas-test-space))
   PAAS_TEST_USERNAME: ((paas-test-username))

@@ -8,9 +8,16 @@ function logInToPaas() {
 	local pass="PAAS_${ENVIRONMENT}_PASSWORD"
 	local cfPassword="${!pass}"
 	local org="PAAS_${ENVIRONMENT}_ORG"
+	local cfSpace
 	local cfOrg="${!org}"
-	local space="PAAS_${ENVIRONMENT}_SPACE"
-	local cfSpace="${!space}"
+	if [[ "${LOWERCASE_ENV}" == "test" ]]; then
+		local appName
+		appName=$(retrieveAppName)
+		cfSpace="${PAAS_TEST_SPACE_PREFIX}-${appName}"
+	else
+		local space="PAAS_${ENVIRONMENT}_SPACE"
+		cfSpace="${!space}"
+	fi
 	local api="PAAS_${ENVIRONMENT}_API_URL"
 	local apiUrl="${!api:-api.run.pivotal.io}"
 
@@ -385,7 +392,7 @@ function addPorts() {
 	local hostname
 	hostname="$(hostname "${stubRunnerName}" "${ENVIRONMENT}" "${pathToManifest}")"
 	echo "Hostname for ${stubRunnerName} is ${hostname}"
-	local testSpace="${PAAS_TEST_SPACE}"
+	local testSpace="${PAAS_TEST_SPACE_PREFIX}"
 	local domain
 	domain="$( getDomain )"
 	echo "Domain for ${stubRunnerName} is ${domain}"

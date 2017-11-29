@@ -17,7 +17,7 @@ setup() {
 	export PAAS_TEST_USERNAME="test-username"
 	export PAAS_TEST_PASSWORD="test-password"
 	export PAAS_TEST_ORG="test-org"
-	export PAAS_TEST_SPACE="test-space"
+	export PAAS_TEST_SPACE_PREFIX="test-space"
 	export PAAS_TEST_API_URL="test-api"
 	export RETRIEVE_STUBRUNNER_IDS_FUNCTION="fakeRetrieveStubRunnerIds"
 
@@ -204,7 +204,7 @@ export -f fakeRetrieveStubRunnerIds
 
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
 	assert_output --partial "App manifest.yml file not found"
 	assert_failure
 }
@@ -220,7 +220,7 @@ export -f fakeRetrieveStubRunnerIds
 
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
 	assert_output --partial "cf install-plugin do-all -r CF-Community -f"
 	assert_output --partial "cf do-all delete {} -r -f"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
@@ -248,7 +248,7 @@ export -f fakeRetrieveStubRunnerIds
 
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	# Creation of services
 	assert_output --partial "cf create-service foo bar rabbitmq-github-webhook"
@@ -293,7 +293,7 @@ export -f fakeRetrieveStubRunnerIds
 
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-${projectNameUppercase}"
 	assert_output --partial "No pipeline descriptor found - will not deploy any services"
 	assert_output --partial "cf push ${projectName} -f manifest.yml -p build/libs/${projectNameUppercase}-.jar -n ${projectName}-${env} -i 1 --no-start"
 	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,smoke,test"
@@ -318,7 +318,7 @@ export -f fakeRetrieveStubRunnerIds
 
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-${projectNameUppercase}"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	# Creation of services
 	assert_output --partial "cf create-service foo bar rabbitmq-github-webhook"
@@ -358,7 +358,7 @@ export -f fakeRetrieveStubRunnerIds
 
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
 	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
@@ -368,13 +368,14 @@ export -f fakeRetrieveStubRunnerIds
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	env="test"
+	projectName="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 
 	run "${SOURCE_DIR}/test_smoke.sh"
 
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-${projectName}"
 	assert_output --partial "gradlew artifactId -q"
 	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url= -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success
@@ -411,7 +412,7 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "Last prod version equals 1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
 	assert_output --partial "cf delete -f -r my-project"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	# Creation of services
@@ -446,7 +447,7 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "Last prod version equals 1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-${projectNameUppercase}"
 	assert_output --partial "cf delete -f -r ${projectName}"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	# Creation of services
@@ -494,7 +495,7 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
 	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
@@ -505,6 +506,7 @@ export -f fakeRetrieveStubRunnerIds
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
 	env="test"
+	projectNameUppercase="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
@@ -512,7 +514,7 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
-	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-${projectNameUppercase}"
 	assert_output --partial "gradlew artifactId -q"
 	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url= -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success

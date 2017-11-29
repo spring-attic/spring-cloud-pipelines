@@ -86,7 +86,7 @@ factory.job('jenkins-pipeline-cf-seed') {
 			stringParam('PAAS_STAGE_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for stage env')
 			stringParam('PAAS_PROD_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for prod env')
 			stringParam('PAAS_TEST_ORG', 'pcfdev-org', 'Name of the CF organization for test env')
-			stringParam('PAAS_TEST_SPACE', 'pcfdev-test', 'Name of the CF space for test env')
+			stringParam('PAAS_TEST_SPACE_PREFIX', 'pcfdev-test', 'Prefix of the name of the CF space for the test env to which the app name will be appended')
 			stringParam('PAAS_STAGE_ORG', 'pcfdev-org', 'Name of the CF organization for stage env')
 			stringParam('PAAS_STAGE_SPACE', 'pcfdev-stage', 'Name of the CF space for stage env')
 			stringParam('PAAS_PROD_ORG', 'pcfdev-org', 'Name of the CF organization for prod env')
