@@ -348,7 +348,7 @@ paas-test-params: &paas-test-params
   # remove::start[CF]
   PAAS_TEST_ORG: ((paas-test-org))
   PAAS_TEST_PASSWORD: ((paas-test-password))
-  PAAS_TEST_SPACE_PREFIX: ((paas-test-space))
+  PAAS_TEST_SPACE_PREFIX: ((paas-test-space-prefix))
   PAAS_TEST_USERNAME: ((paas-test-username))
   # remove::end[CF]
   # remove::start[K8S]
