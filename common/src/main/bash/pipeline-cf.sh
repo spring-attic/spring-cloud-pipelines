@@ -577,7 +577,9 @@ function rollbackToPreviousVersion() {
 		"${CF_BIN}" stop "${appName}"
 		echo "Deleting production tag"
 		local tagName="prod/${PIPELINE_VERSION}"
-		git push --delete origin "${tagName}"
+		if [[ "${CI}" != "CONCOURSE" ]]; then
+			git push --delete "${tagName}"
+		fi
 		git tag -d "${tagName}"
 		exit 0
 	else
