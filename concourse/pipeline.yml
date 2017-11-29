@@ -296,6 +296,7 @@ common-params: &common-params
   PAAS_TYPE: ((paas-type))
   REPO_WITH_BINARIES_FOR_UPLOAD: ((repo-with-binaries-for-upload))
   REPO_WITH_BINARIES: ((repo-with-binaries))
+  PIPELINE_DESCRIPTOR: ((pipeline-descriptor))
   # remove::start[K8S]
   KUBERNETES-MINIKUBE: ((kubernetes-minikube))
   MYSQL_ROOT_PASSWORD: ((mysql-root-password))

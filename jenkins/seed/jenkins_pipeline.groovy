@@ -84,6 +84,7 @@ factory.job('jenkins-pipeline-cf-seed') {
 			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
 			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
 			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
+			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 
 			stringParam('PAAS_TEST_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for test env')
 			stringParam('PAAS_STAGE_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for stage env')
@@ -152,6 +153,7 @@ factory.job('jenkins-pipeline-cf-declarative-seed') {
 			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
 			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
 			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
+			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 
 			stringParam('PAAS_TEST_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for test env')
 			stringParam('PAAS_STAGE_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for stage env')
@@ -230,6 +232,7 @@ factory.job('jenkins-pipeline-k8s-seed') {
 			stringParam('DOCKER_EMAIL', 'change@me.com', "Email used to connect to Docker registry")
 			stringParam('DOCKER_REGISTRY_ORGANIZATION', 'scpipelines', 'URL to Kubernetes cluster for test env')
 			stringParam('DOCKER_REGISTRY_URL', 'https://index.docker.io/v1/', 'URL to the docker registry')
+			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 
 			stringParam('PAAS_TEST_API_URL', '192.168.99.100:8443', 'URL to Kubernetes cluster for test env')
 			stringParam('PAAS_STAGE_API_URL', '192.168.99.100:8443', 'URL to Kubernetes cluster for stage env')
@@ -323,6 +326,7 @@ factory.job('jenkins-pipeline-k8s-declarative-seed') {
 			stringParam('DOCKER_EMAIL', 'change@me.com', "Email used to connect to Docker registry")
 			stringParam('DOCKER_REGISTRY_ORGANIZATION', 'scpipelines', 'URL to Kubernetes cluster for test env')
 			stringParam('DOCKER_REGISTRY_URL', 'https://index.docker.io/v1/', 'URL to the docker registry')
+			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 
 			stringParam('PAAS_TEST_API_URL', '192.168.99.100:8443', 'URL to Kubernetes cluster for test env')
 			stringParam('PAAS_STAGE_API_URL', '192.168.99.100:8443', 'URL to Kubernetes cluster for stage env')

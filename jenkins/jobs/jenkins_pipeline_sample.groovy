@@ -832,6 +832,7 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "REPO_WITH_BINARIES")
 		setIfPresent(envs, variables, "REPO_WITH_BINARIES_FOR_UPLOAD")
 		setIfPresent(envs, variables, "REPO_WITH_BINARIES_CREDENTIAL_ID")
+		setIfPresent(envs, variables, "PIPELINE_DESCRIPTOR")
 		// remove::start[CF]
 		setIfPresent(envs, variables, "PAAS_TEST_API_URL")
 		setIfPresent(envs, variables, "PAAS_STAGE_API_URL")
