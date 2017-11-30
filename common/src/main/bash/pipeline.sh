@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#set -o errexit
-#set -o errtrace
-#set -o pipefail
+set -o errexit
+set -o errtrace
+set -o pipefail
 
 IFS=$' \n\t'
 
