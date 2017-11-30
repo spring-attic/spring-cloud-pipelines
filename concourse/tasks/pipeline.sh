@@ -14,7 +14,7 @@ mkdir -p "${SCRIPTS_OUTPUT_FOLDER}" || echo "Failed to create the scripts output
 [[ -d "${ROOT_FOLDER}/${TOOLS_RESOURCE}/common/src/main/bash/" ]] && \
     cp -r "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/common/src/main/bash/* "${SCRIPTS_OUTPUT_FOLDER}"/ || \
     echo "Failed to copy the scripts"
-[[ -d "${ROOT_FOLDER}/${CUSTOM_SCRIPT_IDENTIFIER}" ]] && \
+[[ -d "${ROOT_FOLDER}/${CUSTOM_SCRIPT_IDENTIFIER}/common/src/main/bash/" ]] && \
     cp -r "${ROOT_FOLDER}/${CUSTOM_SCRIPT_IDENTIFIER}"/common/src/main/bash/* "${SCRIPTS_OUTPUT_FOLDER}"/ || \
     echo "No custom scripts found"
 
