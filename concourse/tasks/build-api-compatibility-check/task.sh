@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -o errexit
+set -o errtrace
+set -o pipefail
+
 export ROOT_FOLDER
 ROOT_FOLDER="$( pwd )"
 export REPO_RESOURCE=repo
