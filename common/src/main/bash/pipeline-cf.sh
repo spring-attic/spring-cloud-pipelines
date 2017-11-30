@@ -451,6 +451,7 @@ function prepareForSmokeTests() {
 	appName="$(retrieveAppName)"
 	mkdir -p "${OUTPUT_FOLDER}"
 	logInToPaas
+	parsePipelineDescriptor
 	propagatePropertiesForTests "${appName}"
 	# shellcheck disable=SC2119
 	readTestPropertiesFromFile
@@ -611,7 +612,7 @@ function propagatePropertiesForTests() {
 	# retrieve host of the app / stubrunner
 	# we have to store them in a file that will be picked as properties
 	rm -rf "${fileLocation}"
-	local host=
+	local host
 	host="$(getAppHostFromPaas "${projectArtifactId}")"
 	export APPLICATION_URL="${host}"
 	echo "APPLICATION_URL=${host}" >>"${fileLocation}"
