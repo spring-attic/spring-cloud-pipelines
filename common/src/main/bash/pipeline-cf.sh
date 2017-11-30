@@ -576,7 +576,7 @@ function rollbackToPreviousVersion() {
 	if [[ "${appPresent}" == "yes" ]]; then
 		echo "Starting blue (if it wasn't started) and stopping the green instance. Only blue instance will be running"
 		"${CF_BIN}" start "${oldName}"
-		"${CF_BIN}" stop "${appName}"
+		"${CF_BIN}" delete "${appName}" -f
 		return 0
 	else
 		echo "Will not rollback to blue instance cause it's not there"
@@ -595,10 +595,9 @@ function completeSwitchOver() {
 	local appPresent="no"
 	"${CF_BIN}" app "${oldName}" && appPresent="yes"
 	if [[ "${appPresent}" == "yes" ]]; then
-		# Delete app only, not route
-		"${CF_BIN}" delete "${oldName}" -f
+		"${CF_BIN}" stop "${oldName}"
 	else
-		echo "Will not remove the old application cause it's not there"
+		echo "Will not stop the old application cause it's not there"
 	fi
 }
 

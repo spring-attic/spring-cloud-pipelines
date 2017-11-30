@@ -260,7 +260,7 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
-	assert_output --partial "cf create-route test-space cfapps.io --hostname stubrunner-test-10000"
+	assert_output --partial "cf create-route test-space-my-project cfapps.io --hostname stubrunner-test-10000"
 	assert_output --partial "cf curl /v2/route_mappings -X POST -d"
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10000'
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10001'
@@ -330,7 +330,7 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
-	assert_output --partial "cf create-route test-space cfapps.io --hostname stubrunner-test-10000"
+	assert_output --partial "cf create-route test-space-${projectNameUppercase} cfapps.io --hostname stubrunner-test-10000"
 	assert_output --partial "cf curl /v2/route_mappings -X POST -d"
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10000'
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10001'
@@ -737,7 +737,7 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "cf app my-project-venerable"
-	assert_output --partial "cf delete my-project-venerable -f"
+	assert_output --partial "cf stop my-project-venerable"
 	assert_success
 }
 
@@ -756,7 +756,7 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "cf app ${projectName}-venerable"
-	assert_output --partial "cf delete ${projectName}-venerable -f"
+	assert_output --partial "cf stop ${projectName}-venerable"
 	assert_success
 }
 
@@ -774,7 +774,7 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "Will not remove the old application cause it's not there"
+	assert_output --partial "Will not stop the old application cause it's not there"
 	refute_output --partial "cf app my-project-venerable"
 	refute_output --partial "cf delete -f my-project-venerable"
 	assert_success
@@ -795,7 +795,7 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "Will not remove the old application cause it's not there"
+	assert_output --partial "Will not stop the old application cause it's not there"
 	refute_output --partial "cf app ${projectName}-venerable"
 	refute_output --partial "cf delete ${projectName}-venerable -f"
 	assert_success
