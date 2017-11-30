@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 export ROOT_FOLDER
 ROOT_FOLDER="$( pwd )"
 export REPO_RESOURCE=repo
@@ -24,7 +26,7 @@ echo "Building and uploading the projects artifacts"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 
 # shellcheck source=/dev/null
-# . "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
+. "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
 
 echo "Tagging the project with dev tag"
 echo "dev/${PIPELINE_VERSION}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
