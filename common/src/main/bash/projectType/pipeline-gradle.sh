@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#set -e
 
 export GRADLEW_BIN
 GRADLEW_BIN="${GRADLEW_BIN:-./gradlew}"
@@ -18,7 +18,6 @@ function build() {
 	BUILD_OPTIONS="${BUILD_OPTIONS} -DM2_SETTINGS_REPO_USERNAME=${M2_SETTINGS_REPO_USERNAME} -DM2_SETTINGS_REPO_PASSWORD=${M2_SETTINGS_REPO_PASSWORD}"
 	# shellcheck disable=SC2086
 	"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" -DREPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS}
-	echo "foo $?"
 }
 
 function apiCompatibilityCheck() {

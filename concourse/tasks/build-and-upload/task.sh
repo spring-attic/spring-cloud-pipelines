@@ -24,8 +24,9 @@ echo "Building and uploading the projects artifacts"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 
 # shellcheck source=/dev/null
-bash -x "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
+. "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
 
 echo "Tagging the project with dev tag"
 echo "dev/${PIPELINE_VERSION}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
 cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
+echo "bar"
