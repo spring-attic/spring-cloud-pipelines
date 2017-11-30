@@ -69,8 +69,13 @@ function outputFolder() {
 	echo "build/libs"
 }
 
+function testResultsAntPattern() {
+	echo "**/test-results/*.xml"
+}
+
 export -f build
 export -f apiCompatibilityCheck
 export -f runSmokeTests
 export -f runE2eTests
 export -f outputFolder
+export -f testResultsAntPattern
