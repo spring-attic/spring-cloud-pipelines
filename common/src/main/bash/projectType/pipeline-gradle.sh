@@ -16,13 +16,8 @@ fi
 
 function build() {
 	BUILD_OPTIONS="${BUILD_OPTIONS} -DM2_SETTINGS_REPO_USERNAME=${M2_SETTINGS_REPO_USERNAME} -DM2_SETTINGS_REPO_PASSWORD=${M2_SETTINGS_REPO_PASSWORD}"
-	if [[ "${CI}" == "CONCOURSE" ]]; then
-		# shellcheck disable=SC2086
-		"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" -DREPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} && return 0 || (printTestResults && return 1)
-	else
-		# shellcheck disable=SC2086
-		"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" -DREPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} && return 0 || (echo "Build failed!!!" && return 1)
-	fi
+	# shellcheck disable=SC2086
+	"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" -DREPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS}
 }
 
 function apiCompatibilityCheck() {
@@ -36,13 +31,8 @@ function apiCompatibilityCheck() {
 		# Downloading latest jar
 		LATEST_PROD_VERSION=${LATEST_PROD_TAG#prod/}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
-		if [[ "${CI}" == "CONCOURSE" ]]; then
-			# shellcheck disable=SC2086
-			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} && return 0 || (printTestResults && return 1)
-		else
-			# shellcheck disable=SC2086
-			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} && return 0
-		fi
+		# shellcheck disable=SC2086
+		"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS}
 	fi
 }
 
@@ -68,26 +58,16 @@ function runSmokeTests() {
 	local stubrunnerUrl="${STUBRUNNER_URL}"
 	echo "Running smoke tests. Application url [${applicationUrl}], Stubrunner Url [${stubrunnerUrl}]"
 
-	if [[ "${CI}" == "CONCOURSE" ]]; then
-		# shellcheck disable=SC2086
-		"${GRADLEW_BIN}" smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} && return 0 || (printTestResults && return 1)
-	else
-		# shellcheck disable=SC2086
-		"${GRADLEW_BIN}" smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} && return 0
-	fi
+	# shellcheck disable=SC2086
+	"${GRADLEW_BIN}" smoke -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
 }
 
 function runE2eTests() {
 	local applicationUrl="${APPLICATION_URL}"
 	echo "Running e2e tests for application with url [${applicationUrl}]"
 
-	if [[ "${CI}" == "CONCOURSE" ]]; then
-		# shellcheck disable=SC2086
-		"${GRADLEW_BIN}" e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} && return 0 || (printTestResults && return 1)
-	else
-		# shellcheck disable=SC2086
-		"${GRADLEW_BIN}" e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} && return 0
-	fi
+	# shellcheck disable=SC2086
+	"${GRADLEW_BIN}" e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
 }
 
 function outputFolder() {
