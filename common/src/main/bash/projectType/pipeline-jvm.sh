@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -e
+set -e
 
 # It takes ages on Docker to run the app without this
 # Also we want to disable the progress indicator for downloaded jars
