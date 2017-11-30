@@ -577,14 +577,10 @@ function rollbackToPreviousVersion() {
 		"${CF_BIN}" stop "${appName}"
 		echo "Deleting production tag"
 		local tagName="prod/${PIPELINE_VERSION}"
-		if [[ "${CI}" != "CONCOURSE" ]]; then
-			git push --delete "${tagName}"
-		fi
-		git tag -d "${tagName}"
-		exit 0
+		return 0
 	else
 		echo "Will not rollback to blue instance cause it's not there"
-		exit 1
+		return 1
 	fi
 }
 

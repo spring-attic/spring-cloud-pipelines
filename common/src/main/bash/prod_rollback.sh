@@ -17,5 +17,10 @@ if rollbackToPreviousVersion; then
 		"${GIT_BIN}" push --delete origin "${tagName}"
 	fi
 	"${GIT_BIN}" tag -d "${tagName}"
+	exit 0
+else
+	echo "Failed to rollback to previous version"
+	exit 1
 fi
+
 
