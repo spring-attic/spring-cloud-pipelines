@@ -20,12 +20,12 @@ start_docker || echo "Failed to start docker... Hopefully you know what you're d
 # shellcheck source=/dev/null
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
-echo "Building and uploading the projects artifacts"
-cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
-
-# shellcheck source=/dev/null
-. "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
-
-echo "Tagging the project with dev tag"
-echo "dev/${PIPELINE_VERSION}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
-cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
+#echo "Building and uploading the projects artifacts"
+#cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
+#
+## shellcheck source=/dev/null
+#. "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
+#
+#echo "Tagging the project with dev tag"
+#echo "dev/${PIPELINE_VERSION}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
+#cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
