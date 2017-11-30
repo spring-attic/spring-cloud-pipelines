@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#set -e
 
 export GRADLEW_BIN
 GRADLEW_BIN="${GRADLEW_BIN:-./gradlew}"

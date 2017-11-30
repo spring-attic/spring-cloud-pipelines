@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#set -e
 
 function logInToPaas() {
 	local user="PAAS_${ENVIRONMENT}_USERNAME"
