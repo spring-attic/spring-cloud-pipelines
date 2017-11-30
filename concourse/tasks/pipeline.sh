@@ -3,11 +3,6 @@
 export SCRIPTS_OUTPUT_FOLDER="${ROOT_FOLDER}/${REPO_RESOURCE}/ciscripts"
 echo "Scripts will be copied to [${SCRIPTS_OUTPUT_FOLDER}]"
 
-export REPO_RESOURCE="${REPO_RESOURCE:-repo}"
-export TOOLS_RESOURCE="${TOOLS_RESOURCE:-tools}"
-export VERSION_RESOURCE="${VERSION_RESOURCE:-version}"
-export OUTPUT_RESOURCE="${OUTPUT_RESOURCE:-out}"
-
 echo "Copying pipelines scripts"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 mkdir -p "${SCRIPTS_OUTPUT_FOLDER}" || echo "Failed to create the scripts output folder"
