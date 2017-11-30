@@ -29,3 +29,4 @@ cd "${ROOT_FOLDER}"/"${REPO_RESOURCE}" || exit
 echo "Tagging the project with dev tag"
 echo "dev/${PIPELINE_VERSION}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
 cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
+exit 0
