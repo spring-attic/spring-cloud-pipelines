@@ -17,8 +17,8 @@ echo "Version resource folder is [${VERSION_RESOURCE}]"
 #source /docker-lib.sh || echo "Failed to source docker-lib.sh... Hopefully you know what you're doing"
 #start_docker || echo "Failed to start docker... Hopefully you know what you're doing"
 #
-## shellcheck source=/dev/null
-#source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh" || echo "Failed"
+# shellcheck source=/dev/null
+source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh" || echo "Failed"
 #
 #echo "Building and uploading the projects artifacts"
 #cd "${ROOT_FOLDER}"/"${REPO_RESOURCE}" || exit
