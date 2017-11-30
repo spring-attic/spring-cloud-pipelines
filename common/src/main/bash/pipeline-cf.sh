@@ -575,8 +575,6 @@ function rollbackToPreviousVersion() {
 		echo "Starting blue (if it wasn't started) and stopping the green instance. Only blue instance will be running"
 		"${CF_BIN}" start "${oldName}"
 		"${CF_BIN}" stop "${appName}"
-		echo "Deleting production tag"
-		local tagName="prod/${PIPELINE_VERSION}"
 		return 0
 	else
 		echo "Will not rollback to blue instance cause it's not there"
