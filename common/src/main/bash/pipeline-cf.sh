@@ -388,10 +388,12 @@ function addPorts() {
 	local stubRunnerName="${1}"
 	local stubrunnerIds="${2}"
 	local pathToManifest="${3}"
+	local appName
+	appName=$(retrieveAppName)
 	local hostname
 	hostname="$(hostname "${stubRunnerName}" "${ENVIRONMENT}" "${pathToManifest}")"
 	echo "Hostname for ${stubRunnerName} is ${hostname}"
-	local testSpace="${PAAS_TEST_SPACE_PREFIX}"
+	local testSpace="${PAAS_TEST_SPACE_PREFIX}-${appName}"
 	local domain
 	domain="$( getDomain )"
 	echo "Domain for ${stubRunnerName} is ${domain}"
