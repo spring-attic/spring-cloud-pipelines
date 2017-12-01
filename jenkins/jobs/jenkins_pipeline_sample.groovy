@@ -425,9 +425,6 @@ parsedRepos.each {
 					if (k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
 					// remove::end[K8S]
 				}
-				parameters {
-					stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
-				}
 				timestamps()
 				colorizeOutput()
 				maskPasswords()
