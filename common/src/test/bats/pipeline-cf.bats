@@ -253,19 +253,19 @@ export -f fakeRetrieveStubRunnerIds
 	# Creation of services
 	assert_output --partial "cf create-service foo bar rabbitmq-github-webhook"
 	assert_output --partial "cf create-service foo bar mysql-github-webhook"
-	assert_output --partial "cf push eureka-github-webhook -f manifest.yml -p target/github-eureka-0.0.1.M1.jar -n eureka-github-webhook-${env} -i 1 --no-start"
+	assert_output --partial "cf push eureka-github-webhook -f manifest.yml -p target/github-eureka-0.0.1.M1.jar -n eureka-github-webhook-${env}-my-project -i 1 --no-start"
 	assert_output --partial "cf restart eureka-github-webhook"
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
 	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
-	assert_output --partial "cf create-route test-space-my-project cfapps.io --hostname stubrunner-test-10000"
+	assert_output --partial "cf create-route test-space-my-project cfapps.io --hostname stubrunner-test-my-project-10000"
 	assert_output --partial "cf curl /v2/route_mappings -X POST -d"
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10000'
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10001'
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10002'
-	assert_output --partial "cf push stubrunner -f foo/manifest.yml -p target/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-${env} -i 1 --no-start"
+	assert_output --partial "cf push stubrunner -f foo/manifest.yml -p target/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-${env}-my-project -i 1 --no-start"
 	assert_output --partial "cf set-env stubrunner stubrunner.ids"
 	assert_output --partial "cf restart stubrunner"
 	# App
@@ -323,19 +323,19 @@ export -f fakeRetrieveStubRunnerIds
 	# Creation of services
 	assert_output --partial "cf create-service foo bar rabbitmq-github-webhook"
 	assert_output --partial "cf create-service foo bar mysql-github-webhook"
-	assert_output --partial "cf push eureka-github-webhook -f manifest.yml -p build/libs/github-eureka-0.0.1.M1.jar -n eureka-github-webhook-${env} -i 1 --no-start"
+	assert_output --partial "cf push eureka-github-webhook -f manifest.yml -p build/libs/github-eureka-0.0.1.M1.jar -n eureka-github-webhook-${env}-${projectNameUppercase} -i 1 --no-start"
 	assert_output --partial "cf restart eureka-github-webhook"
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
 	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
-	assert_output --partial "cf create-route test-space-${projectNameUppercase} cfapps.io --hostname stubrunner-test-10000"
+	assert_output --partial "cf create-route test-space-${projectNameUppercase} cfapps.io --hostname stubrunner-test-${projectNameUppercase}-10000"
 	assert_output --partial "cf curl /v2/route_mappings -X POST -d"
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10000'
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10001'
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10002'
-	assert_output --partial "cf push stubrunner -f foo/manifest.yml -p build/libs/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-test -i 1 --no-start"
+	assert_output --partial "cf push stubrunner -f foo/manifest.yml -p build/libs/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -n stubrunner-test-${projectNameUppercase} -i 1 --no-start"
 	assert_output --partial "cf set-env stubrunner stubrunner.ids"
 	assert_output --partial "cf restart stubrunner"
 	# App

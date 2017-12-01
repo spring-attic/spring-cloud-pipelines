@@ -173,7 +173,7 @@ function deployAndRestartAppWithName() {
 		profiles="${profiles},${manifestProfiles}"
 	fi
 	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
-	deployAppNoStart "${appName}" "${jarName}" "${ENVIRONMENT}"
+	deployAppNoStart "${appName}" "${jarName}" "${ENVIRONMENT}" "" ""
 	setEnvVar "${lowerCaseAppName}" 'SPRING_PROFILES_ACTIVE' "${profiles}"
 	restartApp "${appName}"
 }
@@ -221,6 +221,7 @@ function deployAppNoStart() {
 	local artifactName="${2}"
 	local env="${3}"
 	local pathToManifest="${4}"
+	local hostNameSuffix="${5}"
 	if [[ -z "${pathToManifest}" || "${pathToManifest}" == "null" ]]; then
 		pathToManifest="manifest.yml"
 	fi
@@ -228,6 +229,9 @@ function deployAppNoStart() {
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	local hostname
 	hostname="$(hostname "${appName}" "${env}" "${pathToManifest}")"
+	if [[ "${hostNameSuffix}" != "" ]]; then
+		hostname="${hostname}-${hostNameSuffix}"
+	fi
 	# TODO set "i 1" for test only, leave manifest value for stage and prod
 	local instances
 	instances="$(getInstancesFromManifest "${appName}")"
@@ -301,7 +305,11 @@ function deployAppAsService() {
 	local appName="${2}"
 	local pathToManifest="${3}"
 	echo "Deploying app as service. Options - jar name [${jarName}], app name [${appName}], env [${ENVIRONMENT}], path to manifest [${pathToManifest}]"
-	deployAppNoStart "${appName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}"
+	local suffix=""
+	if [[ "${LOWERCASE_ENV}" == "test" ]]; then
+		suffix="$(retrieveAppName)"
+	fi
+	deployAppNoStart "${appName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}" "${suffix}"
 	restartApp "${appName}"
 	createServiceWithName "${appName}"
 }
@@ -372,7 +380,7 @@ function deployStubRunnerBoot() {
 	local stubRunnerName="${2}"
 	local pathToManifest="${3}"
 	echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}]"
-	deployAppNoStart "${stubRunnerName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}"
+	deployAppNoStart "${stubRunnerName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}" "$(retrieveAppName)"
 	local prop
 	prop="$(${RETRIEVE_STUBRUNNER_IDS_FUNCTION})"
 	echo "Found following stub runner ids [${prop}]"
@@ -392,6 +400,7 @@ function addPorts() {
 	appName=$(retrieveAppName)
 	local hostname
 	hostname="$(hostname "${stubRunnerName}" "${ENVIRONMENT}" "${pathToManifest}")"
+	hostname="${hostname}-${appName}"
 	echo "Hostname for ${stubRunnerName} is ${hostname}"
 	local testSpace="${PAAS_TEST_SPACE_PREFIX}-${appName}"
 	local domain
