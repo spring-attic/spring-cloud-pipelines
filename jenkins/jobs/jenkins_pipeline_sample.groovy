@@ -438,7 +438,7 @@ parsedRepos.each {
 				git {
 					remote {
 						url(fullGitRepo)
-						branch('${LATEST_PROD_TAG}')
+						branch('dev/${PIPELINE_VERSION}')
 					}
 					extensions {
 						wipeOutWorkspace()
