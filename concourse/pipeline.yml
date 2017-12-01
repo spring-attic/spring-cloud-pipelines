@@ -238,6 +238,27 @@ jobs:
       tag: out/tag
       only_tag: true
 
+
+- name: prod-complete
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: version
+      passed:
+      - prod-deploy
+      trigger: false
+  - task: prod-complete
+    privileged: true
+    file: tools/concourse/task.yml
+    params:
+      MESSAGE: "Completing the switch over"
+      SCRIPT_TO_RUN: "prod_complete.sh"
+      <<: *common-params
+      <<: *paas-prod-params
+
 - name: prod-rollback
   serial: true
   public: false
@@ -260,30 +281,11 @@ jobs:
       <<: *common-params
       <<: *paas-prod-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+      GIT_PRIVATE_KEY: ((github-private-key))
   - put: tags
     params:
       repository: tags
       only_tag: true
-
-- name: prod-complete
-  serial: true
-  public: false
-  plan:
-  - aggregate:
-    - get: tools
-    - get: repo
-    - get: version
-      passed:
-      - prod-deploy
-      trigger: false
-  - task: prod-complete
-    privileged: true
-    file: tools/concourse/task.yml
-    params:
-      MESSAGE: "Completing the switch over"
-      SCRIPT_TO_RUN: "prod_complete.sh"
-      <<: *common-params
-      <<: *paas-prod-params
 
 common-params: &common-params
   _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom

@@ -35,6 +35,12 @@ echo "Generating settings.xml / gradle properties for Maven in local m2"
 # shellcheck source=/dev/null
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/concourse/tasks/generate-settings.sh
 
+# TODO Could move this function into common/src/main/bash/pipeline.sh and remove this source call (talk to Marcin)
+# Used to delete prod tag in prod_rollback job
+echo "Sourcing file with git-resource helper functions"
+# shellcheck source=/dev/null
+source "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/concourse/tasks/git-resource-helper.sh
+
 export TERM=dumb
 
 cd "${ROOT_FOLDER}" || exit
