@@ -322,12 +322,10 @@ jobs:
       trigger: false
   - task: prod-rollback
     privileged: true
-    file: tools/concourse/task.yml
+    file: tools/concourse/tasks/prod-rollback/task.yml
     input_mapping:
       repo: tags
     params:
-      MESSAGE: "Rolling back to previous instance"
-      SCRIPT_TO_RUN: "prod_rollback.sh"
       <<: *common-params
       <<: *paas-prod-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))

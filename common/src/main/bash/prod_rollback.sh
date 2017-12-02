@@ -10,11 +10,6 @@ export ENVIRONMENT=PROD
 [[ -f "${__DIR}/pipeline.sh" ]] && source "${__DIR}/pipeline.sh" ||  \
  echo "No pipeline.sh found"
 
-echo "Loading git key to enable tag deletion"
-export TMPDIR=/tmp
-echo "${GIT_PRIVATE_KEY}" > "${TMPDIR}/git-resource-private-key"
-load_pubkey
-
 if rollbackToPreviousVersion; then
 	echo "Deleting production tag"
 	tagName="prod/${PIPELINE_VERSION}"
