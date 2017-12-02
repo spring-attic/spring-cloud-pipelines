@@ -22,10 +22,10 @@ echo "Sourcing file with resource util functions"
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/resource-utils.sh"
 exportKeyValProperties
 
-export LATEST_PROD_TAG
-LATEST_PROD_TAG="${PASSED_LATEST_PROD_TAG}"
 export PIPELINE_VERSION
 PIPELINE_VERSION="${PASSED_PIPELINE_VERSION}"
+export LATEST_PROD_TAG
+LATEST_PROD_TAG="${PASSED_LATEST_PROD_TAG}"
 
 echo "Current version is [${PIPELINE_VERSION}]"
 

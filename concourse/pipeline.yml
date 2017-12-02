@@ -7,14 +7,6 @@ resources:
     branch: ((app-branch))
     private_key: ((github-private-key))
 
-- name: tags
-  type: git
-  source:
-    uri: ((app-url))
-    branch: ((app-branch))
-    private_key: ((github-private-key))
-    tag_filter: "*"
-
 - name: version
   type: git
   source:
@@ -89,7 +81,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: tags
     - get: keyval
       passed:
       - build-and-upload
@@ -158,14 +149,12 @@ jobs:
   plan:
   - aggregate:
     - get: tools
-    - get: tags
+    - get: repo
     - get: keyval
       passed:
       - test-smoke
       trigger: true
   - task: test-rollback-deploy
-    input_mapping:
-      repo: tags
     privileged: true
     file: tools/concourse/task.yml
     params:
@@ -184,7 +173,7 @@ jobs:
   plan:
   - aggregate:
     - get: tools
-    - get: tags
+    - get: repo
     - get: keyval
       passed:
       - test-rollback-deploy
@@ -192,8 +181,6 @@ jobs:
   - task: test-rollback-smoke
     privileged: true
     file: tools/concourse/task.yml
-    input_mapping:
-      repo: tags
     params:
       MESSAGE: "Testing the rolled back built application on test environment"
       SCRIPT_TO_RUN: "test_rollback_smoke.sh"
@@ -304,7 +291,7 @@ jobs:
   plan:
   - aggregate:
     - get: tools
-    - get: tags
+    - get: repo
     - get: keyval
       passed:
       - prod-deploy
@@ -312,17 +299,11 @@ jobs:
   - task: prod-rollback
     privileged: true
     file: tools/concourse/tasks/prod-rollback/task.yml
-    input_mapping:
-      repo: tags
     params:
       <<: *common-params
       <<: *paas-prod-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
       GIT_PRIVATE_KEY: ((github-private-key))
-  - put: tags
-    params:
-      repository: tags
-      only_tag: true
 
 common-params: &common-params
   _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
