@@ -12,7 +12,7 @@ inputs:
   - name: keyval
 outputs:
   - name: out
-  - name: keyval
+  - name: keyvalout
 caches:
   - path: gradle
   - path: maven
