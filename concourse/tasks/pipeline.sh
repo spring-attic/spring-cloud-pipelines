@@ -7,10 +7,6 @@ set -o pipefail
 export SCRIPTS_OUTPUT_FOLDER="${ROOT_FOLDER}/${REPO_RESOURCE}/ciscripts"
 echo "Scripts will be copied to [${SCRIPTS_OUTPUT_FOLDER}]"
 
-# shellcheck source=/dev/null
-source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/keyval-resource-util.sh"
-exportKeyValProperties
-
 echo "Copying pipelines scripts"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 mkdir -p "${SCRIPTS_OUTPUT_FOLDER}" || echo "Failed to create the scripts output folder"
@@ -21,12 +17,15 @@ mkdir -p "${SCRIPTS_OUTPUT_FOLDER}" || echo "Failed to create the scripts output
     cp -r "${ROOT_FOLDER}/${CUSTOM_SCRIPT_IDENTIFIER}"/common/src/main/bash/* "${SCRIPTS_OUTPUT_FOLDER}"/ || \
     echo "No custom scripts found"
 
-#echo "Retrieving version"
-#cp "${ROOT_FOLDER}/${VERSION_RESOURCE}/version" "${SCRIPTS_OUTPUT_FOLDER}"/
+# shellcheck source=/dev/null
+source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/keyval-resource-util.sh"
+exportKeyValProperties
+
+export LATEST_PROD_TAG
+LATEST_PROD_TAG="${PASSED_LATEST_PROD_TAG}"
 export PIPELINE_VERSION
-#PIPELINE_VERSION="$( cat "${SCRIPTS_OUTPUT_FOLDER}/${VERSION_RESOURCE}" )"
-# TODO: clean up code by replacing PIPELINE_VERSION everywhere with PASSED_VERSION
-PIPELINE_VERSION="${PASSED_VERSION}"
+PIPELINE_VERSION="${PASSED_PIPELINE_VERSION}"
+
 echo "Current version is [${PIPELINE_VERSION}]"
 
 export CI="CONCOURSE"
