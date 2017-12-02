@@ -99,17 +99,17 @@ function testResultsAntPattern() {
 
 # Finds the latest prod tag from git
 function findLatestProdTag() {
-#	if [[ ! -z "${LATEST_PROD_TAG}" ]]; then
-#		echo "LATEST_PROD_TAG already set to [${LATEST_PROD_TAG}}]. Returning same value."
-#		echo "${LATEST_PROD_TAG}"
-#	else
-#		local latestProdTag
-#		latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | tail -1)
-#		export LATEST_PROD_TAG
-#		LATEST_PROD_TAG="${latestProdTag#refs/tags/}"
-#		echo "${LATEST_PROD_TAG}"
-#	fi
-	echo "${LATEST_PROD_TAG}"
+	local prodTag="${PASSED_LATEST_PROD_TAG:-${LATEST_PROD_TAG:-}}"
+	if [[ ! -z "${prodTag}" ]]; then
+		echo "${prodTag}"
+	else
+		local latestProdTag
+		latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | tail -1)
+		export LATEST_PROD_TAG PASSED_LATEST_PROD_TAG
+		LATEST_PROD_TAG="${latestProdTag#refs/tags/}"
+		PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
+		echo "${LATEST_PROD_TAG}"
+	fi
 }
 
 # Extracts the version from the production tag
