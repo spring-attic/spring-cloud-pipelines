@@ -9,7 +9,7 @@ export TMPDIR=${TMPDIR:-/tmp}
 # Reads all key-value pairs in keyval.properties input file and exports them as env vars
 function exportKeyValProperties() {
 	props="${ROOT_FOLDER}/${KEYVAL_RESOURCE}/keyval.properties"
-	echo "Props are [${props}]"
+	echo "Props are in [${props}]"
 	if [ -f "${props}" ]
 	then
 	  echo "Reading passed key values"
