@@ -21,11 +21,13 @@ mkdir -p "${SCRIPTS_OUTPUT_FOLDER}" || echo "Failed to create the scripts output
     cp -r "${ROOT_FOLDER}/${CUSTOM_SCRIPT_IDENTIFIER}"/common/src/main/bash/* "${SCRIPTS_OUTPUT_FOLDER}"/ || \
     echo "No custom scripts found"
 
-echo "Retrieving version"
-cp "${ROOT_FOLDER}/${VERSION_RESOURCE}/version" "${SCRIPTS_OUTPUT_FOLDER}"/
+#echo "Retrieving version"
+#cp "${ROOT_FOLDER}/${VERSION_RESOURCE}/version" "${SCRIPTS_OUTPUT_FOLDER}"/
 export PIPELINE_VERSION
-PIPELINE_VERSION="$( cat "${SCRIPTS_OUTPUT_FOLDER}/${VERSION_RESOURCE}" )"
-echo "Retrieved version is [${PIPELINE_VERSION}]"
+#PIPELINE_VERSION="$( cat "${SCRIPTS_OUTPUT_FOLDER}/${VERSION_RESOURCE}" )"
+# TODO: clean up code by replacing PIPELINE_VERSION everywhere with PASSED_VERSION
+PIPELINE_VERSION="${PASSED_VERSION}"
+echo "Current version is [${PIPELINE_VERSION}]"
 
 export CI="CONCOURSE"
 

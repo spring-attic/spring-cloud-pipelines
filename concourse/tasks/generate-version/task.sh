@@ -29,5 +29,5 @@ pushd updated-version
   git commit -m "${MESSAGE}"
 popd
 
-echo "Adding: PASSED_VERSION: [${VERSION}]"
-echo "PASSED_VERSION=${VERSION}" >> "${propsFile}"
+echo "Adding: PASSED_PIPELINE_VERSION: [${VERSION}]"
+echo "PASSED_PIPELINE_VERSION=${VERSION}" >> "${propsFile}"

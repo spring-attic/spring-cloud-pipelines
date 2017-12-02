@@ -34,7 +34,8 @@ cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 . "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
 
 echo "Tagging the project with dev tag"
-echo "dev/${PIPELINE_VERSION}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
+DEV_TAG="dev/${PASSED_PIPELINE_VERSION}"
+echo "${DEV_TAG}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
 cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
 
 passKeyValProperties

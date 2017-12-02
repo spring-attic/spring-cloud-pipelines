@@ -30,8 +30,15 @@ start_docker || echo "Failed to start docker... Hopefully you know what you're d
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
 cd "${ROOT_FOLDER}/${REPO_TAGS_RESOURCE}" || exit
-findLatestProdTag
-echo "Latest prod tag is [${LATEST_PROD_TAG}]"
+
+# TODO clean up code to use PASSED_LATEST_PROD_TAG
+# Find latest prod tag
+latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | tail -1)
+export LATEST_PROD_TAG
+LATEST_PROD_TAG="${latestProdTag#refs/tags/}"
+export PASSED_LATEST_PROD_TAG
+PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
+echo "Latest prod tag is [${PASSED_LATEST_PROD_TAG}]"
 
 echo "${MESSAGE}"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit

@@ -14,7 +14,7 @@ if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
 	fi
 fi
 
-function build() {
+function build_OLD() {
 	BUILD_OPTIONS="${BUILD_OPTIONS} -DM2_SETTINGS_REPO_USERNAME=${M2_SETTINGS_REPO_USERNAME} -DM2_SETTINGS_REPO_PASSWORD=${M2_SETTINGS_REPO_PASSWORD}"
 	if [[ "${CI}" == "CONCOURSE" ]]; then
 		# shellcheck disable=SC2086
@@ -25,7 +25,18 @@ function build() {
 	fi
 }
 
-function apiCompatibilityCheck() {
+function build() {
+	BUILD_OPTIONS="${BUILD_OPTIONS} -DM2_SETTINGS_REPO_USERNAME=${M2_SETTINGS_REPO_USERNAME} -DM2_SETTINGS_REPO_PASSWORD=${M2_SETTINGS_REPO_PASSWORD}"
+	if [[ "${CI}" == "CONCOURSE" ]]; then
+		# shellcheck disable=SC2086
+		"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PASSED_PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" -DREPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)
+	else
+		# shellcheck disable=SC2086
+		"${GRADLEW_BIN}" clean build deploy -PnewVersion="${PASSED_PIPELINE_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES}" -DREPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} || (echo "Build failed!!!" && return 1)
+	fi
+}
+
+function apiCompatibilityCheck_OLD() {
 	echo "Running retrieval of group and artifactid to download all dependencies. It might take a while..."
 	# Find latest prod version
 	[[ -z "${LATEST_PROD_TAG}" ]] && LATEST_PROD_TAG="$(findLatestProdTag)"
@@ -35,6 +46,26 @@ function apiCompatibilityCheck() {
 	else
 		# Downloading latest jar
 		LATEST_PROD_VERSION=${LATEST_PROD_TAG#prod/}
+		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
+		if [[ "${CI}" == "CONCOURSE" ]]; then
+			# shellcheck disable=SC2086
+			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)
+		else
+			# shellcheck disable=SC2086
+			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS}
+		fi
+	fi
+}
+
+function apiCompatibilityCheck() {
+	echo "Running retrieval of group and artifactid to download all dependencies. It might take a while..."
+	# Find latest prod version
+	echo "Last prod tag equals [${PASSED_LATEST_PROD_TAG}]"
+	if [[ -z "${PASSED_LATEST_PROD_TAG}" ]]; then
+		echo "No prod release took place - skipping this step"
+	else
+		# Downloading latest jar
+		LATEST_PROD_VERSION=${PASSED_LATEST_PROD_TAG#prod/}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		if [[ "${CI}" == "CONCOURSE" ]]; then
 			# shellcheck disable=SC2086
@@ -63,7 +94,7 @@ function retrieveStubRunnerIds() {
 	"${GRADLEW_BIN}" stubIds -q | tail -1
 }
 
-function runSmokeTests() {
+function runSmokeTests_OLD() {
 	local applicationUrl="${APPLICATION_URL}"
 	local stubrunnerUrl="${STUBRUNNER_URL}"
 	echo "Running smoke tests. Application url [${applicationUrl}], Stubrunner Url [${stubrunnerUrl}]"
@@ -77,7 +108,21 @@ function runSmokeTests() {
 	fi
 }
 
-function runE2eTests() {
+function runSmokeTests() {
+	local applicationUrl="${APPLICATION_URL}"
+	local stubrunnerUrl="${STUBRUNNER_URL}"
+	echo "Running smoke tests. Application url [${applicationUrl}], Stubrunner Url [${stubrunnerUrl}]"
+
+	if [[ "${CI}" == "CONCOURSE" ]]; then
+		# shellcheck disable=SC2086
+		"${GRADLEW_BIN}" smoke -PnewVersion="${PASSED_PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} || (printTestResults && return 1)
+	else
+		# shellcheck disable=SC2086
+		"${GRADLEW_BIN}" smoke -PnewVersion="${PASSED_PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
+	fi
+}
+
+function runE2eTests_OLD() {
 	local applicationUrl="${APPLICATION_URL}"
 	echo "Running e2e tests for application with url [${applicationUrl}]"
 
@@ -87,6 +132,19 @@ function runE2eTests() {
 	else
 		# shellcheck disable=SC2086
 		"${GRADLEW_BIN}" e2e -PnewVersion="${PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
+	fi
+}
+
+function runE2eTests() {
+	local applicationUrl="${APPLICATION_URL}"
+	echo "Running e2e tests for application with url [${applicationUrl}]"
+
+	if [[ "${CI}" == "CONCOURSE" ]]; then
+		# shellcheck disable=SC2086
+		"${GRADLEW_BIN}" e2e -PnewVersion="${PASSED_PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} || (printTestResults && return 1)
+	else
+		# shellcheck disable=SC2086
+		"${GRADLEW_BIN}" e2e -PnewVersion="${PASSED_PIPELINE_VERSION}" -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
 	fi
 }
 
