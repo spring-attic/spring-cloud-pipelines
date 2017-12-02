@@ -37,9 +37,9 @@ source "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/concourse/tasks/generate-settings.sh
 
 # TODO Could move this function into common/src/main/bash/pipeline.sh and remove this source call (talk to Marcin)
 # Used to delete prod tag in prod_rollback job
-echo "Sourcing file with git-resource helper functions"
+echo "Sourcing file with git-resource util functions"
 # shellcheck source=/dev/null
-source "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/concourse/tasks/git-resource-helper.sh
+source "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/concourse/tasks/git-resource-util.sh
 
 export TERM=dumb
 
