@@ -28,9 +28,8 @@ resources:
     uri: ((tools-scripts-url))
     branch: ((tools-branch))
 
-resources:
-  - name: keyval
-    type: keyval
+- name: keyval
+  type: keyval
 
 resource_types:
   - name: keyval
