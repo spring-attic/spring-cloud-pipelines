@@ -64,7 +64,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
     - get: keyval
       passed:
       - generate-version
@@ -91,7 +90,6 @@ jobs:
     - get: tools
     - get: repo
     - get: tags
-    - get: version
     - get: keyval
       passed:
       - build-and-upload
@@ -114,7 +112,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
     - get: keyval
       passed:
       - build-api-compatibility-check
@@ -139,7 +136,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
     - get: keyval
       passed:
       - test-deploy
@@ -163,7 +159,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: tags
-    - get: version
     - get: keyval
       passed:
       - test-smoke
@@ -190,7 +185,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: tags
-    - get: version
     - get: keyval
       passed:
       - test-rollback-deploy
@@ -216,7 +210,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
     - get: keyval
       passed:
       - test-rollback-smoke
@@ -241,7 +234,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
     - get: keyval
       passed:
       - stage-deploy
@@ -265,7 +257,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
     - get: keyval
       passed:
       - stage-e2e
@@ -294,7 +285,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
     - get: keyval
       passed:
       - prod-deploy
@@ -315,7 +305,6 @@ jobs:
   - aggregate:
     - get: tools
     - get: tags
-    - get: version
     - get: keyval
       passed:
       - prod-deploy

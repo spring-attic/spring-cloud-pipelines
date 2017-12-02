@@ -8,7 +8,6 @@ export ROOT_FOLDER
 ROOT_FOLDER="$( pwd )"
 export REPO_RESOURCE=repo
 export TOOLS_RESOURCE=tools
-export VERSION_RESOURCE=version
 export KEYVAL_RESOURCE=keyval
 export KEYVALOUTPUT_RESOURCE=keyvalout
 export OUTPUT_RESOURCE=out
@@ -16,7 +15,6 @@ export OUTPUT_RESOURCE=out
 echo "Root folder is [${ROOT_FOLDER}]"
 echo "Repo resource folder is [${REPO_RESOURCE}]"
 echo "Tools resource folder is [${TOOLS_RESOURCE}]"
-echo "Version resource folder is [${VERSION_RESOURCE}]"
 echo "KeyVal resource folder is [${KEYVAL_RESOURCE}]"
 
 # If you're using some other image with Docker change these lines
