@@ -32,6 +32,7 @@ cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 # in case it is the latter, get the latest prod tag
 # if it is the former, this will return nothing
 LATEST_PROD_TAG="${PASSED_LATEST_PROD_TAG}"
+PIPELINE_VERSION="${PASSED_PIPELINE_VERSION}"
 #findLatestProdTag
 #echo "Latest prod tag is [${LATEST_PROD_TAG}]"
 
