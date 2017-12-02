@@ -8,8 +8,10 @@ inputs:
   - name: tools
   - name: repo
   - name: version
+  - name: keyval
 outputs:
   - name: out
+  - name: keyval
 caches:
   - path: gradle
   - path: maven

@@ -7,6 +7,10 @@ set -o pipefail
 export SCRIPTS_OUTPUT_FOLDER="${ROOT_FOLDER}/${REPO_RESOURCE}/ciscripts"
 echo "Scripts will be copied to [${SCRIPTS_OUTPUT_FOLDER}]"
 
+# shellcheck source=/dev/null
+source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/keyval-resource-util.sh"
+exportKeyValProperties
+
 echo "Copying pipelines scripts"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 mkdir -p "${SCRIPTS_OUTPUT_FOLDER}" || echo "Failed to create the scripts output folder"
@@ -37,7 +41,7 @@ source "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/concourse/tasks/generate-settings.sh
 
 # TODO Could move this function into common/src/main/bash/pipeline.sh and remove this source call (talk to Marcin)
 # Used to delete prod tag in prod_rollback job
-echo "Sourcing file with git-resource util functions"
+echo "Sourcing file with git resource util functions"
 # shellcheck source=/dev/null
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/concourse/tasks/git-resource-util.sh
 

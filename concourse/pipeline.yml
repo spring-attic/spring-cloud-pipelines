@@ -28,6 +28,16 @@ resources:
     uri: ((tools-scripts-url))
     branch: ((tools-branch))
 
+resources:
+  - name: keyval
+    type: keyval
+
+resource_types:
+  - name: keyval
+    type: docker-image
+    source:
+      repository: swce/keyval-resource
+
 jobs:
 - name: generate-version
   public: true
@@ -44,6 +54,9 @@ jobs:
   - put: version
     params:
       repository: updated-version
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: build-and-upload
   serial: true
@@ -53,6 +66,7 @@ jobs:
     - get: tools
     - get: repo
     - get: version
+    - get: keyval
       passed:
       - generate-version
       trigger: true
@@ -66,6 +80,9 @@ jobs:
       repository: out
       tag: out/tag
       only_tag: true
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: build-api-compatibility-check
   serial: true
@@ -76,6 +93,7 @@ jobs:
     - get: repo
     - get: tags
     - get: version
+    - get: keyval
       passed:
       - build-and-upload
       trigger: true
@@ -85,6 +103,9 @@ jobs:
     params:
       MESSAGE: "Deploying the built application on test environment"
       SCRIPT_TO_RUN: "build_api_compatibility_check.sh"
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
       <<: *common-params
 
 - name: test-deploy
@@ -95,6 +116,7 @@ jobs:
     - get: tools
     - get: repo
     - get: version
+    - get: keyval
       passed:
       - build-api-compatibility-check
       trigger: true
@@ -107,6 +129,9 @@ jobs:
       <<: *common-params
       <<: *paas-test-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: test-smoke
   serial: true
@@ -116,6 +141,7 @@ jobs:
     - get: tools
     - get: repo
     - get: version
+    - get: keyval
       passed:
       - test-deploy
       trigger: true
@@ -127,6 +153,9 @@ jobs:
       SCRIPT_TO_RUN: "test_smoke.sh"
       <<: *common-params
       <<: *paas-test-params
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: test-rollback-deploy
   serial: true
@@ -136,6 +165,7 @@ jobs:
     - get: tools
     - get: tags
     - get: version
+    - get: keyval
       passed:
       - test-smoke
       trigger: true
@@ -150,6 +180,9 @@ jobs:
       <<: *common-params
       <<: *paas-test-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: test-rollback-smoke
   serial: true
@@ -159,6 +192,7 @@ jobs:
     - get: tools
     - get: tags
     - get: version
+    - get: keyval
       passed:
       - test-rollback-deploy
       trigger: true
@@ -172,6 +206,9 @@ jobs:
       SCRIPT_TO_RUN: "test_rollback_smoke.sh"
       <<: *common-params
       <<: *paas-test-params
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: stage-deploy
   serial: true
@@ -181,6 +218,7 @@ jobs:
     - get: tools
     - get: repo
     - get: version
+    - get: keyval
       passed:
       - test-rollback-smoke
       trigger: true
@@ -193,6 +231,9 @@ jobs:
       <<: *common-params
       <<: *paas-stage-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: stage-e2e
   serial: true
@@ -202,6 +243,7 @@ jobs:
     - get: tools
     - get: repo
     - get: version
+    - get: keyval
       passed:
       - stage-deploy
       trigger: true
@@ -213,6 +255,9 @@ jobs:
       SCRIPT_TO_RUN: "stage_e2e.sh"
       <<: *common-params
       <<: *paas-stage-params
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: prod-deploy
   serial: true
@@ -222,6 +267,7 @@ jobs:
     - get: tools
     - get: repo
     - get: version
+    - get: keyval
       passed:
       - stage-e2e
       trigger: true
@@ -237,6 +283,9 @@ jobs:
       repository: out
       tag: out/tag
       only_tag: true
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 
 - name: prod-complete
@@ -247,6 +296,7 @@ jobs:
     - get: tools
     - get: repo
     - get: version
+    - get: keyval
       passed:
       - prod-deploy
       trigger: false
@@ -267,6 +317,7 @@ jobs:
     - get: tools
     - get: tags
     - get: version
+    - get: keyval
       passed:
       - prod-deploy
       trigger: false

@@ -9,8 +9,10 @@ inputs:
   - name: repo
   - name: tags
   - name: version
+  - name: keyval
 outputs:
   - name: out
+  - name: keyval
 caches:
   - path: gradle
   - path: maven
