@@ -6,17 +6,17 @@ set -o pipefail
 
 function exportKeyValProperties() {
 	props="${ROOT_FOLDER}/${KEYVAL_RESOURCE}/keyval.properties"
-	if [ -f "$props" ]
+	if [ -f "${props}" ]
 	then
 	  echo "Reading passed key values"
 	  while IFS= read -r var
 	  do
-	    if [ ! -z "$var" ]
+	    if [ ! -z "${var}" ]
 	    then
-	      echo "Adding: $var"
+	      echo "Adding: ${var}"
 	      export "$var"
 	    fi
-	  done < "$props"
+	  done < "${props}"
 	fi
 }
 
@@ -24,14 +24,14 @@ function exportKeyValProperties() {
 function passKeyValProperties() {
 	propsDir="${ROOT_FOLDER}/${KEYVALOUTPUT_RESOURCE}"
 	propsFile="${propsDir}/keyval.properties"
-	if [ -d "$propsDir" ]
+	if [ -d "${propsDir}" ]
 	then
-	  touch "$propsFile"
+	  touch "${propsFile}"
 	  echo "Setting key values for next job in ${propsFile}"
 	  while IFS='=' read -r name value ; do
-	    if [[ $name == 'PASSED_'* ]]; then
+	    if [[ "${name}" == 'PASSED_'* ]]; then
 	      echo "Adding: ${name}=${value}"
-	      echo "${name}=${value}" >> "$propsFile"
+	      echo "${name}=${value}" >> "${propsFile}"
 	    fi
 	  done < <(env)
 	fi

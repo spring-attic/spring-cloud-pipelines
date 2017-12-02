@@ -30,4 +30,4 @@ pushd updated-version
 popd
 
 echo "Adding: PASSED_VERSION: [${VERSION}]"
-echo "PASSED_VERSION=${VERSION}" >> "$propsFile"
+echo "PASSED_VERSION=${VERSION}" >> "${propsFile}"
