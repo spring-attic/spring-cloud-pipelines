@@ -17,8 +17,9 @@ mkdir -p "${SCRIPTS_OUTPUT_FOLDER}" || echo "Failed to create the scripts output
     cp -r "${ROOT_FOLDER}/${CUSTOM_SCRIPT_IDENTIFIER}"/common/src/main/bash/* "${SCRIPTS_OUTPUT_FOLDER}"/ || \
     echo "No custom scripts found"
 
+echo "Sourcing file with resource util functions"
 # shellcheck source=/dev/null
-source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/keyval-resource-util.sh"
+source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/resource-utils.sh"
 exportKeyValProperties
 
 export LATEST_PROD_TAG
@@ -39,12 +40,6 @@ source "${SCRIPTS_OUTPUT_FOLDER}/pipeline.sh"
 echo "Generating settings.xml / gradle properties for Maven in local m2"
 # shellcheck source=/dev/null
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/concourse/tasks/generate-settings.sh
-
-# TODO Could move this function into common/src/main/bash/pipeline.sh and remove this source call (talk to Marcin)
-# Used to delete prod tag in prod_rollback job
-echo "Sourcing file with git resource util functions"
-# shellcheck source=/dev/null
-source "${ROOT_FOLDER}/${TOOLS_RESOURCE}"/concourse/tasks/git-resource-util.sh
 
 export TERM=dumb
 
