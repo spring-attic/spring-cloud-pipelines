@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2086,SC1007,SC2163,SC2046
 
 set -o errexit
 set -o errtrace
@@ -50,7 +51,8 @@ function load_pubkey() {
     chmod 0600 $private_key_path
 
     eval $(ssh-agent) >/dev/null 2>&1
-    trap "kill $SSH_AGENT_PID" 0
+    # shellcheck disable=SC2046
+    trap 'kill $SSH_AGENT_PID' 0
 
     SSH_ASKPASS=$(dirname $0)/askpass.sh DISPLAY= ssh-add $private_key_path >/dev/null
 
