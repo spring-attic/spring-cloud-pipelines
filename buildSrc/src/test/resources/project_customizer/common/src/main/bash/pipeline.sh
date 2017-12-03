@@ -62,7 +62,7 @@ function runE2eTests() {
 
 # ---- PRODUCTION PHASE ----
 
-function performProductionDeployment() {
+function prodDeploy() {
 	echo "Will deploy the Green binary next to the Blue one, on the production environment"
 	exit 1
 }

@@ -210,6 +210,7 @@ parsedRepos.each {
 						triggerWithNoParameters()
 						parameters {
 							currentBuild()
+							propertiesFile('${OUTPUT_FOLDER}/test.properties', false)
 						}
 					}
 				}

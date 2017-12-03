@@ -59,8 +59,8 @@ function runE2eTests() {
 
 # ---- PRODUCTION PHASE ----
 
-function performProductionDeployment() {
-    echo "performProductionDeployment"
+function prodDeploy() {
+    echo "prodDeploy"
 }
 
 function completeSwitchOver() {
@@ -82,6 +82,6 @@ export -f runSmokeTests
 export -f stageDeploy
 export -f prepareForE2eTests
 export -f runE2eTests
-export -f performProductionDeployment
+export -f prodDeploy
 export -f completeSwitchOver
 export -f rollbackToPreviousVersion

@@ -239,5 +239,5 @@ teardown() {
 
 	run testResultsAntPattern
 
-	assert_output "**/test-results/*.xml"
+	assert_output "**/test-results/**/*.xml"
 }

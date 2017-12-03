@@ -525,7 +525,7 @@ function retrieveApplicationUrl() {
 	echo "${APPLICATION_URL}"
 }
 
-function performProductionDeployment() {
+function prodDeploy() {
 	local projectGroupId
 	projectGroupId="$(retrieveGroupId)"
 	local appName

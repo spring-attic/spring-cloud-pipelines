@@ -121,7 +121,7 @@ export -f git_master
 @test "should run prod deployment for prod_deploy" {
 	run "${SOURCE_DIR}/prod_deploy.sh"
 
-	assert_output --partial "performProductionDeployment"
+	assert_output --partial "prodDeploy"
 }
 
 @test "should delete blue instance for prod_complete" {

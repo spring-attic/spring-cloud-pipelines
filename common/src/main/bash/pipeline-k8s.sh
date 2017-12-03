@@ -624,7 +624,7 @@ function stageDeploy() {
 	deployAndRestartAppWithNameForE2ETests "${appName}"
 }
 
-function performProductionDeployment() {
+function prodDeploy() {
 	# TODO: Consider making it less JVM specific
 	local appName
 	appName="$(retrieveAppName)"

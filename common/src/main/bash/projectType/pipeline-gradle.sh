@@ -98,7 +98,7 @@ function outputFolder() {
 }
 
 function testResultsAntPattern() {
-	echo "**/test-results/*.xml"
+	echo "**/test-results/**/*.xml"
 }
 
 export -f build
