@@ -1,0 +1,6 @@
+== Step by step Cloud Foundry migration
+
+https://docs.google.com/presentation/d/e/2PACX-1vSsEHn8cJfz8oWIwwUhdULt7nZzz3bBLK7OqM8UInkZ0LbQBCpPdhMoxsYGPe_90h9OvCu7dFlAimMJ/pub?start=false&loop=false&delayms=3000[Click here] to
+check out the slides by https://twitter.com/ciberkleid[Cora Iberkleid] where she
+migrates a setup of applications to be compliant with Spring Cloud Pipelines.
+

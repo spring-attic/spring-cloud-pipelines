@@ -10,7 +10,7 @@ image::https://circleci.com/gh/spring-cloud/spring-cloud-pipelines.svg?style=svg
 
 = Spring Cloud Pipelines
 
-_Documentation Authors: Marcin Grzejszczak_
+_Documentation Authors: Marcin Grzejszczak, Cora Iberkleid_
 
 Spring, Spring Boot and Spring Cloud are tools that allow developers speed up the
 time of creating new business features. It's common knowledge however that the
@@ -3671,6 +3671,15 @@ $ curl -X POST http://localhost:9876/ -d @path/to/issue-created.json \
 Then if you check out Grafana you'll see that you went above the
 threshold.
 // remove::end[K8S]
+
+// remove::start[CF]
+== Step by step Cloud Foundry migration
+
+https://docs.google.com/presentation/d/e/2PACX-1vSsEHn8cJfz8oWIwwUhdULt7nZzz3bBLK7OqM8UInkZ0LbQBCpPdhMoxsYGPe_90h9OvCu7dFlAimMJ/pub?start=false&loop=false&delayms=3000[Click here] to
+check out the slides by https://twitter.com/ciberkleid[Cora Iberkleid] where she
+migrates a setup of applications to be compliant with Spring Cloud Pipelines.
+
+// remove::end[CF]
 
 == Building the project
 
