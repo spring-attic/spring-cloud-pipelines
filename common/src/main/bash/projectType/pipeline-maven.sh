@@ -38,7 +38,7 @@ function apiCompatibilityCheck() {
 	else
 		# Putting env vars to output properties file for parameter passing
 		export PASSED_LATEST_PROD_TAG="${prodTag}"
-		local fileLocation="${OUTPUT_FOLDER}/test.properties}"
+		local fileLocation="${OUTPUT_FOLDER}/test.properties"
 		echo "PASSED_LATEST_PROD_TAG=${prodTag}" >>"${fileLocation}"
 		# Downloading latest jar
 		LATEST_PROD_VERSION=${prodTag#prod/}
