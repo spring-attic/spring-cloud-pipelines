@@ -93,10 +93,10 @@ function testRollbackDeploy() {
 }
 
 function deployService() {
-	local serviceType
-	serviceType="$(toLowerCase "${1}")"
 	local serviceName
-	serviceName="${2}"
+	serviceName="${1}"
+	local serviceType
+	serviceType="$(toLowerCase "${2}")"
 	local serviceCoordinates
 	serviceCoordinates="$(if [[ "${3}" == "null" ]]; then
 		echo "";
@@ -136,7 +136,7 @@ function deployService() {
 			else
 				echo "${parsedStubRunnerUseClasspath}";
 			fi)
-			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${uniqueRabbitName}" "${uniqueEurekaName}" "${serviceName}"
+			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${uniqueRabbitName}" "${uniqueEurekaName}" "${serviceName}"
 		;;
 		*)
 			echo "Unknown service [${serviceType}]"
@@ -186,14 +186,14 @@ function appSystemProps() {
 }
 
 function deleteService() {
-	local serviceType="${1}"
-	local serviceName="${2}"
+	local serviceName="${1}"
+	local serviceType="${2}"
 	echo "Deleting all possible entries with name [${serviceName}]"
 	deleteAppByName "${serviceName}"
 }
 
 function deployRabbitMq() {
-	local serviceName="${1:-rabbitmq-github}"
+	local serviceName="${1}"
 	local objectDeployed
 	objectDeployed="$(objectDeployed "service" "${serviceName}")"
 	if [[ "${ENVIRONMENT}" == "STAGE" && "${objectDeployed}" == "true" ]]; then
@@ -270,7 +270,7 @@ function substituteVariables() {
 }
 
 function deployMySql() {
-	local serviceName="${1:-mysql-github}"
+	local serviceName="${1}"
 	local objectDeployed
 	objectDeployed="$(objectDeployed "service" "${serviceName}")"
 	if [[ "${ENVIRONMENT}" == "STAGE" && "${objectDeployed}" == "true" ]]; then
@@ -624,7 +624,7 @@ function stageDeploy() {
 	deployAndRestartAppWithNameForE2ETests "${appName}"
 }
 
-function performGreenDeployment() {
+function prodDeploy() {
 	# TODO: Consider making it less JVM specific
 	local appName
 	appName="$(retrieveAppName)"
@@ -632,10 +632,10 @@ function performGreenDeployment() {
 	logInToPaas
 
 	# deploy app
-	performGreenDeploymentOfTestedApplication "${appName}"
+	performProductionDeploymentOfTestedApplication "${appName}"
 }
 
-function performGreenDeploymentOfTestedApplication() {
+function performProductionDeploymentOfTestedApplication() {
 	local appName="${1}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
@@ -708,7 +708,7 @@ function rollbackToPreviousVersion() {
 	fi
 }
 
-function deleteBlueInstance() {
+function completeSwitchOver() {
 	local appName
 	appName="$(retrieveAppName)"
 	# Log in to CF to start deployment

@@ -10,7 +10,7 @@ image::https://circleci.com/gh/spring-cloud/spring-cloud-pipelines.svg?style=svg
 
 = Spring Cloud Pipelines
 
-_Documentation Authors: Marcin Grzejszczak_
+_Documentation Authors: Marcin Grzejszczak, Cora Iberkleid_
 
 Spring, Spring Boot and Spring Cloud are tools that allow developers speed up the
 time of creating new business features. It's common knowledge however that the
@@ -304,43 +304,90 @@ want to have deployed. Services have
        docker image `organization/nameOfImage`, etc.
     - arbitrary key value pairs - you can customize the services as you wish
 
-The `stubrunner` type can also have the `useClasspath` flag turned on to `true`
-or `false`.
+==== Pipeline descriptor for Cloud Foundry
 
-Example:
+When deploying to Cloud Foundry you can provide services
+of the following types:
+
+- `type: broker`
+* `broker` - name of the CF broker
+* `plan` - name of the plan
+* `params` - additional parameters that will be converted to JSON
+* `useExisting` - should use existing one or
+create a new one (defaults to `false`)
+- `type: app`
+* `coordinates` - maven coordinates of the stub runner jar
+* `manifestPath` - path to the manifest for the stub runner jar
+- `type: cups`
+* `params` - additional parameters that will be converted to JSON
+- `type: cupsSyslog`
+* `url` - URL to the syslog drain
+- `type: cupsRoute`
+* `url` - URL to the route service
+- `type: stubrunner`
+* `coordinates` - maven coordinates of the stub runner jar
+* `manifestPath` - path to the manifest for the stub runner jar
 
 [source,yaml]
 ----
+# This file describes which services are required by this application
+# in order for the smoke tests on the TEST environment and end to end tests
+# on the STAGE environment to pass
+
+# lowercase name of the environment
 test:
+  # list of required services
   services:
-    - type: rabbitmq
-      name: rabbitmq-github-webhook
-    - type: mysql
-      name: mysql-github-webhook
-    - type: eureka
-      name: eureka-github-webhook
-      coordinates: com.example.eureka:github-eureka:0.0.1.M1
-    - type: stubrunner
-      name: stubrunner-github-webhook
-      coordinates: com.example.eureka:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
-      useClasspath: true
+    - name: config-server
+      type: broker
+      broker: p-config-server
+      plan: standard
+      params:
+        git:
+          uri: https://github.com/ciberkleid/app-config
+      useExisting: true
+    - name: cloud-bus
+      type: broker
+      broker: cloudamqp
+      plan: lemur
+      useExisting: true
+    - name: service-registry
+      type: broker
+      broker: p-service-registry
+      plan: standard
+      useExisting: true
+    - name: circuit-breaker-dashboard
+      type: broker
+      broker: p-circuit-breaker-dashboard
+      plan: standard
+      useExisting: true
+    - name: stubrunner
+      type: stubrunner
+      coordinates: io.pivotal:cloudfoundry-stub-runner-boot:0.0.1.M1
+      manifestPath: sc-pipelines/manifest-stubrunner.yml
+
 stage:
   services:
-    - type: rabbitmq
-      name: rabbitmq-github
-    - type: mysql
-      name: mysql-github
-    - type: eureka
-      name: github-eureka
-      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+    - name: config-server
+      type: broker
+      broker: p-config-server
+      plan: standard
+      params:
+        git:
+          uri: https://github.com/ciberkleid/app-config
+    - name: cloud-bus
+      type: broker
+      broker: cloudamqp
+      plan: lemur
+    - name: service-registry
+      type: broker
+      broker: p-service-registry
+      plan: standard
+    - name: circuit-breaker-dashboard
+      type: broker
+      broker: p-circuit-breaker-dashboard
+      plan: standard
 ----
-
-When the deployment to test or deployment to stage occurs, Spring Cloud Pipelines
-will:
-
-    - for `test` environment, delete existing services and redeploy the ones from the list
-    - for `stage` environment, if the service is not available it will get deployed. Otherwise
-    nothing will happen
 
 == Opinionated implementation
 
@@ -473,15 +520,13 @@ Here we're
         * the service is routing the traffic basing on the `name` label selector
         * now two instances of the same application are running on production
 - in the `Complete switch over` which is a manual step
-    * we're deleting the old instance
+    * we're stopping the old instance
     * remember to run this step only after you have confirmed that both instances are working fine!
-        * now two instances of the same application are running on production
-- in the `Rollback to blue` which is a manual step
+- in the `Rollback` which is a manual step
     * we're routing all the traffic to the old instance
-    * in CF we do that by ensuring that blue is running and stopping green
-    * in K8S we do that by scaling the number of instances of green to 0
-    * this step will set the state of your system to such where most likely some manual intervention should take place
-    (to restart some applications, redeploy them, etc.)
+    ** in CF we do that by ensuring that blue is running and removing green
+    ** in K8S we do that by scaling the number of instances of green to 0
+    * we're removing the latest prod git tag
 
 == Project opinions
 
@@ -494,6 +539,7 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 
 - application built using Maven or Gradle wrappers
 - application deployment to Cloud Foundry
+- you application needs a `manifest.yml` Cloud Foundry descriptor
 - For Maven (https://github.com/spring-cloud-samples/github-webhook[example project]):
     * usage of Maven Wrapper
     * `settings.xml` is parametrized to pass the credentials to push code to Artifactory
@@ -512,7 +558,7 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 - For Gradle  (https://github.com/spring-cloud-samples/github-analytics[example project] check the `gradle/pipeline.gradle` file):
     * usage of Gradlew Wrapper
     * `deploy` task for artifacts deployment
-    * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `REPO_WITH_BINARIES_FOR_UPLOAD` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
     * `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
     * `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
     * running API compatibility tests via the `apiCompatibility` task
@@ -557,7 +603,7 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 - For Gradle  (https://github.com/spring-cloud-samples/github-analytics-kubernetes[example project] check the `gradle/pipeline.gradle` file):
     * usage of Gradlew Wrapper
     * `deploy` task for artifacts deployment
-    * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `REPO_WITH_BINARIES_FOR_UPLOAD` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
     * `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
     * `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
     * `DOCKER_REGISTRY_URL` env var - (Overridable - defaults to DockerHub) URL of the Docker registry
@@ -751,15 +797,14 @@ Below you can see what environment variables are required by the scripts. To the
 |PAAS_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
 |PAAS_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
 |PAAS_TEST_ORG    | Name of the org for the test env | pcfdev-org
-|PAAS_TEST_SPACE  | Name of the space for the test env | pcfdev-space
+|PAAS_TEST_SPACE_PREFIX  | Prefix of the name of the CF space for the test env to which the app name will be appended | sc-pipelines-test
 |PAAS_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
-|PAAS_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
+|PAAS_STAGE_SPACE | Name of the space for the stage env | sc-pipelines-stage
 |PAAS_PROD_ORG   | Name of the org for the prod env | pcfdev-org
-|PAAS_PROD_SPACE | Name of the space for the prod env | pcfdev-space
-|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
+|PAAS_PROD_SPACE | Name of the space for the prod env | sc-pipelines-prod
+|REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |PAAS_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
-|APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
 |JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 |
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
@@ -1724,12 +1769,12 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
 |PAAS_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
 |PAAS_TEST_ORG    | Name of the org for the test env | pcfdev-org
-|PAAS_TEST_SPACE  | Name of the space for the test env | pcfdev-space
+|PAAS_TEST_SPACE_PREFIX  | Prefix of the name of the CF space for the test env to which the app name will be appended | sc-pipelines-test
 |PAAS_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
-|PAAS_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
+|PAAS_STAGE_SPACE | Name of the space for the stage env | sc-pipelines-stage
 |PAAS_PROD_ORG   | Name of the org for the prod env | pcfdev-org
-|PAAS_PROD_SPACE | Name of the space for the prod env | pcfdev-space
-|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|PAAS_PROD_SPACE | Name of the space for the prod env | sc-pipelines-prod
+|REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |JDK_VERSION | The name of the JDK installation | jdk8
 |PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
@@ -1741,7 +1786,6 @@ The env vars that are used in all of the jobs are as follows:
 |API_COMPATIBILITY_STEP_REQUIRED | Should api compatibility step be required | true
 |DB_ROLLBACK_STEP_REQUIRED | Should DB rollback step be present | true
 |DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
-|APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
 |JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 |
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |BINARY_EXTENSION | Extension of the binary uploaded to Artifactory / Nexus. Example: change this to `war` for WAR artifacts | jar
@@ -2048,7 +2092,7 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_STAGE_NAMESPACE | Namespace for stage environment | sc-pipelines-stage
 |PAAS_PROD_NAMESPACE | Namespace for prod environment | sc-pipelines-prod
 |KUBERNETES_MINIKUBE | Will you connect to Minikube? | true
-|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
 |REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |JDK_VERSION | The name of the JDK installation | jdk8
@@ -3673,6 +3717,15 @@ $ curl -X POST http://localhost:9876/ -d @path/to/issue-created.json \
 Then if you check out Grafana you'll see that you went above the
 threshold.
 // remove::end[K8S]
+
+// remove::start[CF]
+== Step by step Cloud Foundry migration
+
+https://docs.google.com/presentation/d/e/2PACX-1vSsEHn8cJfz8oWIwwUhdULt7nZzz3bBLK7OqM8UInkZ0LbQBCpPdhMoxsYGPe_90h9OvCu7dFlAimMJ/pub?start=false&loop=false&delayms=3000[Click here] to
+check out the slides by https://twitter.com/ciberkleid[Cora Iberkleid] where she
+migrates a setup of applications to be compliant with Spring Cloud Pipelines.
+
+// remove::end[CF]
 
 == Building the project
 

@@ -15,12 +15,12 @@ export PAAS_STAGE_ORG
 PAAS_STAGE_ORG="${PAAS_STAGE_ORG:-pcfdev-org}"
 export PAAS_PROD_ORG
 PAAS_PROD_ORG="${PAAS_PROD_ORG:-pcfdev-org}"
-export PAAS_TEST_SPACE
-PAAS_TEST_SPACE="${PAAS_TEST_SPACE:-pcfdev-test}"
+export PAAS_TEST_SPACE_PREFIX
+PAAS_TEST_SPACE_PREFIX="${PAAS_TEST_SPACE_PREFIX:-sc-pipelines-test}"
 export PAAS_STAGE_SPACE
-PAAS_STAGE_SPACE="${PAAS_STAGE_SPACE:-pcfdev-stage}"
+PAAS_STAGE_SPACE="${PAAS_STAGE_SPACE:-sc-pipelines-stage}"
 export PAAS_PROD_SPACE
-PAAS_PROD_SPACE="${PAAS_PROD_SPACE:-pcfdev-prod}"
+PAAS_PROD_SPACE="${PAAS_PROD_SPACE:-sc-pipelines-prod}"
 export APPLICATION_HOST
 APPLICATION_HOST="${APPLICATION_HOST:-local.pcfdev.io}"
 export CF_API_URL
@@ -32,7 +32,7 @@ CF_PASSWORD="${CF_PASSWORD:-admin}"
 export CF_DEFAULT_ORG
 CF_DEFAULT_ORG="${CF_DEFAULT_ORG:-pcfdev-org}"
 export CF_DEFAULT_SPACE
-CF_DEFAULT_SPACE="${CF_DEFAULT_SPACE:-pcfdev-test}"
+CF_DEFAULT_SPACE="${CF_DEFAULT_SPACE:-sc-pipelines-test}"
 export ARTIFACTORY_URL
 ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://repo.spring.io/libs-milestone}"
 export EUREKA_MEMORY
@@ -58,15 +58,24 @@ case $1 in
 		cf_login
 
 		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
-			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE_PREFIX}-github-webhook"
 		fi
 		yes | cf stop github-webhook
 		yes | cf stop github-analytics
-		yes | cf stop eureka-github-webhook
-		yes | cf stop eureka-github-analytics
+		yes | cf stop github-eureka
 		yes | cf stop stubrunner
-		yes | cf stop stubrunner-github-webhook
-		yes | cf stop stubrunner-github-analytics
+		yes | cf stop stubrunner
+		yes | cf stop stubrunner
+
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE_PREFIX}-github-analytics"
+		fi
+		yes | cf stop github-webhook
+		yes | cf stop github-analytics
+		yes | cf stop github-eureka
+		yes | cf stop stubrunner
+		yes | cf stop stubrunner
+		yes | cf stop stubrunner
 
 		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
 			cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
@@ -102,14 +111,22 @@ case $1 in
 		cf_login
 
 		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
-			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE_PREFIX}-github-webhook"
 		fi
 		cf delete -f github-webhook
 		cf delete -f github-analytics
-		cf delete -f eureka-github-analytics
-		cf delete -f eureka-github-webhook
-		cf delete -f stubrunner-github-webhook
-		cf delete -f stubrunner-github-analytics
+		cf delete -f github-eureka
+		cf delete -f stubrunner
+		cf delete -f stubrunner
+
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE_PREFIX}-github-analytics"
+		fi
+		cf delete -f github-webhook
+		cf delete -f github-analytics
+		cf delete -f github-eureka
+		cf delete -f stubrunner
+		cf delete -f stubrunner
 
 		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
 			cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
@@ -132,14 +149,18 @@ case $1 in
 		cf_login
 
 		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
-			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE_PREFIX}-github-webhook"
 		fi
 		cf delete -f github-webhook
 		cf delete -f github-analytics
-		cf delete -f eureka-github-webhook
-		cf delete -f eureka-github-analytics
-		cf delete -f stubrunner-github-webhook
-		cf delete -f stubrunner-github-analytics
+		cf delete -f github-eureka
+
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE_PREFIX}-github-analytics"
+		fi
+		cf delete -f github-webhook
+		cf delete -f github-analytics
+		cf delete -f github-eureka
 		;;
 
 	delete-all-stage-apps)
@@ -154,28 +175,25 @@ case $1 in
 		;;
 
 	delete-routes)
-		cf delete-route -f "${APPLICATION_HOST}" -n github-webhook-test
 		cf delete-route -f "${APPLICATION_HOST}" -n github-analytics-test
-		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-webhook-test
-		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-analytics-test
+		cf delete-route -f "${APPLICATION_HOST}" -n github-webhook-test
+		cf delete-route -f "${APPLICATION_HOST}" -n github-eureka-test
 		cf delete-route -f "${APPLICATION_HOST}" -n stubrunner-test
-		cf delete-route -f "${APPLICATION_HOST}" -n stubrunner-github-webhook-test
-		cf delete-route -f "${APPLICATION_HOST}" -n stubrunner-github-analytics-test
 		cf delete-route -f "${APPLICATION_HOST}" -n github-webhook-stage
 		cf delete-route -f "${APPLICATION_HOST}" -n github-analytics-stage
-		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-webhook-stage
-		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-analytics-stage
+		cf delete-route -f "${APPLICATION_HOST}" -n github-eureka-stage
 		cf delete-route -f "${APPLICATION_HOST}" -n github-analytics
 		cf delete-route -f "${APPLICATION_HOST}" -n github-webhook
-		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-webhook
-		cf delete-route -f "${APPLICATION_HOST}" -n eureka-github-analytics
+		cf delete-route -f "${APPLICATION_HOST}" -n github-eureka
 		;;
 
 	setup-spaces)
 		cf_login
 
-		cf create-space "${PAAS_TEST_SPACE}"
-		cf set-space-role user pcfdev-org "${PAAS_TEST_SPACE}" SpaceDeveloper
+		cf create-space "${PAAS_TEST_SPACE_PREFIX}-github-webhook"
+		cf set-space-role user pcfdev-org "${PAAS_TEST_SPACE_PREFIX}-github-webhook" SpaceDeveloper
+		cf create-space "${PAAS_TEST_SPACE_PREFIX}-github-analytics"
+		cf set-space-role user pcfdev-org "${PAAS_TEST_SPACE_PREFIX}-github-analytics" SpaceDeveloper
 
 		cf create-space "${PAAS_STAGE_SPACE}"
 		cf set-space-role user pcfdev-org "${PAAS_STAGE_SPACE}" SpaceDeveloper
@@ -188,14 +206,22 @@ case $1 in
 		cf_login
 
 		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
-			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE}"
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE_PREFIX}-github-webhook"
 		fi
 		yes | cf delete-service -f mysql-github-webhook
 		yes | cf delete-service -f mysql-github-analytics
-		yes | cf delete-service -f rabbitmq-github-webhook
-		yes | cf delete-service -f rabbitmq-github-analytics
-		yes | cf delete-service -f eureka-github-webhook
-		yes | cf delete-service -f eureka-github-analytics
+		yes | cf delete-service -f rabbitmq-github
+		yes | cf delete-service -f mysql-github
+		yes | cf delete-service -f github-eureka
+
+		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
+			cf target -o "${PAAS_TEST_ORG}" -s "${PAAS_TEST_SPACE_PREFIX}-github-analytics"
+		fi
+		yes | cf delete-service -f mysql-github-webhook
+		yes | cf delete-service -f mysql-github-analytics
+		yes | cf delete-service -f rabbitmq-github
+		yes | cf delete-service -f mysql-github
+		yes | cf delete-service -f github-eureka
 
 		if [[ "${REUSE_CF_LOGIN}" != "true" ]]; then
 			cf target -o "${PAAS_STAGE_ORG}" -s "${PAAS_STAGE_SPACE}"
@@ -229,7 +255,7 @@ case $1 in
 		mkdir -p build
 		curl "${ARTIFACTORY_URL}/com/example/eureka/github-eureka/0.0.1.M1/github-eureka-0.0.1.M1.jar" -o "build/eureka.jar" --fail || echo "Failed to download the JAR"
 		echo "Deploying eureka"
-		cf push "github-eureka" -p "build/eureka.jar" -n "github-eureka" -b "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" -m "${EUREKA_MEMORY}" -i 1 --no-manifest --no-start
+		cf push "github-eureka" -p "build/eureka.jar" -n "github-eureka" -b "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" -m "${EUREKA_MEMORY}" -i 1 -f "cf/manifest-eureka.yml" --no-start
 		APPLICATION_DOMAIN="$( cf apps | grep github-eureka | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 )"
 		JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
 		cf set-env "github-eureka" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"

@@ -25,6 +25,6 @@ for REPO in ${REPOSITORIES}; do
 	pushd "${REPO}"
 	while read -r TAG; do
 		git push --delete origin "${TAG}"
-	done < <( git ls-remote -q --tags origin | cut -f 2 | grep '^refs/tags/prod/' )
+	done < <( git ls-remote -q --tags origin | cut -f 2 | grep '^refs/tags/prod/' | grep -v '{}' )
 	popd
 done

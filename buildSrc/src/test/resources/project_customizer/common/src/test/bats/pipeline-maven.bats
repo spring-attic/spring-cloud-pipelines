@@ -34,7 +34,7 @@ setup() {
 	export CI="CONCOURSE"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
@@ -50,7 +50,7 @@ setup() {
 	export CI="JENKINS"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
@@ -63,7 +63,7 @@ setup() {
 	export CI="JENKINS"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 
@@ -79,7 +79,7 @@ setup() {
 	export CI="CONCOURSE"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${PIPELINES_TEST_DIR}/maven/build_project"
 	source "${PIPELINES_TEST_DIR}/projectType/pipeline-maven.sh"
 

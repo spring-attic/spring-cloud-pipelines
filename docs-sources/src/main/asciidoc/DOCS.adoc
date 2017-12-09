@@ -1,6 +1,6 @@
 = Spring Cloud Pipelines
 
-_Documentation Authors: Marcin Grzejszczak_
+_Documentation Authors: Marcin Grzejszczak, Cora Iberkleid_
 
 Spring, Spring Boot and Spring Cloud are tools that allow developers speed up the
 time of creating new business features. It's common knowledge however that the
@@ -39,5 +39,9 @@ include::CF_DEMO.adoc[]
 // remove::start[K8S]
 include::K8S_DEMO.adoc[]
 // remove::end[K8S]
+
+// remove::start[CF]
+include::CF_MIGRATION.adoc[]
+// remove::end[CF]
 
 include::TECH.adoc[]

@@ -55,7 +55,7 @@ function testDeploy() {
 	deployServices
 
 	# deploy app
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
 	deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${PIPELINE_VERSION}" "${UNIQUE_RABBIT_NAME}" "${UNIQUE_EUREKA_NAME}" "${UNIQUE_MYSQL_NAME}"
 	propagatePropertiesForTests "${appName}"
 }
@@ -70,7 +70,7 @@ function testRollbackDeploy() {
 	# Downloading latest jar
 	local LATEST_PROD_VERSION=${latestProdTag#prod/}
 	echo "Last prod version equals ${LATEST_PROD_VERSION}"
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}"
 	logInToPaas
 	deployAndRestartAppWithNameForSmokeTests "${appName}" "${appName}-${LATEST_PROD_VERSION}"
 	propagatePropertiesForTests "${appName}"
@@ -100,7 +100,7 @@ function deployService() {
 			local PREVIOUS_IFS="${IFS}"
 			IFS=${coordinatesSeparator} read -r EUREKA_GROUP_ID EUREKA_ARTIFACT_ID EUREKA_VERSION <<<"${serviceCoordinates}"
 			IFS="${PREVIOUS_IFS}"
-			downloadAppBinary "${REPO_WITH_BINARIES}" "${EUREKA_GROUP_ID}" "${EUREKA_ARTIFACT_ID}" "${EUREKA_VERSION}"
+			downloadAppBinary "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${EUREKA_GROUP_ID}" "${EUREKA_ARTIFACT_ID}" "${EUREKA_VERSION}"
 			deployEureka "${EUREKA_ARTIFACT_ID}-${EUREKA_VERSION}" "${serviceName}" "${ENVIRONMENT}"
 		;;
 		stubrunner)
@@ -119,8 +119,8 @@ function deployService() {
 			else
 				echo "${parsedStubRunnerUseClasspath}";
 			fi)
-			downloadAppBinary "${REPO_WITH_BINARIES}" "${STUBRUNNER_GROUP_ID}" "${STUBRUNNER_ARTIFACT_ID}" "${STUBRUNNER_VERSION}"
-			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${rabbitMqName}" "${eurekaName}" "${ENVIRONMENT}" "${serviceName}" "${stubRunnerUseClasspath}"
+			downloadAppBinary "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${STUBRUNNER_GROUP_ID}" "${STUBRUNNER_ARTIFACT_ID}" "${STUBRUNNER_VERSION}"
+			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${rabbitMqName}" "${eurekaName}" "${ENVIRONMENT}" "${serviceName}" "${stubRunnerUseClasspath}"
 		;;
 		*)
 			echo "Unknown service with type [${serviceType}] and name [${serviceName}]"
@@ -416,7 +416,7 @@ function stageDeploy() {
 
 	deployServices
 
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
 
 	# deploy app
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
@@ -436,22 +436,22 @@ function retrieveApplicationUrl() {
 	echo "${APPLICATION_URL}"
 }
 
-function performGreenDeployment() {
+function prodDeploy() {
 	local projectGroupId
 	projectGroupId="$(retrieveGroupId)"
 	local appName
 	appName="$(retrieveAppName)"
 
 	# download app
-	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
+	downloadAppBinary "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
 	# Log in to CF to start deployment
 	logInToPaas
 
 	# deploy app
-	performGreenDeploymentOfTestedApplication "${appName}"
+	performProductionDeploymentOfTestedApplication "${appName}"
 }
 
-function performGreenDeploymentOfTestedApplication() {
+function performProductionDeploymentOfTestedApplication() {
 	local appName="${1}"
 	local newName="${appName}-venerable"
 	echo "Renaming the app from [${appName}] -> [${newName}]"
@@ -465,7 +465,7 @@ function performGreenDeploymentOfTestedApplication() {
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 }
 
-function deleteBlueInstance() {
+function completeSwitchOver() {
 	local appName
 	appName="$(retrieveAppName)"
 	# Log in to CF to start deployment

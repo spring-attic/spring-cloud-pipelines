@@ -132,7 +132,7 @@ function deployService() {
 			else
 				echo "${parsedStubRunnerUseClasspath}";
 			fi)
-			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES}" "${uniqueRabbitName}" "${uniqueEurekaName}" "${serviceName}"
+			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}:${STUBRUNNER_VERSION}" "${REPO_WITH_BINARIES_FOR_UPLOAD}" "${uniqueRabbitName}" "${uniqueEurekaName}" "${serviceName}"
 		;;
 		*)
 			echo "Unknown service [${serviceType}]"
@@ -620,7 +620,7 @@ function stageDeploy() {
 	deployAndRestartAppWithNameForE2ETests "${appName}"
 }
 
-function performGreenDeployment() {
+function prodDeploy() {
 	# TODO: Consider making it less JVM specific
 	local appName
 	appName="$(retrieveAppName)"
@@ -628,10 +628,10 @@ function performGreenDeployment() {
 	logInToPaas
 
 	# deploy app
-	performGreenDeploymentOfTestedApplication "${appName}"
+	performProductionDeploymentOfTestedApplication "${appName}"
 }
 
-function performGreenDeploymentOfTestedApplication() {
+function performProductionDeploymentOfTestedApplication() {
 	local appName="${1}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
@@ -675,7 +675,7 @@ function escapeValueForDns() {
 	echo "${lowerCaseSed}"
 }
 
-function deleteBlueInstance() {
+function completeSwitchOver() {
 	local appName
 	appName="$(retrieveAppName)"
 	# Log in to CF to start deployment

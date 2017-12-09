@@ -15,30 +15,33 @@ if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
 fi
 
 function build() {
+	local pipelineVersion="${PASSED_PIPELINE_VERSION:-${PIPELINE_VERSION:-}}"
 	# Required by settings.xml
 	BUILD_OPTIONS="${BUILD_OPTIONS} -DM2_SETTINGS_REPO_ID=${M2_SETTINGS_REPO_ID} -DM2_SETTINGS_REPO_USERNAME=${M2_SETTINGS_REPO_USERNAME} -DM2_SETTINGS_REPO_PASSWORD=${M2_SETTINGS_REPO_PASSWORD}"
 	# shellcheck disable=SC2086
-	"${MAVENW_BIN}" org.codehaus.mojo:versions-maven-plugin:2.3:set -DnewVersion="${PIPELINE_VERSION}" ${BUILD_OPTIONS} || (echo "Build failed!!!" && return 1)
+	"${MAVENW_BIN}" org.codehaus.mojo:versions-maven-plugin:2.3:set -DnewVersion="${pipelineVersion}" ${BUILD_OPTIONS} || (echo "Build failed!!!" && return 1)
 	if [[ "${CI}" == "CONCOURSE" ]]; then
 		# shellcheck disable=SC2086
-		"${MAVENW_BIN}" clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS} || (printTestResults && return 1)
+		"${MAVENW_BIN}" clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES_FOR_UPLOAD}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS} || (printTestResults && return 1)
 	else
 		# shellcheck disable=SC2086
-		"${MAVENW_BIN}" clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
+		"${MAVENW_BIN}" clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES_FOR_UPLOAD}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
 	fi
 }
 
 function apiCompatibilityCheck() {
-	echo "Running retrieval of group and artifactid to download all dependencies. It might take a while..."
-
-	# Find latest prod version
-	[[ -z "${LATEST_PROD_TAG}" ]] && LATEST_PROD_TAG="$(findLatestProdTag)"
-	echo "Last prod tag equals ${LATEST_PROD_TAG}"
-	if [[ -z "${LATEST_PROD_TAG}" ]]; then
+	local prodTag="${PASSED_LATEST_PROD_TAG:-${LATEST_PROD_TAG:-}}"
+	[[ -z "${prodTag}" ]] && prodTag="$(findLatestProdTag)"
+	echo "Last prod tag equals [${prodTag}]"
+	if [[ -z "${prodTag}" ]]; then
 		echo "No prod release took place - skipping this step"
 	else
+		# Putting env vars to output properties file for parameter passing
+		export PASSED_LATEST_PROD_TAG="${prodTag}"
+		local fileLocation="${OUTPUT_FOLDER}/test.properties}"
+		echo "PASSED_LATEST_PROD_TAG=${prodTag}" >>"${fileLocation}"
 		# Downloading latest jar
-		LATEST_PROD_VERSION=${LATEST_PROD_TAG#prod/}
+		LATEST_PROD_VERSION=${prodTag#prod/}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		if [[ "${CI}" == "CONCOURSE" ]]; then
 			# shellcheck disable=SC2086

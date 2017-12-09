@@ -152,7 +152,7 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_STAGE_NAMESPACE | Namespace for stage environment | sc-pipelines-stage
 |PAAS_PROD_NAMESPACE | Namespace for prod environment | sc-pipelines-prod
 |KUBERNETES_MINIKUBE | Will you connect to Minikube? | true
-|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
 |REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |JDK_VERSION | The name of the JDK installation | jdk8

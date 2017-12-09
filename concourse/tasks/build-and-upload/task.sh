@@ -1,16 +1,21 @@
 #!/bin/bash
 
+set -o errexit
+set -o errtrace
+set -o pipefail
+
 export ROOT_FOLDER
 ROOT_FOLDER="$( pwd )"
 export REPO_RESOURCE=repo
 export TOOLS_RESOURCE=tools
-export VERSION_RESOURCE=version
+export KEYVAL_RESOURCE=keyval
+export KEYVALOUTPUT_RESOURCE=keyvalout
 export OUTPUT_RESOURCE=out
 
 echo "Root folder is [${ROOT_FOLDER}]"
 echo "Repo resource folder is [${REPO_RESOURCE}]"
 echo "Tools resource folder is [${TOOLS_RESOURCE}]"
-echo "Version resource folder is [${VERSION_RESOURCE}]"
+echo "KeyVal resource folder is [${KEYVAL_RESOURCE}]"
 
 # If you're using some other image with Docker change these lines
 # shellcheck source=/dev/null
@@ -21,11 +26,14 @@ start_docker || echo "Failed to start docker... Hopefully you know what you're d
 source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 
 echo "Building and uploading the projects artifacts"
-cd "${ROOT_FOLDER}"/"${REPO_RESOURCE}" || exit
+cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 
 # shellcheck source=/dev/null
 . "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
 
 echo "Tagging the project with dev tag"
-echo "dev/${PIPELINE_VERSION}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
+DEV_TAG="dev/${PASSED_PIPELINE_VERSION}"
+echo "${DEV_TAG}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
 cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
+
+passKeyValProperties

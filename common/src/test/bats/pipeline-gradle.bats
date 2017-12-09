@@ -40,7 +40,7 @@ teardown() {
 	export CI="CONCOURSE"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${TEMP_DIR}/gradle/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
 
@@ -56,7 +56,7 @@ teardown() {
 	export CI="JENKINS"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${TEMP_DIR}/gradle/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
 
@@ -70,7 +70,7 @@ teardown() {
 	export CI="JENKINS"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${TEMP_DIR}/gradle/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
 
@@ -86,7 +86,7 @@ teardown() {
 	export CI="CONCOURSE"
 	export PIPELINE_VERSION="100.0.0"
 	export M2_SETTINGS_REPO_ID="foo"
-	export REPO_WITH_BINARIES="bar"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="bar"
 	cd "${TEMP_DIR}/gradle/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
 
@@ -239,5 +239,5 @@ teardown() {
 
 	run testResultsAntPattern
 
-	assert_output "**/test-results/*.xml"
+	assert_output "**/test-results/**/*.xml"
 }

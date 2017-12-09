@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -o errexit
+set -o errtrace
+set -o pipefail
+
 M2_HOME="${HOME}/.m2"
 M2_CACHE="${ROOT_FOLDER}/maven"
 GRADLE_HOME="${HOME}/.gradle"

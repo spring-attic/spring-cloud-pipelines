@@ -12,6 +12,7 @@ inputs:
 
 outputs:
   - name: updated-version
+  - name: keyvalout
 
 run:
   path: tools/concourse/tasks/generate-version/task.sh

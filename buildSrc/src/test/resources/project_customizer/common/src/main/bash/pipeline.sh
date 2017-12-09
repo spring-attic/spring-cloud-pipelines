@@ -62,12 +62,12 @@ function runE2eTests() {
 
 # ---- PRODUCTION PHASE ----
 
-function performGreenDeployment() {
+function prodDeploy() {
 	echo "Will deploy the Green binary next to the Blue one, on the production environment"
 	exit 1
 }
 
-function deleteBlueInstance() {
+function completeSwitchOver() {
 	echo "Deletes the old, Blue binary from the production environment"
 	exit 1
 }

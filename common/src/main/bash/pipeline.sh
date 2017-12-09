@@ -62,7 +62,7 @@ function runE2eTests() {
 
 # ---- PRODUCTION PHASE ----
 
-function performGreenDeployment() {
+function prodDeploy() {
 	echo "Will deploy the Green binary next to the Blue one, on the production environment"
 	exit 1
 }
@@ -72,7 +72,7 @@ function rollbackToPreviousVersion() {
 	exit 1
 }
 
-function deleteBlueInstance() {
+function completeSwitchOver() {
 	echo "Deletes the old, Blue binary from the production environment"
 	exit 1
 }
@@ -99,9 +99,17 @@ function testResultsAntPattern() {
 
 # Finds the latest prod tag from git
 function findLatestProdTag() {
-	local LAST_PROD_TAG
-	LAST_PROD_TAG=$(git for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | head -n 1)
-	echo "${LAST_PROD_TAG#refs/tags/}"
+	local prodTag="${PASSED_LATEST_PROD_TAG:-${LATEST_PROD_TAG:-}}"
+	if [[ ! -z "${prodTag}" ]]; then
+		echo "${prodTag}"
+	else
+		local latestProdTag
+		latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | tail -1)
+		export LATEST_PROD_TAG PASSED_LATEST_PROD_TAG
+		LATEST_PROD_TAG="${latestProdTag#refs/tags/}"
+		PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
+		echo "${LATEST_PROD_TAG}"
+	fi
 }
 
 # Extracts the version from the production tag
@@ -110,20 +118,20 @@ function extractVersionFromProdTag() {
 	echo "${tag#prod/}"
 }
 
+# TODO: maybe don't need this if space is created anew for test????
 function deleteService() {
-	local serviceType="${1}"
-	local serviceName="${2}"
-	echo "Should delete a service of type [${serviceType}] and name [${serviceName}]
-	Example: deleteService mysql foo-mysql"
+	local serviceName="${1}"
+	local serviceType="${2}"
+	echo "Should delete a service with name [${serviceName}] and type [${serviceType}]
+	Example: deleteService foo-eureka eureka"
 	exit 1
 }
 
 function deployService() {
-	local serviceType="${1}"
-	local serviceName="${2}"
-	local serviceCoordinates="${3}"
-	echo "Should deploy a service of type [${serviceType}], name [${serviceName}] and coordinates [${serviceCoordinates}]
-	Example: deployService eureka foo-eureka groupid:artifactid:1.0.0.RELEASE"
+	local serviceName="${1}"
+	local serviceType="${2}"
+	echo "Should deploy a service with name [${serviceName}] and type [${serviceType}]
+	Example: deployService foo-eureka eureka"
 	exit 1
 }
 
@@ -160,20 +168,21 @@ function deployServices() {
 		return
 	fi
 
-	while read -r serviceType serviceName serviceCoordinates; do
-		if [[ "${ENVIRONMENT}" == "TEST" ]]; then
-			deleteService "${serviceType}" "${serviceName}"
-			deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
+	while read -r serviceName serviceType useExisting; do
+	    serviceType=$(toLowerCase "${serviceType}")
+		if [[ "${ENVIRONMENT}" == "TEST" && "${useExisting}" != "true" ]]; then
+			deleteService "${serviceName}" "${serviceType}"
+			deployService "${serviceName}" "${serviceType}"
 		else
 			if [[ "$(serviceExists "${serviceName}")" == "true" ]]; then
 				echo "Skipping deployment since service is already deployed"
 			else
-				deployService "${serviceType}" "${serviceName}" "${serviceCoordinates}"
+				deployService "${serviceName}" "${serviceType}"
 			fi
 		fi
-	# retrieve the space separated type, name and coordinates
+	# retrieve the space separated name and type
 	done <<<"$(echo "${PARSED_YAML}" | \
-				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.type) \(.name) \(.coordinates)"')"
+				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.name) \(.type) \(.useExisting)"')"
 }
 
 # Converts YAML to JSON - uses ruby
@@ -193,7 +202,9 @@ PAAS_TYPE="$( toLowerCase "${PAAS_TYPE:-cf}" )"
 LOWERCASE_ENV="$(toLowerCase "${ENVIRONMENT}")"
 
 PIPELINE_DESCRIPTOR="${PIPELINE_DESCRIPTOR:-sc-pipelines.yml}"
-export PIPELINE_DESCRIPTOR PAAS_TYPE LOWERCASE_ENV
+GIT_BIN="${GIT_BIN:-git}"
+
+export PIPELINE_DESCRIPTOR PAAS_TYPE LOWERCASE_ENV GIT_BIN
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"

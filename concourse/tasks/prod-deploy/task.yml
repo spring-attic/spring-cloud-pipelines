@@ -7,9 +7,10 @@ image_resource:
 inputs:
   - name: tools
   - name: repo
-  - name: version
+  - name: keyval
 outputs:
   - name: out
+  - name: keyvalout
 caches:
   - path: gradle
   - path: maven

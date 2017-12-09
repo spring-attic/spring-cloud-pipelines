@@ -238,7 +238,7 @@ common-params: &common-params
   M2_SETTINGS_REPO_PASSWORD: ((m2-settings-repo-password))
   M2_SETTINGS_REPO_USERNAME: ((m2-settings-repo-username))
   PAAS_TYPE: ((paas-type))
-  REPO_WITH_BINARIES: ((repo-with-binaries))
+  REPO_WITH_BINARIES_FOR_UPLOAD: ((repo-with-binaries))
 
 paas-prod-params: &paas-prod-params
   PAAS_PROD_API_URL: ((paas-prod-api-url))
@@ -258,5 +258,5 @@ paas-test-params: &paas-test-params
   PAAS_TEST_API_URL: ((paas-test-api-url))
   PAAS_TEST_ORG: ((paas-test-org))
   PAAS_TEST_PASSWORD: ((paas-test-password))
-  PAAS_TEST_SPACE: ((paas-test-space))
+  PAAS_TEST_SPACE_PREFIX: ((paas-test-space))
   PAAS_TEST_USERNAME: ((paas-test-username))

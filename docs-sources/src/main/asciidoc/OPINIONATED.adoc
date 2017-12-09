@@ -129,15 +129,13 @@ Here we're
         * the service is routing the traffic basing on the `name` label selector
         * now two instances of the same application are running on production
 - in the `Complete switch over` which is a manual step
-    * we're deleting the old instance
+    * we're stopping the old instance
     * remember to run this step only after you have confirmed that both instances are working fine!
-        * now two instances of the same application are running on production
-- in the `Rollback to blue` which is a manual step
+- in the `Rollback` which is a manual step
     * we're routing all the traffic to the old instance
-    * in CF we do that by ensuring that blue is running and stopping green
-    * in K8S we do that by scaling the number of instances of green to 0
-    * this step will set the state of your system to such where most likely some manual intervention should take place
-    (to restart some applications, redeploy them, etc.)
+    ** in CF we do that by ensuring that blue is running and removing green
+    ** in K8S we do that by scaling the number of instances of green to 0
+    * we're removing the latest prod git tag
 
 == Project opinions
 
@@ -150,6 +148,7 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 
 - application built using Maven or Gradle wrappers
 - application deployment to Cloud Foundry
+- you application needs a `manifest.yml` Cloud Foundry descriptor
 - For Maven (https://github.com/spring-cloud-samples/github-webhook[example project]):
     * usage of Maven Wrapper
     * `settings.xml` is parametrized to pass the credentials to push code to Artifactory
@@ -168,7 +167,7 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 - For Gradle  (https://github.com/spring-cloud-samples/github-analytics[example project] check the `gradle/pipeline.gradle` file):
     * usage of Gradlew Wrapper
     * `deploy` task for artifacts deployment
-    * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `REPO_WITH_BINARIES_FOR_UPLOAD` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
     * `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
     * `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
     * running API compatibility tests via the `apiCompatibility` task
@@ -213,7 +212,7 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 - For Gradle  (https://github.com/spring-cloud-samples/github-analytics-kubernetes[example project] check the `gradle/pipeline.gradle` file):
     * usage of Gradlew Wrapper
     * `deploy` task for artifacts deployment
-    * `REPO_WITH_BINARIES` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    * `REPO_WITH_BINARIES_FOR_UPLOAD` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
     * `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
     * `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
     * `DOCKER_REGISTRY_URL` env var - (Overridable - defaults to DockerHub) URL of the Docker registry

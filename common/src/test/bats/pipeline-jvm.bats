@@ -17,7 +17,7 @@ teardown() {
 }
 
 function curl {
-	local repo="${1}"
+	local repo="${@}"
 	if [[ "${repo}" == *failed* ]]; then
 		return 1
 	else
@@ -28,6 +28,7 @@ function curl {
 export -f curl
 
 @test "should return unknown if no matching project type is found" {
+	cd "/"
 	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
 
 	run projectType

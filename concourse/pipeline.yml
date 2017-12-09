@@ -20,6 +20,15 @@ resources:
     uri: ((tools-scripts-url))
     branch: ((tools-branch))
 
+- name: keyval
+  type: keyval
+
+resource_types:
+  - name: keyval
+    type: docker-image
+    source:
+      repository: swce/keyval-resource
+
 jobs:
 - name: generate-version
   public: true
@@ -36,6 +45,9 @@ jobs:
   - put: version
     params:
       repository: updated-version
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: build-and-upload
   serial: true
@@ -44,7 +56,7 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - generate-version
       trigger: true
@@ -58,6 +70,9 @@ jobs:
       repository: out
       tag: out/tag
       only_tag: true
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: build-api-compatibility-check
   serial: true
@@ -66,16 +81,19 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - build-and-upload
       trigger: true
   - task: build-api-compatibility-check
     privileged: true
-    file: tools/concourse/task.yml
+    file: tools/concourse/tasks/build-api-compatibility-check/task.yml
     params:
       MESSAGE: "Deploying the built application on test environment"
       SCRIPT_TO_RUN: "build_api_compatibility_check.sh"
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
       <<: *common-params
 
 - name: test-deploy
@@ -85,7 +103,7 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - build-api-compatibility-check
       trigger: true
@@ -98,6 +116,9 @@ jobs:
       <<: *common-params
       <<: *paas-test-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: test-smoke
   serial: true
@@ -106,7 +127,7 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - test-deploy
       trigger: true
@@ -118,6 +139,9 @@ jobs:
       SCRIPT_TO_RUN: "test_smoke.sh"
       <<: *common-params
       <<: *paas-test-params
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: test-rollback-deploy
   serial: true
@@ -126,7 +150,7 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - test-smoke
       trigger: true
@@ -139,6 +163,9 @@ jobs:
       <<: *common-params
       <<: *paas-test-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: test-rollback-smoke
   serial: true
@@ -147,7 +174,7 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - test-rollback-deploy
       trigger: true
@@ -159,6 +186,9 @@ jobs:
       SCRIPT_TO_RUN: "test_rollback_smoke.sh"
       <<: *common-params
       <<: *paas-test-params
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: stage-deploy
   serial: true
@@ -167,10 +197,10 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - test-rollback-smoke
-      trigger: false
+      trigger: true
   - task: stage-deploy
     privileged: true
     file: tools/concourse/task.yml
@@ -180,6 +210,9 @@ jobs:
       <<: *common-params
       <<: *paas-stage-params
       PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: stage-e2e
   serial: true
@@ -188,11 +221,11 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - stage-deploy
-      trigger: false
-  - task: stage-smoke
+      trigger: true
+  - task: stage-e2e
     privileged: true
     file: tools/concourse/task.yml
     params:
@@ -200,6 +233,9 @@ jobs:
       SCRIPT_TO_RUN: "stage_e2e.sh"
       <<: *common-params
       <<: *paas-stage-params
+  - put: keyval
+    params:
+      file: keyvalout/keyval.properties
 
 - name: prod-deploy
   serial: true
@@ -208,10 +244,10 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - stage-e2e
-      trigger: false
+      trigger: true
   - task: prod-deploy
     privileged: true
     file: tools/concourse/tasks/prod-deploy/task.yml
@@ -224,27 +260,10 @@ jobs:
       repository: out
       tag: out/tag
       only_tag: true
-
-- name: prod-rollback
-  serial: true
-  public: false
-  plan:
-  - aggregate:
-    - get: tools
-    - get: repo
-    - get: version
-      passed:
-      - prod-deploy
-      trigger: false
-  - task: prod-rollback
-    privileged: true
-    file: tools/concourse/task.yml
+  - put: keyval
     params:
-      MESSAGE: "Rolling back to previous instance"
-      SCRIPT_TO_RUN: "prod_rollback.sh"
-      <<: *common-params
-      <<: *paas-prod-params
-      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+      file: keyvalout/keyval.properties
+
 
 - name: prod-complete
   serial: true
@@ -253,7 +272,7 @@ jobs:
   - aggregate:
     - get: tools
     - get: repo
-    - get: version
+    - get: keyval
       passed:
       - prod-deploy
       trigger: false
@@ -266,9 +285,28 @@ jobs:
       <<: *common-params
       <<: *paas-prod-params
 
+- name: prod-rollback
+  serial: true
+  public: false
+  plan:
+  - aggregate:
+    - get: tools
+    - get: repo
+    - get: keyval
+      passed:
+      - prod-deploy
+      trigger: false
+  - task: prod-rollback
+    privileged: true
+    file: tools/concourse/tasks/prod-rollback/task.yml
+    params:
+      <<: *common-params
+      <<: *paas-prod-params
+      PAAS_HOSTNAME_UUID: ((paas-hostname-uuid))
+      GIT_PRIVATE_KEY: ((github-private-key))
+
 common-params: &common-params
   _JAVA_OPTIONS: -Djava.security.egd=file:/dev/./urandom
-  APP_MEMORY_LIMIT: ((app-memory-limit))
   BUILD_OPTIONS: ((build-options))
   GIT_EMAIL: ((git-email))
   GIT_NAME: ((git-name))
@@ -276,7 +314,9 @@ common-params: &common-params
   M2_SETTINGS_REPO_PASSWORD: ((m2-settings-repo-password))
   M2_SETTINGS_REPO_USERNAME: ((m2-settings-repo-username))
   PAAS_TYPE: ((paas-type))
+  REPO_WITH_BINARIES_FOR_UPLOAD: ((repo-with-binaries-for-upload))
   REPO_WITH_BINARIES: ((repo-with-binaries))
+  PIPELINE_DESCRIPTOR: ((pipeline-descriptor))
   # remove::start[K8S]
   KUBERNETES-MINIKUBE: ((kubernetes-minikube))
   MYSQL_ROOT_PASSWORD: ((mysql-root-password))
@@ -329,7 +369,7 @@ paas-test-params: &paas-test-params
   # remove::start[CF]
   PAAS_TEST_ORG: ((paas-test-org))
   PAAS_TEST_PASSWORD: ((paas-test-password))
-  PAAS_TEST_SPACE: ((paas-test-space))
+  PAAS_TEST_SPACE_PREFIX: ((paas-test-space-prefix))
   PAAS_TEST_USERNAME: ((paas-test-username))
   # remove::end[CF]
   # remove::start[K8S]

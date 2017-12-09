@@ -11,13 +11,13 @@ export ENVIRONMENT=TEST
  echo "No pipeline.sh found"
 
 # Find latest prod version
-export LATEST_PROD_TAG
-[[ -z "${LATEST_PROD_TAG}" ]] && LATEST_PROD_TAG="$(findLatestProdTag)"
-prepareForSmokeTests
-echo "Last prod tag equals [${LATEST_PROD_TAG}]"
+prodTag="$(findLatestProdTag)"
+echo "Last prod tag equals [${prodTag}]"
 
-if [[ -z "${LATEST_PROD_TAG}" || "${LATEST_PROD_TAG}" == "master" ]]; then
+if [[ -z "${prodTag}" || "${prodTag}" == "master" ]]; then
 	echo "No prod release took place - skipping this step"
 else
+	"${GIT_BIN}" checkout "${prodTag}"
+	prepareForSmokeTests
 	runSmokeTests
 fi

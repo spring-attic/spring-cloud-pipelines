@@ -13,6 +13,22 @@ teardown() {
 	rm -f -- "${SOURCE_DIR}/pipeline-dummy.sh"
 }
 
+function git() {
+	echo "git $*"
+}
+
+function git_empty() {
+	echo ""
+}
+
+function git_master() {
+	echo "master"
+}
+
+export -f git
+export -f git_empty
+export -f git_master
+
 @test "should run build for build_and_upload" {
 	run "${SOURCE_DIR}/build_and_upload.sh"
 
@@ -39,6 +55,8 @@ teardown() {
 }
 
 @test "should do nothing if there's no prod deployment for rollback deployment" {
+	export GIT_BIN="git_empty"
+
 	run "${SOURCE_DIR}/test_rollback_deploy.sh"
 
 	refute_output "testRollbackDeploy"
@@ -56,20 +74,22 @@ teardown() {
 }
 
 @test "should do nothing if there's no prod deployment for rollback test" {
+	export GIT_BIN="git_empty"
+
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
-	assert_output --partial "prepareForSmokeTests"
+	refute_output --partial "prepareForSmokeTests"
 	refute_output "testRollbackDeploy"
 	assert_output --partial "Last prod tag equals []"
 	assert_output --partial "No prod release took place - skipping this step"
 }
 
 @test "should do nothing if there's prod tag is 'master' for rollback test" {
-	export LATEST_PROD_TAG="master"
+	export GIT_BIN="git_master"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
-	assert_output --partial "prepareForSmokeTests"
+	refute_output --partial "prepareForSmokeTests"
 	refute_output "testRollbackDeploy"
 	assert_output --partial "Last prod tag equals [master]"
 	assert_output --partial "No prod release took place - skipping this step"
@@ -101,13 +121,13 @@ teardown() {
 @test "should run prod deployment for prod_deploy" {
 	run "${SOURCE_DIR}/prod_deploy.sh"
 
-	assert_output --partial "performGreenDeployment"
+	assert_output --partial "prodDeploy"
 }
 
 @test "should delete blue instance for prod_complete" {
 	run "${SOURCE_DIR}/prod_complete.sh"
 
-	assert_output --partial "deleteBlueInstance"
+	assert_output --partial "completeSwitchOver"
 }
 
 @test "should rollback to blue instance for prod_rollback" {

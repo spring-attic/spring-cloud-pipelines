@@ -185,7 +185,7 @@ parsedRepos.each {
 					remote {
 						name('origin')
 						url(fullGitRepo)
-						branch(branchName)
+						branch('dev/${PIPELINE_VERSION}')
 						credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
 					}
 					extensions {
@@ -210,6 +210,7 @@ parsedRepos.each {
 						triggerWithNoParameters()
 						parameters {
 							currentBuild()
+							propertiesFile('${OUTPUT_FOLDER}/test.properties', false)
 						}
 					}
 				}
@@ -425,9 +426,6 @@ parsedRepos.each {
 					if (k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
 					// remove::end[K8S]
 				}
-				parameters {
-					stringParam('LATEST_PROD_TAG', 'master', 'Latest production tag. If "master" is picked then the step will be ignored')
-				}
 				timestamps()
 				colorizeOutput()
 				maskPasswords()
@@ -441,7 +439,7 @@ parsedRepos.each {
 				git {
 					remote {
 						url(fullGitRepo)
-						branch('${LATEST_PROD_TAG}')
+						branch('dev/${PIPELINE_VERSION}')
 					}
 					extensions {
 						wipeOutWorkspace()
@@ -830,19 +828,20 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "TOOLS_BRANCH")
 		setIfPresent(envs, variables, "M2_SETTINGS_REPO_ID")
 		setIfPresent(envs, variables, "REPO_WITH_BINARIES")
+		setIfPresent(envs, variables, "REPO_WITH_BINARIES_FOR_UPLOAD")
 		setIfPresent(envs, variables, "REPO_WITH_BINARIES_CREDENTIAL_ID")
+		setIfPresent(envs, variables, "PIPELINE_DESCRIPTOR")
 		// remove::start[CF]
 		setIfPresent(envs, variables, "PAAS_TEST_API_URL")
 		setIfPresent(envs, variables, "PAAS_STAGE_API_URL")
 		setIfPresent(envs, variables, "PAAS_PROD_API_URL")
 		setIfPresent(envs, variables, "PAAS_TEST_ORG")
-		setIfPresent(envs, variables, "PAAS_TEST_SPACE")
+		setIfPresent(envs, variables, "PAAS_TEST_SPACE_PREFIX")
 		setIfPresent(envs, variables, "PAAS_STAGE_ORG")
 		setIfPresent(envs, variables, "PAAS_STAGE_SPACE")
 		setIfPresent(envs, variables, "PAAS_PROD_ORG")
 		setIfPresent(envs, variables, "PAAS_PROD_SPACE")
 		setIfPresent(envs, variables, "PAAS_HOSTNAME_UUID")
-		setIfPresent(envs, variables, "APP_MEMORY_LIMIT")
 		setIfPresent(envs, variables, "JAVA_BUILDPACK_URL")
 		// remove::end[CF]
 		// remove::start[K8S]

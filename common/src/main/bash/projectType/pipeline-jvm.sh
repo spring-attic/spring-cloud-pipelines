@@ -15,14 +15,20 @@ function downloadAppBinary() {
 	local destination
 	local changedGroupId
 	local pathToJar
-
 	destination="$(pwd)/${OUTPUT_FOLDER}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	changedGroupId="$(echo "${groupId}" | tr . /)"
 	pathToJar="${repoWithJars}/${changedGroupId}/${artifactId}/${version}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	mkdir -p "${OUTPUT_FOLDER}"
-	echo "Current folder is [$(pwd)]; Downloading [${pathToJar}] to [${destination}]"
-	(curl "${pathToJar}" -o "${destination}" --fail && echo "File downloaded successfully!") || (echo "Failed to download file!" && return 1)
-
+	echo "Current folder is [$(pwd)]; Downloading binary to [${destination}]"
+	local success="false"
+	curl -u "${M2_SETTINGS_REPO_USERNAME}:${M2_SETTINGS_REPO_PASSWORD}" "${pathToJar}" -o "${destination}" --fail && success="true"
+	if [[ "${success}" == "true" ]]; then
+		echo "File downloaded successfully!"
+		return 0
+	else
+		echo "Failed to download file!"
+		return 1
+	fi
 }
 
 function isMavenProject() {
@@ -51,6 +57,9 @@ export -f projectType
 export PROJECT_TYPE
 
 echo "Project type [${PROJECT_TYPE}]"
+
+# Setting a default when
+[[ -z "${REPO_WITH_BINARIES_FOR_UPLOAD}" ]] && REPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES}"
 
 lowerCaseProjectType=$(echo "${PROJECT_TYPE}" | tr '[:upper:]' '[:lower:]')
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

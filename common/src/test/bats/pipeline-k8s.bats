@@ -64,6 +64,10 @@ function curl {
 	echo "curl $*"
 }
 
+function git {
+	echo "git $*"
+}
+
 function kubectl {
 	if [[ "${*}" != *"--kubeconfig="* ]]; then
 		echo "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
@@ -108,6 +112,7 @@ function mockGradlew {
 }
 
 export -f curl
+export -f git
 export -f kubectl
 export -f kubectl_that_returns_empty_string
 export -f kubectl_that_returns_too_many_deployments
@@ -280,7 +285,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -316,7 +321,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -378,7 +383,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -414,7 +419,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -450,7 +455,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -470,7 +475,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -490,7 +495,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -510,7 +515,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -559,7 +564,7 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -587,7 +592,7 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -614,15 +619,16 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	export GIT_BIN="echo 'master'"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "No prod release took place - skipping this step"
+	refute_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	refute_output --partial "-Psmoke"
 	assert_success
 }
@@ -635,13 +641,14 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
+	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
 	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
@@ -656,13 +663,14 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
+	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
 	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
@@ -677,13 +685,14 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
+	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "-Psmoke"
 	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
@@ -698,13 +707,14 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
+	assert_output --partial "git checkout prod/1.0.0.FOO"
 	assert_output --partial "kubectl config use-context cluster_name --kubeconfig="
 	assert_output --partial "gradlew smoke"
 	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
@@ -747,7 +757,7 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -774,7 +784,7 @@ export -f mockGradlew
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
 	export LATEST_PROD_TAG="prod/1.0.0.FOO"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -800,7 +810,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -821,7 +831,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="true"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -842,7 +852,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -863,7 +873,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -925,7 +935,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -946,7 +956,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -967,7 +977,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -989,7 +999,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -1068,7 +1078,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -1089,7 +1099,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -1110,7 +1120,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -1131,7 +1141,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -1152,7 +1162,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
@@ -1173,7 +1183,7 @@ export -f mockGradlew
 	export KUBERNETES_MINIKUBE="false"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	cp "${FIXTURES_DIR}/sc-pipelines.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
 	touch "${KUBECTL_BIN}"
 
