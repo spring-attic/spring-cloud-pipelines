@@ -112,28 +112,62 @@ want to have deployed. Services have</p><div class="itemizedlist"><ul class="ite
 then applied to the <code class="literal">deployService</code> Bash function</li><li class="listitem"><span class="strong"><strong>[KUBERNETES]</strong></span> for <code class="literal">mysql</code> you can pass the database name via the <code class="literal">database</code>
 property</li><li class="listitem"><code class="literal">name</code> - name of the service to get deployed</li><li class="listitem"><code class="literal">coordinates</code> - coordinate that allows you to fetch the binary of the service.
 Examples: It can be a maven coordinate <code class="literal">groupid:artifactid:version</code>,
- docker image <code class="literal">organization/nameOfImage</code>, etc.</li><li class="listitem">arbitrary key value pairs - you can customize the services as you wish</li></ul></div><p>The <code class="literal">stubrunner</code> type can also have the <code class="literal">useClasspath</code> flag turned on to <code class="literal">true</code>
-or <code class="literal">false</code>.</p><p>Example:</p><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">test</span>:
+ docker image <code class="literal">organization/nameOfImage</code>, etc.</li><li class="listitem">arbitrary key value pairs - you can customize the services as you wish</li></ul></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="_pipeline_descriptor_for_cloud_foundry" href="#_pipeline_descriptor_for_cloud_foundry"></a>1.7.1&nbsp;Pipeline descriptor for Cloud Foundry</h3></div></div></div><p>When deploying to Cloud Foundry you can provide services
+of the following types:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara"><code class="literal">type: broker</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">broker</code> - name of the CF broker</li><li class="listitem"><code class="literal">plan</code> - name of the plan</li><li class="listitem"><code class="literal">params</code> - additional parameters that will be converted to JSON</li><li class="listitem"><code class="literal">useExisting</code> - should use existing one or
+create a new one (defaults to <code class="literal">false</code>)</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: app</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">coordinates</code> - maven coordinates of the stub runner jar</li><li class="listitem"><code class="literal">manifestPath</code> - path to the manifest for the stub runner jar</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: cups</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">params</code> - additional parameters that will be converted to JSON</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: cupsSyslog</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">url</code> - URL to the syslog drain</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: cupsRoute</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">url</code> - URL to the route service</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: stubrunner</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">coordinates</code> - maven coordinates of the stub runner jar</li><li class="listitem"><code class="literal">manifestPath</code> - path to the manifest for the stub runner jar</li></ul></div></li></ul></div><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># This file describes which services are required by this application</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># in order for the smoke tests on the TEST environment and end to end tests</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># on the STAGE environment to pass</span>
+
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># lowercase name of the environment</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">test</span>:
+  <span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># list of required services</span>
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  services</span>:
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - type</span>: rabbitmq
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      name</span>: rabbitmq-github-webhook
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - type</span>: mysql
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      name</span>: mysql-github-webhook
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - type</span>: eureka
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      name</span>: eureka-github-webhook
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      coordinates</span>: com.example.eureka:github-eureka:<span class="hl-number">0.0</span>.<span class="hl-number">1.</span>M1
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - type</span>: stubrunner
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      name</span>: stubrunner-github-webhook
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      coordinates</span>: com.example.eureka:github-analytics-stub-runner-boot-classpath-stubs:<span class="hl-number">0.0</span>.<span class="hl-number">1.</span>M1
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      useClasspath</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - name</span>: config-server
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      type</span>: broker
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      broker</span>: p-config-server
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      plan</span>: standard
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      params</span>:
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">        git</span>:
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          uri</span>: https://github.com/ciberkleid/app-config
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      useExisting</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - name</span>: cloud-bus
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      type</span>: broker
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      broker</span>: cloudamqp
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      plan</span>: lemur
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      useExisting</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - name</span>: service-registry
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      type</span>: broker
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      broker</span>: p-service-registry
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      plan</span>: standard
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      useExisting</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - name</span>: circuit-breaker-dashboard
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      type</span>: broker
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      broker</span>: p-circuit-breaker-dashboard
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      plan</span>: standard
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      useExisting</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - name</span>: stubrunner
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      type</span>: stubrunner
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      coordinates</span>: io.pivotal:cloudfoundry-stub-runner-boot:<span class="hl-number">0.0</span>.<span class="hl-number">1.</span>M1
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      manifestPath</span>: sc-pipelines/manifest-stubrunner.yml
+
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">stage</span>:
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  services</span>:
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - type</span>: rabbitmq
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      name</span>: rabbitmq-github
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - type</span>: mysql
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      name</span>: mysql-github
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - type</span>: eureka
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      name</span>: github-eureka
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      coordinates</span>: com.example.eureka:github-eureka:<span class="hl-number">0.0</span>.<span class="hl-number">1.</span>M1</pre><p>When the deployment to test or deployment to stage occurs, Spring Cloud Pipelines
-will:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">for <code class="literal">test</code> environment, delete existing services and redeploy the ones from the list</li><li class="listitem">for <code class="literal">stage</code> environment, if the service is not available it will get deployed. Otherwise
-nothing will happen</li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="multi_pr01.html">Prev</a>&nbsp;</td><td width="20%" align="center">&nbsp;</td><td width="40%" align="right">&nbsp;<a accesskey="n" href="multi__opinionated_implementation.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="multi_spring-cloud-pipelines.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;2.&nbsp;Opinionated implementation</td></tr></table></div></body></html>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - name</span>: config-server
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      type</span>: broker
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      broker</span>: p-config-server
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      plan</span>: standard
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      params</span>:
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">        git</span>:
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          uri</span>: https://github.com/ciberkleid/app-config
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - name</span>: cloud-bus
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      type</span>: broker
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      broker</span>: cloudamqp
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      plan</span>: lemur
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - name</span>: service-registry
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      type</span>: broker
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      broker</span>: p-service-registry
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      plan</span>: standard
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    - name</span>: circuit-breaker-dashboard
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      type</span>: broker
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      broker</span>: p-circuit-breaker-dashboard
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      plan</span>: standard</pre></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="multi_pr01.html">Prev</a>&nbsp;</td><td width="20%" align="center">&nbsp;</td><td width="40%" align="right">&nbsp;<a accesskey="n" href="multi__opinionated_implementation.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="multi_spring-cloud-pipelines.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;2.&nbsp;Opinionated implementation</td></tr></table></div></body></html>

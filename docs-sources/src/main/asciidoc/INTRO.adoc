@@ -276,40 +276,87 @@ want to have deployed. Services have
        docker image `organization/nameOfImage`, etc.
     - arbitrary key value pairs - you can customize the services as you wish
 
-The `stubrunner` type can also have the `useClasspath` flag turned on to `true`
-or `false`.
+==== Pipeline descriptor for Cloud Foundry
 
-Example:
+When deploying to Cloud Foundry you can provide services
+of the following types:
+
+- `type: broker`
+* `broker` - name of the CF broker
+* `plan` - name of the plan
+* `params` - additional parameters that will be converted to JSON
+* `useExisting` - should use existing one or
+create a new one (defaults to `false`)
+- `type: app`
+* `coordinates` - maven coordinates of the stub runner jar
+* `manifestPath` - path to the manifest for the stub runner jar
+- `type: cups`
+* `params` - additional parameters that will be converted to JSON
+- `type: cupsSyslog`
+* `url` - URL to the syslog drain
+- `type: cupsRoute`
+* `url` - URL to the route service
+- `type: stubrunner`
+* `coordinates` - maven coordinates of the stub runner jar
+* `manifestPath` - path to the manifest for the stub runner jar
 
 [source,yaml]
 ----
+# This file describes which services are required by this application
+# in order for the smoke tests on the TEST environment and end to end tests
+# on the STAGE environment to pass
+
+# lowercase name of the environment
 test:
+  # list of required services
   services:
-    - type: rabbitmq
-      name: rabbitmq-github-webhook
-    - type: mysql
-      name: mysql-github-webhook
-    - type: eureka
-      name: eureka-github-webhook
-      coordinates: com.example.eureka:github-eureka:0.0.1.M1
-    - type: stubrunner
-      name: stubrunner-github-webhook
-      coordinates: com.example.eureka:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
-      useClasspath: true
+    - name: config-server
+      type: broker
+      broker: p-config-server
+      plan: standard
+      params:
+        git:
+          uri: https://github.com/ciberkleid/app-config
+      useExisting: true
+    - name: cloud-bus
+      type: broker
+      broker: cloudamqp
+      plan: lemur
+      useExisting: true
+    - name: service-registry
+      type: broker
+      broker: p-service-registry
+      plan: standard
+      useExisting: true
+    - name: circuit-breaker-dashboard
+      type: broker
+      broker: p-circuit-breaker-dashboard
+      plan: standard
+      useExisting: true
+    - name: stubrunner
+      type: stubrunner
+      coordinates: io.pivotal:cloudfoundry-stub-runner-boot:0.0.1.M1
+      manifestPath: sc-pipelines/manifest-stubrunner.yml
+
 stage:
   services:
-    - type: rabbitmq
-      name: rabbitmq-github
-    - type: mysql
-      name: mysql-github
-    - type: eureka
-      name: github-eureka
-      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+    - name: config-server
+      type: broker
+      broker: p-config-server
+      plan: standard
+      params:
+        git:
+          uri: https://github.com/ciberkleid/app-config
+    - name: cloud-bus
+      type: broker
+      broker: cloudamqp
+      plan: lemur
+    - name: service-registry
+      type: broker
+      broker: p-service-registry
+      plan: standard
+    - name: circuit-breaker-dashboard
+      type: broker
+      broker: p-circuit-breaker-dashboard
+      plan: standard
 ----
-
-When the deployment to test or deployment to stage occurs, Spring Cloud Pipelines
-will:
-
-    - for `test` environment, delete existing services and redeploy the ones from the list
-    - for `stage` environment, if the service is not available it will get deployed. Otherwise
-    nothing will happen
