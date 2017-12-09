@@ -213,7 +213,8 @@ function getAppHostFromPaas() {
 }
 
 function getDomain() {
-	"${CF_BIN}" domains | grep -v tcp | tail -1 | awk '{print $1}'
+	local hostName="${1}"
+	${CF_BIN} routes | grep "${hostName}" | head -1 | awk '{print $3}'
 }
 
 function deployAppNoStart() {
@@ -385,14 +386,14 @@ function deployStubRunnerBoot() {
 	prop="$(${RETRIEVE_STUBRUNNER_IDS_FUNCTION})"
 	echo "Found following stub runner ids [${prop}]"
 	if [[ "${prop}" != "" ]]; then
-		addPorts "${stubRunnerName}" "${prop}" "${pathToManifest}"
+		addMultiplePortsSupport "${stubRunnerName}" "${prop}" "${pathToManifest}"
 		setEnvVar "${stubRunnerName}" "stubrunner.ids" "${prop}"
 	fi
 	setEnvVar "${stubRunnerName}" "REPO_WITH_BINARIES" "${REPO_WITH_BINARIES}"
 	restartApp "${stubRunnerName}"
 }
 
-function addPorts() {
+function addMultiplePortsSupport() {
 	local stubRunnerName="${1}"
 	local stubrunnerIds="${2}"
 	local pathToManifest="${3}"
@@ -404,8 +405,12 @@ function addPorts() {
 	echo "Hostname for ${stubRunnerName} is ${hostname}"
 	local testSpace="${PAAS_TEST_SPACE_PREFIX}-${appName}"
 	local domain
-	domain="$( getDomain )"
+	domain="$( getDomain "${hostname}" )"
 	echo "Domain for ${stubRunnerName} is ${domain}"
+	# APPLICATION_HOSTNAME and APPLICATION_DOMAIN will be used for stub registration. Stub Runner Boot
+	# will use this environment variable to hardcode the hostname of the stubs
+	setEnvVar "${stubRunnerName}" "APPLICATION_HOSTNAME" "${hostname}"
+	setEnvVar "${stubRunnerName}" "APPLICATION_DOMAIN" "${domain}"
 	local previousIfs="${IFS}"
 	local listOfPorts=""
 	local appGuid

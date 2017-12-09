@@ -109,12 +109,16 @@ function cf {
 	if [[ "${1}" == "apps" ]]; then
 		cf_that_returns_${LOWERCASE_ENV}_apps
 		return
-	elif [[ "${1}" == "domains" ]]; then
+	elif [[ "${1}" == "routes" ]]; then
 		cat << EOF
-Getting domains in org S1Pdemo12 as mgrzejszczak@pivotal.io...
-name            status   type
-cfapps.io       shared
-cf-tcpapps.io   shared   tcp
+Getting routes for org FrameworksAndRuntimes / space test-my-project as mgrzejszczak@pivotal.io ...
+
+space            host                                                  domain          port   path   type   apps               service
+test-my-project  github-eureka-test-my-project                         cfapps.io                            github-eureka
+test-my-project  stubrunner-test-my-project                            cfapps.io                            stubrunner
+test-my-project  stubrunner-test-gradlew artifactId -q                 cfapps.io                            stubrunner
+test-my-project  stubrunner-test-my-project-10000                      micrometer.io                        stubrunner
+test-my-project  my-project-test                                       cfapps.io                            github-analytics
 EOF
 		return
 	elif [[ "$*" == *"/v2/apps?q=name"* ]]; then
@@ -257,6 +261,8 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf restart eureka-github-webhook"
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
+	assert_output --partial "Setting env var [APPLICATION_HOSTNAME] -> [stubrunner-test-my-project] for app [stubrunner]"
+	assert_output --partial "Setting env var [APPLICATION_DOMAIN] -> [cfapps.io] for app [stubrunner]"
 	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
@@ -327,10 +333,12 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf restart eureka-github-webhook"
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
+	assert_output --partial "Setting env var [APPLICATION_HOSTNAME] -> [stubrunner-test-${projectNameUppercase}] for app [stubrunner]"
+	assert_output --partial "Setting env var [APPLICATION_DOMAIN] -> [artifactId] for app [stubrunner]"
 	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
-	assert_output --partial "cf create-route test-space-${projectNameUppercase} cfapps.io --hostname stubrunner-test-${projectNameUppercase}-10000"
+	assert_output --partial "cf create-route test-space-${projectNameUppercase} artifactId --hostname stubrunner-test-${projectNameUppercase}-10000"
 	assert_output --partial "cf curl /v2/route_mappings -X POST -d"
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10000'
 	assert_output --partial '"app_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "route_guid": "4215794a-eeef-4de2-9a80-c73b5d1a02be", "app_port": 10001'
