@@ -1,0 +1,49 @@
+---
+
+# This is a very naive playbook for bootstrapping an environment. It uses
+# Docker containers *without storage* to configure all required services.
+#
+# When the `force_recreate` extra variable is set the containers will be
+# recreated and all data will be lost.
+
+- hosts: mysql
+  become: true
+  tasks:
+    - name: ensure MySQL container is running
+      docker_container:
+        name: mysql
+        image: mysql:5.7
+        recreate: "{{ force_recreate | default(false) }}"
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test
+        restart_policy: always
+
+- hosts: rabbitmq
+  become: true
+  tasks:
+    - name: ensure RabbitMQ container is running
+      docker_container:
+        name: rabbitmq
+        image: rabbitmq:3.7-alpine
+        recreate: "{{ force_recreate | default(false) }}"
+        ports:
+          - 4369:4369
+          - 5671:5671
+          - 5672:5672
+          - 25672:25672
+        restart_policy: always
+
+- hosts: eureka
+  become: true
+  tasks:
+    - name: ensure Eureka container is running
+      docker_container:
+        name: eureka
+        image: scpipelines/github-eureka:latest
+        recreate: "{{ force_recreate | default(false) }}"
+        ports:
+          - 8761:8761
+        restart_policy: always

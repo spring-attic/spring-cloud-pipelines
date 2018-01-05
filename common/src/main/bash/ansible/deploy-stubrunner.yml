@@ -1,0 +1,85 @@
+---
+
+- hosts: app_server
+  become: true
+  vars:
+    pipeline_environment: "{{ lookup('env', 'ENVIRONMENT') | lower }}"
+    pipeline_descriptor_file: "{{ lookup('env', 'PIPELINE_DESCRIPTOR') }}"
+    maven_repository_url: "{{ lookup('env', 'REPO_WITH_BINARIES') }}"
+    stubrunner_ids: ""
+    stubrunner_port: "{{ hostvars[inventory_hostname][app_name + '_stubrunner_port'] }}"
+    stubrunner_healt_url: "http://localhost:{{ stubrunner_port }}/health"
+  tasks:
+    - name: read pipeline descriptor
+      include_vars:
+        file: "{{ pipeline_descriptor_file }}"
+        name: pipeline_descriptor
+
+    - name: ensure current environment is defined in pipeline descriptor
+      assert:
+        that: >
+          pipeline_environment in pipeline_descriptor
+
+    - name: retrieve stubrunner configuration from pipeline descriptor
+      set_fact:
+        stubrunner_config: >
+          {{ pipeline_descriptor[pipeline_environment].services | selectattr('type' ,'equalto', 'stubrunner') | list }}
+
+    - block:
+        - name: no stubrunner definition in pipeline descriptor
+          debug:
+            msg: no stubrunner definition in pipeline descriptor - skipping
+
+        - meta: end_play
+      when: >
+        stubrunner_config | length != 1
+
+    - name: ensure the artifact is downloaded
+      maven_artifact:
+        dest: "/srv/stubrunner/stubrunner-{{ app_name }}-new.jar"
+        group_id: "{{ stubrunner_config[0].coordinates.split(':')[0] }}"
+        artifact_id: "{{ stubrunner_config[0].coordinates.split(':')[1] }}"
+        version: "{{ stubrunner_config[0].coordinates.split(':')[2] }}"
+        repository_url: "{{ maven_repository_url }}"
+
+    - name: ensure systemd service is configured
+      copy:
+        dest: "/etc/systemd/system/stubrunner-{{ app_name }}.service"
+        content: |
+          [Unit]
+          Description=Stubrunner service
+
+          [Service]
+          Environment=PORT={{ stubrunner_port }}
+          Environment=STUBRUNNER_IDS={{ stubrunner_ids }}
+          ExecStart=/usr/bin/java {% if 'useClasspath' not in stubrunner_config[0] or stubrunner_config[0].useClasspath == 'false' %}-Dstubrunner.repositoryRoot={{ maven_repository_url }}{% endif %} -jar /srv/stubrunner/stubrunner-{{ app_name }}.jar
+          User=deploy
+          Type=simple
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: ensure stubrunner is stopped
+      systemd:
+        name: "stubrunner-{{ app_name }}"
+        state: stopped
+        daemon_reload: true
+
+    - name: ensure the new version is deployed
+      copy:
+        src: "/srv/stubrunner/stubrunner-{{ app_name }}-new.jar"
+        dest: "/srv/stubrunner/stubrunner-{{ app_name }}.jar"
+        remote_src: true
+
+    - name: ensure stubrunner is started
+      systemd:
+        name: "stubrunner-{{ app_name }}"
+        state: started
+
+    - name: wait for stubrunner to start
+      uri:
+        url: "{{ stubrunner_healt_url }}"
+      register: result
+      until: result.status == 200
+      retries: 30
+      delay: 3
