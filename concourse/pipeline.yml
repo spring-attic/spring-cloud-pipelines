@@ -91,10 +91,10 @@ jobs:
     params:
       MESSAGE: "Deploying the built application on test environment"
       SCRIPT_TO_RUN: "build_api_compatibility_check.sh"
+      <<: *common-params
   - put: keyval
     params:
       file: keyvalout/keyval.properties
-      <<: *common-params
 
 - name: test-deploy
   serial: true

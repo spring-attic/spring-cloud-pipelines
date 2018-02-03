@@ -144,7 +144,7 @@ function deployService() {
 			IFS="${coordinatesSeparator}" read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
 			IFS="${PREVIOUS_IFS}"
 			downloadAppBinary "${REPO_WITH_BINARIES}" "${STUBRUNNER_GROUP_ID}" "${STUBRUNNER_ARTIFACT_ID}" "${STUBRUNNER_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
-			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${serviceName}"  "${pathToManifest}"
+			deployStubRunnerBoot "${STUBRUNNER_ARTIFACT_ID}-${STUBRUNNER_VERSION}" "${serviceName}" "${pathToManifest}"
 		;;
 		*)
 			echo "Unknown service type [${serviceType}] for service name [${serviceName}]"
@@ -380,8 +380,9 @@ function deployStubRunnerBoot() {
 	local jarName="${1}"
 	local stubRunnerName="${2}"
 	local pathToManifest="${3}"
-	echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}]"
-	deployAppNoStart "${stubRunnerName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}" "$(retrieveAppName)"
+	local suffix="$(retrieveAppName)"
+	echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}], manifest [${pathToManifest}], suffix [${suffix}]"
+	deployAppNoStart "${stubRunnerName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}" "${suffix}"
 	local prop
 	prop="$(${RETRIEVE_STUBRUNNER_IDS_FUNCTION})"
 	echo "Found following stub runner ids [${prop}]"
