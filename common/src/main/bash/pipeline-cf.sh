@@ -380,7 +380,8 @@ function deployStubRunnerBoot() {
 	local jarName="${1}"
 	local stubRunnerName="${2}"
 	local pathToManifest="${3}"
-	local suffix="$(retrieveAppName)"
+	local suffix
+	suffix="$(retrieveAppName)"
 	echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}], manifest [${pathToManifest}], suffix [${suffix}]"
 	deployAppNoStart "${stubRunnerName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}" "${suffix}"
 	local prop
