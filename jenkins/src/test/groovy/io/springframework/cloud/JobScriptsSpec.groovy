@@ -58,7 +58,8 @@ class JobScriptsSpec extends Specification {
 		jm.availableFiles['foo/prod_complete.sh'] = JobScriptsSpec.getResource('/prod_complete.sh').text
 	}
 
-	def 'should compile seed job'() {
+	//remove::start[CF]
+	def 'should create seed job for CF'() {
 		given:
 		MemoryJobManagement jm = new MemoryJobManagement()
 		DslScriptLoader loader = new DslScriptLoader(jm)
@@ -71,8 +72,27 @@ class JobScriptsSpec extends Specification {
 		noExceptionThrown()
 
 		and:
-		scripts.jobs.collect { it.jobName }.containsAll(["jenkins-pipeline-cf-seed", "jenkins-pipeline-k8s-seed"])
+		scripts.jobs.collect { it.jobName }.contains("jenkins-pipeline-cf-seed")
 	}
+	//remove::end[CF]
+
+	//remove::start[K8S]
+	def 'should create seed job for K8s'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+			new File("seed/jenkins_pipeline.groovy").text)])
+
+		then:
+		noExceptionThrown()
+
+		and:
+		scripts.jobs.collect { it.jobName }.contains("jenkins-pipeline-k8s-seed")
+	}
+	//remove::end[K8S]
 
 	def 'should parse REPOS with no special entries'() {
 		given:

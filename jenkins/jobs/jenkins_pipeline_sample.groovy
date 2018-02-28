@@ -257,7 +257,7 @@ parsedRepos.each {
 				allowEmpty()
 				// remove::end[CF]
 			}
-			// end::start[K8S]
+			// remove::end[K8S]
 			downstreamParameterized {
 				trigger("${projectName}-test-env-test") {
 					parameters {
@@ -369,7 +369,7 @@ parsedRepos.each {
 					allowEmpty()
 					// remove::end[CF]
 				}
-				// end::start[K8S]
+				// remove::end[K8S]
 				downstreamParameterized {
 					trigger("${projectName}-test-env-rollback-test") {
 						triggerWithNoParameters()
@@ -507,7 +507,7 @@ parsedRepos.each {
 					allowEmpty()
 					// remove::end[CF]
 				}
-				// end::start[K8S]
+				// remove::end[K8S]
 				if (autoStage) {
 					downstreamParameterized {
 						trigger("${projectName}-stage-env-test") {
@@ -634,7 +634,7 @@ parsedRepos.each {
 				allowEmpty()
 				// remove::end[CF]
 			}
-			// end::start[K8S]
+			// remove::end[K8S]
 			buildPipelineTrigger("${projectName}-prod-env-complete,${projectName}-prod-env-rollback") {
 				parameters {
 					currentBuild()
