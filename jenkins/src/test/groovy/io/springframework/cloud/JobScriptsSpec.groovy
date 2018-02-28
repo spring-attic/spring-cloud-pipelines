@@ -439,6 +439,38 @@ class JobScriptsSpec extends Specification {
 		}
 	}
 
+	def 'should use Git SSH key if specified in all jobs'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo',
+			GIT_USE_SSH_KEY: 'true',
+			GIT_SSH_CREDENTIAL_ID: 'testSshKeyId'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+			new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		noExceptionThrown()
+
+		and:
+		jm.savedConfigs.each {
+			def jobConfig = new XmlParser().parse(new StringReader(it.value))
+			def jobName = it.key
+			assert jobConfig.scm.size() == 1, [ "No SCM configuration found for job $jobName" ]
+			assert jobConfig.scm[0].@class.contains('GitSCM'), [ "Expected Git SCM configuration in job $jobName" ]
+			with(jobConfig.scm[0]) {
+				def credentialsId = userRemoteConfigs.'hudson.plugins.git.UserRemoteConfig'.credentialsId
+				assert credentialsId, [ "No Git SCM credentials found for job $jobName" ]
+				assert credentialsId.text() == 'testSshKeyId', [ "Wrong Git SCM credentials in job $jobName"]
+			}
+		}
+	}
+
 	static List<File> getJobFiles() {
 		List<File> files = []
 		new File('jobs').eachFileRecurse(FileType.FILES) {
