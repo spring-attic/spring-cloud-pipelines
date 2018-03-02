@@ -44,8 +44,8 @@ String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: ""
 String mySqlCredential = binding.variables["MYSQL_CREDENTIAL_ID"] ?: ""
 // remove::end[K8S]
 
-ScmContext.metaClass.configureScm = { repoId, branchId ->
-	git {
+Closure configureScm = { ScmContext context, String repoId, String branchId ->
+	context.git {
 		remote {
 			name('origin')
 			url(repoId)
@@ -123,7 +123,7 @@ parsedRepos.each {
 		}
 		jdk(jdkVersion)
 		scm {
-			configureScm(fullGitRepo, branchName)
+			configureScm(delegate as ScmContext, fullGitRepo, branchName)
 		}
 		configure { def project ->
 			// Adding user email and name here instead of global settings
@@ -185,7 +185,7 @@ parsedRepos.each {
 			}
 			jdk(jdkVersion)
 			scm {
-				configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -238,7 +238,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -292,7 +292,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -350,7 +350,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -406,7 +406,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -488,7 +488,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -552,7 +552,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -608,7 +608,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		configure { def project ->
 			// Adding user email and name here instead of global settings
@@ -675,7 +675,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -711,7 +711,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		steps {
 			shell("""#!/bin/bash

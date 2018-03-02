@@ -112,7 +112,7 @@ class ProjectCustomizerSpec extends Specification {
 	}
 
 	String filePath(String canonicalPath) {
-		canonicalPath.replaceAll("/", Matcher.quoteReplacement(File.separator))
+		return canonicalPath.replaceAll("/", Matcher.quoteReplacement(File.separator))
 	}
 
 }
