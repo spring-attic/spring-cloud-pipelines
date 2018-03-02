@@ -6,6 +6,7 @@
 FROM jenkins:2.19.1
 ARG gituser=changeme
 ARG gitpass=changeme
+ARG gitsshkey=changeme
 ARG dockerRegistryOrg=changeme
 ARG dockerRegistryUser=changeme
 ARG dockerRegistryPass=changeme

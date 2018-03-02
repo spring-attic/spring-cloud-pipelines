@@ -9,6 +9,8 @@ import spock.lang.Specification
 
 import org.springframework.boot.test.rule.OutputCapture
 
+import java.util.regex.Matcher
+
 /**
  * @author Marcin Grzejszczak
  */
@@ -59,15 +61,15 @@ class ProjectCustomizerSpec extends Specification {
 		then:
 			String logs = capture.toString()
 			//
-			!logs.contains("buildSrc/foo.bash")
+			!logs.contains(filePath("buildSrc/foo.bash"))
 			// we want to remove only Concourse stuff
-			!logs.contains("/jenkins,")
-			logs.contains("images/concourse")
-			logs.contains("CONCOURSE.adoc")
-			logs.contains("CF_DEMO.adoc")
-			logs.contains("CF_JENKINS")
-			logs.contains("tools/cf-helper")
-			logs.contains("bash/pipeline-cf")
+			!logs.contains(filePath("/jenkins,"))
+			logs.contains(filePath("images/concourse"))
+			logs.contains(filePath("CONCOURSE.adoc"))
+			logs.contains(filePath("CF_DEMO.adoc"))
+			logs.contains(filePath("CF_JENKINS"))
+			logs.contains(filePath("tools/cf-helper"))
+			logs.contains(filePath("bash/pipeline-cf"))
 			logs.contains("Removing lines")
 			logs.contains("Removing files")
 		and:
@@ -90,15 +92,15 @@ class ProjectCustomizerSpec extends Specification {
 		then:
 			String logs = capture.toString()
 			//
-			!logs.contains("buildSrc/foo.bash")
+			!logs.contains(filePath("buildSrc/foo.bash"))
 			// we want to remove only Concourse stuff
-			!logs.contains("/concourse,")
-			logs.contains("images/jenkins")
-			logs.contains("JENKINS.adoc")
-			logs.contains("K8S_DEMO.adoc")
-			logs.contains("K8S_JENKINS")
-			logs.contains("tools/k8s-helper")
-			logs.contains("bash/pipeline-k8s")
+			!logs.contains(filePath("/concourse,"))
+			logs.contains(filePath("images/jenkins"))
+			logs.contains(filePath("JENKINS.adoc"))
+			logs.contains(filePath("K8S_DEMO.adoc"))
+			logs.contains(filePath("K8S_JENKINS"))
+			logs.contains(filePath("tools/k8s-helper"))
+			logs.contains(filePath("bash/pipeline-k8s"))
 			logs.contains("Removing lines")
 			logs.contains("Removing files")
 		and:
@@ -107,6 +109,10 @@ class ProjectCustomizerSpec extends Specification {
 				assert !text.contains("remove::start[jenkins]")
 				assert !text.contains("remove::start[k8s]")
 			}
+	}
+
+	String filePath(String canonicalPath) {
+		return canonicalPath.replaceAll("/", Matcher.quoteReplacement(File.separator))
 	}
 
 }

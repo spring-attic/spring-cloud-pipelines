@@ -58,7 +58,8 @@ class JobScriptsSpec extends Specification {
 		jm.availableFiles['foo/prod_complete.sh'] = JobScriptsSpec.getResource('/prod_complete.sh').text
 	}
 
-	def 'should compile seed job'() {
+	//remove::start[CF]
+	def 'should create seed job for CF'() {
 		given:
 		MemoryJobManagement jm = new MemoryJobManagement()
 		DslScriptLoader loader = new DslScriptLoader(jm)
@@ -71,8 +72,27 @@ class JobScriptsSpec extends Specification {
 		noExceptionThrown()
 
 		and:
-		scripts.jobs.collect { it.jobName }.containsAll(["jenkins-pipeline-cf-seed", "jenkins-pipeline-k8s-seed"])
+		scripts.jobs.collect { it.jobName }.contains("jenkins-pipeline-cf-seed")
 	}
+	//remove::end[CF]
+
+	//remove::start[K8S]
+	def 'should create seed job for K8s'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+			new File("seed/jenkins_pipeline.groovy").text)])
+
+		then:
+		noExceptionThrown()
+
+		and:
+		scripts.jobs.collect { it.jobName }.contains("jenkins-pipeline-k8s-seed")
+	}
+	//remove::end[K8S]
 
 	def 'should parse REPOS with no special entries'() {
 		given:
@@ -436,6 +456,38 @@ class JobScriptsSpec extends Specification {
 			assert it.contains("au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger")
 			assert it.contains("<downstreamProjectNames>github-webhook-pipeline-prod-env-complete,github-webhook-pipeline-prod-env-rollback</downstreamProjectNames>")
 			return it
+		}
+	}
+
+	def 'should use Git SSH key if specified in all jobs'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo',
+			GIT_USE_SSH_KEY: 'true',
+			GIT_SSH_CREDENTIAL_ID: 'testSshKeyId'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		GeneratedItems scripts = loader.runScripts([new ScriptRequest(
+			new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		noExceptionThrown()
+
+		and:
+		jm.savedConfigs.each {
+			def jobConfig = new XmlParser().parse(new StringReader(it.value))
+			def jobName = it.key
+			assert jobConfig.scm.size() == 1, [ "No SCM configuration found for job $jobName" ]
+			assert jobConfig.scm[0].@class.contains('GitSCM'), [ "Expected Git SCM configuration in job $jobName" ]
+			with(jobConfig.scm[0]) {
+				def credentialsId = userRemoteConfigs.'hudson.plugins.git.UserRemoteConfig'.credentialsId
+				assert credentialsId, [ "No Git SCM credentials found for job $jobName" ]
+				assert credentialsId.text() == 'testSshKeyId', [ "Wrong Git SCM credentials in job $jobName"]
+			}
 		}
 	}
 

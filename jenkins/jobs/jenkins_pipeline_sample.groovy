@@ -1,4 +1,5 @@
 import javaposse.jobdsl.dsl.DslFactory
+import javaposse.jobdsl.dsl.helpers.ScmContext
 
 DslFactory dsl = this
 
@@ -22,9 +23,9 @@ String cfStageCredentialId = binding.variables["PAAS_STAGE_CREDENTIAL_ID"] ?: ""
 String cfProdCredentialId = binding.variables["PAAS_PROD_CREDENTIAL_ID"] ?: ""
 // remove::end[CF]
 // remove::start[K8S]
-String k8sTestTokenCredentialId= binding.variables["PAAS_TEST_CLIENT_TOKEN_ID"] ?: ""
-String k8sStageTokenCredentialId= binding.variables["PAAS_STAGE_CLIENT_TOKEN_ID"] ?: ""
-String k8sProdTokenCredentialId= binding.variables["PAAS_PROD_CLIENT_TOKEN_ID"] ?: ""
+String k8sTestTokenCredentialId = binding.variables["PAAS_TEST_CLIENT_TOKEN_ID"] ?: ""
+String k8sStageTokenCredentialId = binding.variables["PAAS_STAGE_CLIENT_TOKEN_ID"] ?: ""
+String k8sProdTokenCredentialId = binding.variables["PAAS_PROD_CLIENT_TOKEN_ID"] ?: ""
 // remove::end[K8S]
 String gitEmail = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
 String gitName = binding.variables["GIT_NAME"] ?: "Pivo Tal"
@@ -43,11 +44,24 @@ String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: ""
 String mySqlCredential = binding.variables["MYSQL_CREDENTIAL_ID"] ?: ""
 // remove::end[K8S]
 
+Closure configureScm = { ScmContext context, String repoId, String branchId ->
+	context.git {
+		remote {
+			name('origin')
+			url(repoId)
+			branch(branchId)
+			credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
+		}
+		extensions {
+			wipeOutWorkspace()
+		}
+	}
+}
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
 String repos = binding.variables["REPOS"] ?:
-		["https://github.com/marcingrzejszczak/github-analytics",
-		 "https://github.com/marcingrzejszczak/github-webhook"].join(",")
+	["https://github.com/marcingrzejszczak/github-analytics",
+	 "https://github.com/marcingrzejszczak/github-webhook"].join(",")
 List<String> parsedRepos = repos.split(",")
 parsedRepos.each {
 	String gitRepoName = it.split('/').last() - '.git'
@@ -81,7 +95,7 @@ parsedRepos.each {
 			branchName = it.substring(customBranchIndex + 1)
 		}
 	}
-	
+
 	String projectName = "${gitRepoName}-pipeline"
 
 	//  ======= JOBS =======
@@ -109,17 +123,7 @@ parsedRepos.each {
 		}
 		jdk(jdkVersion)
 		scm {
-			git {
-				remote {
-					name('origin')
-					url(fullGitRepo)
-					branch(branchName)
-					credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
-				}
-				extensions {
-					wipeOutWorkspace()
-				}
-			}
+			configureScm(delegate as ScmContext, fullGitRepo, branchName)
 		}
 		configure { def project ->
 			// Adding user email and name here instead of global settings
@@ -181,17 +185,7 @@ parsedRepos.each {
 			}
 			jdk(jdkVersion)
 			scm {
-				git {
-					remote {
-						name('origin')
-						url(fullGitRepo)
-						branch('dev/${PIPELINE_VERSION}')
-						credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
-					}
-					extensions {
-						wipeOutWorkspace()
-					}
-				}
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -231,7 +225,7 @@ parsedRepos.each {
 				// TODO: What to do about this?
 				if (mySqlCredential) usernamePassword('MYSQL_USER', 'MYSQL_PASSWORD', mySqlCredential)
 				if (mySqlRootCredential) usernamePassword('MYSQL_ROOT_USER', 'MYSQL_ROOT_PASSWORD', mySqlRootCredential)
-				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+				if (k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
 				// remove::end[K8S]
 			}
 			timestamps()
@@ -244,15 +238,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			git {
-				remote {
-					url(fullGitRepo)
-					branch('dev/${PIPELINE_VERSION}')
-				}
-				extensions {
-					wipeOutWorkspace()
-				}
-			}
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -271,7 +257,7 @@ parsedRepos.each {
 				allowEmpty()
 				// remove::end[CF]
 			}
-			// end::start[K8S]
+			// remove::end[K8S]
 			downstreamParameterized {
 				trigger("${projectName}-test-env-test") {
 					parameters {
@@ -306,15 +292,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			git {
-				remote {
-					url(fullGitRepo)
-					branch('dev/${PIPELINE_VERSION}')
-				}
-				extensions {
-					wipeOutWorkspace()
-				}
-			}
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -372,15 +350,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				git {
-					remote {
-						url(fullGitRepo)
-						branch('dev/${PIPELINE_VERSION}')
-					}
-					extensions {
-						wipeOutWorkspace()
-					}
-				}
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -399,7 +369,7 @@ parsedRepos.each {
 					allowEmpty()
 					// remove::end[CF]
 				}
-				// end::start[K8S]
+				// remove::end[K8S]
 				downstreamParameterized {
 					trigger("${projectName}-test-env-rollback-test") {
 						triggerWithNoParameters()
@@ -436,15 +406,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				git {
-					remote {
-						url(fullGitRepo)
-						branch('dev/${PIPELINE_VERSION}')
-					}
-					extensions {
-						wipeOutWorkspace()
-					}
-				}
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -458,7 +420,7 @@ parsedRepos.each {
 				archiveJunit(testReports) {
 					allowEmptyResults()
 				}
-				if(stageStep) {
+				if (stageStep) {
 					String nextJob = "${projectName}-stage-env-deploy"
 					if (autoStage) {
 						downstreamParameterized {
@@ -476,22 +438,22 @@ parsedRepos.each {
 						}
 					}
 				} else {
-						String nextJob = "${projectName}-prod-env-deploy"
-						if (autoProd) {
-							downstreamParameterized {
-								trigger(nextJob) {
-									parameters {
-										currentBuild()
-									}
-								}
-							}
-						} else {
-							buildPipelineTrigger(nextJob) {
+					String nextJob = "${projectName}-prod-env-deploy"
+					if (autoProd) {
+						downstreamParameterized {
+							trigger(nextJob) {
 								parameters {
 									currentBuild()
 								}
 							}
 						}
+					} else {
+						buildPipelineTrigger(nextJob) {
+							parameters {
+								currentBuild()
+							}
+						}
+					}
 				}
 			}
 		}
@@ -526,15 +488,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				git {
-					remote {
-						url(fullGitRepo)
-						branch('dev/${PIPELINE_VERSION}')
-					}
-					extensions {
-						wipeOutWorkspace()
-					}
-				}
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -553,7 +507,7 @@ parsedRepos.each {
 					allowEmpty()
 					// remove::end[CF]
 				}
-				// end::start[K8S]
+				// remove::end[K8S]
 				if (autoStage) {
 					downstreamParameterized {
 						trigger("${projectName}-stage-env-test") {
@@ -585,7 +539,7 @@ parsedRepos.each {
 					if (cfStageCredentialId) usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', cfStageCredentialId)
 					// remove::end[CF]
 					// remove::start[K8S]
-					if(k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
+					if (k8sStageTokenCredentialId) string("TOKEN", k8sStageTokenCredentialId)
 					// remove::end[K8S]
 				}
 				timestamps()
@@ -598,15 +552,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				git {
-					remote {
-						url(fullGitRepo)
-						branch('dev/${PIPELINE_VERSION}')
-					}
-					extensions {
-						wipeOutWorkspace()
-					}
-				}
+				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -662,17 +608,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			git {
-				remote {
-					name('origin')
-					url(fullGitRepo)
-					branch('dev/${PIPELINE_VERSION}')
-					credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
-				}
-				extensions {
-					wipeOutWorkspace()
-				}
-			}
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		configure { def project ->
 			// Adding user email and name here instead of global settings
@@ -698,7 +634,7 @@ parsedRepos.each {
 				allowEmpty()
 				// remove::end[CF]
 			}
-			// end::start[K8S]
+			// remove::end[K8S]
 			buildPipelineTrigger("${projectName}-prod-env-complete,${projectName}-prod-env-rollback") {
 				parameters {
 					currentBuild()
@@ -726,7 +662,7 @@ parsedRepos.each {
 				if (cfProdCredentialId) usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
 				// remove::end[CF]
 				// remove::start[K8S]
-				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+				if (k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
 				// remove::end[K8S]
 			}
 			timestamps()
@@ -739,17 +675,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			git {
-				remote {
-					name('origin')
-					url(fullGitRepo)
-					branch('dev/${PIPELINE_VERSION}')
-					credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
-				}
-				extensions {
-					wipeOutWorkspace()
-				}
-			}
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -772,7 +698,7 @@ parsedRepos.each {
 				if (cfProdCredentialId) usernamePassword('PAAS_PROD_USERNAME', 'PAAS_PROD_PASSWORD', cfProdCredentialId)
 				// remove::end[CF]
 				// remove::start[K8S]
-				if(k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
+				if (k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
 				// remove::end[K8S]
 			}
 			timestamps()
@@ -785,17 +711,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			git {
-				remote {
-					name('origin')
-					url(fullGitRepo)
-					branch('dev/${PIPELINE_VERSION}')
-					credentials(gitUseSshKey ? gitSshCredentials : gitCredentials)
-				}
-				extensions {
-					wipeOutWorkspace()
-				}
-			}
+			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
 		}
 		steps {
 			shell("""#!/bin/bash

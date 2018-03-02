@@ -126,7 +126,8 @@ For the Kubernetes step by step guide just check out the [documentation](http://
 * Clone the `spring-cloud-pipelines` project
 * Go to `jenkins` folder
 * Run `./start.sh yourGithubUser yourGithubPass yourGithubOrg` to start Jenkins and Artifactory (`yourGithubUser` and `yourGithubPass`
-are your Github credentials required by the pipeline to tag the forked repo that lays in `yourGithubOrg`)
+are your Github credentials required by the pipeline to tag the forked repo that lays in `yourGithubOrg`;
+you could also pass `-key path_to_private_key` if you prefer to use the key-based authentication with your Git repositories)
 * Run `./deploy_infra.sh` to upload to your Artifactory the infrastructure apps (`eureka` and `stub runner`)
 * Go to Jenkins and click the `jenkins-pipeline-seed` in order to generate the pipeline jobs
 * Go to the `github-webhook` pipeline view and click the `play` button to run the pipeline
