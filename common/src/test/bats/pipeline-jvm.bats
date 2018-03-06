@@ -64,7 +64,7 @@ export -f curl
 	assert_equal "${PROJECT_TYPE}" "GRADLE"
 }
 
-@test "should download an artifact if file hasn't been downloaded" {
+@test "should download an artifact from artifactory if file hasn't been downloaded" {
 	export OUTPUT_FOLDER="${TEMP_DIR}/output"
 
 	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
@@ -75,7 +75,7 @@ export -f curl
 	assert_success
 }
 
-@test "should download a WAR artifact if file hasn't been downloaded" {
+@test "should download a WAR artifact from artifactory if file hasn't been downloaded" {
 	export OUTPUT_FOLDER="${TEMP_DIR}/output"
 	export BINARY_EXTENSION="war"
 
@@ -88,7 +88,7 @@ export -f curl
 	assert_success
 }
 
-@test "should exit 1 when failed to download the artifact" {
+@test "should exit 1 when failed to download the artifact from artifactory" {
 	export OUTPUT_FOLDER="${TEMP_DIR}/output"
 
 	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
@@ -96,5 +96,75 @@ export -f curl
 	run downloadAppBinary "failed" "group.id" "artifactId" "version"
 
 	assert_output --partial 'Failed to download file!'
+	assert_failure
+}
+
+@test "should download an artifact from nexus v2 if file hasn't been downloaded" {
+	export OUTPUT_FOLDER="${TEMP_DIR}/output"
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
+
+	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version" "nexus" "http://artifactrepo.com" "maven-releases"
+
+	assert_output --partial 'File downloaded successfully'
+	assert_success
+}
+
+@test "should download a WAR artifact from nexus v2 if file hasn't been downloaded" {
+	export OUTPUT_FOLDER="${TEMP_DIR}/output"
+	export BINARY_EXTENSION="war"
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
+
+	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version" "nexus" "http://artifactrepo.com" "maven-releases"
+
+	assert_output --partial 'artifactId-version.war'
+	assert_output --partial 'File downloaded successfully'
+	assert_success
+}
+
+@test "should exit 1 when failed to download the artifact from nexus v2" {
+	export OUTPUT_FOLDER="${TEMP_DIR}/output"
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
+
+	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version" "nexus" "failed" "maven-releases"
+
+	assert_output --partial 'Failed to download file!'
+	assert_failure
+}
+
+@test "should download an artifact from nexus v3 if file hasn't been downloaded" {
+	export OUTPUT_FOLDER="${TEMP_DIR}/output"
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
+
+	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version" "nexus-3" "http://artifactrepo.com" "maven-releases"
+
+	assert_output --partial 'File downloaded successfully'
+	assert_success
+}
+
+@test "should download a WAR artifact from nexus v3 if file hasn't been downloaded" {
+	export OUTPUT_FOLDER="${TEMP_DIR}/output"
+	export BINARY_EXTENSION="war"
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
+
+	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version" "nexus-3" "http://artifactrepo.com" "maven-releases"
+
+	assert_output --partial 'artifactId-version.war'
+	assert_output --partial 'File downloaded successfully'
+	assert_success
+}
+
+@test "should exit 1 when failed to download the artifact from nexus v3" {
+	export OUTPUT_FOLDER="${TEMP_DIR}/output"
+
+	source "${SOURCE_DIR}/projectType/pipeline-jvm.sh"
+
+	run downloadAppBinary "repoWithJars" "group.id" "artifactId" "version" "nexus-3" "failed" "maven-releases"
+
+	assert_output --partial 'Failed to find path to jar!'
 	assert_failure
 }
