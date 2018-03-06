@@ -61,6 +61,9 @@ any manual work on the Jenkins side. In the above parameters, the third paramete
 could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
 contain your GitHub org in which you have the forked repos.
 
+Instead of the Git username and password parameters you could pass `-key <path_to_private_key>`
+if you prefer to use the key-based authentication with your Git repositories.
+
 You need to pass the credentials for the Docker organization (by default we will
 search for the Docker images at Docker Hub) so that the pipeline will be able
 to push images to your org.

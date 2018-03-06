@@ -1,0 +1,30 @@
+test:
+  services:
+    - type: broker
+      name: rabbitmq-github-webhook
+      broker: foo
+      plan: bar
+    - type: broker
+      name: mysql-github-webhook
+      broker: foo
+      plan: bar
+    - type: app
+      name: eureka-github-webhook
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+    - type: stubrunner
+      name: stubrunner
+      coordinates: com.example.github:github-analytics-stub-runner-boot-classpath-stubs:0.0.1.M1
+      pathToManifest: foo/manifest.yml
+stage:
+  services:
+    - type: broker
+      name: github-rabbitmq
+      broker: foo
+      plan: bar
+    - type: broker
+      name: mysql-github
+      broker: foo
+      plan: bar
+    - type: app
+      name: github-eureka
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
