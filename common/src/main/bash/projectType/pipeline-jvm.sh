@@ -71,14 +71,13 @@ function downloadAppBinaryFromNexus3() {
 	local nexusApiSearchUrl
 	local destination
 	local pathToJar
-	local downloadUrl
 	searchBaseUrl="${nexusApiBaseUrl}/service/siesta/rest/beta/search"
 	nexusApiSearchUrl="${searchBaseUrl}?repository=${repoId}&maven.groupId=${groupId}&maven.artifactId=${artifactId}&maven.baseVersion=${version}&maven.extension=${BINARY_EXTENSION}"
 	destination="$(pwd)/${OUTPUT_FOLDER}/${artifactId}-${version}.${BINARY_EXTENSION}"
 	mkdir -p "${OUTPUT_FOLDER}"
 	curl -u "${nexusUsername}:${nexusPassword}" -X GET --header "Accept: application/json" "${nexusApiSearchUrl}" -o "${OUTPUT_FOLDER}/artifacts.json" --fail && success="true"
 	if [[ "${success}" == "true" ]]; then
-		pathToJar="$(cat ${OUTPUT_FOLDER}/artifacts.json | jq --raw-output '.items | reverse[0].assets[0].downloadUrl')"
+		pathToJar="$(< "${OUTPUT_FOLDER}/artifacts.json" jq --raw-output '.items | reverse[0].assets[0].downloadUrl')"
 		downloadArtifact "${destination}" "${pathToJar}" "${nexusUsername}" "${nexusPassword}"
 	else
 		echo "Failed to find path to jar!"
