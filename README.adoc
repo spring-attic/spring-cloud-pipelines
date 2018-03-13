@@ -573,7 +573,7 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
 
 === Kubernetes project opinions
 
-We've taken the following opinionated decisions for a Kubernetes based project:
+We've taken the following opinionated decisions for a Cloud Foundry based project:
 
 - application built using Maven or Gradle wrappers
 - application deployment to Kubernetes
