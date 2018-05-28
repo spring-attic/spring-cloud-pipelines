@@ -7,5 +7,5 @@ dependencies {
 	testCompile("org.spockframework:spock-core:1.0-groovy-2.4") {
 		exclude(group: 'org.codehaus.groovy')
 	}
-	testCompile("org.springframework.boot:spring-boot-test:1.5.7.RELEASE")
+	testCompile("org.springframework.boot:spring-boot-test:1.5.13.RELEASE")
 }
