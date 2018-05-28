@@ -47,7 +47,7 @@ case $1 in
             echo "bats already downloaded - skipping..."
             exit 0
         fi
-        git clone https://github.com/sstephenson/bats.git "${ROOT_DIR}/../common/build/bats"
+        git clone https://github.com/bats-core/bats-core.git "${ROOT_DIR}/../common/build/bats"
         ;;
     initialize-submodules)
         files="$( ls "${ROOT_DIR}/../common/src/test/bats/test_helper/bats-assert/" || echo "" )"
