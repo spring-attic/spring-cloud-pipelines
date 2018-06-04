@@ -104,7 +104,7 @@ function findLatestProdTag() {
 		echo "${prodTag}"
 	else
 		local latestProdTag
-		latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' refs/tags/prod | tail -1)
+		latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' "refs/tags/prod/${PROJECT_NAME}" | tail -1)
 		export LATEST_PROD_TAG PASSED_LATEST_PROD_TAG
 		LATEST_PROD_TAG="${latestProdTag#refs/tags/}"
 		PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
@@ -147,10 +147,13 @@ function serviceExists() {
 # Sets the environment variable with contents of the parsed pipeline descriptor
 # shellcheck disable=SC2120
 function parsePipelineDescriptor() {
+	export PIPELINE_DESCRIPTOR_PRESENT
 	if [[ ! -f "${PIPELINE_DESCRIPTOR}" ]]; then
 		echo "No pipeline descriptor found - will not deploy any services"
+		PIPELINE_DESCRIPTOR_PRESENT="false"
 		return
 	fi
+	PIPELINE_DESCRIPTOR_PRESENT="true"
 	export PARSED_YAML
 	PARSED_YAML=$(yaml2json "${PIPELINE_DESCRIPTOR}")
 }
@@ -169,15 +172,16 @@ function deployServices() {
 	fi
 
 	while read -r serviceName serviceType useExisting; do
-	    serviceType=$(toLowerCase "${serviceType}")
+		local parsedServiceType
+		parsedServiceType=$(toLowerCase "${serviceType}")
 		if [[ "${ENVIRONMENT}" == "TEST" && "${useExisting}" != "true" ]]; then
-			deleteService "${serviceName}" "${serviceType}"
-			deployService "${serviceName}" "${serviceType}"
+			deleteService "${serviceName}" "${parsedServiceType}"
+			deployService "${serviceName}" "${parsedServiceType}"
 		else
 			if [[ "$(serviceExists "${serviceName}")" == "true" ]]; then
 				echo "Skipping deployment since service is already deployed"
 			else
-				deployService "${serviceName}" "${serviceType}"
+				deployService "${serviceName}" "${parsedServiceType}"
 			fi
 		fi
 	# retrieve the space separated name and type
@@ -193,6 +197,20 @@ function yaml2json() {
 # Converts a string to lower case
 function toLowerCase() {
 	echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+# Gets the build coordinates from descriptor
+function getMainModulePath() {
+	if [[ ! -z "${PARSED_YAML}" ]]; then
+		local mainModule
+		mainModule="$( echo "${PARSED_YAML}" | jq -r '.build.main_module' )"
+		if [[ "${mainModule}" == "null" ]]; then
+			mainModule=""
+		fi
+		echo "${mainModule}"
+	else
+		echo ""
+	fi
 }
 
 PAAS_TYPE="$( toLowerCase "${PAAS_TYPE:-cf}" )"
@@ -229,3 +247,60 @@ echo "Path to custom script is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
 # shellcheck source=/dev/null
 [[ -f "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ]] && source "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ||  \
  echo "No ${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME} found"
+
+export ROOT_PROJECT_DIR
+export PROJECT_SETUP
+export PROJECT_NAME
+parsePipelineDescriptor
+echo "Root project directory [${ROOT_PROJECT_DIR}]"
+# if pipeline descriptor is in the provided folder that means that
+# we don't have a descriptor per application
+if [[ "${PIPELINE_DESCRIPTOR_PRESENT}" == "true" ]]; then
+	echo "Pipeline descriptor found"
+	mainModulePath="$( getMainModulePath )"
+	if [[ "${mainModulePath}" != "" && "${mainModulePath}" != "null" ]]; then
+		# multi module - has a coordinates section in the descriptor
+		PROJECT_SETUP="MULTI_MODULE"
+		echo "Build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
+	else
+		# single repo - no coordinates
+		PROJECT_SETUP="SINGLE_REPO"
+		echo "No build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
+	fi
+else
+	echo "Pipeline descriptor missing"
+	# if pipeline descriptor is missing but the provided root project dir exists
+	# that means that it's a multi-project and we need to cd to that folder
+	if [[ -d "${ROOT_PROJECT_DIR}" ]]; then
+		echo "Root project dir found [${ROOT_PROJECT_DIR}]"
+		cd "${ROOT_PROJECT_DIR}"
+		parsePipelineDescriptor
+		mainModulePath="$( getMainModulePath )"
+		if [[ "${mainModulePath}" != "" && "${mainModulePath}" != "null" ]]; then
+			# multi project with module - has a coordinates section in the descriptor
+			PROJECT_SETUP="MULTI_PROJECT_WITH_MODULES"
+			echo "Build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
+		else
+			# multi project without modules
+			PROJECT_SETUP="MULTI_PROJECT"
+			echo "No build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
+		fi
+	else
+		# No descriptor and no module is present - will treat it as a single repo with no descriptor
+		PROJECT_SETUP="SINGLE_REPO"
+		echo "No descriptor or module found, project setup [${PROJECT_SETUP}]"
+	fi
+fi
+# Regardless of the project setup, if the root project dir doesn't exist, we should point
+# to the current folder as the root project directory
+if [[ ! -f "${ROOT_PROJECT_DIR}" ]]; then
+	ROOT_PROJECT_DIR="."
+fi
+cd "${ROOT_PROJECT_DIR}"
+# Project name can be taken from env variable or from the project's folder
+# We need it to tag the project somehow if the PROJECT_NAME var wasn't passed
+if [[ "${PROJECT_NAME}" == "" ]]; then
+	PROJECT_NAME="$(basename "$(pwd)")"
+fi
+echo "Project with name [${PROJECT_NAME}] is setup as [${PROJECT_SETUP}]. The project directory is present at [${ROOT_PROJECT_DIR}]"
+

@@ -79,7 +79,7 @@ function testRollbackDeploy() {
 	# shellcheck disable=SC2119
 	parsePipelineDescriptor
 	# Downloading latest jar
-	local LATEST_PROD_VERSION=${latestProdTag#prod/}
+	local LATEST_PROD_VERSION=${latestProdTag#"prod/${PROJECT_NAME}/"}
 	echo "Last prod version equals ${LATEST_PROD_VERSION}"
 	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${LATEST_PROD_VERSION}" "${M2_SETTINGS_REPO_USERNAME}" "${M2_SETTINGS_REPO_PASSWORD}"
 	logInToPaas

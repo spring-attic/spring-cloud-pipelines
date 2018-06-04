@@ -109,7 +109,8 @@ teardown() {
 
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Concourse [Gradle]" {
 	export CI="CONCOURSE"
-	export LATEST_PROD_TAG="prod/100.0.0"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/100.0.0"
 	cd "${TEMP_DIR}/gradle/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
 
@@ -123,7 +124,8 @@ teardown() {
 
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Jenkins [Gradle]" {
 	export CI="JENKINS"
-	export LATEST_PROD_TAG="prod/100.0.0"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/100.0.0"
 	cd "${TEMP_DIR}/gradle/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
 
@@ -151,6 +153,19 @@ teardown() {
 	result="$( retrieveAppName )"
 
 	assert_equal "${result}" "my-project"
+}
+
+# with Gradle we get the artifact id via property so we can ignore
+# whether there is an entry in sc-pipelines for build.main_module
+# we still will suggest to set it cause it can be valuable to know
+# which module produces the fat jar
+@test "should print artifact id in multi-module [Gradle]" {
+	cd "${TEMP_DIR}/gradle/multi_module"
+	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
+
+	result="$( retrieveAppName )"
+
+	assert_equal "${result}" "bar"
 }
 
 @test "should print that build has failed [Gradle]" {
@@ -226,7 +241,7 @@ teardown() {
 	assert_success
 }
 
-@test "should return 'target' for outputFolder [Gradle]" {
+@test "should return 'build/libs' for outputFolder [Gradle]" {
 	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
 
 	run outputFolder

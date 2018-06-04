@@ -34,8 +34,9 @@ function apiCompatibilityCheck() {
 	if [[ -z "${prodTag}" ]]; then
 		echo "No prod release took place - skipping this step"
 	else
+		PROJECT_NAME=${PROJECT_NAME?PROJECT_NAME must be set!}
 		# Downloading latest jar
-		LATEST_PROD_VERSION=${prodTag#prod/}
+		LATEST_PROD_VERSION=${prodTag#"prod/${PROJECT_NAME}/"}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		if [[ "${CI}" == "CONCOURSE" ]]; then
 			# shellcheck disable=SC2086

@@ -218,7 +218,7 @@ pipeline {
 							"""
 						}
 					}
-					git tag prod/\${PIPELINE_VERSION}
+					git tag prod/${env.PROJECT_NAME}/\${PIPELINE_VERSION}
 					git push --tags
 					"""
 

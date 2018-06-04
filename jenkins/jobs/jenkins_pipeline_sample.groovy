@@ -97,6 +97,7 @@ parsedRepos.each {
 	}
 
 	String projectName = "${gitRepoName}-pipeline"
+	defaults.addEnvVar("PROJECT_NAME", gitRepoName)
 
 	//  ======= JOBS =======
 	dsl.job("${projectName}-build") {
@@ -155,7 +156,7 @@ parsedRepos.each {
 			}
 			git {
 				pushOnlyIfSuccess()
-				tag('origin', "dev/\${PIPELINE_VERSION}") {
+				tag('origin', "dev/${gitRepoName}/\${PIPELINE_VERSION}") {
 					create()
 					update()
 				}
@@ -185,7 +186,7 @@ parsedRepos.each {
 			}
 			jdk(jdkVersion)
 			scm {
-				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -238,7 +239,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -292,7 +293,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -350,7 +351,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -406,7 +407,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -488,7 +489,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -552,7 +553,7 @@ parsedRepos.each {
 				}
 			}
 			scm {
-				configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
 				shell("""#!/bin/bash
@@ -608,7 +609,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		configure { def project ->
 			// Adding user email and name here instead of global settings
@@ -643,7 +644,7 @@ parsedRepos.each {
 			git {
 				forcePush(true)
 				pushOnlyIfSuccess()
-				tag('origin', "prod/\${PIPELINE_VERSION}") {
+				tag('origin', "prod/${gitRepoName}/\${PIPELINE_VERSION}") {
 					create()
 					update()
 				}
@@ -675,7 +676,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -711,7 +712,7 @@ parsedRepos.each {
 			}
 		}
 		scm {
-			configureScm(delegate as ScmContext, fullGitRepo, 'dev/${PIPELINE_VERSION}')
+			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
 			shell("""#!/bin/bash
@@ -740,6 +741,7 @@ class PipelineDefaults {
 
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
 		Map<String, String> envs = [:]
+		setIfPresent(envs, variables, "PROJECT_NAME")
 		setIfPresent(envs, variables, "PAAS_TYPE")
 		setIfPresent(envs, variables, "TOOLS_BRANCH")
 		setIfPresent(envs, variables, "M2_SETTINGS_REPO_ID")
@@ -804,5 +806,9 @@ class PipelineDefaults {
 		if (variables[prop]) {
 			envs[prop] = variables[prop]
 		}
+	}
+
+	void addEnvVar(String key, String value) {
+		this.defaultEnvVars.put(key, value)
 	}
 }

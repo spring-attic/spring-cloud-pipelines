@@ -367,7 +367,7 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
-	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
+	assert_output --partial "mvnw clean test -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
 
@@ -394,6 +394,7 @@ export -f fakeRetrieveStubRunnerIds
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG=""
+	export PROJECT_NAME="build_project"
 	export GIT_BIN="echo 'master'"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
@@ -410,7 +411,8 @@ export -f fakeRetrieveStubRunnerIds
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/1.0.0.FOO"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 	cp "${FIXTURES_DIR}/sc-pipelines-cf.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project/sc-pipelines.yml"
@@ -442,7 +444,8 @@ export -f fakeRetrieveStubRunnerIds
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/1.0.0.FOO"
 	env="test"
 	# notice lowercase of artifactid (should be artifactId) - but lowercase function gets applied
 	projectName="gradlew artifactid -q"
@@ -478,6 +481,7 @@ export -f fakeRetrieveStubRunnerIds
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
 	export LATEST_PROD_TAG=""
+	export PROJECT_NAME="build_project"
 	export GIT_BIN="echo ''"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
@@ -494,17 +498,18 @@ export -f fakeRetrieveStubRunnerIds
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
 	export OUTPUT_DIR="target"
-	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/1.0.0.FOO"
 	env="test"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
 
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "git checkout prod/1.0.0.FOO"
+	assert_output --partial "git checkout prod/build_project/1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
-	assert_output --partial "mvnw clean install -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
+	assert_output --partial "mvnw clean test -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
 
@@ -512,7 +517,8 @@ export -f fakeRetrieveStubRunnerIds
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
 	export OUTPUT_DIR="build/libs"
-	export LATEST_PROD_TAG="prod/1.0.0.FOO"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/1.0.0.FOO"
 	env="test"
 	projectNameUppercase="gradlew artifactId -q"
 	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
@@ -520,7 +526,7 @@ export -f fakeRetrieveStubRunnerIds
 	run "${SOURCE_DIR}/test_rollback_smoke.sh"
 
 	# logged in
-	assert_output --partial "git checkout prod/1.0.0.FOO"
+	assert_output --partial "git checkout prod/build_project/1.0.0.FOO"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-${projectNameUppercase}"
 	assert_output --partial "gradlew artifactId -q"
@@ -666,7 +672,7 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	assert_output --partial "mvnw clean install -Pe2e -Dapplication.url=my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
+	assert_output --partial "mvnw clean test -Pe2e -Dapplication.url=my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
 
@@ -699,7 +705,6 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	refute_output --partial "cf delete -f my-project"
 	assert_output --partial "cf push my-project -f manifest.yml -p target/my-project-.jar -n my-project -i 2 --no-start"
 	assert_output --partial "cf set-env my-project SPRING_PROFILES_ACTIVE cloud,prod"
@@ -723,7 +728,6 @@ export -f fakeRetrieveStubRunnerIds
 	# logged in
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
-	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	refute_output --partial "cf delete -f my-project"
 	assert_output --partial "cf push ${projectName} -f manifest.yml -p build/libs/${projectNameUppercase}-.jar -n ${projectName} -i 2 --no-start"
 	assert_output --partial "cf set-env ${projectName} SPRING_PROFILES_ACTIVE cloud,prod"

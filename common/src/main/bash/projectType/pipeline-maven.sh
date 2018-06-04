@@ -19,7 +19,7 @@ function build() {
 	# Required by settings.xml
 	BUILD_OPTIONS="${BUILD_OPTIONS} -DM2_SETTINGS_REPO_ID=${M2_SETTINGS_REPO_ID} -DM2_SETTINGS_REPO_USERNAME=${M2_SETTINGS_REPO_USERNAME} -DM2_SETTINGS_REPO_PASSWORD=${M2_SETTINGS_REPO_PASSWORD}"
 	# shellcheck disable=SC2086
-	"${MAVENW_BIN}" org.codehaus.mojo:versions-maven-plugin:2.3:set -DnewVersion="${pipelineVersion}" ${BUILD_OPTIONS} || (echo "Build failed!!!" && return 1)
+	"${MAVENW_BIN}" versions:set -DnewVersion="${pipelineVersion}" -DprocessAllModules ${BUILD_OPTIONS} || (echo "Build failed!!!" && return 1)
 	if [[ "${CI}" == "CONCOURSE" ]]; then
 		# shellcheck disable=SC2086
 		"${MAVENW_BIN}" clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES_FOR_UPLOAD}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS} || (printTestResults && return 1)
@@ -36,13 +36,14 @@ function apiCompatibilityCheck() {
 	if [[ -z "${prodTag}" ]]; then
 		echo "No prod release took place - skipping this step"
 	else
+		PROJECT_NAME=${PROJECT_NAME?PROJECT_NAME must be set!}
 		# Putting env vars to output properties file for parameter passing
 		export PASSED_LATEST_PROD_TAG="${prodTag}"
 		local fileLocation="${OUTPUT_FOLDER}/test.properties"
 		mkdir -p "${OUTPUT_FOLDER}"
 		echo "PASSED_LATEST_PROD_TAG=${prodTag}" >>"${fileLocation}"
 		# Downloading latest jar
-		LATEST_PROD_VERSION=${prodTag#prod/}
+		LATEST_PROD_VERSION=${prodTag#"prod/${PROJECT_NAME}/"}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		if [[ "${CI}" == "CONCOURSE" ]]; then
 			# shellcheck disable=SC2086
@@ -73,22 +74,43 @@ function extractMavenProperty() {
 	fi
 }
 
+# TODO: Group id taken from build coordinates
 function retrieveGroupId() {
+	local path
+	path="${1:-.}"
+#	local replacement
+#	replacement="/"
+#	local projectFolders
+	# foo:bar:baz -> foo/bar/baz
+	# shellcheck disable=SC2116
+#	projectFolders="$( echo "${coordinates/:/$replacement}" )"
+	# nothing -> .
+#	projectFolders="${projectFolders:-.}"
 	{
 		ruby -r rexml/document  \
- -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/groupId"].text' pom.xml  \
+ -e 'parsed = REXML::Document.new(File.new(ARGV.shift)); puts (parsed.elements["/project/groupId"].nil? ? parsed.elements["/project/parent/groupId"].text : parsed.elements["/project/groupId"].text)' "${path}"/pom.xml | tail -1  \
  || "${MAVENW_BIN}" org.apache.maven.plugins:maven-help-plugin:2.2:evaluate  \
- -Dexpression=project.groupId | grep -Ev '(^\[|Download\w+:)'
+ -Dexpression=project.groupId -f "${path}"/pom.xml  | grep -Ev '(^\[|Download\w+:)'
 	} | tail -1
 }
 
+# TODO: App name taken from build coordinates
 function retrieveAppName() {
+	local path
+	local mainModule
+	# checks if the getMainModulePath function is defined. If not will just pick the current folder as main module
+	if [ -n "$(type -t getMainModulePath)" ] && [ "$(type -t getMainModulePath)" = function ]; then
+		mainModule="$( getMainModulePath )"
+	else
+		mainModule="."
+	fi
+	path="${1:-${mainModule:-.}}"
 	{
 		ruby -r rexml/document  \
- -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' pom.xml  \
+ -e 'puts REXML::Document.new(File.new(ARGV.shift)).elements["/project/artifactId"].text' "${path}"/pom.xml | tail -1 \
  || "${MAVENW_BIN}" org.apache.maven.plugins:maven-help-plugin:2.2:evaluate  \
- -Dexpression=project.artifactId | grep -Ev '(^\[|Download\w+:)'
-	} | tail -1
+ -Dexpression=project.artifactId -f "${path}"/pom.xml  | grep -Ev '(^\[|Download\w+:)'
+	} | grep -Ev '(^\[|Error\w+:)' | tail -1
 }
 
 function printTestResults() {
@@ -107,10 +129,10 @@ function runSmokeTests() {
 
 	if [[ "${CI}" == "CONCOURSE" ]]; then
 		# shellcheck disable=SC2086
-		"${MAVENW_BIN}" clean install -Psmoke -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} || (printTestResults && return 1)
+		"${MAVENW_BIN}" clean test -Psmoke -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS} || (printTestResults && return 1)
 	else
 		# shellcheck disable=SC2086
-		"${MAVENW_BIN}" clean install -Psmoke -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
+		"${MAVENW_BIN}" clean test -Psmoke -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
 	fi
 }
 
@@ -120,10 +142,10 @@ function runE2eTests() {
 
 	if [[ "${CI}" == "CONCOURSE" ]]; then
 		# shellcheck disable=SC2086
-		"${MAVENW_BIN}" clean install -Pe2e -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} || (printTestResults && return 1)
+		"${MAVENW_BIN}" clean test -Pe2e -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS} || (printTestResults && return 1)
 	else
 		# shellcheck disable=SC2086
-		"${MAVENW_BIN}" clean install -Pe2e -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
+		"${MAVENW_BIN}" clean test -Pe2e -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
 	fi
 }
 

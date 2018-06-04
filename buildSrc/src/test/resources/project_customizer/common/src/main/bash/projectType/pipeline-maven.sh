@@ -35,7 +35,7 @@ function apiCompatibilityCheck() {
 		echo "No prod release took place - skipping this step"
 	else
 		# Downloading latest jar
-		LATEST_PROD_VERSION=${LATEST_PROD_TAG#prod/}
+		LATEST_PROD_VERSION=${LATEST_PROD_TAG#"prod/${PROJECT_NAME}/"}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		echo "Additional Build Options [${BUILD_OPTIONS}]"
 		if [[ "${CI}" == "CONCOURSE" ]]; then

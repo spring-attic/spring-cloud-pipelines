@@ -32,7 +32,8 @@ cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 . "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
 
 echo "Tagging the project with dev tag"
-DEV_TAG="dev/${PASSED_PIPELINE_VERSION}"
+# TODO: Change this to support multiple projects
+DEV_TAG="dev/${PROJECT_NAME}/${PASSED_PIPELINE_VERSION}"
 echo "${DEV_TAG}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
 cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
 

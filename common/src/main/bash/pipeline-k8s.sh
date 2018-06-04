@@ -81,7 +81,7 @@ function testRollbackDeploy() {
 	local appName
 	appName=$(retrieveAppName)
 	local latestProdVersion
-	latestProdVersion="${latestProdTag#prod/}"
+	latestProdVersion="${latestProdTag#"prod/${PROJECT_NAME}/"}"
 	echo "Last prod version equals ${latestProdVersion}"
 	logInToPaas
 	parsePipelineDescriptor

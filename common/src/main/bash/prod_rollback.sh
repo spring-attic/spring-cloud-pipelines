@@ -12,7 +12,7 @@ export ENVIRONMENT=PROD
 
 if rollbackToPreviousVersion; then
 	echo "Deleting production tag"
-	tagName="prod/${PIPELINE_VERSION}"
+	tagName="prod/${PROJECT_NAME}/${PIPELINE_VERSION}"
 	"${GIT_BIN}" push --delete origin "${tagName}"
 	exit 0
 else

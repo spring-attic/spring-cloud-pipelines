@@ -113,7 +113,8 @@ teardown() {
 
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Concourse [Maven]" {
 	export CI="CONCOURSE"
-	export LATEST_PROD_TAG="prod/100.0.0"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/100.0.0"
 	cd "${TEMP_DIR}/maven/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
@@ -127,7 +128,8 @@ teardown() {
 
 @test "should run the check when prod tag exists for apiCompatibilityCheck for Jenkins [Maven]" {
 	export CI="JENKINS"
-	export LATEST_PROD_TAG="prod/100.0.0"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/100.0.0"
 	cd "${TEMP_DIR}/maven/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
 
@@ -177,6 +179,16 @@ teardown() {
 	assert_success
 }
 
+@test "should print group id for multi module [Maven]" {
+	cd "${TEMP_DIR}/maven/multi_module"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
+
+	run retrieveGroupId "foo/bar"
+
+	assert_output "com.example"
+	assert_success
+}
+
 @test "should print artifact id [Maven]" {
 	cd "${TEMP_DIR}/maven/build_project"
 	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
@@ -184,6 +196,16 @@ teardown() {
 	run retrieveAppName
 
 	assert_output "my-project"
+	assert_success
+}
+
+@test "should print artifact id for multi module [Maven]" {
+	cd "${TEMP_DIR}/maven/multi_module"
+	source "${SOURCE_DIR}/projectType/pipeline-maven.sh"
+
+	run retrieveAppName "foo/bar"
+
+	assert_output "my-project-bar"
 	assert_success
 }
 
