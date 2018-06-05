@@ -51,7 +51,7 @@ function projectType() {
 	fi
 }
 
-PROJECT_TYPE=$(projectType)
+[[ -z "${PROJECT_TYPE}" ]] && PROJECT_TYPE=$(projectType)
 
 export -f projectType
 export PROJECT_TYPE
