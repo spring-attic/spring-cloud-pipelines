@@ -742,6 +742,7 @@ class PipelineDefaults {
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
 		Map<String, String> envs = [:]
 		setIfPresent(envs, variables, "PROJECT_NAME")
+		setIfPresent(envs, variables, "PROJECT_TYPE")
 		setIfPresent(envs, variables, "PAAS_TYPE")
 		setIfPresent(envs, variables, "TOOLS_BRANCH")
 		setIfPresent(envs, variables, "M2_SETTINGS_REPO_ID")
