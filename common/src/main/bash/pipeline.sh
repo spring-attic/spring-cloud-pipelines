@@ -297,10 +297,15 @@ if [[ ! -f "${ROOT_PROJECT_DIR}" ]]; then
 	ROOT_PROJECT_DIR="."
 fi
 cd "${ROOT_PROJECT_DIR}"
-# Project name can be taken from env variable or from the project's folder
+# Project name can be taken from env variable or from the project's app name
 # We need it to tag the project somehow if the PROJECT_NAME var wasn't passed
 if [[ "${PROJECT_NAME}" == "" ]]; then
-	PROJECT_NAME="$(basename "$(pwd)")"
+	if [ -n "$(type -t retrieveAppName)" ] && [ "$(type -t retrieveAppName)" = function ]; then
+		PROJECT_NAME="$(retrieveAppName)"
+	else
+		echo "[retrieveAppName] function not defined. Will derive project name from the current folder"
+		PROJECT_NAME="$(basename "$(pwd)")"
+	fi
 fi
 echo "Project with name [${PROJECT_NAME}] is setup as [${PROJECT_SETUP}]. The project directory is present at [${ROOT_PROJECT_DIR}]"
 

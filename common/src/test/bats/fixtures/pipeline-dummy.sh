@@ -1,4 +1,7 @@
 #!/bin/bash
+function retrieveAppName() {
+    echo "retrieveAppName"
+}
 
 function deleteService() {
     echo "$*"

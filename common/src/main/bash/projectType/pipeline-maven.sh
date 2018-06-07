@@ -74,18 +74,9 @@ function extractMavenProperty() {
 	fi
 }
 
-# TODO: Group id taken from build coordinates
 function retrieveGroupId() {
 	local path
 	path="${1:-.}"
-#	local replacement
-#	replacement="/"
-#	local projectFolders
-	# foo:bar:baz -> foo/bar/baz
-	# shellcheck disable=SC2116
-#	projectFolders="$( echo "${coordinates/:/$replacement}" )"
-	# nothing -> .
-#	projectFolders="${projectFolders:-.}"
 	{
 		ruby -r rexml/document  \
  -e 'parsed = REXML::Document.new(File.new(ARGV.shift)); puts (parsed.elements["/project/groupId"].nil? ? parsed.elements["/project/parent/groupId"].text : parsed.elements["/project/groupId"].text)' "${path}"/pom.xml | tail -1  \
