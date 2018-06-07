@@ -29,10 +29,9 @@ echo "${MESSAGE}"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 
 # Find latest prod tag
-export PASSED_LATEST_PROD_TAG
-export LATEST_PROD_TAG
-latestProdTag="$(findLatestProdTag)"
-LATEST_PROD_TAG="${latestProdTag}"
+prodTag="${PASSED_LATEST_PROD_TAG:-${LATEST_PROD_TAG:-}}"
+[[ -z "${prodTag}" ]] && prodTag="$(findLatestProdTag)"
+LATEST_PROD_TAG="${prodTag}"
 echo "Latest prod tag is [${LATEST_PROD_TAG}]"
 PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
 
