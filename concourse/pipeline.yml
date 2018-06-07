@@ -317,6 +317,8 @@ common-params: &common-params
   REPO_WITH_BINARIES_FOR_UPLOAD: ((repo-with-binaries-for-upload))
   REPO_WITH_BINARIES: ((repo-with-binaries))
   PIPELINE_DESCRIPTOR: ((pipeline-descriptor))
+  PROJECT_NAME: ((project-name))
+  PROJECT_TYPE: ((project-type))
   # remove::start[K8S]
   KUBERNETES-MINIKUBE: ((kubernetes-minikube))
   MYSQL_ROOT_PASSWORD: ((mysql-root-password))

@@ -29,12 +29,11 @@ echo "${MESSAGE}"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 
 # Find latest prod tag
-latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' "refs/tags/prod/${PROJECT_NAME}" | tail -1)
-export LATEST_PROD_TAG
-LATEST_PROD_TAG="${latestProdTag#refs/tags/}"
-echo "Latest prod tag is [${LATEST_PROD_TAG}]"
-
 export PASSED_LATEST_PROD_TAG
+export LATEST_PROD_TAG
+latestProdTag="$(findLatestProdTag)"
+LATEST_PROD_TAG="${latestProdTag}"
+echo "Latest prod tag is [${LATEST_PROD_TAG}]"
 PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
 
 # shellcheck source=/dev/null
