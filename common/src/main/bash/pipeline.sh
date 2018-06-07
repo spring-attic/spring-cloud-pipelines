@@ -299,7 +299,7 @@ fi
 cd "${ROOT_PROJECT_DIR}"
 # Project name can be taken from env variable or from the project's app name
 # We need it to tag the project somehow if the PROJECT_NAME var wasn't passed
-if [[ "${PROJECT_NAME}" == "" ]]; then
+if [[ "${PROJECT_NAME}" == "" || "${PROJECT_NAME}" == "null" ]]; then
 	if [ -n "$(type -t retrieveAppName)" ] && [ "$(type -t retrieveAppName)" = function ]; then
 		PROJECT_NAME="$(retrieveAppName)"
 	else
