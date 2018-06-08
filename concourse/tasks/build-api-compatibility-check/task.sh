@@ -31,7 +31,7 @@ cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 # Find latest prod tag
 latestProdTag="$(latestProdTagFromGit)"
 export LATEST_PROD_TAG
-LATEST_PROD_TAG="${latestProdTag#refs/tags/}"
+LATEST_PROD_TAG="$(trimRefsTag ${latestProdTag})"
 echo "Latest prod tag is [${LATEST_PROD_TAG}]"
 
 export PASSED_LATEST_PROD_TAG

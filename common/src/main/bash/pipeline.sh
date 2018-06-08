@@ -106,7 +106,7 @@ function findLatestProdTag() {
 		local latestProdTag
 		latestProdTag="$(latestProdTagFromGit)"
 		export LATEST_PROD_TAG PASSED_LATEST_PROD_TAG
-		LATEST_PROD_TAG="${latestProdTag#refs/tags/}"
+		LATEST_PROD_TAG="$(trimRefsTag ${latestProdTag})"
 		PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
 		echo "${LATEST_PROD_TAG}"
 	fi
@@ -117,6 +117,12 @@ function latestProdTagFromGit() {
 	local latestProdTag
 	latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' "refs/tags/prod/${PROJECT_NAME}" | tail -1)
 	echo "${latestProdTag}"
+}
+
+# Extracts latest prod tag
+function trimRefsTag() {
+	local latestProdTag="${1}"
+	echo "${latestProdTag#refs/tags/}"
 }
 
 # Extracts the version from the production tag

@@ -233,3 +233,10 @@ teardown() {
 	assert_equal "$(findLatestProdTag)" "prod/app-monolith/1.0.0.M1-20180607_144049-VERSION"
 	assert_success
 }
+
+@test "should trim the refs tag from the parameter" {
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(trimRefsTag refs/tags/prod/app-monolith/1.0.0.M1-20180607_144049-VERSION)" "prod/app-monolith/1.0.0.M1-20180607_144049-VERSION"
+	assert_success
+}
