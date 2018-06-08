@@ -106,7 +106,7 @@ function findLatestProdTag() {
 		local latestProdTag
 		latestProdTag="$(latestProdTagFromGit)"
 		export LATEST_PROD_TAG PASSED_LATEST_PROD_TAG
-		LATEST_PROD_TAG="$(trimRefsTag ${latestProdTag})"
+		LATEST_PROD_TAG="$(trimRefsTag "${latestProdTag}")"
 		PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
 		echo "${LATEST_PROD_TAG}"
 	fi
