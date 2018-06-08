@@ -327,3 +327,33 @@ teardown() {
 	assert_equal "$(trimRefsTag refs/tags/prod/app-monolith/1.0.0.M1-20180607_144049-VERSION)" "prod/app-monolith/1.0.0.M1-20180607_144049-VERSION"
 	assert_success
 }
+
+@test "should return empty string if no YAML got parsed" {
+	cd "${TEMP_DIR}/generic/single_repo_no_descriptor"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(getMainModulePath)" ""
+	assert_success
+}
+
+@test "should return the main module path from parsed descriptor" {
+	cd "${TEMP_DIR}/generic/multi_module"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(getMainModulePath)" "foo/bar"
+	assert_success
+}
+
+@test "should return empty string if no main module section is present in the descriptor" {
+	cd "${TEMP_DIR}/generic/single_repo"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(getMainModulePath)" ""
+	assert_success
+}
