@@ -1,0 +1,75 @@
+0000000000000000000000000000000000000000 20f30da4aeb2cb287e007d2cacfeff9d54b38dd8 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1527672392 +0200	clone: from git@github.com:marcingrzejszczak/factory.git
+20f30da4aeb2cb287e007d2cacfeff9d54b38dd8 20f30da4aeb2cb287e007d2cacfeff9d54b38dd8 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1527672819 +0200	checkout: moving from master to sc-pipelines
+20f30da4aeb2cb287e007d2cacfeff9d54b38dd8 8faf17783bdeff50b670a09a7b23e9f24f1afd25 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1527677269 +0200	commit: Added maven wrapper
+8faf17783bdeff50b670a09a7b23e9f24f1afd25 4c6b431dbdc8447214623f0638f8d1e9a90fed2d Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1527677277 +0200	commit (amend): Added maven wrapper
+4c6b431dbdc8447214623f0638f8d1e9a90fed2d 7ff9aa2eb2a2a78ceffbffc3571bc724662e5e92 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1527699166 +0200	commit: First contract test
+7ff9aa2eb2a2a78ceffbffc3571bc724662e5e92 8d1e88323c1df753a7539dbb8eca05828972e4ca Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1527701069 +0200	commit: Backward compatibility of HAL is working - still in offline mode - need to change it to remote
+8d1e88323c1df753a7539dbb8eca05828972e4ca 42db5b7434ca490d72add6da1a3e7bdf2700fa76 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528052719 +0200	commit: Added e2e and smoke
+42db5b7434ca490d72add6da1a3e7bdf2700fa76 2d9013a31b3e4009e18c977dc6b6ef9ca94c91a5 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528054391 +0200	commit: Added distr manag
+2d9013a31b3e4009e18c977dc6b6ef9ca94c91a5 2d9013a31b3e4009e18c977dc6b6ef9ca94c91a5 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528055194 +0200	reset: moving to HEAD
+2d9013a31b3e4009e18c977dc6b6ef9ca94c91a5 890a277bb18601616367bbb4978e072065207c78 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528055913 +0200	commit: Added missing version
+890a277bb18601616367bbb4978e072065207c78 67cced5321b371880c5decdccc0f96f9313a90d0 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528057178 +0200	commit: Migrated to main_module
+67cced5321b371880c5decdccc0f96f9313a90d0 eb22d49dd1528c5c525a20e973a755603990d079 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528061103 +0200	commit: Changed service to postgresql
+eb22d49dd1528c5c525a20e973a755603990d079 eb22d49dd1528c5c525a20e973a755603990d079 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528061514 +0200	reset: moving to HEAD
+eb22d49dd1528c5c525a20e973a755603990d079 efe9e1c00c8fec1eaa031a08fe5659daba5a59bf Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528061552 +0200	commit: Fixed wrong db type
+efe9e1c00c8fec1eaa031a08fe5659daba5a59bf db1358fb3181d5c2950437dca23f2fd82002cfd6 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528061776 +0200	commit: Fixed wrong service
+db1358fb3181d5c2950437dca23f2fd82002cfd6 7ffceadd1cb631d4f7cb535da1dfd8adff11115c Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528061951 +0200	commit: Fixed wrong service
+7ffceadd1cb631d4f7cb535da1dfd8adff11115c b0284e84c0d4506b72cb97418322f3ef2cd699b9 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528093832 +0200	commit: Added service config for cloud profile
+b0284e84c0d4506b72cb97418322f3ef2cd699b9 b38ea353a7d810bcc704ec8a420275f9caf1c79e Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528094559 +0200	commit: Tying to fix grant
+b38ea353a7d810bcc704ec8a420275f9caf1c79e 7c07df27cc6d023dc8ab6e8cf86d27831f9f1216 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528095687 +0200	commit: Tying to fix grant
+7c07df27cc6d023dc8ab6e8cf86d27831f9f1216 13b123bbe1b5c1cc6c243dc899ca335ca4379fbe Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528109115 +0200	commit: Added setup for smoke & e2e
+13b123bbe1b5c1cc6c243dc899ca335ca4379fbe 0924a85a06d0a7c4c9bb88333698a7842114fcab Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528109534 +0200	commit: Fixed tests
+0924a85a06d0a7c4c9bb88333698a7842114fcab bc452251045c2a747655b833070e36e452b04004 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528109930 +0200	commit: Fixed tests
+bc452251045c2a747655b833070e36e452b04004 9bf9ec4e75fbbc81e3dde1ec02600737a654b951 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528113969 +0200	commit: Removed spring runner
+9bf9ec4e75fbbc81e3dde1ec02600737a654b951 21121dcb691d0f8152c235a8c32cad3cd46ed4aa Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528114634 +0200	commit: Fixed tests:
+21121dcb691d0f8152c235a8c32cad3cd46ed4aa 12121293333d22fda430b19a87939ef0b8a2d9bb Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528121950 +0200	commit: Fixed
+12121293333d22fda430b19a87939ef0b8a2d9bb 709de6d33a8a2e8a67f57600f04f75dd4a28d42a Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528122279 +0200	commit: Turned on spring profile by default
+709de6d33a8a2e8a67f57600f04f75dd4a28d42a 3c61ad7b3056f6749843201ea73cc33f68a968df Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528122883 +0200	commit: Fixed
+3c61ad7b3056f6749843201ea73cc33f68a968df f7f035a833dcf35cc524964d1e9ff520a2388b3a Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188364 +0200	commit: Limited number of connections
+f7f035a833dcf35cc524964d1e9ff520a2388b3a 0255f655d88f649c188bdcb12db1415dc9e1385d Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188416 +0200	pull --rebase upstream master: checkout 0255f655d88f649c188bdcb12db1415dc9e1385d
+0255f655d88f649c188bdcb12db1415dc9e1385d 15f5a079abbc71cc996ef8cb8603ebf0e4993880 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188417 +0200	pull --rebase upstream master: Added maven wrapper
+15f5a079abbc71cc996ef8cb8603ebf0e4993880 102f96d338a1013fffa9fbcf2161dea2ed6e9f1a Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188514 +0200	rebase: First contract test
+102f96d338a1013fffa9fbcf2161dea2ed6e9f1a dc44873966149413579fda81054af27751809c5b Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188515 +0200	rebase: Backward compatibility of HAL is working - still in offline mode - need to change it to remote
+dc44873966149413579fda81054af27751809c5b 21819d196ca0a891137be5420a6d629fa4349f3b Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188516 +0200	rebase: Added e2e and smoke
+21819d196ca0a891137be5420a6d629fa4349f3b be241d91e32ccf35f015a2fe5378cd1fdc8829f6 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188516 +0200	rebase: Added distr manag
+be241d91e32ccf35f015a2fe5378cd1fdc8829f6 fba42ce5e66723175610e5d7d8a3e040662a789f Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188516 +0200	rebase: Added missing version
+fba42ce5e66723175610e5d7d8a3e040662a789f e11a4052b7f31a649c6df7fb646817b88938dd9d Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188516 +0200	rebase: Migrated to main_module
+e11a4052b7f31a649c6df7fb646817b88938dd9d 472dc8dfc1278bb3cf073c1c4ed2e49fda1bb1ca Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188517 +0200	rebase: Changed service to postgresql
+472dc8dfc1278bb3cf073c1c4ed2e49fda1bb1ca 6880c2f8d5f9a858c37e71c01d7200477a24e673 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188517 +0200	rebase: Fixed wrong db type
+6880c2f8d5f9a858c37e71c01d7200477a24e673 8c791be2fa273b0fa3b915355f697391c530575b Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188517 +0200	rebase: Fixed wrong service
+8c791be2fa273b0fa3b915355f697391c530575b 06ec7c93d7fb152a7b0a3fe11e45f4f23dfeb830 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188517 +0200	rebase: Fixed wrong service
+06ec7c93d7fb152a7b0a3fe11e45f4f23dfeb830 7c444ee1d246f974226328e2bfbc0a52aed01346 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188557 +0200	rebase: Tying to fix grant
+7c444ee1d246f974226328e2bfbc0a52aed01346 e877095af37d43fc1038de752d8441c035582e78 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188557 +0200	rebase: Tying to fix grant
+e877095af37d43fc1038de752d8441c035582e78 2726293a02e35808909d0b74fffacfb9c128a364 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188557 +0200	rebase: Added setup for smoke & e2e
+2726293a02e35808909d0b74fffacfb9c128a364 e91a0d32923f074b1c9dd2b2c25f131892d75997 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188557 +0200	rebase: Fixed tests
+e91a0d32923f074b1c9dd2b2c25f131892d75997 2b163e235b02afe8e7eec164e04633435dbb2b19 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188557 +0200	rebase: Fixed tests
+2b163e235b02afe8e7eec164e04633435dbb2b19 763105d5f71bb550a33fb72fbd4b92ff7afaec23 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188557 +0200	rebase: Removed spring runner
+763105d5f71bb550a33fb72fbd4b92ff7afaec23 bd67d810e8d18f467bd02c6f9df1f89b3644e248 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188557 +0200	rebase: Fixed tests:
+bd67d810e8d18f467bd02c6f9df1f89b3644e248 5d9ddf767f0e4cd129c275031bc07e1afadf47c7 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188610 +0200	rebase: Fixed
+5d9ddf767f0e4cd129c275031bc07e1afadf47c7 8f7e92b6bf3863084bb50a2124417596bf50529d Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188610 +0200	rebase: Turned on spring profile by default
+8f7e92b6bf3863084bb50a2124417596bf50529d be80da9ce7ed306fdb91e06df73b2c75e5c27cbb Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188610 +0200	rebase: Fixed
+be80da9ce7ed306fdb91e06df73b2c75e5c27cbb 831f721748b933c4cabdd156a6ba9fc4ea14694e Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188611 +0200	rebase: Limited number of connections
+831f721748b933c4cabdd156a6ba9fc4ea14694e 831f721748b933c4cabdd156a6ba9fc4ea14694e Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528188611 +0200	rebase finished: returning to refs/heads/sc-pipelines
+831f721748b933c4cabdd156a6ba9fc4ea14694e 26b0884d1f7eb73820af3805bb9c236631a146f0 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528189869 +0200	commit: Conflicts
+26b0884d1f7eb73820af3805bb9c236631a146f0 c15a04be908eb266332ece4830dd08d8e485bd5a Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528189923 +0200	rebase -i (start): checkout HEAD~30
+c15a04be908eb266332ece4830dd08d8e485bd5a 26b0884d1f7eb73820af3805bb9c236631a146f0 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528189933 +0200	rebase: aborting
+26b0884d1f7eb73820af3805bb9c236631a146f0 26b0884d1f7eb73820af3805bb9c236631a146f0 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528189933 +0200	rebase -i (abort): updating HEAD
+26b0884d1f7eb73820af3805bb9c236631a146f0 20f780a989dca9d102447e1efc87fdf41fbd1d64 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528191807 +0200	commit: Putting assembly descriptor to stub jar for tests to pass
+20f780a989dca9d102447e1efc87fdf41fbd1d64 13404d2f1c9b85aac80289fc31cbbcbe2fd0c511 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528207793 +0200	commit: Fixing messed up rebase
+13404d2f1c9b85aac80289fc31cbbcbe2fd0c511 2cc035fa26fd3b0589e0819fed5d51cff15cff7c Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528209261 +0200	commit: Came back to default for spring.jpa
+2cc035fa26fd3b0589e0819fed5d51cff15cff7c 2cc035fa26fd3b0589e0819fed5d51cff15cff7c Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528278387 +0200	checkout: moving from sc-pipelines to sc-pipelines-gradle
+2cc035fa26fd3b0589e0819fed5d51cff15cff7c 79c7af51799863dc76dbf88b0a89fdb792168acc Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528295369 +0200	commit: Added Gradle support
+79c7af51799863dc76dbf88b0a89fdb792168acc 357bd775c1d0255f8d3b7bbe86aa763e4a1b4226 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528357676 +0200	commit (amend): Added Gradle support
+357bd775c1d0255f8d3b7bbe86aa763e4a1b4226 fa1df62e54174fbbc538cd4cc0aa117409045fec Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528360772 +0200	commit: Ignore on error of sql update
+fa1df62e54174fbbc538cd4cc0aa117409045fec 2cc035fa26fd3b0589e0819fed5d51cff15cff7c Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528362934 +0200	checkout: moving from sc-pipelines-gradle to sc-pipelines
+2cc035fa26fd3b0589e0819fed5d51cff15cff7c b5016e61cb0a20f3c63cbcc21da40f5cb506b0c5 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528362951 +0200	commit: Added Gradle
+b5016e61cb0a20f3c63cbcc21da40f5cb506b0c5 c71d9b815df389ce44a7b09ac7a46fad331d8c49 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528363239 +0200	commit: Removed awaitlity
+c71d9b815df389ce44a7b09ac7a46fad331d8c49 c71d9b815df389ce44a7b09ac7a46fad331d8c49 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528368138 +0200	checkout: moving from sc-pipelines to version
+c71d9b815df389ce44a7b09ac7a46fad331d8c49 858bfed6b8a6c0ead51647a94bcdfcde1d2878f7 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528368171 +0200	commit: empty branch
+858bfed6b8a6c0ead51647a94bcdfcde1d2878f7 c71d9b815df389ce44a7b09ac7a46fad331d8c49 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528368179 +0200	checkout: moving from version to sc-pipelines
+c71d9b815df389ce44a7b09ac7a46fad331d8c49 6152fa2db7cb608858811cf66a132c01d3dc15f4 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528373050 +0200	commit: Moving to Finchley RC2 and 2.0.0.RC2 for sc-contract
+6152fa2db7cb608858811cf66a132c01d3dc15f4 3cd2816ff1c729913d1b018691c8c058cbbb1ee5 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528374716 +0200	revert: Revert "Moving to Finchley RC2 and 2.0.0.RC2 for sc-contract"
+3cd2816ff1c729913d1b018691c8c058cbbb1ee5 5bf1ad82bdb5a074952c4384012214d330ac332d Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528375175 +0200	commit: Trying to make this work on concourse
+5bf1ad82bdb5a074952c4384012214d330ac332d cd6bf16f13b59719cd1197b1c5c901b78c61581b Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528376008 +0200	commit: Trying to make this work on concourse
+cd6bf16f13b59719cd1197b1c5c901b78c61581b 7607770920f0bd7f07d9b5fd7f4e03df8b4a7ab6 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528376808 +0200	commit: Moved the allow snapshot section out
+7607770920f0bd7f07d9b5fd7f4e03df8b4a7ab6 f5a610997e736456338492a8323f957bc9a15830 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528377119 +0200	commit: Moved the allow snapshot section out

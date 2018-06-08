@@ -161,3 +161,75 @@ teardown() {
 	assert_equal "${PROJECT_SETUP}" "MULTI_PROJECT_WITH_MODULES"
 	assert_success
 }
+
+@test "should find the latest tag from git project for existant project name" {
+	cd "${TEMP_DIR}/generic/git_project"
+	mv git .git
+	export PROJECT_NAME="app-monolith"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(latestProdTagFromGit)" "refs/tags/prod/app-monolith/1.0.0.M1-20180607_144049-VERSION"
+	assert_success
+}
+
+@test "should return empty string if no tag is matching" {
+	cd "${TEMP_DIR}/generic/git_project"
+	mv git .git
+	export PROJECT_NAME="non-existant"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(latestProdTagFromGit)" ""
+	assert_success
+}
+
+@test "should return value of PASSED_LATEST_PROD_TAG if present" {
+	cd "${TEMP_DIR}/generic/git_project"
+	mv git .git
+	export PASSED_LATEST_PROD_TAG="hello"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(findLatestProdTag)" "hello"
+	assert_success
+}
+
+@test "should return value of LATEST_PROD_TAG if present" {
+	cd "${TEMP_DIR}/generic/git_project"
+	mv git .git
+	export LATEST_PROD_TAG="hello"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(findLatestProdTag)" "hello"
+	assert_success
+}
+
+@test "should return empty string if no tag is matching for production tag" {
+	cd "${TEMP_DIR}/generic/git_project"
+	mv git .git
+	export PROJECT_NAME="non-existant"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(findLatestProdTag)" ""
+	assert_success
+}
+
+@test "should return production tag if production tag is found" {
+	cd "${TEMP_DIR}/generic/git_project"
+	mv git .git
+	export PROJECT_NAME="app-monolith"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "$(findLatestProdTag)" "prod/app-monolith/1.0.0.M1-20180607_144049-VERSION"
+	assert_success
+}
