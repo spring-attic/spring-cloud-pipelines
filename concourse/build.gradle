@@ -1,10 +1,20 @@
 apply plugin: 'java'
 
 sourceSets {
-    main {
-        resources {
+	main {
+		resources {
 			exclude("**/build/**")
-            srcDirs '.'
-        }
-    }
+			srcDirs '.'
+		}
+	}
+	test {
+		resources {
+			srcDirs 'src/test/bats'
+		}
+	}
 }
+
+// we have submodules linked via symbolic links
+installBatsIfMissing.dependsOn(project(":common").initalizeSubModules)
+bats.dependsOn("installBatsIfMissing")
+test.dependsOn("bats")

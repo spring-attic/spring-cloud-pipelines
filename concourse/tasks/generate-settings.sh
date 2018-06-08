@@ -4,10 +4,10 @@ set -o errexit
 set -o errtrace
 set -o pipefail
 
-M2_HOME="${HOME}/.m2"
-M2_CACHE="${ROOT_FOLDER}/maven"
-GRADLE_HOME="${HOME}/.gradle"
-GRADLE_CACHE="${ROOT_FOLDER}/gradle"
+[[ -z "${M2_HOME}" ]] && M2_HOME="${HOME}/.m2"
+[[ -z "${M2_CACHE}" ]] && M2_CACHE="${ROOT_FOLDER}/maven"
+[[ -z "${GRADLE_HOME}" ]] && GRADLE_HOME="${HOME}/.gradle"
+[[ -z "${GRADLE_CACHE}" ]] && GRADLE_CACHE="${ROOT_FOLDER}/gradle"
 
 echo "Generating symbolic links for caches"
 

@@ -111,6 +111,36 @@ subprojects {
 		}
 	}
 
+	task installBatsIfMissing() {
+		doLast {
+			boolean batsInstalled = isCommandAvailable("bats -v")
+			exec {
+				if (batsInstalled) {
+					commandLine "echo", "Bats installed - continuing"
+				} else {
+					logger.lifecycle("Bats is missing. Will try to install it.")
+					commandLine "bash", new File(project.rootDir, "tools/build-helper.sh").path, "download-bats"
+				}
+			}
+		}
+	}
+
+	task bats {
+		doLast {
+			boolean batsInstalled = isCommandAvailable("bats -v")
+			String pathToBats = "bats"
+			String outputTapFile = project.buildDir.path + "/bats.tap"
+			if (!batsInstalled) {
+				pathToBats = new File(project.rootProject.buildDir, "bats/bin/bats").path
+			}
+			exec {
+				standardOutput = new org.apache.tools.ant.util.TeeOutputStream(
+					new FileOutputStream(outputTapFile), System.out)
+				commandLine pathToBats, '-t', 'src/test/bats'
+			}
+		}
+	}
+
 	shellcheck.dependsOn("installShellcheckIfMissing")
 	build.dependsOn("shellcheck")
 }
