@@ -12,7 +12,9 @@ setup() {
 	# Copying the common folder
 	NEW_SRC="${TEMP_DIR}/generic/project/tools/common/src/main/bash"
 	mkdir -p "${NEW_SRC}"
-	cp "${FIXTURES_DIR}/pipeline-dummy.sh" "${NEW_SRC}/pipeline.sh"
+	export PAAS_TYPE="cf"
+	cp "${COMMON_DIR}"/*.sh "${NEW_SRC}/"
+	cp -f "${FIXTURES_DIR}/pipeline-dummy.sh" "${NEW_SRC}/pipeline-cf.sh"
 
 	# Copying the concourse folder
 	NEW_CONCOURSE_SRC="${TEMP_DIR}/generic/project/tools/concourse/"
@@ -24,14 +26,25 @@ setup() {
 	export TOOLS_RESOURCE="tools"
 	export KEYVAL_RESOURCE="keyval"
 	export M2_HOME="${TEMP_DIR}/generic/project/user_home"
-	export GRADLE_HOME="${GRADLE_HOME}/generic/project/user_home"
+	export GRADLE_HOME="${TEMP_DIR}/generic/project/user_home"
+	export SSH_HOME="${TEMP_DIR}/generic/project/ssh"
+	mkdir -p "${SSH_HOME}"
+	export TEST_MODE="true"
+	export SSH_AGENT_BIN="stubbed-ssh-agent"
+	export TMPDIR="${TEMP_DIR}/generic/project/tmp"
+	mkdir -p "${TMPDIR}"
 }
 
-@test "should source pipeline.sh from common" {
-	export PAAS_TYPE="cf"
-	export PROJECT_TYPE="dummy"
+function stubbed-ssh-agent() {
+	echo "echo 'foo'"
+}
 
-	source "${SOURCE_DIR}/pipeline.sh"
+export -f stubbed-ssh-agent
+
+@test "should source pipeline.sh" {
+	source "${TASKS_DIR}/pipeline.sh"
 
 	assert_success
+	assert_equal "${PROJECT_SETUP}" "SINGLE_REPO"
+	assert [ -e "${TEMP_DIR}/generic/project/user_home/settings.xml" ]
 }

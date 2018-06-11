@@ -1,90 +1,68 @@
-#!/bin/bash
-function retrieveAppName() {
-    echo "retrieveAppName"
-}
-
-function deleteService() {
-    echo "$*"
-}
-
-function deployService() {
-    echo "$*" 
-}
-
-function outputFolder() {
-    echo "target/"
-}
-
-function testResultsAntPattern() {
-    echo "**/test-results/*.xml"
-}
-
 # ---- BUILD PHASE ----
 function build() {
-    echo "build"
+	echo "$*"
 }
 
 function apiCompatibilityCheck() {
-    echo "apiCompatibilityCheck"
+	echo "$*"
 }
 
 # ---- TEST PHASE ----
 
 function testDeploy() {
-    echo "testDeploy"
+	echo "$*"
 }
 
 function testRollbackDeploy() {
-    echo "testRollbackDeploy [${1}]"
+	echo "$*"
 }
 
 function prepareForSmokeTests() {
-    echo "prepareForSmokeTests"
+	echo "$*"
 }
 
 function runSmokeTests() {
-    echo "runSmokeTests"
+	echo "$*"
 }
 
 # ---- STAGE PHASE ----
 
 function stageDeploy() {
-    echo "stageDeploy"
+	echo "$*"
 }
 
 function prepareForE2eTests() {
-    echo "prepareForE2eTests"
+	echo "$*"
 }
 
 function runE2eTests() {
-    echo "runE2eTests"
+	echo "$*"
 }
 
 # ---- PRODUCTION PHASE ----
 
 function prodDeploy() {
-    echo "prodDeploy"
-}
-
-function completeSwitchOver() {
-    echo "completeSwitchOver"
+	echo "$*"
 }
 
 function rollbackToPreviousVersion() {
-    echo "rollbackToPreviousVersion"
+	echo "$*"
 }
 
-export -f deleteService
-export -f deployService
-export -f outputFolder
-export -f testResultsAntPattern
-export -f testDeploy
-export -f testRollbackDeploy
-export -f prepareForSmokeTests
-export -f runSmokeTests
-export -f stageDeploy
-export -f prepareForE2eTests
-export -f runE2eTests
-export -f prodDeploy
-export -f completeSwitchOver
-export -f rollbackToPreviousVersion
+function completeSwitchOver() {
+	echo "$*"
+}
+
+# ---- COMMON ----
+
+function projectType() {
+	echo "$*"
+}
+
+function outputFolder() {
+	echo "$*"
+}
+
+function testResultsAntPattern() {
+	echo "$*"
+}

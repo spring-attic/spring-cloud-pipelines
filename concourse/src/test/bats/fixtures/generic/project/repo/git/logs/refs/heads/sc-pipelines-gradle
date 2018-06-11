@@ -1,0 +1,4 @@
+0000000000000000000000000000000000000000 2cc035fa26fd3b0589e0819fed5d51cff15cff7c Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528278387 +0200	branch: Created from HEAD
+2cc035fa26fd3b0589e0819fed5d51cff15cff7c 79c7af51799863dc76dbf88b0a89fdb792168acc Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528295369 +0200	commit: Added Gradle support
+79c7af51799863dc76dbf88b0a89fdb792168acc 357bd775c1d0255f8d3b7bbe86aa763e4a1b4226 Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528357676 +0200	commit (amend): Added Gradle support
+357bd775c1d0255f8d3b7bbe86aa763e4a1b4226 fa1df62e54174fbbc538cd4cc0aa117409045fec Marcin Grzejszczak <mgrzejszczak@pivotal.io> 1528360772 +0200	commit: Ignore on error of sql update

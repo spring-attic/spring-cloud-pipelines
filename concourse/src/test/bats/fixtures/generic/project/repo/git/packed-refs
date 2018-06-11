@@ -1,0 +1,8 @@
+# pack-refs with: peeled fully-peeled sorted 
+625eb1c6041942938d70ba8ea36eacc34a57a8fa refs/remotes/origin/jobs
+20f30da4aeb2cb287e007d2cacfeff9d54b38dd8 refs/remotes/origin/master
+a9dab7c0df4d972a983c5bac0fad1be3fd74f3df refs/remotes/origin/tech/ability-to-run-on-pcf
+65d6bc79e0ae6c90a7730317425f4a3b280c9a7f refs/remotes/origin/tech/app-group-id-changed
+d3909d6715b05ac69d27a6cc3367975bd15a7cb3 refs/remotes/origin/tech/ci
+fa1df9cc00f163ca4840043432fef9928e24e81d refs/remotes/origin/tech/spring-boot-2
+67925711b18fee2df5895276997f143040639c34 refs/remotes/origin/tech/technical-id

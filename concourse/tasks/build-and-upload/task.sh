@@ -19,7 +19,7 @@ echo "KeyVal resource folder is [${KEYVAL_RESOURCE}]"
 
 # If you're using some other image with Docker change these lines
 # shellcheck source=/dev/null
-source /docker-lib.sh || echo "Failed to source docker-lib.sh... Hopefully you know what you're doing"
+[ -f /docker-lib.sh ] && source /docker-lib.sh || echo "Failed to source docker-lib.sh... Hopefully you know what you're doing"
 start_docker || echo "Failed to start docker... Hopefully you know what you're doing"
 
 # shellcheck source=/dev/null
@@ -31,10 +31,10 @@ cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 # shellcheck source=/dev/null
 . "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
 
-echo "Tagging the project with dev tag"
-# TODO: Change this to support multiple projects
 DEV_TAG="dev/${PROJECT_NAME}/${PASSED_PIPELINE_VERSION}"
-echo "${DEV_TAG}" > "${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
+TAG_FILE="${ROOT_FOLDER}/${REPO_RESOURCE}/tag"
+echo "Tagging the project with dev tag [${DEV_TAG}]"
+echo "${DEV_TAG}" > "${TAG_FILE}"
 cp -r "${ROOT_FOLDER}/${REPO_RESOURCE}"/. "${ROOT_FOLDER}/${OUTPUT_RESOURCE}/"
 
 passKeyValProperties

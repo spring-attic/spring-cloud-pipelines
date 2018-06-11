@@ -17,7 +17,7 @@ echo "KeyVal resource folder is [${KEYVAL_RESOURCE}]"
 
 # If you're using some other image with Docker change these lines
 # shellcheck source=/dev/null
-source /docker-lib.sh || echo "Failed to source docker-lib.sh... Hopefully you know what you're doing"
+[ -f /docker-lib.sh ] && source /docker-lib.sh || echo "Failed to source docker-lib.sh... Hopefully you know what you're doing"
 start_docker || echo "Failed to start docker... Hopefully you know what you're doing"
 
 # shellcheck source=/dev/null
