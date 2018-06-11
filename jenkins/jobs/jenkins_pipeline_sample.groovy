@@ -62,7 +62,7 @@ Closure configureScm = { ScmContext context, String repoId, String branchId ->
 Closure<String> downloadTools = {
 	String script = """#!/bin/bash\n"""
 	if (repoType == RepoType.TARBALL) {
-		return script + """rm -rf .git/tools && mkdir -p .git/tools && pushd .git/tools && curl -Lk "${toolsRepo}" -o pipelines.tar.gz && tar xvf pipelines.tar.gz --strip-components 1 && popd"""
+		return script + """rm -rf .git/tools && mkdir -p .git/tools && pushd .git/tools && curl -Lk "${toolsRepo}" -o pipelines.tar.gz && tar xf pipelines.tar.gz --strip-components 1 && popd"""
 	}
 	return script + """rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools"""
 }
