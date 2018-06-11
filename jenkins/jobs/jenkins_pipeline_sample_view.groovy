@@ -51,3 +51,9 @@ parsedRepos.each {
 		}
 	}
 }
+
+dsl.listView("ci") {
+	jobs {
+		regex("*.-ci")
+	}
+}

@@ -26,7 +26,7 @@ factory.job('meta-seed') {
 		}
 	}
 	steps {
-		gradle("clean build")
+		gradle("clean build -x test")
 		dsl {
 			external('jenkins/seed/jenkins_pipeline.groovy')
 			removeAction('DISABLE')
@@ -37,6 +37,31 @@ factory.job('meta-seed') {
 				'jenkins/src/main/groovy', 'jenkins/src/main/resources'
 			].join("\n"))
 		}
+	}
+	wrappers {
+		parameters {
+			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
+		}
+	}
+}
+
+// The project CI
+factory.job('pipelines-ci') {
+	scm {
+		git {
+			remote {
+				github('spring-cloud/spring-cloud-pipelines')
+			}
+			branch('${TOOLS_BRANCH}')
+			extensions {
+				submoduleOptions {
+					recursive()
+				}
+			}
+		}
+	}
+	steps {
+		gradle("clean build")
 	}
 	wrappers {
 		parameters {
@@ -103,7 +128,7 @@ factory.job('jenkins-pipeline-cf-seed') {
 		}
 	}
 	steps {
-		gradle("clean build")
+		gradle("clean build -x test")
 		dsl {
 			external('jenkins/jobs/jenkins_pipeline_sample*.groovy')
 			removeAction('DISABLE')
@@ -172,7 +197,7 @@ factory.job('jenkins-pipeline-cf-declarative-seed') {
 		}
 	}
 	steps {
-		gradle("clean build")
+		gradle("clean build -x test")
 		dsl {
 			external('jenkins/jobs/jenkins_pipeline_jenkinsfile_sample.groovy')
 			removeAction('DISABLE')
@@ -267,7 +292,7 @@ factory.job('jenkins-pipeline-k8s-seed') {
 		}
 	}
 	steps {
-		gradle("clean build")
+		gradle("clean build -x test")
 		dsl {
 			external('jenkins/jobs/jenkins_pipeline_sample*.groovy')
 			removeAction('DISABLE')
@@ -310,7 +335,7 @@ factory.job('jenkins-pipeline-k8s-declarative-seed') {
 			stringParam('REPO_WITH_BINARIES_CREDENTIAL_ID', 'repo-with-binaries', "Credential ID of repo with binaries")
 			stringParam('GIT_EMAIL', 'email@example.com', "Email used to tag the repo")
 			stringParam('GIT_NAME', 'Pivo Tal', "Name used to tag the repo")
-			stringParam('TOOLS_REPOSITORY', 'https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.tar.gz', "The URL to tarball or URL to git repository containing pipeline functions repository. Has to end either with .tar.gz or .git ")
+			stringParam('TOOLS_REPOSITORY', 'https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.tar.gz', "The URL to tarball containing pipeline functions repository. Also git repository is supported (for backward compatibility)")
 			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
 			booleanParam('AUTO_DEPLOY_TO_STAGE', false, 'Should deployment to stage be automatic')
 			booleanParam('AUTO_DEPLOY_TO_PROD', false, 'Should deployment to prod be automatic')
@@ -361,7 +386,7 @@ factory.job('jenkins-pipeline-k8s-declarative-seed') {
 		}
 	}
 	steps {
-		gradle("clean build")
+		gradle("clean build -x test")
 		dsl {
 			external('jenkins/jobs/jenkins_pipeline_jenkinsfile_sample.groovy')
 			removeAction('DISABLE')
