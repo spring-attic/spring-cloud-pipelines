@@ -39,7 +39,6 @@ String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src
 String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
 String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines/archive/${toolsBranch}.tar.gz"
 RepoType repoType = RepoType.from(toolsRepo)
-if (repoType == RepoType.NONE) throw new IllegalStateException("Currently only tarball and git formats are supported")
 // TODO: K8S - consider parametrization
 // remove::start[K8S]
 String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: ""
@@ -803,11 +802,10 @@ class PipelineDefaults {
 }
 
 enum RepoType {
-	TARBALL, GIT, NONE
+	TARBALL, GIT
 
 	static RepoType from(String string) {
 		if (string.endsWith(".tar.gz")) return TARBALL
-		else if (string.endsWith(".git")) return GIT
-		return NONE
+		return GIT
 	}
 }

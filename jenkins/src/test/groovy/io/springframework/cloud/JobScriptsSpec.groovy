@@ -491,7 +491,7 @@ class JobScriptsSpec extends Specification {
 		}
 	}
 
-	def 'should throw an exception if a non-tarball and non-git archive is passed with pipelines functions'() {
+	def 'should treat non-tarball and non-git URL with pipelines functions as git'() {
 		given:
 		MemoryJobManagement jm = new MemoryJobManagement()
 		jm.parameters << [
@@ -506,11 +506,10 @@ class JobScriptsSpec extends Specification {
 			new File("jobs/jenkins_pipeline_sample.groovy").text)])
 
 		then:
-		IllegalStateException e = thrown(IllegalStateException)
-		e.message.contains("Currently only tarball and git formats are supported")
+			assertScriptForScriptsDownloading(jm, 'rm -rf .git/tools && git clone -b master --single-branch https://akjsad.com/foo/bar .git/tools')
 	}
 
-	def 'should curl for tar ball with pipelines functions by default'() {
+	def 'should curl for tarball with pipelines functions by default'() {
 		given:
 		MemoryJobManagement jm = new MemoryJobManagement()
 		jm.parameters << [
