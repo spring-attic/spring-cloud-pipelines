@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # ---- BUILD PHASE ----
 function build() {
 	echo "build $*"

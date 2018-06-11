@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC2086,SC1007,SC2163,SC2046
+# shellcheck disable=SC2086,SC1007,SC2163,SC2046,SC2153
 
 set -o errexit
 set -o errtrace
