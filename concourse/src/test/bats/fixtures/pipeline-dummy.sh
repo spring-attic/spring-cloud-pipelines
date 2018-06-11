@@ -1,68 +1,70 @@
 # ---- BUILD PHASE ----
 function build() {
-	echo "$*"
+	echo "build $*"
 }
 
 function apiCompatibilityCheck() {
-	echo "$*"
+	echo "apiCompatibilityCheck $*"
 }
 
 # ---- TEST PHASE ----
 
 function testDeploy() {
-	echo "$*"
+	echo "testDeploy $*"
 }
 
 function testRollbackDeploy() {
-	echo "$*"
+	echo "testRollbackDeploy $*"
 }
 
 function prepareForSmokeTests() {
-	echo "$*"
+	echo "prepareForSmokeTests $*"
 }
 
 function runSmokeTests() {
-	echo "$*"
+	echo "runSmokeTests $*"
 }
 
 # ---- STAGE PHASE ----
 
 function stageDeploy() {
-	echo "$*"
+	echo "stageDeploy $*"
 }
 
 function prepareForE2eTests() {
-	echo "$*"
+	echo "prepareForE2eTests $*"
 }
 
 function runE2eTests() {
-	echo "$*"
+	echo "runE2eTests $*"
 }
 
 # ---- PRODUCTION PHASE ----
 
 function prodDeploy() {
-	echo "$*"
+	echo "prodDeploy $*"
 }
 
 function rollbackToPreviousVersion() {
-	echo "$*"
+	echo "rollbackToPreviousVersion $*"
 }
 
 function completeSwitchOver() {
-	echo "$*"
+	echo "completeSwitchOver $*"
 }
 
 # ---- COMMON ----
 
 function projectType() {
-	echo "$*"
+	echo "projectType $*"
 }
 
 function outputFolder() {
-	echo "$*"
+	echo "outputFolder $*"
 }
 
 function testResultsAntPattern() {
-	echo "$*"
+	echo "testResultsAntPattern $*"
 }
+
+echo "EXECUTED SCRIPT"
