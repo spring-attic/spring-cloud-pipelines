@@ -36,8 +36,10 @@ boolean rollbackStep = binding.variables["DB_ROLLBACK_STEP_REQUIRED"] == null ? 
 boolean stageStep = binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"])
 String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src/main/bash"
 // TODO: Automate customization of this value
-String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines"
 String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
+String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines/archive/${toolsBranch}.tar.gz"
+RepoType repoType = RepoType.from(toolsRepo)
+if (repoType == RepoType.NONE) throw new IllegalStateException("Currently only tarball and git formats are supported")
 // TODO: K8S - consider parametrization
 // remove::start[K8S]
 String mySqlRootCredential = binding.variables["MYSQL_ROOT_CREDENTIAL_ID"] ?: ""
@@ -56,6 +58,14 @@ Closure configureScm = { ScmContext context, String repoId, String branchId ->
 			wipeOutWorkspace()
 		}
 	}
+}
+
+Closure<String> downloadTools = {
+	String script = """#!/bin/bash\n"""
+	if (repoType == RepoType.TARBALL) {
+		return script + """rm -rf .git/tools && mkdir -p .git/tools && pushd .git/tools && curl -Lk "${toolsRepo}" -o pipelines.tar.gz && tar xvf pipelines.tar.gz --strip-components 1 && popd"""
+	}
+	return script + """rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools"""
 }
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
@@ -134,9 +144,7 @@ parsedRepos.each {
 			}
 		}
 		steps {
-			shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+			shell(downloadTools())
 			shell('''#!/bin/bash 
 		${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 		''')
@@ -189,9 +197,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+				shell(downloadTools())
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
 		''')
@@ -242,9 +248,7 @@ parsedRepos.each {
 			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
-			shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+			shell(downloadTools())
 			shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/test_deploy.sh
 		''')
@@ -296,9 +300,7 @@ parsedRepos.each {
 			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
-			shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+			shell(downloadTools())
 			shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/test_smoke.sh
 		''')
@@ -354,9 +356,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+				shell(downloadTools())
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/test_rollback_deploy.sh
 		''')
@@ -410,9 +410,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+				shell(downloadTools())
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/test_rollback_smoke.sh
 		''')
@@ -492,9 +490,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+				shell(downloadTools())
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/stage_deploy.sh
 		''')
@@ -556,9 +552,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+				shell(downloadTools())
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/stage_e2e.sh
 		''')
@@ -619,9 +613,7 @@ parsedRepos.each {
 			}
 		}
 		steps {
-			shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+			shell(downloadTools())
 			shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/prod_deploy.sh
 		''')
@@ -679,9 +671,7 @@ parsedRepos.each {
 			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
-			shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+			shell(downloadTools())
 			shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/prod_rollback.sh
 		''')
@@ -715,9 +705,7 @@ parsedRepos.each {
 			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
-			shell("""#!/bin/bash
-		rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools 
-		""")
+			shell(downloadTools())
 			shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/prod_complete.sh
 		''')
@@ -811,5 +799,15 @@ class PipelineDefaults {
 
 	void addEnvVar(String key, String value) {
 		this.defaultEnvVars.put(key, value)
+	}
+}
+
+enum RepoType {
+	TARBALL, GIT, NONE
+
+	static RepoType from(String string) {
+		if (string.endsWith(".tar.gz")) return TARBALL
+		else if (string.endsWith(".git")) return GIT
+		return NONE
 	}
 }

@@ -491,6 +491,108 @@ class JobScriptsSpec extends Specification {
 		}
 	}
 
+	def 'should throw an exception if a non-tarball and non-git archive is passed with pipelines functions'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo',
+			TOOLS_REPOSITORY: 'https://akjsad.com/foo/bar'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		loader.runScripts([new ScriptRequest(
+			new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		IllegalStateException e = thrown(IllegalStateException)
+		e.message.contains("Currently only tarball and git formats are supported")
+	}
+
+	def 'should curl for tar ball with pipelines functions by default'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		loader.runScripts([new ScriptRequest(
+			new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		assertScriptForScriptsDownloading(jm, 'curl -Lk "https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.tar.gz" -o pipelines.tar.gz && tar xvf pipelines.tar.gz --strip-components 1')
+	}
+
+	def 'should curl for tar ball with pipelines functions if archives ends with .tar.gz'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo',
+			TOOLS_REPOSITORY: 'https://foo.com/bar.tar.gz'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		loader.runScripts([new ScriptRequest(
+			new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		assertScriptForScriptsDownloading(jm, 'curl -Lk "https://foo.com/bar.tar.gz" -o pipelines.tar.gz && tar xvf pipelines.tar.gz --strip-components 1')
+	}
+
+	def 'should clone git repo with pipelines functions if url ends with .git'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo',
+			TOOLS_REPOSITORY: 'https://foo.com/bar.git',
+			TOOLS_BRANCH: 'baz'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		loader.runScripts([new ScriptRequest(
+			new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		assertScriptForScriptsDownloading(jm, 'rm -rf .git/tools && git clone -b baz --single-branch https://foo.com/bar.git .git/tools')
+	}
+
+	def 'should clone git repo with pipelines functions with default master branch if url ends with .git'() {
+		given:
+		MemoryJobManagement jm = new MemoryJobManagement()
+		jm.parameters << [
+			SCRIPTS_DIR: 'foo',
+			JENKINSFILE_DIR: 'foo',
+			TOOLS_REPOSITORY: 'https://foo.com/bar.git'
+		]
+		DslScriptLoader loader = new DslScriptLoader(jm)
+
+		when:
+		loader.runScripts([new ScriptRequest(
+			new File("jobs/jenkins_pipeline_sample.groovy").text)])
+
+		then:
+		assertScriptForScriptsDownloading(jm, 'rm -rf .git/tools && git clone -b master --single-branch https://foo.com/bar.git .git/tools')
+	}
+
+	static void assertScriptForScriptsDownloading(MemoryJobManagement jm, String command) {
+		assert !jm.savedConfigs.isEmpty()
+		jm.savedConfigs.each {
+			def jobConfig = new XmlParser().parse(new StringReader(it.value))
+			assert jobConfig.builders.size() == 1, [ "One shell builder" ]
+			assert jobConfig.builders[0].find { def task ->
+				task.command.text().contains(command)
+			}
+		}
+	}
+
 	static List<File> getJobFiles() {
 		List<File> files = []
 		new File('jobs').eachFileRecurse(FileType.FILES) {
