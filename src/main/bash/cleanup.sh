@@ -2,6 +2,8 @@
 
 # Call this script from the root of the project
 
+source common.sh || source src/main/bash/common.sh || echo "No common.sh script found..."
+
 set -o errexit
 set -o errtrace
 set -o pipefail
