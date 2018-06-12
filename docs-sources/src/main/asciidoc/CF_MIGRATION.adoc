@@ -179,7 +179,7 @@ Push the above changes to GitHub. You should be pushing the following to each of
 ===== 1.6 Add Spring Cloud Pipelines credentials file
 In `$SCP_HOME/credentials`, make two copies of the file `$SCP_HOME/spring-cloud-pipelines/concourse/credentials-sample-cf.yml`. Rename them as `credentials-fortune-service.yml` and `credentials-greeting-ui.yml`.
 
-CAUTION: These files will contain credentials to you GitHub repo, your Bintray repo, and your Cloud Foundry foundation. Hence, we opt to put them in a separate directory. You may choose to store these files in a private git repo, but do not push them to a public repo.
+CAUTION: These files will contain credentials to your GitHub repo, your Bintray repo, and your Cloud Foundry foundation. Hence, we opt to put them in a separate directory. You may choose to store these files in a private git repo, but do not push them to a public repo.
 
 Edit the git properties of each credentials file. Make sure to replace the sample values shown below as appropriate. For `tools-branch`, you may opt to use a fixed release (use v1.0.0.M8 or later for Cloud Foundry). Leave other values as they are, we will update those in later steps.
 ```yml
@@ -205,7 +205,7 @@ m2-settings-repo-id: bintray
 m2-settings-repo-username: ciberkleid
 m2-settings-repo-password: my-super-secret-api-token
 
-repo-with-binaries: https://ciberkleid@my-super-secret-api-token@dl.bintray.com/ciberkleid/maven-repo
+repo-with-binaries: https://ciberkleid:my-super-secret-api-token@dl.bintray.com/ciberkleid/maven-repo
 
 repo-with-binaries-for-upload: https://api.bintray.com/maven/ciberkleid/maven-repo/fortune-service
 ```
@@ -268,7 +268,7 @@ applications:
     TRUST_CERTS: api.run.pivotal.io
 ```
 
-The `TRUST_CERTS` variable is used by the Pivotal Spring Cloud Services (Config Server, Service Registry, and Circuit Breaker Dashboard), which we are using in this example. The value specified above assumes deployment to Pivotal Web Services. Update it accordingly if you are deploying to a different Cloud Foundry foundation, or you can leave it out altogether if you are replacing the Pivotal Spring Cloud Services with alternative implementations (e.g. deploying apps and exposing them as user-provided services).
+The `TRUST_CERTS` variable is used by the Pivotal Spring Cloud Services (Config Server, Service Registry, and Circuit Breaker Dashboard), which we are using in this example. The value specified above assumes deployment to Pivotal Web Services. Update it accordingly if you are deploying to a different Cloud Foundry foundation, or you can leave it out altogether if you are replacing the Pivotal Spring Cloud Services with alternative implementations (e.g. deploying the services as apps and exposing them as user-provided services).
 
 You may add additional values to the manifest files if you wish, for example if additional values are useful for any manual deployment you may still want to do, or desirable in your Spring Cloud Pipelines deployment. For example, an alternative manifest.yml for `fortune-service` could be as follows:
 
@@ -399,14 +399,14 @@ cf create-space scp-prod
 
 Spring Cloud Pipelines will dynamically create the services in the test spaces as per the `sc-pipelines.yml` file we created previously. Optionally, a second section can be added to the `sc-pipelines.yml` file for the stage environment, and these will be created dynamically as well. Prod services, however, must always be created manually.
 
-For this example, we will create the stage and services manually.
+For this example, we will create the stage and prod services manually.
 
 Create the services listed in the app manifest files in both `scp-stage` and `scp-prod`.
 
 ===== 1.13 Update Spring Cloud Pipelines credentials file
 Update the `greeting-ui` and `fortune-service` credentials files with Cloud Foundry information. Replace values in the example below as appropriate for your Cloud Foundry environment.
 
-Notice that the space name specified is a prefix. Spring Cloud Pipelines will append the app name, matching the test space names created previously. The stage and prod space names are not prefixes and will not be altered by Spring Cloud Pipelines.
+Notice that the test space name specified is a prefix, unlike the stage and prod space names, which are literals. Spring Cloud Pipelines will append the app name to the test space name, thereby matching the test space names we created manually. The stage and prod space names are not prefixes and will not be altered by Spring Cloud Pipelines.
 
 Note also the `paas-hostname-uuid`. The value will be included in each route created. This value is optional, but it is useful in shared/multi-tenant environments such as PWS, as it helps ensure routes are unique. Change it to a unique uuid of your choosing.
 
@@ -445,7 +445,7 @@ Set the Concourse pipelines again, as we did previously, to update them with the
 
 image::{cf-migration-root-docs}/concourse_test_stage_prod_success.png[title="Test, Stage, & Prod Success"]
 
-On Cloud Foundry, you will now see the apps deployed in the test, stage, and prod spaces. The image below shows the deploymnet of `fortune-service` to its isolated and dedicated test space, with the 5 services declared in its manifest files (`sc-pipelines.yml` for provisioning, and `manifest.yml` for binding). It also shows the deployment of the same app to the shared prod space, including the stopped instance of the previous version. If a rollback were deemed necessary, the `prod-rollback` job in the pipeline could be triggered to remove the currently running version, remove the `prod/<version_number>` tag from GitHub, and re-start the former (*"venerable"*) version.
+On Cloud Foundry, you will now see the apps deployed in the test, stage, and prod spaces. The image below shows the deployment of `fortune-service` to its dedicated test space. Notice that the 5 services declared in its manifest files (`sc-pipelines.yml` for provisioning, and `manifest.yml` for binding) have also been automatically provisioned. The image also shows the deployment of the same app to the shared prod space. Notice that the instance of the previous version has been renamed as *"venerable"* and stopped. If a rollback were deemed necessary, the `prod-rollback` job in the pipeline could be triggered to remove the currently running version, remove the `prod/<version_number>` tag from GitHub, and re-start the former (*"venerable"*) version.
 
 image::{cf-migration-root-docs}/cf_test_and_prod_deployed.png[title="Cloud Foundry Test and Prod Deployment"]
 
@@ -457,8 +457,8 @@ What have we accomplished?
 * We can count on the pipelines to:
 - automatically provision services in test spaces, and optionally in stage as well
 - dynamically clean up the test spaces between pipeline executions
-- upload the app artifacts to the maven repo (Bintray)
-- tag the GitHub repositories with `dev/<version_number>` and `prod/<version_number>`
+- upload the app artifacts to the maven repo (e.g. Bintray)
+- tag the git repositories with `dev/<version_number>` and `prod/<version_number>`
 * After each successful pipeline run, we are in a position to roll back to the last deployed version using the `prod-rollback` job, if necessary
 
 These accomplishments are extremely valuable, but in order to derive confidence and reliability from the pipelines, we need to incorporate testing. We do this in Stage 2 of the app migration.
@@ -575,7 +575,7 @@ image::{cf-migration-root-docs}/test_package_structure.png[title="Test Package S
 
 Note that we are creating matching packages for the default, smoke, and e2e profiles only. We will address the package for the apicompatibility profile in Stage 3.
 
-When working with your own apps, if you have existing tests, you would now move them into one of these packages now, and rename them so that they are included in the filters declared in the profiles (i.e. the file names end in `Test.java` or `Tests.java`)
+When working with your own apps, if you have existing tests, you would move the files into one of these packages now, and rename them so that they are included by the filters declared in the profiles (i.e. the file names end in `Test.java` or `Tests.java`)
 
 In the case of our sample apps, there are no tests, so we add some now as follows.
 
@@ -837,7 +837,7 @@ public class E2eTests {
 
 ===== 2.3 Enable database versioning
 
-At this point will also incorporate https://flywaydb.org/[Flyway], an OSS database migration tool, to track database schema versions and handle schema changes and data loading.
+At this point we will also incorporate https://flywaydb.org/[Flyway], an OSS database migration tool, to track database schema versions and handle schema changes and data loading.
 
 This change only needs to be made to `fortune-service`, since `fortune-service` owns the interaction with `fortune-db`.
 
@@ -893,7 +893,7 @@ spring:
       ddl-auto: validate
 ```
 
-There are a few options for where to store the `ddl-auto` configuration, both in terms of location (in the `fortune-service` app or on the `app-config` GitHub repo) and in terms of file name. For this example, update the `application.yml` in the `fortune-service` app for local testing. additionally, save these values in a new file called `application-flyway.yml` on your fork of https://github.com/ciberkleid/app-config[app-config].
+There are a few options for where to store the `ddl-auto` configuration, both in terms of location (in the `fortune-service` app or on the `app-config` GitHub repo) and in terms of file name. For this example, update the `application.yml` in the `fortune-service` app for local testing. Additionally, save these values in a new file called `application-flyway.yml` on your fork of https://github.com/ciberkleid/app-config[app-config].
 
 By convention, `fortune-service` will pick up the configurations in `application-flyway.yml` if the string `flyway` is in the list of active Spring profiles. Thus, we add `flyway` to the environment variable `SPRING_PROFILES_ACTIVE` via the `fortune-service` `manifest.yml`:
 
@@ -1001,7 +1001,7 @@ What have we accomplished?
 * Established a standard approach to organizing tests that will bring consistency within and across development teams
 * Enabled auto-managed database versioning and backward compatibility testing that will alleviate database schema management throughout the release management lifecycle
 
-We are now positioned to add any unit, integration, smoke, and end-to-end tests to our code base and extract a very high level of reliability and confidence from our pipelines. We are also better positioned to ensure that our dev teams conform to these practices, given the structure imposed by Spring Cloud Pipelines and the fast feedback and visibility we gain from the pipelines as they execute the tests.
+We are now positioned to add any unit, integration, smoke, and end-to-end tests to our code base and extract a very high level of reliability and confidence from our pipelines. We are also better positioned to ensure that our dev teams conform to these practices, given the structure established by Spring Cloud Pipelines and the fast feedback and visibility we gain from the pipelines as they execute the tests.
 
 However, we could benefit further by incorporating contracts to define and test the API integration points between applications. We do this in Stage 3 of the app migration.
 
@@ -1141,7 +1141,7 @@ Here is the complete profile:
     </profile>
 ```
 
-When the app is built, the Spring Cloud Contract maven plugin will also now produce a stub and a stub jar containing the contract and stub. This stub jar will be uploaded to Bintray, along with the usual app jar. As we will see shortly, this stub jar can be used by the `greeting-ui` dev team while they wait for `fortune-service` to be completed. Note that this gives the `greeting-ui` dev team a producer to test against that is based on a mutually agreed-upon contract without the lead time of having to wait for `fortune-service` to implement anything more than a base class, and without having to manually stub out calls to `fortune-service` based on arbitrary or static responses.
+When the app is built, the Spring Cloud Contract maven plugin will also now produce a stub and a stub jar containing the contract and stub. This stub jar will be uploaded to Bintray, along with the usual app jar. As we will see shortly, this stub jar can be used by the `greeting-ui` dev team while they wait for `fortune-service` to be completed. In other words, this gives the `greeting-ui` dev team a producer to test against that is based on a mutually agreed-upon contract without the lead time of having to wait for `fortune-service` to implement anything more than a base class, and without having to manually stub out calls to `fortune-service` based on arbitrary or static responses.
 
 TIP: Package the project locally (run `mvn package`) to observe the tests, stubs, and stub jar that the Spring Cloud Contract maven plugin generates. See the image below for reference.
 
@@ -1157,7 +1157,7 @@ In short, we edit the apicompatibility profile in the `fortune-service` `pom.xml
 
 * Add a plugin block for Spring Cloud Contract maven plugin
 * Configure it to download the latest prod stub jar from Bintray to obtain the old contract
-* Configure it to use our base class (`io.pivotal.fortune.BaseClass`) to generate tests (we are using the same one as in the prrior step)
+* Configure it to use our base class (`io.pivotal.fortune.BaseClass`) to generate tests (we are using the same one as in the prior step)
 * Configure it to place auto-generated tests in the test package `io.pivotal.fortune.contracttests`
 
 Note that the package of the contracttests matches the `include` filter in the `apicompatibility` profile, so these tests will be run against the app during the `build-api-compatibility-check` job. For `fortune-service`, this serves to validate that the app conforms to the old contract.
@@ -1414,7 +1414,7 @@ NOTE: The port configuration may be automated by Spring Cloud Pipelines in the f
 
 *Edit smoke tests to align with the contract*
 
-Finally, we edit our smoke tests for `greeting-ui` to ensure the response does *not* contain the hystrix fallback, since we are noe expecting a response from the stub.
+Finally, we edit our smoke tests for `greeting-ui` to ensure the response does *not* contain the hystrix fallback, since we are now expecting a response from the stub.
 
 ```java
 package smoke;
@@ -1475,7 +1475,7 @@ By implementing a contract-driven approach with auto-generation of tests and stu
 
 * Inter-team communication will be simpler
 - Consumer and producer teams can now communicate requirements through codified contracts
-- The inventory of contracts serves as a record and reference for the agreed upon APIs
+- The inventory of contracts serves as a record and reference of the agreed upon APIs
 * Developer productivity will increase
 - Producers can quickly and easily generate contract-based stubs
 - Consumers no longer have to manually stub out APIs and write tests with arbitrary hard-coded responses - instead they can use the auto-generated stubs and test for contract-based responses
@@ -1498,7 +1498,7 @@ Moving forward, the refactoring work needed here can be incorporated into your a
 * Include a pipeline descriptor (`sc-manifest.yml`) in your app repo
 * Create an empty `version` branch in your app repo
 * Include artifact repository configuration in the pom.xml file
-* Align your Cloud Foundry spaces with Spring Cloud Pipelines model (isolated test space, shared stage and prod)
+* Align your Cloud Foundry spaces with Spring Cloud Pipelines model (isolated test space, shared stage and prod spaces)
 
 *Better*
 
