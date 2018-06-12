@@ -3,10 +3,14 @@ buildscript {
 
 	dependencies {
 		classpath 'com.github.jruby-gradle:jruby-gradle-plugin:1.5.0'
+		classpath 'org.ajoberstar:grgit:2.2.1'
 	}
 }
 
 apply plugin: "com.github.jruby-gradle.base"
+apply plugin: "java"
+apply plugin: 'distribution'
+apply plugin: 'maven-publish'
 apply from: 'gradle/cli.gradle'
 
 import com.github.jrubygradle.JRubyExec
@@ -63,6 +67,9 @@ ext {
 	isShellcheckDownloaded = {
 		shellcheckFile.exists()
 	}
+
+	git = org.ajoberstar.grgit.Grgit.open()
+	revision = git.head().id
 }
 
 subprojects {
@@ -213,21 +220,61 @@ task generateDocs(dependsOn: ["copyJekyll", "copyGeneratedSources"]) {
 	description = "Creates documentation for the project"
 }
 
-task release(dependsOn: "generateDocs") {
-	description = "Pushes the generated docs to sc-static and rolls back docs pom.xml version to the default one"
-	onlyIf {
-		!project.version.toString().contains("SNAPSHOT")
+distributions {
+	main {
+		contents {
+			from(project.rootDir) {
+				include "**/*.*"
+				exclude "**/test/**", "**/build/**", "**/*.tar.gz", "**/*.tgz",
+					"**/.idea/**", "**/target/**", "**/*.iml", "**/out/**", "**/.gradle/**",
+					"**/docs/**", "**/docs-sources/**", "**/dist/**"
+			}
+			from(project.buildDir) {
+				include "VERSION"
+			}
+		}
 	}
+}
+
+task dumpBuildInfo() {
+	doLast {
+		String versionContents = """\
+buildDate: ${new Date().format('dd-MM-yyyy HH:mm:ss')}
+revision : ${revision}
+version  : ${project.version}
+"""
+		def fileToStore = new File(project.buildDir, "VERSION")
+		project.buildDir.mkdirs()
+		fileToStore.createNewFile()
+		fileToStore.text = versionContents
+	}
+}
+
+distTar {
+	version = ""
+	compression = "GZIP"
+	extension = "tar.gz"
+	dependsOn("dumpBuildInfo")
+	destinationDir = new File(project.rootDir, "dist")
+}
+
+distZip {
+	version = ""
+	destinationDir = new File(project.rootDir, "dist")
+}
+
+task release(dependsOn: ["build", "assembleDist", "generateDocs"]) {
+	description = "Pushes the generated docs to sc-static (for non-snapshots) and rolls back docs pom.xml version to the default one. Commits and pushes dists."
 	doLast {
 		try {
 			exec {
 				workingDir project.rootDir
-				commandLine "./docs-sources/src/main/bash/release.sh", "${project.version}"
+				commandLine "./src/main/bash/release.sh", "${project.version}"
 			}
 		} finally {
 			exec {
 				workingDir project.rootDir
-				commandLine "./docs-sources/src/main/bash/cleanup.sh", "${project.findProperty("defaultVersion")}"
+				commandLine "./src/main/bash/cleanup.sh", "${project.findProperty("defaultVersion")}", "${project.version}"
 			}
 		}
 	}
@@ -236,6 +283,6 @@ task release(dependsOn: "generateDocs") {
 // DOCUMENTATION -- end
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '4.7'
+	gradleVersion = '4.8'
 }
 

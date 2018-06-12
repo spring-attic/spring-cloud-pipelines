@@ -5313,10 +5313,18 @@ To generate docs just run
 $ ./gradlew generateDocs
 ----
 
+=== Distributions
+
+Spring Cloud Pipelines has a lot of tests, including Git repositories. Those
+and the documentation weigh a lot. That's why under the `dist` folder we
+publish `zip` and `tar.gz` distributions of sources without tests and documentation.
+Whenever we build a distribution we attach a `VERSION` file to it that contains
+build and SCM information (e.g. build time, revision).
+
 === Making a release
 
-It's enough to execute the `release` task that will automatically
-change the versions, build the docs, upload them to Spring Cloud Static,
+It's enough to execute the `release` task that will automatically test the project,
+build the distributions, change the versions, build the docs, upload them to Spring Cloud Static,
 tag the repo and then revert the changed versions back to default.
 
 [source,bash]
@@ -5369,7 +5377,7 @@ version of the release.
 
 [source,bash]
 ----
-docker login
-docker build -t springcloud/spring-cloud-pipeline-jenkins:<version> ./jenkins
-docker push springcloud/spring-cloud-pipeline-jenkins:<version>
+$ docker login
+$ docker build -t springcloud/spring-cloud-pipeline-jenkins:<version> ./jenkins
+$ docker push springcloud/spring-cloud-pipeline-jenkins:<version>
 ----
