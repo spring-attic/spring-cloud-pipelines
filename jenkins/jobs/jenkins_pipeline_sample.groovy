@@ -37,7 +37,7 @@ boolean stageStep = binding.variables["DEPLOY_TO_STAGE_STEP_REQUIRED"] == null ?
 String scriptsDir = binding.variables["SCRIPTS_DIR"] ?: "${WORKSPACE}/common/src/main/bash"
 // TODO: Automate customization of this value
 String toolsBranch = binding.variables["TOOLS_BRANCH"] ?: "master"
-String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines/archive/${toolsBranch}.tar.gz"
+String toolsRepo = binding.variables["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines/raw/${toolsBranch}/dist/spring-cloud-pipelines.tar.gz"
 RepoType repoType = RepoType.from(toolsRepo)
 // TODO: K8S - consider parametrization
 // remove::start[K8S]

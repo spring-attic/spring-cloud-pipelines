@@ -523,7 +523,7 @@ class JobScriptsSpec extends Specification {
 			new File("jobs/jenkins_pipeline_sample.groovy").text)])
 
 		then:
-		assertScriptForScriptsDownloading(jm, 'curl -Lk "https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.tar.gz" -o pipelines.tar.gz && tar xf pipelines.tar.gz --strip-components 1')
+		assertScriptForScriptsDownloading(jm, 'curl -Lk "https://github.com/spring-cloud/spring-cloud-pipelines/raw/master/dist/spring-cloud-pipelines.tar.gz" -o pipelines.tar.gz && tar xf pipelines.tar.gz --strip-components 1')
 	}
 
 	def 'should curl for tar ball with pipelines functions if archives ends with .tar.gz'() {
