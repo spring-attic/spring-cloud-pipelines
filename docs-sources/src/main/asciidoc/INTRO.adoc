@@ -53,9 +53,9 @@ $ git remote add origin ${YOUR_REPOSITORY_URL}
 $ git push origin master
 ----
 
-NOTE: Why aren't you simply cloning the repo? This is meant to be a seed
-for building new, versioned pipelines for you. You don't want to have all of our
-history dragged along with you, don't you?
+You can also clone the repository in case you would like to keep aligned
+with the changes in the upstream repository. In order not to have many merge
+conflicts it's encouraged to use the `custom` folder hooks to override functions.
 
 ==== Centralized pipeline creation
 
