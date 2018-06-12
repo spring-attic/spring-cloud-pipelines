@@ -11,7 +11,9 @@ step and describe it in details.
 .
 ├── common
 ├── concourse
+├── dist
 ├── docs
+├── docs-sources
 └── jenkins
 ----
 
@@ -20,7 +22,12 @@ scripts are reused by both Concourse and Jenkins pipelines.
 
 In the `concourse` folder you can find all the necessary scripts and setup to run Concourse demo.
 
-In the `docs` section you have the whole documentation of the project.
+In the `dist` folder you can find the packaged sources of the project. Since the package
+contains no tests or documentation it's extremely small and can be used in the pipelines.
+
+In the `docs` folder you have the whole generated documentation of the project.
+
+In the `docs-source` folder you have the sources required to generate the documentation.
 
 In the `jenkins` folder you can find all the necessary scripts and setup to run Jenkins demo.
 
