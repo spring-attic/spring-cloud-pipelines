@@ -17,10 +17,13 @@ TAG_NAME="v${VERSION}"
 
 retrieve_current_branch
 
-echo "Committing the dist files"
-git add dist
-git commit -a -m "Committing dist"
-git push origin "${CURRENT_BRANCH}"
+# We will commit and push a tag later for non release
+if [[ ${VERSION} = *"SNAPSHOT"* ]]; then
+	echo "Committing the dist files"
+	git add dist
+	git commit -a -m "Committing dist"
+	git push origin "${CURRENT_BRANCH}"
+fi
 
 if [[ ${VERSION} = *"SNAPSHOT"* ]]; then
 	echo "Won't release since [${VERSION}] is a snapshot version"
