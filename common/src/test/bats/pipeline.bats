@@ -121,9 +121,9 @@ teardown() {
 	assert_success
 }
 
-@test "should return MULTI_PROJECT PROJECT_SETUP for a repo with no descriptor at root but with ROOT_PROJECT_DIR existent with no descriptor" {
+@test "should return MULTI_PROJECT PROJECT_SETUP for a repo with no descriptor at root but with PROJECT_NAME dir existent with no descriptor" {
 	cd "${TEMP_DIR}/generic/multi_project"
-	export ROOT_PROJECT_DIR="foo"
+	export PROJECT_NAME="foo"
 
 	# to get the output
 	run "${SOURCE_DIR}/pipeline.sh"
@@ -135,9 +135,9 @@ teardown() {
 	assert_success
 }
 
-@test "should return MULTI_PROJECT PROJECT_SETUP for a repo with no descriptor at root but with ROOT_PROJECT_DIR existent with descriptor with no build coordinates" {
+@test "should return MULTI_PROJECT PROJECT_SETUP for a repo with no descriptor at root but with PROJECT_NAME dir existent with descriptor with no build coordinates" {
 	cd "${TEMP_DIR}/generic/multi_project"
-	export ROOT_PROJECT_DIR="bar"
+	export PROJECT_NAME="bar"
 
 	# to get the output
 	run "${SOURCE_DIR}/pipeline.sh"
@@ -149,9 +149,9 @@ teardown() {
 	assert_success
 }
 
-@test "should return MULTI_PROJECT_WITH_MODULES PROJECT_SETUP for a repo with no descriptor at root but with ROOT_PROJECT_DIR existent with descriptor with build coordinates" {
+@test "should return MULTI_PROJECT_WITH_MODULES PROJECT_SETUP for a repo with no descriptor at root but with PROJECT_NAME dir existent with descriptor with build coordinates" {
 	cd "${TEMP_DIR}/generic/multi_project_with_modules"
-	export ROOT_PROJECT_DIR="foo"
+	export PROJECT_NAME="foo"
 
 	# to get the output
 	run "${SOURCE_DIR}/pipeline.sh"
@@ -163,7 +163,7 @@ teardown() {
 	assert_success
 }
 
-@test "should not set PROJECT_NAME to 'null' for SINGLE_REPO project setup and PROJECT_NAME initially set to 'null'" {
+@test "should set PROJECT_NAME to 'single_repo_no_descriptor' for SINGLE_REPO project setup and PROJECT_NAME initially set to 'null'" {
 	cd "${TEMP_DIR}/generic/single_repo_no_descriptor"
 	export PROJECT_NAME="null"
 
@@ -173,11 +173,11 @@ teardown() {
 	source "${SOURCE_DIR}/pipeline.sh"
 
 	assert_equal "${PROJECT_SETUP}" "SINGLE_REPO"
-	assert_equal "${PROJECT_NAME}" "retrieveAppName"
+	assert_equal "${PROJECT_NAME}" "single_repo_no_descriptor"
 	assert_success
 }
 
-@test "should not set PROJECT_NAME to 'null' when PROJECT_NAME initially set to 'null' for SINGLE_REPO PROJECT_SETUP for a repo with descriptor without coordinates" {
+@test "should set PROJECT_NAME to 'single_repo' when PROJECT_NAME initially set to 'null' for SINGLE_REPO PROJECT_SETUP for a repo with descriptor without coordinates" {
 	cd "${TEMP_DIR}/generic/single_repo"
 	export PROJECT_NAME="null"
 
@@ -187,11 +187,11 @@ teardown() {
 	source "${SOURCE_DIR}/pipeline.sh"
 
 	assert_equal "${PROJECT_SETUP}" "SINGLE_REPO"
-	assert_equal "${PROJECT_NAME}" "retrieveAppName"
+	assert_equal "${PROJECT_NAME}" "single_repo"
 	assert_success
 }
 
-@test "should not set PROJECT_NAME to 'null' when PROJECT_NAME initially set to 'null' for MULTI_MODULE PROJECT_SETUP for a repo with descriptor with coordinates" {
+@test "should set PROJECT_NAME to 'multi_module' when PROJECT_NAME initially set to 'null' for MULTI_MODULE PROJECT_SETUP for a repo with descriptor with coordinates" {
 	cd "${TEMP_DIR}/generic/multi_module"
 	export PROJECT_NAME="null"
 
@@ -201,52 +201,7 @@ teardown() {
 	source "${SOURCE_DIR}/pipeline.sh"
 
 	assert_equal "${PROJECT_SETUP}" "MULTI_MODULE"
-	assert_equal "${PROJECT_NAME}" "retrieveAppName"
-	assert_success
-}
-
-@test "should not set PROJECT_NAME to 'null' when PROJECT_NAME initially set to 'null' for MULTI_PROJECT PROJECT_SETUP for a repo with no descriptor at root but with ROOT_PROJECT_DIR existent with no descriptor" {
-	cd "${TEMP_DIR}/generic/multi_project"
-	export ROOT_PROJECT_DIR="foo"
-	export PROJECT_NAME="null"
-
-	# to get the output
-	run "${SOURCE_DIR}/pipeline.sh"
-	# to get the env vars
-	source "${SOURCE_DIR}/pipeline.sh"
-
-	assert_equal "${PROJECT_SETUP}" "MULTI_PROJECT"
-	assert_equal "${PROJECT_NAME}" "retrieveAppName"
-	assert_success
-}
-
-@test "should not set PROJECT_NAME to 'null' when PROJECT_NAME initially set to 'null' for MULTI_PROJECT PROJECT_SETUP for a repo with no descriptor at root but with ROOT_PROJECT_DIR existent with descriptor with no build coordinates" {
-	cd "${TEMP_DIR}/generic/multi_project"
-	export ROOT_PROJECT_DIR="bar"
-	export PROJECT_NAME="null"
-
-	# to get the output
-	run "${SOURCE_DIR}/pipeline.sh"
-	# to get the env vars
-	source "${SOURCE_DIR}/pipeline.sh"
-
-	assert_equal "${PROJECT_SETUP}" "MULTI_PROJECT"
-	assert_equal "${PROJECT_NAME}" "retrieveAppName"
-	assert_success
-}
-
-@test "should not set PROJECT_NAME to 'null' when PROJECT_NAME initially set to 'null' for MULTI_PROJECT_WITH_MODULES PROJECT_SETUP for a repo with no descriptor at root but with ROOT_PROJECT_DIR existent with descriptor with build coordinates" {
-	cd "${TEMP_DIR}/generic/multi_project_with_modules"
-	export ROOT_PROJECT_DIR="foo"
-	export PROJECT_NAME="null"
-
-	# to get the output
-	run "${SOURCE_DIR}/pipeline.sh"
-	# to get the env vars
-	source "${SOURCE_DIR}/pipeline.sh"
-
-	assert_equal "${PROJECT_SETUP}" "MULTI_PROJECT_WITH_MODULES"
-	assert_equal "${PROJECT_NAME}" "retrieveAppName"
+	assert_equal "${PROJECT_NAME}" "multi_module"
 	assert_success
 }
 

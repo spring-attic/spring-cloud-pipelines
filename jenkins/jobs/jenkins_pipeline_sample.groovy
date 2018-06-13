@@ -55,6 +55,9 @@ Closure configureScm = { ScmContext context, String repoId, String branchId ->
 		}
 		extensions {
 			wipeOutWorkspace()
+			submoduleOptions {
+				recursive()
+			}
 		}
 	}
 }

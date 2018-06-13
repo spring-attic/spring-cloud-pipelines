@@ -239,6 +239,67 @@ export PIPELINE_DESCRIPTOR PAAS_TYPE LOWERCASE_ENV GIT_BIN
 
 echo "Picked PAAS is [${PAAS_TYPE}]"
 echo "Current environment is [${ENVIRONMENT}]"
+
+export ROOT_PROJECT_DIR
+export PROJECT_SETUP
+export PROJECT_NAME
+parsePipelineDescriptor
+echo "Project name [${PROJECT_NAME}]"
+# if pipeline descriptor is in the provided folder that means that
+# we don't have a descriptor per application
+if [[ "${PIPELINE_DESCRIPTOR_PRESENT}" == "true" ]]; then
+	echo "Pipeline descriptor found"
+	mainModulePath="$( getMainModulePath )"
+	if [[ "${mainModulePath}" != "" && "${mainModulePath}" != "null" ]]; then
+		# multi module - has a coordinates section in the descriptor
+		PROJECT_SETUP="MULTI_MODULE"
+		echo "Build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
+	else
+		# single repo - no coordinates
+		PROJECT_SETUP="SINGLE_REPO"
+		echo "No build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
+	fi
+	ROOT_PROJECT_DIR="."
+else
+	echo "Pipeline descriptor missing"
+	# if pipeline descriptor is missing but a directory with name equal to PROJECT_NAME exists
+	# that means that it's a multi-project and we need to cd to that folder
+	if [[ -d "${PROJECT_NAME}" ]]; then
+		echo "Project dir found [${PROJECT_NAME}]"
+		cd "${PROJECT_NAME}"
+		parsePipelineDescriptor
+		mainModulePath="$( getMainModulePath )"
+		if [[ "${mainModulePath}" != "" && "${mainModulePath}" != "null" ]]; then
+			# multi project with module - has a coordinates section in the descriptor
+			PROJECT_SETUP="MULTI_PROJECT_WITH_MODULES"
+			echo "Build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
+		else
+			# multi project without modules
+			PROJECT_SETUP="MULTI_PROJECT"
+			echo "No build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
+		fi
+		ROOT_PROJECT_DIR="${PROJECT_NAME}"
+	else
+		# No descriptor and no module is present - will treat it as a single repo with no descriptor
+		PROJECT_SETUP="SINGLE_REPO"
+		echo "No descriptor or module found for project with name [${PROJECT_NAME}], project setup [${PROJECT_SETUP}]"
+		ROOT_PROJECT_DIR="."
+	fi
+fi
+
+# Project name can be taken from env variable or from the project's app name
+# We need it to tag the project somehow if the PROJECT_NAME var wasn't passed
+if [[ "${PROJECT_NAME}" == "" || "${PROJECT_NAME}" == "null" ]]; then
+	if [ -n "$(type -t retrieveAppName)" ] && [ "$(type -t retrieveAppName)" = function ]; then
+		PROJECT_NAME="$(retrieveAppName)"
+	else
+		echo "[retrieveAppName] function not defined. Will derive project name from the current folder"
+		PROJECT_NAME="$(basename "$(pwd)")"
+	fi
+fi
+
+echo "Project with name [${PROJECT_NAME}] is setup as [${PROJECT_SETUP}]. The project directory is present at [${ROOT_PROJECT_DIR}]"
+
 # shellcheck source=/dev/null
 [[ -f "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ||  \
  echo "No pipeline-${PAAS_TYPE}.sh found"
@@ -261,64 +322,4 @@ echo "Path to custom script is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
 [[ -f "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ]] && source "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ||  \
  echo "No ${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME} found"
 
-export ROOT_PROJECT_DIR
-export PROJECT_SETUP
-export PROJECT_NAME
-parsePipelineDescriptor
-echo "Root project directory [${ROOT_PROJECT_DIR}]"
-# if pipeline descriptor is in the provided folder that means that
-# we don't have a descriptor per application
-if [[ "${PIPELINE_DESCRIPTOR_PRESENT}" == "true" ]]; then
-	echo "Pipeline descriptor found"
-	mainModulePath="$( getMainModulePath )"
-	if [[ "${mainModulePath}" != "" && "${mainModulePath}" != "null" ]]; then
-		# multi module - has a coordinates section in the descriptor
-		PROJECT_SETUP="MULTI_MODULE"
-		echo "Build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
-	else
-		# single repo - no coordinates
-		PROJECT_SETUP="SINGLE_REPO"
-		echo "No build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
-	fi
-else
-	echo "Pipeline descriptor missing"
-	# if pipeline descriptor is missing but the provided root project dir exists
-	# that means that it's a multi-project and we need to cd to that folder
-	if [[ -d "${ROOT_PROJECT_DIR}" ]]; then
-		echo "Root project dir found [${ROOT_PROJECT_DIR}]"
-		cd "${ROOT_PROJECT_DIR}"
-		parsePipelineDescriptor
-		mainModulePath="$( getMainModulePath )"
-		if [[ "${mainModulePath}" != "" && "${mainModulePath}" != "null" ]]; then
-			# multi project with module - has a coordinates section in the descriptor
-			PROJECT_SETUP="MULTI_PROJECT_WITH_MODULES"
-			echo "Build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
-		else
-			# multi project without modules
-			PROJECT_SETUP="MULTI_PROJECT"
-			echo "No build coordinates section found, project setup [${PROJECT_SETUP}], main module path [${mainModulePath}]"
-		fi
-	else
-		# No descriptor and no module is present - will treat it as a single repo with no descriptor
-		PROJECT_SETUP="SINGLE_REPO"
-		echo "No descriptor or module found, project setup [${PROJECT_SETUP}]"
-	fi
-fi
-# Regardless of the project setup, if the root project dir doesn't exist, we should point
-# to the current folder as the root project directory
-if [[ ! -f "${ROOT_PROJECT_DIR}" ]]; then
-	ROOT_PROJECT_DIR="."
-fi
-cd "${ROOT_PROJECT_DIR}"
-# Project name can be taken from env variable or from the project's app name
-# We need it to tag the project somehow if the PROJECT_NAME var wasn't passed
-if [[ "${PROJECT_NAME}" == "" || "${PROJECT_NAME}" == "null" ]]; then
-	if [ -n "$(type -t retrieveAppName)" ] && [ "$(type -t retrieveAppName)" = function ]; then
-		PROJECT_NAME="$(retrieveAppName)"
-	else
-		echo "[retrieveAppName] function not defined. Will derive project name from the current folder"
-		PROJECT_NAME="$(basename "$(pwd)")"
-	fi
-fi
-echo "Project with name [${PROJECT_NAME}] is setup as [${PROJECT_SETUP}]. The project directory is present at [${ROOT_PROJECT_DIR}]"
 
