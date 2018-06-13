@@ -17,6 +17,12 @@ function retrieve_current_branch() {
 
 # Switch back to the previous branch and exit block
 function checkout_previous_branch() {
-	git checkout "${PREVIOUS_BRANCH}" || echo "Failed to check the branch... continuing with the script"
+	STORED_PREVIOUS_BRANCH="${PREVIOUS_BRANCH}"
+	retrieve_current_branch
+	if [[ "${CURRENT_BRANCH}" != "${STORED_PREVIOUS_BRANCH}" ]]; then
+		git checkout "${PREVIOUS_BRANCH}" || echo "Failed to check the branch... continuing with the script"
+	else
+		echo "Already on [${CURRENT_BRANCH}]"
+	fi
 	exit 0
 }
