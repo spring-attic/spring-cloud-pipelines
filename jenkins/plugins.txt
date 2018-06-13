@@ -117,6 +117,7 @@ slack:2.1
 sonar:2.5
 sse-gateway:1.15
 ssh:2.4
+ssh-agent:1.15
 ssh-credentials:1.13
 ssh-slaves:1.13
 structs:1.6

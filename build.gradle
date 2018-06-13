@@ -149,7 +149,7 @@ subprojects {
 	}
 
 	shellcheck.dependsOn("installShellcheckIfMissing")
-	build.dependsOn("shellcheck")
+	test.dependsOn("shellcheck")
 }
 
 // DOCUMENTATION -- start
@@ -228,6 +228,8 @@ distributions {
 				exclude "**/test/**", "**/build/**", "**/*.tar.gz", "**/*.tgz",
 					"**/.idea/**", "**/target/**", "**/*.iml", "**/out/**", "**/.gradle/**",
 					"**/docs/**", "**/docs-sources/**", "**/dist/**"
+				String gitignore = new File(project.rootDir, ".gitignore").text
+				exclude gitignore.readLines().findAll { it && !it.startsWith("#") }.collect { "**/${it}"}
 			}
 			from(project.buildDir) {
 				include "VERSION"

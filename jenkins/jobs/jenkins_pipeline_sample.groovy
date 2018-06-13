@@ -1,3 +1,4 @@
+import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
 import javaposse.jobdsl.dsl.helpers.ScmContext
 
@@ -29,6 +30,7 @@ String k8sProdTokenCredentialId = binding.variables["PAAS_PROD_CLIENT_TOKEN_ID"]
 // remove::end[K8S]
 String gitEmail = binding.variables["GIT_EMAIL"] ?: "pivo@tal.com"
 String gitName = binding.variables["GIT_NAME"] ?: "Pivo Tal"
+BashFunctions bashFunctions = new BashFunctions(gitName, gitEmail, gitUseSshKey)
 boolean autoStage = binding.variables["AUTO_DEPLOY_TO_STAGE"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_STAGE"])
 boolean autoProd = binding.variables["AUTO_DEPLOY_TO_PROD"] == null ? false : Boolean.parseBoolean(binding.variables["AUTO_DEPLOY_TO_PROD"])
 boolean apiCompatibilityStep = binding.variables["API_COMPATIBILITY_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(binding.variables["API_COMPATIBILITY_STEP_REQUIRED"])
@@ -62,8 +64,9 @@ Closure configureScm = { ScmContext context, String repoId, String branchId ->
 	}
 }
 
-Closure<String> downloadTools = {
+Closure<String> downloadTools = { String repoUrl ->
 	String script = """#!/bin/bash\n"""
+	script = script + bashFunctions.setupGitCredentials(repoUrl)
 	if (repoType == RepoType.TARBALL) {
 		return script + """rm -rf .git/tools && mkdir -p .git/tools && pushd .git/tools && curl -Lk "${toolsRepo}" -o pipelines.tar.gz && tar xf pipelines.tar.gz --strip-components 1 && popd"""
 	}
@@ -124,6 +127,7 @@ parsedRepos.each {
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
+			if (gitUseSshKey) sshAgent(gitSshCredentials)
 			timeout {
 				noActivity(300)
 				failBuild()
@@ -132,6 +136,7 @@ parsedRepos.each {
 			credentialsBinding {
 				if (repoWithBinariesCredentials) usernamePassword('M2_SETTINGS_REPO_USERNAME', 'M2_SETTINGS_REPO_PASSWORD', repoWithBinariesCredentials)
 				if (dockerCredentials) usernamePassword('DOCKER_USERNAME', 'DOCKER_PASSWORD', dockerCredentials)
+				if (!gitUseSshKey) usernamePassword(PipelineDefaults.GIT_USER_NAME_ENV_VAR, PipelineDefaults.GIT_PASSWORD_ENV_VAR, gitCredentials)
 			}
 		}
 		jdk(jdkVersion)
@@ -146,10 +151,11 @@ parsedRepos.each {
 			}
 		}
 		steps {
-			shell(downloadTools())
-			shell('''#!/bin/bash 
-		${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
-		''')
+			shell(downloadTools(fullGitRepo))
+			shell("""#!/bin/bash 
+		${bashFunctions.setupGitCredentials(fullGitRepo)}
+		\${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
+		""")
 		}
 		publishers {
 			archiveJunit(testReports)
@@ -188,6 +194,7 @@ parsedRepos.each {
 				timestamps()
 				colorizeOutput()
 				maskPasswords()
+				if (gitUseSshKey) sshAgent(gitSshCredentials)
 				timeout {
 					noActivity(300)
 					failBuild()
@@ -199,7 +206,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell(downloadTools())
+				shell(downloadTools(fullGitRepo))
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
 		''')
@@ -240,6 +247,7 @@ parsedRepos.each {
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
+			if (gitUseSshKey) sshAgent(gitSshCredentials)
 			timeout {
 				noActivity(300)
 				failBuild()
@@ -250,7 +258,7 @@ parsedRepos.each {
 			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
-			shell(downloadTools())
+			shell(downloadTools(fullGitRepo))
 			shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/test_deploy.sh
 		''')
@@ -292,6 +300,7 @@ parsedRepos.each {
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
+			if (gitUseSshKey) sshAgent(gitSshCredentials)
 			timeout {
 				noActivity(300)
 				failBuild()
@@ -302,7 +311,7 @@ parsedRepos.each {
 			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
-			shell(downloadTools())
+			shell(downloadTools(fullGitRepo))
 			shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/test_smoke.sh
 		''')
@@ -348,6 +357,7 @@ parsedRepos.each {
 					if (k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
 					// remove::end[K8S]
 				}
+				if (gitUseSshKey) sshAgent(gitSshCredentials)
 				timeout {
 					noActivity(300)
 					failBuild()
@@ -358,7 +368,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell(downloadTools())
+				shell(downloadTools(fullGitRepo))
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/test_rollback_deploy.sh
 		''')
@@ -402,6 +412,7 @@ parsedRepos.each {
 				timestamps()
 				colorizeOutput()
 				maskPasswords()
+				if (gitUseSshKey) sshAgent(gitSshCredentials)
 				timeout {
 					noActivity(300)
 					failBuild()
@@ -412,7 +423,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell(downloadTools())
+				shell(downloadTools(fullGitRepo))
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/test_rollback_smoke.sh
 		''')
@@ -482,6 +493,7 @@ parsedRepos.each {
 				timestamps()
 				colorizeOutput()
 				maskPasswords()
+				if (gitUseSshKey) sshAgent(gitSshCredentials)
 				timeout {
 					noActivity(300)
 					failBuild()
@@ -492,7 +504,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell(downloadTools())
+				shell(downloadTools(fullGitRepo))
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/stage_deploy.sh
 		''')
@@ -544,6 +556,7 @@ parsedRepos.each {
 				timestamps()
 				colorizeOutput()
 				maskPasswords()
+				if (gitUseSshKey) sshAgent(gitSshCredentials)
 				timeout {
 					noActivity(300)
 					failBuild()
@@ -554,7 +567,7 @@ parsedRepos.each {
 				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 			}
 			steps {
-				shell(downloadTools())
+				shell(downloadTools(fullGitRepo))
 				shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/stage_e2e.sh
 		''')
@@ -598,6 +611,7 @@ parsedRepos.each {
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
+			if (gitUseSshKey) sshAgent(gitSshCredentials)
 			timeout {
 				noActivity(300)
 				failBuild()
@@ -615,7 +629,7 @@ parsedRepos.each {
 			}
 		}
 		steps {
-			shell(downloadTools())
+			shell(downloadTools(fullGitRepo))
 			shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/prod_deploy.sh
 		''')
@@ -659,10 +673,12 @@ parsedRepos.each {
 				// remove::start[K8S]
 				if (k8sTestTokenCredentialId) string("TOKEN", k8sTestTokenCredentialId)
 				// remove::end[K8S]
+				if (!gitUseSshKey) usernamePassword(PipelineDefaults.GIT_USER_NAME_ENV_VAR, PipelineDefaults.GIT_PASSWORD_ENV_VAR, gitCredentials)
 			}
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
+			if (gitUseSshKey) sshAgent(gitSshCredentials)
 			timeout {
 				noActivity(300)
 				failBuild()
@@ -673,10 +689,11 @@ parsedRepos.each {
 			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
-			shell(downloadTools())
-			shell('''#!/bin/bash
-		${WORKSPACE}/.git/tools/common/src/main/bash/prod_rollback.sh
-		''')
+			shell(downloadTools(fullGitRepo))
+			shell("""#!/bin/bash
+		${bashFunctions.setupGitCredentials(fullGitRepo)}
+		\${WORKSPACE}/.git/tools/common/src/main/bash/prod_rollback.sh
+		""")
 		}
 	}
 
@@ -697,6 +714,7 @@ parsedRepos.each {
 			timestamps()
 			colorizeOutput()
 			maskPasswords()
+			if (gitUseSshKey) sshAgent(gitSshCredentials)
 			timeout {
 				noActivity(300)
 				failBuild()
@@ -707,7 +725,7 @@ parsedRepos.each {
 			configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
 		}
 		steps {
-			shell(downloadTools())
+			shell(downloadTools(fullGitRepo))
 			shell('''#!/bin/bash
 		${WORKSPACE}/.git/tools/common/src/main/bash/prod_complete.sh
 		''')
@@ -722,6 +740,9 @@ parsedRepos.each {
  * Also it contains the default env vars setting
  */
 class PipelineDefaults {
+
+	protected static final String GIT_USER_NAME_ENV_VAR = "GIT_USERNAME"
+	protected static final String GIT_PASSWORD_ENV_VAR = "GIT_PASSWORD"
 
 	final Map<String, String> defaultEnvVars
 
@@ -810,5 +831,37 @@ enum RepoType {
 	static RepoType from(String string) {
 		if (string.endsWith(".tar.gz")) return TARBALL
 		return GIT
+	}
+}
+
+@CompileStatic
+class BashFunctions {
+
+	private final boolean gitUseSsh
+	private final String gitUser
+	private final String gitEmail
+
+	BashFunctions(String gitUser, String gitEmail, boolean gitUseSsh) {
+		this.gitUseSsh = gitUseSsh
+		this.gitUser = gitUser
+		this.gitEmail = gitEmail
+	}
+
+	String setupGitCredentials(String repoUrl) {
+		if (gitUseSsh) {
+			return ""
+		}
+		String repoWithoutGit = repoUrl.startsWith("git@") ? repoUrl.substring("git@".length()) : repoUrl
+		URI uri = URI.create(repoWithoutGit)
+		String host = uri.getHost()
+		return """\
+				set +x
+				tmpDir="\$(mktemp -d)"
+				trap "{ rm -rf \${tmpDir}; }" EXIT
+				git config user.name "${gitUser}"
+				git config user.email "${gitEmail}"
+				git config credential.helper "store --file=\${tmpDir}/gitcredentials"
+				echo "https://\$${PipelineDefaults.GIT_USER_NAME_ENV_VAR}:\$${PipelineDefaults.GIT_PASSWORD_ENV_VAR}@${host}" > \${tmpDir}/gitcredentials
+			"""
 	}
 }
