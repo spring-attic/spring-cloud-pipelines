@@ -38,7 +38,7 @@ setup() {
 }
 
 teardown() {
-	rm -rf -- "${TEMP_DIR}"
+	rm -rf "${TEMP_DIR}"
 }
 
 @test "should run a generic task" {

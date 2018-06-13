@@ -35,6 +35,10 @@ setup() {
 	mkdir -p "${TMPDIR}"
 }
 
+teardown() {
+	rm -rf "${TEMP_DIR}"
+}
+
 function stubbed-ssh-agent() {
 	echo "echo 'foo'"
 }

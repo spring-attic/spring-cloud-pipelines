@@ -36,7 +36,7 @@ setup() {
 }
 
 teardown() {
-	rm -rf -- "${TEMP_DIR}"
+	rm -rf "${TEMP_DIR}"
 }
 
 @test "should run the build-and-upload task and tag the repo" {

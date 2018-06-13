@@ -15,6 +15,7 @@ setup() {
 
 teardown() {
 	rm -f "${SOURCE_DIR}/pipeline-dummy.sh"
+	rm -rf "${TEMP_DIR}"
 }
 
 @test "toLowerCase should convert a string lower case" {

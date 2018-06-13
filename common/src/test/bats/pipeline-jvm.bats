@@ -13,7 +13,8 @@ setup() {
 }
 
 teardown() {
-	rm -rf -- "${TEMP_DIR}" "${SOURCE_DIR}/pipeline-dummy.sh"
+	rm -f "${SOURCE_DIR}/pipeline-dummy.sh"
+	rm -rf "${TEMP_DIR}"
 }
 
 function curl {

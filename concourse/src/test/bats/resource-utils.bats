@@ -36,7 +36,7 @@ setup() {
 }
 
 teardown() {
-	rm -rf -- "${TEMP_DIR}"
+	rm -rf "${TEMP_DIR}"
 }
 
 function stubbed-ssh-agent() {

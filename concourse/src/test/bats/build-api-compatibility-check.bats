@@ -38,7 +38,7 @@ setup() {
 }
 
 teardown() {
-	rm -rf -- "${TEMP_DIR}"
+	rm -rf "${TEMP_DIR}"
 }
 
 @test "should run the build-api-compatibility-check task with passed pipeline version" {

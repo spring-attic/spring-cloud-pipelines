@@ -10,7 +10,8 @@ setup() {
 }
 
 teardown() {
-	rm -f -- "${SOURCE_DIR}/pipeline-dummy.sh"
+	rm -f "${SOURCE_DIR}/pipeline-dummy.sh"
+	rm -rf "${TEMP_DIR}"
 }
 
 function git() {
