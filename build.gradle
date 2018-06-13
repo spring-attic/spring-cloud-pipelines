@@ -258,11 +258,13 @@ distTar {
 	extension = "tar.gz"
 	dependsOn("dumpBuildInfo")
 	destinationDir = new File(project.rootDir, "dist")
+	enabled = !project.hasProperty("skipDist")
 }
 
 distZip {
 	version = ""
 	destinationDir = new File(project.rootDir, "dist")
+	enabled = !project.hasProperty("skipDist")
 }
 
 task release(dependsOn: ["build", "assembleDist", "generateDocs"]) {
