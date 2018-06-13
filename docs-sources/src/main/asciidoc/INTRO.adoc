@@ -4,6 +4,10 @@ In the following section we will describe in more depth the rationale
 behind the presented opinionated pipeline. We will go through each deployment
 step and describe it in details.
 
+IMPORTANT: You don't need to use all pieces of Spring Cloud Pipelines. You
+can (and should) gradually migrate your applications to use those pieces of
+Spring Cloud Pipelines that you think best suit your needs.
+
 === Project setup
 
 [source,bash]
@@ -252,6 +256,8 @@ Each application can contain a file called `sc-pipelines.yml` with the following
 
 [source,yaml]
 ----
+build:
+  main_module: foo/bar
 lowercaseEnvironmentName1:
     services:
         - type: service1Type
@@ -269,6 +275,11 @@ lowercaseEnvironmentName2:
           name: service4Name
           key: value
 ----
+
+If you have a multi-module project, you should point to the folder, where your
+module that produces the fat jar lays. In the aforementioned example that module
+would be present under the `foo/bar` folder. If you have a single module project,
+then you don't have to create this section.
 
 For a given environment we declare a list of infrastructure services that we
 want to have deployed. Services have
@@ -367,3 +378,25 @@ stage:
       broker: p-circuit-breaker-dashboard
       plan: standard
 ----
+
+=== Project Setup
+
+Spring Cloud Pipelines supports three main types of project setup
+- `Single Project`
+- `Multi Module`
+- `Multi Project` (aka mono repo)
+
+A `Single Project` is a project that contains a single module that gets
+built and package into a single, executable artifact.
+
+A `Multi Module` project is a project that contains a multiple modules.
+After building all modules, one gets packaged into a single, executable artifact.
+You have to point to that module in your pipeline descriptor.
+
+A `Multi Project` is a project that contains multiple projects. Each of those
+projects can be in turn a `Single Project` or a `Multi Module` project. Spring
+Cloud Pipelines will assume that if there's a `PROJECT_NAME` environment
+variable that corresponds to a folder with the same name in the root of the
+repository, that means that this is the project it should build. E.g for
+`PROJECT_NAME=foo`, if there's a folder `foo`, then Spring Cloud Pipelines
+will treat the `foo` directory as the root of the `foo` project.

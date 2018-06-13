@@ -175,7 +175,7 @@ The env vars that are used in all of the jobs are as follows:
 |API_COMPATIBILITY_STEP_REQUIRED | Should api compatibility step be required | true
 |DB_ROLLBACK_STEP_REQUIRED | Should DB rollback step be present | true
 |DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
-|JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v3.8.1 |
+|JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v4.12
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |BINARY_EXTENSION | Extension of the binary uploaded to Artifactory / Nexus. Example: change this to `war` for WAR artifacts | jar
 |======================

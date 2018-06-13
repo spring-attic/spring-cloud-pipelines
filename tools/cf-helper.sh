@@ -255,7 +255,7 @@ case $1 in
 		mkdir -p build
 		curl "${ARTIFACTORY_URL}/com/example/eureka/github-eureka/0.0.1.M1/github-eureka-0.0.1.M1.jar" -o "build/eureka.jar" --fail || echo "Failed to download the JAR"
 		echo "Deploying eureka"
-		cf push "github-eureka" -p "build/eureka.jar" -n "github-eureka" -b "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1" -m "${EUREKA_MEMORY}" -i 1 -f "cf/manifest-eureka.yml" --no-start
+		cf push "github-eureka" -p "build/eureka.jar" -n "github-eureka" -b "https://github.com/cloudfoundry/java-buildpack.git#v4.12" -m "${EUREKA_MEMORY}" -i 1 -f "cf/manifest-eureka.yml" --no-start
 		APPLICATION_DOMAIN="$( cf apps | grep github-eureka | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 )"
 		JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
 		cf set-env "github-eureka" 'APPLICATION_DOMAIN' "${APPLICATION_DOMAIN}"

@@ -69,8 +69,15 @@ $ ./gradlew generateDocs
 Spring Cloud Pipelines has a lot of tests, including Git repositories. Those
 and the documentation weigh a lot. That's why under the `dist` folder we
 publish `zip` and `tar.gz` distributions of sources without tests and documentation.
-Whenever we build a distribution we attach a `VERSION` file to it that contains
-build and SCM information (e.g. build time, revision).
+Whenever we release a distribution we attach a `VERSION` file to it that contains
+build and SCM information (e.g. build time, revision). To skip the distribution generation
+just pass the `skipDist` property
+
+[source,bash]
+----
+$ ./gradlew build -PskipDist
+----
+
 
 === Making a release
 
