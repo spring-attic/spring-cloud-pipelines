@@ -660,6 +660,7 @@ export CF_BIN
 CF_BIN="${CF_BIN:-cf}"
 
 # CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
+LANGUAGE_TYPE="${LANGUAGE_TYPE:-jvm}"
 # shellcheck source=/dev/null
-[[ -f "${__DIR}/projectType/pipeline-jvm.sh" ]] && source "${__DIR}/projectType/pipeline-jvm.sh" ||  \
- echo "No projectType/pipeline-jvm.sh found"
+[[ -f "${__DIR}/projectType/pipeline-${LANGUAGE_TYPE}.sh" ]] && source "${__DIR}/projectType/pipeline-${LANGUAGE_TYPE}.sh" ||  \
+ echo "No projectType/pipeline-${LANGUAGE_TYPE}.sh found"
