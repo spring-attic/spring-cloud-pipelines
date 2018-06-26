@@ -11,7 +11,7 @@ resources:
   type: git
   source:
     uri: ((app-url))
-    branch: version
+    branch: ((version-branch))
     private_key: ((github-private-key))
 
 - name: tools
