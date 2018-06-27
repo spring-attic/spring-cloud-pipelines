@@ -1529,6 +1529,10 @@ have an image you can pull and use on https://hub.docker.com/r/springcloud/sprin
 The `latest` tag corresponds to the latest snapshot build.  You can also find tags
 corresponding to stable releases that you can use as well.
 
+IMPORTANT: The Jenkins docker image is setup for demo purposes. For example it has the following
+system property `-Dpermissive-script-security.enabled=no_security` that disables script
+security. *YOU SHOULD NOT USE IT ON PRODUCTION UNLESS YOU KNOW WHAT YOU'RE DOING*.
+
 // remove::start[CF]
 [[jenkins-pipeline-cf]]
 == Jenkins Pipeline (Cloud Foundry)

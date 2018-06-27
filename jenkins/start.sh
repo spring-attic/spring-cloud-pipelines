@@ -52,6 +52,6 @@ cp ~/.minikube/ca.crt seed/k8s/ || echo "Failed to copy Kubernetes certificate a
 cp ~/.minikube/apiserver.crt seed/k8s/ || echo "Failed to copy Kubernetes client certificate file"
 cp ~/.minikube/apiserver.key seed/k8s/ || echo "Failed to copy Kubernetes client key file"
 
-#docker-compose build --no-cache
-docker-compose build
+docker-compose build --no-cache
+#docker-compose build
 docker-compose up -d

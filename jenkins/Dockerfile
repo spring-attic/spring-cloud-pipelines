@@ -3,10 +3,10 @@
 #   https://github.com/jenkinsci/docker#preinstalling-plugins
 #   https://engineering.riotgames.com/news/jenkins-docker-proxies-and-compose
 
-FROM jenkins:2.19.1
+FROM jenkins/jenkins:2.129
 ARG gituser=changeme
 ARG gitpass=changeme
-ARG gitsshkey=changeme
+ARG gitsshkey=
 ARG dockerRegistryOrg=changeme
 ARG dockerRegistryUser=changeme
 ARG dockerRegistryPass=changeme
@@ -43,7 +43,8 @@ USER root
 
 ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false \
               -Djava.awt.headless=true \
-              -Dhudson.model.ParametersAction.keepUndefinedParameters=true
+              -Dhudson.model.ParametersAction.keepUndefinedParameters=true \
+              -Dpermissive-script-security.enabled=no_security
 
 # Install libs needed by the master worker for building apps
 RUN apt-get update && \

@@ -54,6 +54,14 @@ parsedRepos.each {
 
 dsl.listView("ci") {
 	jobs {
-		regex("*.-ci")
+		regex(".*-ci")
+	}
+	columns {
+		status()
+		name()
+		lastSuccess()
+		lastFailure()
+		lastBuildConsole()
+		buildButton()
 	}
 }

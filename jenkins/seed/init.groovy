@@ -17,7 +17,7 @@ Closure setCredsIfMissing = { String id, String descr, String user, String pass 
 	boolean credsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
 		it.getDescriptor().getId() == id
 	}.empty
-	if (credsMissing) {
+	if (credsMissing && pass) {
 		println "Credential [${id}] is missing - will create it"
 		SystemCredentialsProvider.getInstance().getCredentials().add(
 			new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, id,
@@ -150,12 +150,16 @@ String mySqlUser = new File('/usr/share/jenkins/mySqlUser')?.text ?: "password"
 
 if (mySqlCredsMissing) {
 	println "MySQL credentials are missing - will create it"
-	SystemCredentialsProvider.getInstance().getCredentials().add(
+	if (mySqlRootPass) {
+		SystemCredentialsProvider.getInstance().getCredentials().add(
 			new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'mysql-root',
-					"MySQL root credentials", "root", mySqlRootPass))
-	SystemCredentialsProvider.getInstance().getCredentials().add(
+				"MySQL root credentials", "root", mySqlRootPass))
+	}
+	if (mySqlPass) {
+		SystemCredentialsProvider.getInstance().getCredentials().add(
 			new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'mysql',
-					"MySQL credentials", mySqlPass, mySqlUser))
+				"MySQL credentials", mySqlPass, mySqlUser))
+	}
 	SystemCredentialsProvider.getInstance().save()
 }
 
