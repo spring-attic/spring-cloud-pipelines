@@ -285,6 +285,7 @@ Each application can contain a file called `sc-pipelines.yml` with the following
 
 [source,yaml]
 ----
+language_type: jvm
 build:
   main_module: foo/bar
 lowercaseEnvironmentName1:
