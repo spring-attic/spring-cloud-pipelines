@@ -6,6 +6,7 @@ load 'test_helper/bats-assert/load'
 
 setup() {
 	export PAAS_TYPE="dummy"
+	export LANGUAGE_TYPE="dummy"
 	ln -s "${FIXTURES_DIR}/pipeline-dummy.sh" "${SOURCE_DIR}"
 }
 

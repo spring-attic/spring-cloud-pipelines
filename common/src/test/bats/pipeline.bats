@@ -11,6 +11,8 @@ setup() {
 
 	ln -s "${FIXTURES_DIR}/pipeline-dummy.sh" "${SOURCE_DIR}"
 	cp -a "${FIXTURES_DIR}/generic" "${TEMP_DIR}"
+	cp -a "${FIXTURES_DIR}/maven" "${TEMP_DIR}/maven"
+	cp -a "${FIXTURES_DIR}/gradle" "${TEMP_DIR}/gradle"
 }
 
 teardown() {
@@ -70,6 +72,24 @@ teardown() {
 
 	assert_success
 	assert [ "${PARSED_YAML}" != "${PARSED_YAML/\"coordinates\"/}" ]
+}
+
+@test "parsePipelineDescriptor should not parse twice" {
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	PIPELINE_DESCRIPTOR="${FIXTURES_DIR}/sc-pipelines-generic.yml"
+
+	assert_equal "${PARSED_YAML}" ""
+
+	parsePipelineDescriptor
+
+	assert_success
+	assert [ "${PARSED_YAML}" != "${PARSED_YAML/\"coordinates\"/}" ]
+
+	run parsePipelineDescriptor
+
+	assert_output --partial "Pipeline descriptor already parsed - will not parse it again"
+	assert_success
 }
 
 @test "sourcing pipeline.sh should export an env var with lower case env var" {
@@ -311,5 +331,46 @@ teardown() {
 	source "${SOURCE_DIR}/pipeline.sh"
 
 	assert_equal "$(getMainModulePath)" ""
+	assert_success
+}
+
+@test "should return jvm language type for maven" {
+	cd "${TEMP_DIR}/maven/build_project"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "${LANGUAGE_TYPE}" "jvm"
+	assert_success
+}
+
+@test "should return jvm language type for gradle" {
+	cd "${TEMP_DIR}/gradle/build_project"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "${LANGUAGE_TYPE}" "jvm"
+	assert_success
+}
+
+@test "should return custom language type if provided explicitly and language is set in descriptor" {
+	cd "${TEMP_DIR}/generic/php_repo"
+	export LANGUAGE_TYPE=foo
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "${LANGUAGE_TYPE}" "foo"
+	assert_success
+}
+
+@test "should return language type from descriptor" {
+	cd "${TEMP_DIR}/generic/php_repo"
+
+	# to get the env vars
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_equal "${LANGUAGE_TYPE}" "php"
 	assert_success
 }

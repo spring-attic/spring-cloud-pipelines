@@ -167,8 +167,12 @@ function parsePipelineDescriptor() {
 		return
 	fi
 	PIPELINE_DESCRIPTOR_PRESENT="true"
-	export PARSED_YAML
-	PARSED_YAML=$(yaml2json "${PIPELINE_DESCRIPTOR}")
+	if [[ "${PARSED_YAML}" != "" ]]; then
+		echo "Pipeline descriptor already parsed - will not parse it again"
+	else
+		export PARSED_YAML
+		PARSED_YAML=$(yaml2json "${PIPELINE_DESCRIPTOR}")
+	fi
 }
 
 # Deploys services assuming that pipeline descriptor exists
@@ -221,6 +225,20 @@ function getMainModulePath() {
 			mainModule=""
 		fi
 		echo "${mainModule}"
+	else
+		echo ""
+	fi
+}
+
+# Gets the language type from descriptor
+function getLanguageType() {
+	if [[ ! -z "${PARSED_YAML}" ]]; then
+		local languageType
+		languageType="$( echo "${PARSED_YAML}" | jq -r '.language_type' )"
+		if [[ "${languageType}" == "null" ]]; then
+			languageType=""
+		fi
+		echo "${languageType}"
 	else
 		echo ""
 	fi
@@ -304,13 +322,14 @@ echo "Project with name [${PROJECT_NAME}] is setup as [${PROJECT_SETUP}]. The pr
 [[ -f "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ]] && source "${__ROOT}/pipeline-${PAAS_TYPE}.sh" ||  \
  echo "No pipeline-${PAAS_TYPE}.sh found"
 
-OUTPUT_FOLDER="$(outputFolder)"
-TEST_REPORTS_FOLDER="$(testResultsAntPattern)"
-
-export OUTPUT_FOLDER TEST_REPORTS_FOLDER
-
-echo "Output folder [${OUTPUT_FOLDER}]"
-echo "Test reports folder [${TEST_REPORTS_FOLDER}]"
+LANGUAGE_TYPE_FROM_DESCRIPTOR="$( getLanguageType )"
+DEFAULT_LANGUAGE_TYPE="${LANGUAGE_TYPE_FROM_DESCRIPTOR:-jvm}"
+export LANGUAGE_TYPE
+LANGUAGE_TYPE="${LANGUAGE_TYPE:-${DEFAULT_LANGUAGE_TYPE}}"
+__DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+[[ -f "${__DIR}/projectType/pipeline-${LANGUAGE_TYPE}.sh" ]] && source "${__DIR}/projectType/pipeline-${LANGUAGE_TYPE}.sh" ||  \
+ echo "No projectType/pipeline-${LANGUAGE_TYPE}.sh found"
 
 export CUSTOM_SCRIPT_IDENTIFIER="${CUSTOM_SCRIPT_IDENTIFIER:-custom}"
 echo "Custom script identifier is [${CUSTOM_SCRIPT_IDENTIFIER}]"
@@ -322,4 +341,11 @@ echo "Path to custom script is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
 [[ -f "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ]] && source "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ||  \
  echo "No ${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME} found"
 
+OUTPUT_FOLDER="$(outputFolder)"
+TEST_REPORTS_FOLDER="$(testResultsAntPattern)"
+
+export OUTPUT_FOLDER TEST_REPORTS_FOLDER
+
+echo "Output folder [${OUTPUT_FOLDER}]"
+echo "Test reports folder [${TEST_REPORTS_FOLDER}]"
 

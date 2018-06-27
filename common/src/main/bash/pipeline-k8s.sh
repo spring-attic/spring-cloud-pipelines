@@ -773,8 +773,3 @@ if [[ ! -z ${BUILD_OPTIONS} && ${BUILD_OPTIONS} != "null" ]]; then
 else
 	export BUILD_OPTIONS="${DEFAULT_DOCKER_OPTIONS}"
 fi
-
-# CURRENTLY WE ONLY SUPPORT JVM BASED PROJECTS OUT OF THE BOX
-# shellcheck source=/dev/null
-[[ -f "${__ROOT}/projectType/pipeline-jvm.sh" ]] && source "${__ROOT}/projectType/pipeline-jvm.sh" ||  \
- echo "No projectType/pipeline-jvm.sh found"
