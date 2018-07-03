@@ -3,7 +3,7 @@
 #   https://github.com/jenkinsci/docker#preinstalling-plugins
 #   https://engineering.riotgames.com/news/jenkins-docker-proxies-and-compose
 
-FROM jenkins/jenkins:2.129
+FROM jenkins/jenkins:2.130
 ARG gituser=changeme
 ARG gitpass=changeme
 ARG gitsshkey=
