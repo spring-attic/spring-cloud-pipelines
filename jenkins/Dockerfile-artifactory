@@ -1,4 +1,4 @@
-FROM docker.bintray.io/jfrog/artifactory-oss:5.5.1
+FROM docker.bintray.io/jfrog/artifactory-oss:6.1.0
 
 MAINTAINER Marcin Grzejszczak <mgrzejszczak@pivotal.io>
 
