@@ -151,66 +151,18 @@ parsedRepos.each {
 			shell("""#!/bin/bash 
 		${bashFunctions.setupGitCredentials(fullGitRepo)}
 		\${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
+		${ if (apiCompatibilityStep) return '${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh' }
 		""")
 		}
 		publishers {
 			archiveJunit(testReports) {
 				allowEmptyResults()
 			}
-			// TODO: Maybe this will be needed to be merged to one job
-			if (apiCompatibilityStep) {
-				downstreamParameterized {
-					trigger("${projectName}-build-api-check") {
-						triggerWithNoParameters()
-						parameters {
-							currentBuild()
-						}
-					}
-				}
-			}
 			git {
 				pushOnlyIfSuccess()
 				tag('origin', "dev/${gitRepoName}/\${PIPELINE_VERSION}") {
 					create()
 					update()
-				}
-			}
-		}
-	}
-
-	if (apiCompatibilityStep) {
-		dsl.job("${projectName}-build-api-check") {
-			deliveryPipelineConfiguration('Build', 'API compatibility check')
-			triggers {
-				cron(cronValue)
-				githubPush()
-			}
-			wrappers {
-				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				environmentVariables(defaults.defaultEnvVars)
-				timestamps()
-				colorizeOutput()
-				maskPasswords()
-				if (gitUseSshKey) sshAgent(gitSshCredentials)
-				timeout {
-					noActivity(300)
-					failBuild()
-					writeDescription('Build failed due to timeout after {0} minutes of inactivity')
-				}
-			}
-			jdk(jdkVersion)
-			scm {
-				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
-			}
-			steps {
-				shell(downloadTools(fullGitRepo))
-				shell('''#!/bin/bash
-		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
-		''')
-			}
-			publishers {
-				archiveJunit(testReports) {
-					allowEmptyResults()
 				}
 			}
 		}
