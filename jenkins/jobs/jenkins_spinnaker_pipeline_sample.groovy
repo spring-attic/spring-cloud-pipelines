@@ -150,8 +150,14 @@ parsedRepos.each {
 			shell(downloadTools(fullGitRepo))
 			shell("""#!/bin/bash 
 		${bashFunctions.setupGitCredentials(fullGitRepo)}
+		${ if (apiCompatibilityStep) {
+				return '''\
+		echo "First running api compatibility check, so that what we commit and upload at the end is just built project"
+		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
+'''
+			}
+		}
 		\${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
-		${ if (apiCompatibilityStep) return '${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh' }
 		""")
 		}
 		publishers {
