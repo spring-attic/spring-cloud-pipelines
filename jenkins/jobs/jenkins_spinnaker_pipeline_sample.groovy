@@ -149,6 +149,9 @@ parsedRepos.each {
 		steps {
 			shell(downloadTools(fullGitRepo))
 			shell("""#!/bin/bash 
+		set -o errexit
+		set -o errtrace
+		set -o pipefail
 		${bashFunctions.setupGitCredentials(fullGitRepo)}
 		${ if (apiCompatibilityStep) {
 				return '''\
@@ -203,6 +206,9 @@ parsedRepos.each {
 		steps {
 			shell(downloadTools(fullGitRepo))
 			shell('''#!/bin/bash
+		set -o errexit
+		set -o errtrace
+		set -o pipefail
 		${WORKSPACE}/.git/tools/common/src/main/bash/test_smoke.sh
 		''')
 		}
@@ -245,6 +251,9 @@ parsedRepos.each {
 			steps {
 				shell(downloadTools(fullGitRepo))
 				shell('''#!/bin/bash
+	set -o errexit
+	set -o errtrace
+	set -o pipefail
 	${WORKSPACE}/.git/tools/common/src/main/bash/test_rollback_smoke.sh
 	''')
 			}
@@ -288,6 +297,9 @@ parsedRepos.each {
 			steps {
 				shell(downloadTools(fullGitRepo))
 				shell('''#!/bin/bash
+		set -o errexit
+		set -o errtrace
+		set -o pipefail
 		${WORKSPACE}/.git/tools/common/src/main/bash/stage_e2e.sh
 		''')
 			}
