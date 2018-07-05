@@ -55,6 +55,8 @@ function retrieveAppName() {
 export -f retrieveAppName
 
 @test "should source pipeline.sh" {
+	LANGUAGE_TYPE="jvm"
+	PROJECT_TYPE="maven"
 	source "${TASKS_DIR}/pipeline.sh"
 
 	assert_success
