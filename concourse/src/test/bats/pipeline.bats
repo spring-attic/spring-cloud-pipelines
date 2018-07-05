@@ -14,7 +14,10 @@ setup() {
 	mkdir -p "${NEW_SRC}"
 	export PAAS_TYPE="cf"
 	cp "${COMMON_DIR}"/*.sh "${NEW_SRC}/"
+	mkdir -p "${NEW_SRC}/projectType"
+	cp "${COMMON_DIR}"/projectType/*.sh "${NEW_SRC}/projectType"
 	cp -f "${FIXTURES_DIR}/pipeline-dummy.sh" "${NEW_SRC}/pipeline-cf.sh"
+	cp -f "${FIXTURES_DIR}/pipeline-dummy.sh" "${NEW_SRC}/projectType/pipeline-jvm.sh"
 
 	# Copying the concourse folder
 	NEW_CONCOURSE_SRC="${TEMP_DIR}/generic/project/tools/concourse/"
@@ -44,6 +47,12 @@ function stubbed-ssh-agent() {
 }
 
 export -f stubbed-ssh-agent
+
+function retrieveAppName() {
+	echo "foo"
+}
+
+export -f retrieveAppName
 
 @test "should source pipeline.sh" {
 	source "${TASKS_DIR}/pipeline.sh"

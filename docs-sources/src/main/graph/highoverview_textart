@@ -1,0 +1,10 @@
+object script language framework paas customization
+script->language: What is your language?
+language->script: I'm written in X language
+language->framework: What framework do you use?
+framework->script: I use Y framework
+script->paas: I know that you use Z PAAS?
+paas->script: Here are all Z-related deployment functions
+script->customization: Anything custom to override in bash?
+customization->script: Not this time...
+script->script: Ok, run the script

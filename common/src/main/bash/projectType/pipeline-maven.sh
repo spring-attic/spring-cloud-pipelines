@@ -149,6 +149,8 @@ function testResultsAntPattern() {
 }
 
 export -f build
+export -f retrieveAppName
+export -f retrieveGroupId
 export -f apiCompatibilityCheck
 export -f runSmokeTests
 export -f runE2eTests

@@ -4,6 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: springcloud/pipeline-base
+    tag: latest
 inputs:
   - name: tools
   - name: repo

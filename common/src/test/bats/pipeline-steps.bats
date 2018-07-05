@@ -7,11 +7,12 @@ load 'test_helper/bats-assert/load'
 setup() {
 	export PAAS_TYPE="dummy"
 	export LANGUAGE_TYPE="dummy"
-	ln -s "${FIXTURES_DIR}/pipeline-dummy.sh" "${SOURCE_DIR}"
+	export PROJECT_TYPE="dummy"
+	ln -s "${FIXTURES_DIR}/pipeline-dummy.sh" "${SOURCE_DIR}"/projectType
 }
 
 teardown() {
-	rm -f "${SOURCE_DIR}/pipeline-dummy.sh"
+	rm -f "${SOURCE_DIR}/projectType/pipeline-dummy.sh"
 	rm -rf "${TEMP_DIR}"
 }
 

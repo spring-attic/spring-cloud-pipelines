@@ -1,0 +1,18 @@
+object script pipeline projectType language framework paas custom
+script->pipeline: [source pipeline.sh]
+note right of pipeline: loading functions, env vars
+note left of pipeline: hopefully all functions get overridden \notherwise nothing will work
+pipeline->projectType: Source the [projectType/pipeline-projectType.sh]
+note left of projectType: What do we have here...? \nA [mvnw] file, \nit has to be a [jvm] project
+projectType->language: Source [pipeline-jvm.sh]
+language->framework: Maven or Gradle?
+note right of framework: There's a [mvnw] file? \nSo the [PROJECT_TYPE] must be [maven]
+framework->pipeline: It's a Maven project
+pipeline->paas: The [PAAS_TYPE] is [cf] so I'll source [pipeline-cf.sh]
+note right of paas: Loading all \ndeployment-related functions
+note left of pipeline: Ok, we know that it's Maven \nand should be deployed to CF
+pipeline->custom: Try to source [custom/build.sh]
+note right of custom: No such file so \nnothing custom to be done
+note right of script: All build related functions \n overridden by language / framework scripts
+note right of script: All deploy related functions \n overridden by paas scripts
+script->script: run [build] function

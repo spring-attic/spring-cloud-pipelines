@@ -10,7 +10,6 @@ PipelineDefaults defaults = new PipelineDefaults(binding.variables)
 // Example of a version with date and time in the name
 String pipelineVersion = binding.variables["PIPELINE_VERSION"] ?: '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
 String cronValue = "H H * * 7" //every Sunday - I guess you should run it more often ;)
-// TODO: this doesn't scale too much
 String testReports = ["**/surefire-reports/*.xml", "**/test-results/**/*.xml"].join(",")
 String gitCredentials = binding.variables["GIT_CREDENTIAL_ID"] ?: "git"
 String gitSshCredentials = binding.variables["GIT_SSH_CREDENTIAL_ID"] ?: "gitSsh"
@@ -158,7 +157,9 @@ parsedRepos.each {
 		""")
 		}
 		publishers {
-			archiveJunit(testReports)
+			archiveJunit(testReports) {
+				allowEmptyResults()
+			}
 			String nextProject = apiCompatibilityStep ?
 				"${projectName}-build-api-check" :
 				"${projectName}-test-env-deploy"
@@ -317,7 +318,9 @@ parsedRepos.each {
 		''')
 		}
 		publishers {
-			archiveJunit(testReports)
+			archiveJunit(testReports) {
+				allowEmptyResults()
+			}
 			if (rollbackStep) {
 				downstreamParameterized {
 					trigger("${projectName}-test-env-rollback-deploy") {
@@ -573,7 +576,9 @@ parsedRepos.each {
 		''')
 			}
 			publishers {
-				archiveJunit(testReports)
+				archiveJunit(testReports) {
+					allowEmptyResults()
+				}
 				String nextJob = "${projectName}-prod-env-deploy"
 				if (autoProd) {
 					downstreamParameterized {

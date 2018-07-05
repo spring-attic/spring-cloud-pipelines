@@ -1,6 +1,10 @@
 #!/bin/bash
+function retrieveGroupId() {
+	echo "com.example"
+}
+
 function retrieveAppName() {
-    echo "retrieveAppName"
+    echo "${PROJECT_NAME}"
 }
 
 function deleteService() {
@@ -74,6 +78,8 @@ function rollbackToPreviousVersion() {
     echo "rollbackToPreviousVersion"
 }
 
+export -f retrieveGroupId
+export -f retrieveAppName
 export -f deleteService
 export -f deployService
 export -f outputFolder

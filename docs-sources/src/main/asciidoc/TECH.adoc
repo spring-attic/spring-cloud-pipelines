@@ -90,41 +90,6 @@ tag the repo and then revert the changed versions back to default.
 $ ./gradlew release -PnewVersion=1.0.0.RELEASE
 ----
 
-== Customizing the project
-
-If you want to pick only pieces (e.g. you're interested only in `Cloud Foundry` with
-`Concourse` combination) it's enough to execute this command:
-
-```bash
-$ ./gradlew customize
-```
-
-You'll see a screen looking more or less like this:
-
-```bash
-:customize
-  ___          _              ___ _             _   ___ _           _ _
- / __|_ __ _ _(_)_ _  __ _   / __| |___ _  _ __| | | _ (_)_ __  ___| (_)_ _  ___ ___
- \__ \ '_ \ '_| | ' \/ _` | | (__| / _ \ || / _` | |  _/ | '_ \/ -_) | | ' \/ -_|_-<
- |___/ .__/_| |_|_||_\__, |  \___|_\___/\_,_\__,_| |_| |_| .__/\___|_|_|_||_\___/__/
-     |_|             |___/                               |_|
-
-
-
-Follow the instructions presented in the console or terminate the process to quit (ctrl + c)
-
-
-=== PAAS TYPE ===
-Which PAAS type do you want to use? Options: [CF, K8S, BOTH]
-<-------------> 0% EXECUTING
-> :customize
-```
-
-Now you need to answer a couple of questions. That way whole files and its pieces
-will get removed / updated accordingly. If you provide `CF` and `Concourse` options
-thn `Kubernetes` and `Jenkins` configuration / folders / pieces of code in
-the project will get removed.
-
 == Releasing the project
 
 === Publishing A Docker Image

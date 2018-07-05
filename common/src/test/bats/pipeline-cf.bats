@@ -33,10 +33,13 @@ setup() {
 	export PAAS_PROD_SPACE="prod-space"
 	export PAAS_PROD_API_URL="prod-api"
 
-	cp -a "${FIXTURES_DIR}/gradle" "${FIXTURES_DIR}/maven" "${TEMP_DIR}"
+	cp -a "${FIXTURES_DIR}/gradle" "${FIXTURES_DIR}/maven" "${FIXTURES_DIR}/generic" "${TEMP_DIR}"
+	ln -s "${FIXTURES_DIR}/pipeline-dummy.sh" "${SOURCE_DIR}"
+	ln -s "${FIXTURES_DIR}/pipeline-dummy.sh" "${SOURCE_DIR}/projectType/"
 }
 
 teardown() {
+	rm -f "${SOURCE_DIR}/projectType/pipeline-dummy.sh"
 	rm -f "${SOURCE_DIR}/pipeline-dummy.sh"
 	rm -rf "${TEMP_DIR}"
 }
@@ -47,6 +50,26 @@ function curl {
 
 function git {
 	echo "git $*"
+}
+
+function composer {
+	if [[ "${1}" == "app-name" ]]; then
+		echo "my-project"
+	elif [[ "${1}" == "group-id" ]]; then
+		echo "com.example"
+	elif [[ "$*" == *"version"* ]]; then
+		echo "1.0.0"
+	else
+		echo "composer $*"
+	fi
+}
+
+function php {
+	if [[ "$*" == *"version"* ]]; then
+		echo "1.0.0"
+	else
+		echo "php $*"
+	fi
 }
 
 function tar {
@@ -148,6 +171,8 @@ function fakeRetrieveStubRunnerIds() {
 
 export -f curl
 export -f git
+export -f composer
+export -f php
 export -f tar
 export -f cf
 export -f cf_that_returns_apps
@@ -161,6 +186,7 @@ export -f fakeRetrieveStubRunnerIds
 
 @test "should download cf and connect to cluster [CF]" {
 	export CF_BIN="cf"
+	export LANGUAGE_TYPE="dummy"
 	env="test"
 	cd "${TEMP_DIR}/maven/empty_project"
 	source "${SOURCE_DIR}/pipeline.sh"
@@ -283,6 +309,32 @@ export -f fakeRetrieveStubRunnerIds
 	refute_output --partial "Cannot iterate over null (null)"
 	assert_output --partial "APPLICATION_URL=my-project-sc-pipelines.demo.io"
 	assert_output --partial "STUBRUNNER_URL=stubrunner-my-project-sc-pipelines.demo.io"
+	assert_success
+}
+
+@test "should deploy app to test environment with no services [CF][PHP]" {
+	export PIPELINE_VERSION="1.0.0.M8"
+	export CF_BIN="cf"
+	export M2_SETTINGS_REPO_USERNAME="foo"
+	export M2_SETTINGS_REPO_PASSWORD="bar"
+	env="test"
+	cd "${TEMP_DIR}/generic/php_repo"
+	cp "${FIXTURES_DIR}/sc-pipelines-no-services.yml" sc-pipelines.yml
+
+	run "${SOURCE_DIR}/test_deploy.sh"
+
+	# logged in
+	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
+	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
+	refute_output --partial "No pipeline descriptor found - will not deploy any services"
+	# App
+	assert_output --partial "curl -u foo:bar http://foo/com/example/my-project/1.0.0.M8/my-project-1.0.0.M8.tar.gz -o ${TEMP_DIR}/generic/php_repo/target/my-project-1.0.0.M8.tar.gz --fail"
+	assert_output --partial "tar -zxf ${TEMP_DIR}/generic/php_repo/target/my-project-1.0.0.M8.tar.gz -C target/source"
+	assert_output --partial "cf push my-project -f manifest.yml -p . -n my-project-test -i 1 --no-start"
+	assert_output --partial "cf set-env my-project SPRING_PROFILES_ACTIVE cloud,smoke,test"
+	assert_output --partial "cf restart my-project"
+	# We don't want exception on jq parsing
+	refute_output --partial "Cannot iterate over null (null)"
 	assert_success
 }
 

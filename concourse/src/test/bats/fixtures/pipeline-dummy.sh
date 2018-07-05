@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
 # ---- BUILD PHASE ----
+function retrieveGroupId() {
+	echo "com.example"
+}
+
+function retrieveAppName() {
+    echo "${PROJECT_NAME}"
+}
+
 function build() {
 	echo "build $*"
 }

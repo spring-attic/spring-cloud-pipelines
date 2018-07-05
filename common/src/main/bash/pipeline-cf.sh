@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -e
+set -e
 
 function logInToPaas() {
 	local user="PAAS_${ENVIRONMENT}_USERNAME"
@@ -223,6 +223,16 @@ function deployAppNoStart() {
 	local env="${3}"
 	local pathToManifest="${4}"
 	local hostNameSuffix="${5}"
+	# we need to change directory to source if necessary
+	local artifactType
+	artifactType="$( getArtifactType )"
+	echo "Project has artifact type [${artifactType}]"
+	if [[ "${artifactType}" == "${SOURCE_ARTIFACT_TYPE_NAME}" ]]; then
+		local dir
+		dir="$(pathToUnpackedSources)"
+		mkdir -p "${dir}"
+		pushd "${dir}"
+	fi
 	if [[ -z "${pathToManifest}" || "${pathToManifest}" == "null" ]]; then
 		pathToManifest="manifest.yml"
 	fi
@@ -240,8 +250,49 @@ function deployAppNoStart() {
 		instances=1
 	fi
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}] with manifest file [${pathToManifest}]"
-	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}" -n "${hostname}" -i "${instances}" --no-start
+	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "$( pathToPushToCf "${artifactName}" )" -n "${hostname}" -i "${instances}" --no-start
 	setEnvVar "${lowerCaseAppName}" 'APP_BINARY' "${artifactName}.${BINARY_EXTENSION}"
+	if [[ "${artifactType}" == "${SOURCE_ARTIFACT_TYPE_NAME}" ]]; then
+		popd
+	fi
+}
+
+# Gets the type of artifact that should be pushed to CF. [binary] or [source]?
+function getArtifactType() {
+	if [[ "${ARTIFACT_TYPE}" != "" ]]; then
+		echo "${ARTIFACT_TYPE}"
+	elif [[ ! -z "${PARSED_YAML}" ]]; then
+		local artifactType
+		artifactType="$( echo "${PARSED_YAML}" | jq -r '.artifact_type' )"
+		if [[ "${artifactType}" == "null" ]]; then
+			if [[ "${LANGUAGE_TYPE}" == "php" ]]; then
+				artifactType="${SOURCE_ARTIFACT_TYPE_NAME}"
+			else
+				artifactType="${BINARY_ARTIFACT_TYPE_NAME}"
+			fi
+		fi
+		toLowerCase "${artifactType}"
+	else
+		echo "${BINARY_ARTIFACT_TYPE_NAME}"
+	fi
+}
+
+function pathToPushToCf() {
+	local artifactName="${1}"
+	local artifactType
+	artifactType="$( getArtifactType )"
+	if [[ "${artifactType}" == "${BINARY_ARTIFACT_TYPE_NAME}" ]]; then
+		echo "${OUTPUT_FOLDER}/${artifactName}.${BINARY_EXTENSION}"
+	elif [[ "${artifactType}" == "${SOURCE_ARTIFACT_TYPE_NAME}" ]]; then
+		echo "."
+	else
+		echo "Unknown artifact type"
+		return 1
+	fi
+}
+
+function pathToUnpackedSources() {
+	echo "${OUTPUT_FOLDER}/source"
 }
 
 function hostname() {
@@ -621,8 +672,12 @@ function completeSwitchOver() {
 function propagatePropertiesForTests() {
 	local projectArtifactId="${1}"
 	local serviceType="stubrunner"
-	local stubRunnerName
-	stubRunnerName="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceType}" '.[$x].services[] | select(.name == $y) | .name' | sed 's/^"\(.*\)"$/\1/')"
+	local nodeExists
+	envNodeExists "${LOWERCASE_ENV}" && nodeExists="true" || nodeExists="false"
+	local stubRunnerName=""
+	if [[ "${nodeExists}" == "true" ]]; then
+		stubRunnerName="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceType}" '.[$x].services[] | select(.name == $y) | .name' | sed 's/^"\(.*\)"$/\1/')"
+	fi
 	local fileLocation="${OUTPUT_FOLDER}/test.properties}"
 	echo "Propagating properties for tests. Project [${projectArtifactId}] stub runner app name [${stubRunnerName}] properties location [${fileLocation}]"
 	# retrieve host of the app / stubrunner

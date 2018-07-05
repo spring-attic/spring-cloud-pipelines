@@ -137,6 +137,7 @@ Here we're
     ** in K8S we do that by scaling the number of instances of green to 0
     * we're removing the latest prod git tag
 
+[[project-opinions]]
 == Project opinions
 
 In this section we will go through the assumptions we've made in the project
@@ -178,6 +179,18 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
     * `artifactId` task to retrieve artifact id
     * `currentVersion` task to retrieve the current version
     * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
+- For PHP (https://github.com/spring-cloud-samples/cf-php-example[example project]):
+    * usage of https://getcomposer.org/[Composer]
+    * `composer install` is called to fetch libraries
+    * the whole application is compressed to `tar.gz` and uploaded to binary storage
+    ** `REPO_WITH_BINARIES_FOR_UPLOAD` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
+    ** `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
+    ** `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
+    * `group-id` Composer task that echos the group id
+    * `app-name` Composer task that echos application name
+    * `test-apicompatibility` Composer task that is executed for api compatibility tests
+    * `test-smoke` Composer task that is executed for smoke testing
+    * `test-e2e` Composer task that is executed for end to end testing
 
 === Kubernetes project opinions
 

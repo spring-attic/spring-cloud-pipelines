@@ -20,6 +20,8 @@ include::INTRO.adoc[]
 
 include::OPINIONATED.adoc[]
 
+include::CUSTOMIZATION.adoc[]
+
 // remove::start[CONCOURSE]
 include::CONCOURSE.adoc[]
 // remove::end[CONCOURSE]
