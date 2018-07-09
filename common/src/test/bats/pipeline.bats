@@ -399,3 +399,14 @@ teardown() {
 
 	assert_success
 }
+
+@test "should skip the step if prod tag is missing for apiCompatibilityCheck" {
+	export BUILD_OPTIONS="invalid option"
+	cd "${TEMP_DIR}/gradle/build_project"
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	run apiCompatibilityCheck
+
+	assert_output --partial "No prod release took place - skipping this step"
+	assert_success
+}

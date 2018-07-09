@@ -678,11 +678,12 @@ function propagatePropertiesForTests() {
 	if [[ "${nodeExists}" == "true" ]]; then
 		stubRunnerName="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceType}" '.[$x].services[] | select(.name == $y) | .name' | sed 's/^"\(.*\)"$/\1/')"
 	fi
-	local fileLocation="${OUTPUT_FOLDER}/test.properties}"
+	local fileLocation="${OUTPUT_FOLDER}/test.properties"
 	echo "Propagating properties for tests. Project [${projectArtifactId}] stub runner app name [${stubRunnerName}] properties location [${fileLocation}]"
 	# retrieve host of the app / stubrunner
 	# we have to store them in a file that will be picked as properties
 	rm -rf "${fileLocation}"
+	mkdir -p "${OUTPUT_FOLDER}"
 	local host
 	host="$(getAppHostFromPaas "${projectArtifactId}")"
 	export APPLICATION_URL="${host}"

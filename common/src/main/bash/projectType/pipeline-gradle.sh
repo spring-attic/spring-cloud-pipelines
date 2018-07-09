@@ -26,25 +26,14 @@ function build() {
 	fi
 }
 
-function apiCompatibilityCheck() {
-	# Find latest prod version
-	local prodTag="${PASSED_LATEST_PROD_TAG:-${LATEST_PROD_TAG:-}}"
-	[[ -z "${prodTag}" ]] && prodTag="$(findLatestProdTag)"
-	echo "Last prod tag equals [${prodTag}]"
-	if [[ -z "${prodTag}" ]]; then
-		echo "No prod release took place - skipping this step"
+function executeApiCompatibilityCheck() {
+	local latestProdVersion="${1}"
+	if [[ "${CI}" == "CONCOURSE" ]]; then
+		# shellcheck disable=SC2086
+		"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${latestProdVersion}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)
 	else
-		PROJECT_NAME=${PROJECT_NAME?PROJECT_NAME must be set!}
-		# Downloading latest jar
-		LATEST_PROD_VERSION=${prodTag#"prod/${PROJECT_NAME}/"}
-		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
-		if [[ "${CI}" == "CONCOURSE" ]]; then
-			# shellcheck disable=SC2086
-			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS} || (printTestResults && return 1)
-		else
-			# shellcheck disable=SC2086
-			"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${LATEST_PROD_VERSION}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS}
-		fi
+		# shellcheck disable=SC2086
+		"${GRADLEW_BIN}" clean apiCompatibility -DlatestProductionVersion="${latestProdVersion}" -DREPO_WITH_BINARIES="${REPO_WITH_BINARIES_FOR_UPLOAD}" --stacktrace ${BUILD_OPTIONS}
 	fi
 }
 
@@ -105,7 +94,7 @@ function testResultsAntPattern() {
 export -f build
 export -f retrieveAppName
 export -f retrieveGroupId
-export -f apiCompatibilityCheck
+export -f executeApiCompatibilityCheck
 export -f runSmokeTests
 export -f runE2eTests
 export -f outputFolder

@@ -97,23 +97,13 @@ teardown() {
 	assert_failure
 }
 
-@test "should skip the step if prod tag is missing for apiCompatibilityCheck [Gradle]" {
-	export BUILD_OPTIONS="invalid option"
-	cd "${TEMP_DIR}/gradle/build_project"
-	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
-
-	run apiCompatibilityCheck
-
-	assert_output --partial "No prod release took place - skipping this step"
-	assert_success
-}
-
-@test "should run the check when prod tag exists for apiCompatibilityCheck for Concourse [Gradle]" {
+@test "should run the check when prod tag exists for apiCompatibilityCheck  for Concourse [Gradle]" {
 	export CI="CONCOURSE"
 	export PROJECT_NAME="build_project"
 	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/100.0.0"
 	cd "${TEMP_DIR}/gradle/build_project"
-	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
+	export PAAS_TYPE="cf"
+	source "${SOURCE_DIR}/pipeline.sh"
 
 	run apiCompatibilityCheck
 
@@ -128,7 +118,8 @@ teardown() {
 	export PROJECT_NAME="build_project"
 	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/100.0.0"
 	cd "${TEMP_DIR}/gradle/build_project"
-	source "${SOURCE_DIR}/projectType/pipeline-gradle.sh"
+	export PAAS_TYPE="cf"
+	source "${SOURCE_DIR}/pipeline.sh"
 
 	run apiCompatibilityCheck
 

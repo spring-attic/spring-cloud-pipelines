@@ -77,7 +77,7 @@ function downloadAppBinary() {
 	fi
 }
 
-function apiCompatibilityCheck() {
+function executeApiCompatibilityCheck() {
 	downloadComposerIfMissing
 	"${COMPOSER_BIN}" test-apicompatibility
 }

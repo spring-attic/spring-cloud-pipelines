@@ -29,29 +29,14 @@ function build() {
 	fi
 }
 
-function apiCompatibilityCheck() {
-	local prodTag="${PASSED_LATEST_PROD_TAG:-${LATEST_PROD_TAG:-}}"
-	[[ -z "${prodTag}" ]] && prodTag="$(findLatestProdTag)"
-	echo "Last prod tag equals [${prodTag}]"
-	if [[ -z "${prodTag}" ]]; then
-		echo "No prod release took place - skipping this step"
+function executeApiCompatibilityCheck() {
+	local latestProdVersion="${1}"
+	if [[ "${CI}" == "CONCOURSE" ]]; then
+		# shellcheck disable=SC2086
+		"${MAVENW_BIN}" clean verify -Papicompatibility -Dlatest.production.version="${latestProdVersion}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS} || (printTestResults && return 1)
 	else
-		PROJECT_NAME=${PROJECT_NAME?PROJECT_NAME must be set!}
-		# Putting env vars to output properties file for parameter passing
-		export PASSED_LATEST_PROD_TAG="${prodTag}"
-		local fileLocation="${OUTPUT_FOLDER}/test.properties"
-		mkdir -p "${OUTPUT_FOLDER}"
-		echo "PASSED_LATEST_PROD_TAG=${prodTag}" >>"${fileLocation}"
-		# Downloading latest jar
-		LATEST_PROD_VERSION=${prodTag#"prod/${PROJECT_NAME}/"}
-		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
-		if [[ "${CI}" == "CONCOURSE" ]]; then
-			# shellcheck disable=SC2086
-			"${MAVENW_BIN}" clean verify -Papicompatibility -Dlatest.production.version="${LATEST_PROD_VERSION}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS} || (printTestResults && return 1)
-		else
-			# shellcheck disable=SC2086
-			"${MAVENW_BIN}" clean verify -Papicompatibility -Dlatest.production.version="${LATEST_PROD_VERSION}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
-		fi
+		# shellcheck disable=SC2086
+		"${MAVENW_BIN}" clean verify -Papicompatibility -Dlatest.production.version="${latestProdVersion}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
 	fi
 }
 
@@ -151,7 +136,7 @@ function testResultsAntPattern() {
 export -f build
 export -f retrieveAppName
 export -f retrieveGroupId
-export -f apiCompatibilityCheck
+export -f executeApiCompatibilityCheck
 export -f runSmokeTests
 export -f runE2eTests
 export -f outputFolder

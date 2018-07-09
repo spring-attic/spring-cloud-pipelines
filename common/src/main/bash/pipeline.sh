@@ -24,6 +24,25 @@ function build() {
 
 # Execute api compatibility check step
 function apiCompatibilityCheck() {
+	# Find latest prod version
+	local prodTag="${PASSED_LATEST_PROD_TAG:-${LATEST_PROD_TAG:-}}"
+	[[ -z "${prodTag}" ]] && prodTag="$(findLatestProdTag)"
+	echo "Last prod tag equals [${prodTag}]"
+	if [[ -z "${prodTag}" ]]; then
+		echo "No prod release took place - skipping this step"
+	else
+		PROJECT_NAME=${PROJECT_NAME?PROJECT_NAME must be set!}
+		LATEST_PROD_VERSION=${prodTag#"prod/${PROJECT_NAME}/"}
+		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
+		executeApiCompatibilityCheck "${LATEST_PROD_VERSION}"
+	fi
+}
+
+# Execute api compatibility check step
+# @param - retrieved latest production version
+function executeApiCompatibilityCheck() {
+	# shellcheck disable=SC2034
+	local latestProdVersion="${1}"
 	echo "Execute api compatibility check step"
 	exit 1
 }

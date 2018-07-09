@@ -41,7 +41,9 @@ export -f git_master
 @test "should run apiCompatibilityCheck for build_api_compatibility_check" {
 	run "${SOURCE_DIR}/build_api_compatibility_check.sh"
 
-	assert_output --partial "apiCompatibilityCheck"
+	assert_output --partial "Last prod tag equals"
+	assert_output --partial "Last prod version equals"
+	assert_output --partial "executeApiCompatibilityCheck"
 }
 
 @test "should run testDeploy for testDeploy" {

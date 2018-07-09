@@ -28,8 +28,8 @@ function build() {
     echo "build"
 }
 
-function apiCompatibilityCheck() {
-    echo "apiCompatibilityCheck"
+function executeApiCompatibilityCheck() {
+    echo "executeApiCompatibilityCheck"
 }
 
 # ---- TEST PHASE ----
