@@ -24,6 +24,8 @@ function guessLanguageType() {
 		echo "jvm"
 	elif [ -f "composer.json" ]; then
 		echo "php"
+	elif [ -f "package.json" ]; then
+		echo "npm"
 	else
 		echo ""
 	fi

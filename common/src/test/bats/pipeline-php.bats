@@ -70,3 +70,75 @@ function curl {
 	refute_output --partial "Cannot iterate over null (null)"
 	assert_success
 }
+
+@test "should return fixed project name if differs from the default one [Composer]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="bar"
+	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
+
+	assert_equal "$( retrieveAppName )" "foo"
+	assert_success
+}
+
+@test "should call composer to get the app name if it's equal to the default one [Composer]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="foo"
+	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
+
+	assert_equal "$( retrieveAppName )" "my-project"
+	assert_success
+}
+
+@test "should call composer to get the group id [Composer]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="foo"
+	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
+
+	assert_equal "$( retrieveGroupId )" "com.example"
+	assert_success
+}
+
+@test "should call run api-compatibility-check task [Composer]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="foo"
+	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
+
+	assert_equal "$( executeApiCompatibilityCheck )" "composer test-apicompatibility"
+	assert_success
+}
+
+@test "should call run smoke tests task [Composer]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="foo"
+	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
+
+	assert_equal "$( runSmokeTests )" "composer test-smoke"
+	assert_success
+}
+
+@test "should call run e2e task [Composer]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="foo"
+	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
+
+	assert_equal "$( runE2eTests )" "composer test-e2e"
+	assert_success
+}
+
+@test "should return COMPOSER project type [Composer]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="foo"
+	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
+
+	assert_equal "$( projectType )" "COMPOSER"
+	assert_success
+}
+
+@test "should return target as output folder [Composer]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="foo"
+	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
+
+	assert_equal "$( outputFolder )" "target"
+	assert_success
+}

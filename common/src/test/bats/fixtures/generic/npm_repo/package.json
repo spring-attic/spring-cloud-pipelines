@@ -1,0 +1,19 @@
+{
+	"name": "bookstore",
+	"version": "1.0.0",
+	"description": "Simple bookstore app",
+	"repository": "http://registry.npmjs.org/",
+	"main": "app.js",
+	"scripts": {
+		"test": "./run_tests.sh"
+	},
+	"dependencies": {
+		"body-parser": "*",
+		"express": "^4.16.3",
+		"mongoose": "*",
+		"npm": "^5.8.0",
+		"update": "^0.7.4"
+	},
+	"author": "Brad Traversy",
+	"license": "ISC"
+}

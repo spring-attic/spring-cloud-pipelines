@@ -126,6 +126,7 @@ function testResultsAntPattern() {
 	echo ""
 }
 
+
 # ---- PHP SPECIFIC ----
 
 function downloadComposerIfMissing() {
@@ -159,3 +160,5 @@ function installPhpIfMissing() {
 
 export ARTIFACT_TYPE
 ARTIFACT_TYPE="${SOURCE_ARTIFACT_TYPE_NAME}"
+export DOWNLOADABLE_SOURCES
+DOWNLOADABLE_SOURCES="true"

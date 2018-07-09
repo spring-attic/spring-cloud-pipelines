@@ -227,7 +227,7 @@ function deployAppNoStart() {
 	local artifactType
 	artifactType="$( getArtifactType )"
 	echo "Project has artifact type [${artifactType}]"
-	if [[ "${artifactType}" == "${SOURCE_ARTIFACT_TYPE_NAME}" ]]; then
+	if [[ "${artifactType}" == "${SOURCE_ARTIFACT_TYPE_NAME}" && "${DOWNLOADABLE_SOURCES}" == "true" ]]; then
 		local dir
 		dir="$(pathToUnpackedSources)"
 		mkdir -p "${dir}"
@@ -252,7 +252,7 @@ function deployAppNoStart() {
 	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}] with manifest file [${pathToManifest}]"
 	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "$( pathToPushToCf "${artifactName}" )" -n "${hostname}" -i "${instances}" --no-start
 	setEnvVar "${lowerCaseAppName}" 'APP_BINARY' "${artifactName}.${BINARY_EXTENSION}"
-	if [[ "${artifactType}" == "${SOURCE_ARTIFACT_TYPE_NAME}" ]]; then
+	if [[ "${artifactType}" == "${SOURCE_ARTIFACT_TYPE_NAME}" && "${DOWNLOADABLE_SOURCES}" == "true" ]]; then
 		popd
 	fi
 }

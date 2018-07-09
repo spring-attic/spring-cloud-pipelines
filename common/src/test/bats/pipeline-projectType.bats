@@ -61,6 +61,18 @@ teardown() {
 	assert_equal "php" "${LANGUAGE_TYPE}"
 }
 
+@test "should return npm if package.json is found" {
+	cd "${TEMP_DIR}"
+	touch "${TEMP_DIR}/package.json"
+	PIPELINE_DESCRIPTOR="foo.yml"
+	source "${SOURCE_DIR}/projectType/pipeline-projectType.sh"
+
+	result="$(guessLanguageType)"
+
+	assert_equal "npm" "${result}"
+	assert_equal "npm" "${LANGUAGE_TYPE}"
+}
+
 @test "should return jvm if mvn is found" {
 	touch "${TEMP_DIR}/mvnw"
 	cd "${TEMP_DIR}"

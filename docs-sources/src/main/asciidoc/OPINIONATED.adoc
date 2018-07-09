@@ -189,8 +189,19 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
     * `group-id` Composer task that echos the group id
     * `app-name` Composer task that echos application name
     * `test-apicompatibility` Composer task that is executed for api compatibility tests
-    * `test-smoke` Composer task that is executed for smoke testing
-    * `test-e2e` Composer task that is executed for end to end testing
+    * `test-smoke` Composer task that is executed for smoke testing (`APPLICATION_URL` and `STUBRUNNER_URL` env vars are available here to be used)
+    * `test-e2e` Composer task that is executed for end to end testing (`APPLICATION_URL` env vars is available here to be used)
+    * `target` is assumed to be the output folder. Put it to `.gitignore`
+- For NodeJS (https://github.com/spring-cloud-samples/spring-cloud-contract-nodejs/tree/sc-pipelines[example project]):
+    * usage of https://www.npmjs.com/[npm]
+    * `npm install` is called to fetch libraries
+    * `npm test` is called to run tests
+    * `npm run group-id` npm task that echos the group id
+    * `npm run app-name` npm task that echos application name
+    * `npm run test-apicompatibility` npm task that is executed for api compatibility tests
+    * `npm run test-smoke` npm task that is executed for smoke testing
+    * `npm run test-e2e` npm task that is executed for end to end testing
+    * `target` is assumed to be the output folder. Put it to `.gitignore`
 
 === Kubernetes project opinions
 
