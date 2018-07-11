@@ -2,6 +2,11 @@ import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
 import javaposse.jobdsl.dsl.helpers.ScmContext
 
+import org.springframework.cloud.repositorymanagement.OptionsBuilder
+import org.springframework.cloud.repositorymanagement.Repositories
+import org.springframework.cloud.repositorymanagement.Repository
+import org.springframework.cloud.repositorymanagement.RepositoryManagers
+
 DslFactory dsl = this
 
 // These will be taken either from seed or global variables
@@ -70,6 +75,20 @@ Closure<String> downloadTools = { String repoUrl ->
 		return script + """rm -rf .git/tools && mkdir -p .git/tools && pushd .git/tools && curl -Lk "${toolsRepo}" -o pipelines.tar.gz && tar xf pipelines.tar.gz --strip-components 1 && popd"""
 	}
 	return script + """rm -rf .git/tools && git clone -b ${toolsBranch} --single-branch ${toolsRepo} .git/tools"""
+}
+
+RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
+	.builder()
+	.repository(Repositories.GITHUB)
+// for test - will have to change the docs to use an org
+	.exclude(".*")
+	.project("github-analytics")
+	.project("github-webhook")
+	.build())
+List<Repository> repositories = repositoryManagers.repositories("marcingrzejszczak")
+
+repositories.each {
+	String descriptor = repositoryManagers.fileContent("marcingrzejszczak", it.name, it.requestedBranch, binding.variables["PIPELINE_DESCRIPTOR"] ?: "sc-pipelines.yml")
 }
 
 // we're parsing the REPOS parameter to retrieve list of repos to build
@@ -182,7 +201,6 @@ parsedRepos.each {
 	}
 
 	if (apiCompatibilityStep) {
-
 		dsl.job("${projectName}-build-api-check") {
 			deliveryPipelineConfiguration('Build', 'API compatibility check')
 			triggers {
@@ -870,3 +888,40 @@ class BashFunctions {
 			"""
 	}
 }
+
+@CompileStatic
+class PipelineDescriptor {
+	Map<String, String> pipeline
+	Map<String, String> build
+	Map<String, String> test
+	Map<String, String> stage
+}
+
+/*
+
+language_type: jvm
+build:
+  main_module: foo/bar
+test:
+    services:
+        - type: service1Type
+          name: service1Name
+          coordinates: value
+        - type: service2Type
+          name: service2Name
+          key: value
+stage:
+    services:
+        - type: service3Type
+          name: service3Name
+          coordinates: value
+        - type: service4Type
+          name: service4Name
+          key: value
+pipeline:
+	auto_stage: true
+	auto_prod: true
+	api_compatibility_step: true
+	rollback_step: true
+	stage_step: true
+ */

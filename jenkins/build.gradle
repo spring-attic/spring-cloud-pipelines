@@ -11,10 +11,17 @@ sourceSets {
     }
 }
 
+ext {
+    scRepoManagementVersion = "1.0.0.BUILD-SNAPSHOT"
+}
+
 repositories {
     jcenter()
     mavenCentral()
     maven { url 'http://repo.jenkins-ci.org/releases/' }
+    maven { url "http://repo.spring.io/libs-snapshot-local" }
+    maven { url "http://repo.spring.io/libs-milestone-local" }
+    maven { url "http://repo.spring.io/libs-release-local" }
 }
 
 dependencies {
@@ -42,3 +49,19 @@ test {
         exceptionFormat = 'full'
     }
 }
+
+configurations {
+    libs
+    compile.extendsFrom(libs)
+}
+
+dependencies {
+    libs "org.springframework.cloud.internal:spring-cloud-repository-management:${scRepoManagementVersion}"
+}
+
+task libs(type: Copy) {
+    into "${project.buildDir}/lib"
+    from configurations.libs
+}
+
+build.dependsOn libs
