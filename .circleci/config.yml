@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: springcloud/pipeline-base
+    environment:
+    _JAVA_OPTIONS: "-Xms512m -Xmx1024m"
+    GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
+    TERM: dumb
+    branches:
+      ignore:
+        - gh-pages # list of branches to ignore
+    steps:
+      - checkout
+      - run:
+          name: "Running build"
+          command: ./gradlew clean build --stacktrace
+      - run:
+          name: "Aggregate test results"
+          when: always
+          command: |
+            mkdir -p $CIRCLE_TEST_REPORTS/junit/
+            find . -type f -regex ".*/target/.*-reports/.*" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+            bash <(curl -s https://codecov.io/bash)
+      - store_artifacts:
+          path: /junit/
+          destination: artifacts
+      - store_test_results:
+          path: /junit/
+          destination: testartifacts
