@@ -4,9 +4,9 @@ jobs:
     docker:
       - image: springcloud/pipeline-base
     environment:
-    _JAVA_OPTIONS: "-Xms512m -Xmx1024m"
-    GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
-    TERM: dumb
+      _JAVA_OPTIONS: "-Xms512m -Xmx1024m"
+      GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
+      TERM: dumb
     branches:
       ignore:
         - gh-pages # list of branches to ignore
