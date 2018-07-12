@@ -45,11 +45,11 @@ class Build {
 			}
 			wrappers {
 				deliveryPipelineVersion(pipelineVersion, true)
-				environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 				commonSteps.defaultWrappers(delegate as WrapperContext)
 				if (pipelineDefaults.gitUseSshKey()) {
 					sshAgent(pipelineDefaults.gitSshCredentials())
 				}
+				environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 				credentialsBinding {
 					if (pipelineDefaults.repoWithBinariesCredentials()) {
 						usernamePassword('M2_SETTINGS_REPO_USERNAME', 'M2_SETTINGS_REPO_PASSWORD',
