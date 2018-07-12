@@ -167,16 +167,17 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> deploymentStage(String text, int firstRefId, int lastRefId) {
+		int refId = lastRefId + 1
 		Stage stage = new Stage(
 			name: text,
-			refId: "${firstRefId}",
+			refId: "${refId}",
 			requisiteStageRefIds: intToRange(firstRefId, lastRefId),
 			type: "deploy",
 			clusters: [
 			        cluster()
 			]
 		)
-		return new Tuple2(lastRefId + 1, stage)
+		return new Tuple2(refId, stage)
 	}
 
 	private Tuple2<Integer, Stage> rollbackDeploymentStage(String text, int firstRefId) {
