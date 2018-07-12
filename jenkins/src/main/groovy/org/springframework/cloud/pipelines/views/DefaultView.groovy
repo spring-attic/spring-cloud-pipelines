@@ -21,18 +21,21 @@ class DefaultView {
 	}
 
 	void view(String gitRepoName) {
-		dsl.listView("${gitRepoName}") {
-			jobs {
-				regex("${gitRepoName}.*")
-			}
-			columns {
-				status()
-				name()
-				lastSuccess()
-				lastFailure()
-				lastBuildConsole()
-				buildButton()
+		dsl.nestedView('Spinnaker') {
+			views {
+				listView("${gitRepoName}") {
+					jobs {
+						regex("${gitRepoName}.*")
+					}
+					columns {
+						status()
+						name()
+						lastSuccess()
+						lastFailure()
+						lastBuildConsole()
+						buildButton()
+					}
+				}
 			}
 		}
 	}
-}
