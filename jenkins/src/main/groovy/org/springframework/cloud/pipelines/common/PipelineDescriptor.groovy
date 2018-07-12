@@ -12,7 +12,8 @@ class PipelineDescriptor {
 	String language_type
 	Build build = new Build()
 	Pipeline pipeline = new Pipeline()
-	Services services = new Services()
+	Test test = new Test()
+	Stage stage = new Stage()
 
 	@CompileStatic
 	static class Build {
@@ -36,6 +37,16 @@ class PipelineDescriptor {
 	@CompileStatic
 	static class Service {
 		String type, name, coordinates, pathToManifest, broker, plan
+	}
+
+	@CompileStatic
+	static class Test {
+		Services services
+	}
+
+	@CompileStatic
+	static class Stage {
+		Services services
 	}
 
 	static PipelineDescriptor from(String yaml) {
