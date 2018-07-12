@@ -100,7 +100,7 @@ class SpinnakerPipelineBuilder {
 		Tuple2<Integer, Stage> rollback =
 			deploymentStage("Rollback", approveProd.first)
 		stages.add(rollback.second)
-		return new Tuple2(testServices.first, stages)
+		return stages
 	}
 
 	private Tuple2<Integer, List<Stage>> createServices(String env, int firstId,
