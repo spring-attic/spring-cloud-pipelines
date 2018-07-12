@@ -37,7 +37,7 @@ class PipelineDescriptor {
 
 	@CompileStatic
 	static class Service {
-		String type, name, coordinates, pathToManifest, broker, plan
+		String type, name, coordinates, pathToManifest, broker, plan, database
 	}
 
 	static PipelineDescriptor from(String yaml) {
