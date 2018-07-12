@@ -150,7 +150,7 @@ class PipelineDefaults {
 	}
 
 	String gitToken() {
-		return prop("GIT_TOKEN_ID", "")
+		return prop(GIT_TOKEN_ENV_VAR, "")
 	}
 
 	String gitSshCredentials() {
