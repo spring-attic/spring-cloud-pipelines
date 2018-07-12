@@ -181,15 +181,12 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			stringParam('GIT_NAME', 'Pivo Tal', "Name used to tag the repo")
 			stringParam('TOOLS_REPOSITORY', 'https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.tar.gz', "The URL to tarball or URL to git repository containing pipeline functions repository. Has to end either with .tar.gz or .git ")
 			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
-			booleanParam('API_COMPATIBILITY_STEP_REQUIRED', true, 'Should api compatibility step be present')
-			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
-			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
 			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
 			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 		}
 	}
 	steps {
-		gradle("clean build -x test")
+		gradle("clean build -x test --refresh-dependencies")
 		dsl {
 			external('jenkins/jobs/jenkins_spinnaker_pipeline_sample*.groovy')
 			removeAction('DISABLE')

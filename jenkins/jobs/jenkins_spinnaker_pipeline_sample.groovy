@@ -1,5 +1,4 @@
 import javaposse.jobdsl.dsl.DslFactory
-import javaposse.jobdsl.dsl.helpers.ScmContext
 
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
@@ -33,15 +32,16 @@ RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
 // get the repos from the org
 List<Repository> repositories = binding.variables["TEST_MODE"] ? [] : repositoryManagers.repositories(org)
 // definition of project building
-Closure buildProjects = { Coordinates coordinates ->
+Closure buildProjects = { PipelineDefaults pipelineDefaults,
+						  Coordinates coordinates ->
 	String gitRepoName = coordinates.gitRepoName
 	String projectName = SpinnakerDefaults.projectName(gitRepoName)
-	defaults.addEnvVar("PROJECT_NAME", gitRepoName)
+	pipelineDefaults.addEnvVar("PROJECT_NAME", gitRepoName)
 	println "Creating jobs and views for [${projectName}]"
-	new Build(dsl, defaults).step(projectName, pipelineVersion, coordinates)
-	new TestOnTest(dsl, defaults).step(projectName, coordinates)
-	new RollbackTestOnTest(dsl, defaults).step(projectName, coordinates)
-	new TestOnStage(dsl, defaults).step(projectName, coordinates)
+	new Build(dsl, pipelineDefaults).step(projectName, pipelineVersion, coordinates)
+	new TestOnTest(dsl, pipelineDefaults).step(projectName, coordinates)
+	new RollbackTestOnTest(dsl, pipelineDefaults).step(projectName, coordinates)
+	new TestOnStage(dsl, pipelineDefaults).step(projectName, coordinates)
 }
 List<Repository> repositoriesForViews = []
 // for every repo
@@ -51,18 +51,19 @@ repositories.each { Repository repo ->
 		repo.requestedBranch, defaults.pipelineDescriptor())
 	// parse it
 	PipelineDescriptor pipeline = PipelineDescriptor.from(descriptor)
-	defaults.updateFromPipeline(pipeline)
+	PipelineDefaults pipelineDefaults = new PipelineDefaults(binding.variables)
+	pipelineDefaults.updateFromPipeline(pipeline)
 	if (pipeline.hasMonoRepoProjects()) {
 		// for monorepos treat the single repo as multiple ones
 		pipeline.pipeline.project_names.each { String monoRepo ->
 			Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
 			repositoriesForViews.add(monoRepository)
-			buildProjects(Coordinates.fromRepo(monoRepository, defaults))
+			buildProjects(pipelineDefaults, Coordinates.fromRepo(monoRepository, defaults))
 		}
 	} else {
 		// for any other repo build a single pipeline
 		repositoriesForViews.add(repo)
-		buildProjects(Coordinates.fromRepo(repo, defaults))
+		buildProjects(pipelineDefaults, Coordinates.fromRepo(repo, defaults))
 	}
 }
 
