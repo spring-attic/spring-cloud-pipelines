@@ -1,0 +1,300 @@
+{
+	"appConfig": {},
+	"expectedArtifacts": [],
+	"keepWaitingPipelines": false,
+	"lastModifiedBy": "anonymous",
+	"limitConcurrent": true,
+	"stages": [
+		{
+			"clusters": [
+				{
+					"account": "calabasasaccount",
+					"application": "github_webhook",
+					"artifact": {
+						"account": "",
+						"pattern": "github-webhook.*.jar",
+						"type": "trigger"
+					},
+					"capacity": {
+						"desired": "1",
+						"max": "1",
+						"min": "1"
+					},
+					"cloudProvider": "cloudfoundry",
+					"detail": "",
+					"manifest": {
+						"diskQuota": "1024M",
+						"env": [],
+						"instances": 1,
+						"memory": "1024M",
+						"services": [],
+						"type": "direct"
+					},
+					"provider": "cloudfoundry",
+					"region": "system/system",
+					"spaceId": "85fbe929-2abb-4ce0-8f4f-414528999098",
+					"stack": "",
+					"strategy": "highlander"
+				}
+			],
+			"name": "Deploy to test",
+			"refId": "1",
+			"requisiteStageRefIds": [
+				"16",
+				"17"
+			],
+			"type": "deploy"
+		},
+		{
+			"clusters": [
+				{
+					"account": "calabasasaccount",
+					"application": "github_webhook",
+					"artifact": {
+						"account": "",
+						"pattern": "",
+						"type": "trigger"
+					},
+					"cloudProvider": "cloudfoundry",
+					"detail": "",
+					"manifest": {
+						"diskQuota": "1024M",
+						"env": [],
+						"instances": 1,
+						"memory": "1024M",
+						"services": [],
+						"type": "direct"
+					},
+					"provider": "cloudfoundry",
+					"region": "scpipelines/sc-pipelines-test-github-webhook",
+					"spaceId": "91873f11-ef6e-43f9-ae94-c13b092b30fd",
+					"stack": "",
+					"strategy": "highlander"
+				}
+			],
+			"name": "Deploy to test latest prod version",
+			"preconditions": [],
+			"refId": "3",
+			"requisiteStageRefIds": [
+				"12"
+			],
+			"type": "deploy"
+		},
+		{
+			"clusters": [
+				{
+					"account": "calabasasaccount",
+					"application": "github_webhook",
+					"artifact": {
+						"account": "",
+						"pattern": "github-webhook.*.jar",
+						"type": "trigger"
+					},
+					"cloudProvider": "cloudfoundry",
+					"detail": "",
+					"manifest": {
+						"diskQuota": "1024M",
+						"env": [],
+						"instances": 1,
+						"memory": "1024M",
+						"services": [],
+						"type": "direct"
+					},
+					"provider": "cloudfoundry",
+					"region": "scpipelines/sc-pipelines-stage-github-webhook",
+					"spaceId": "05429f87-c2e4-4741-9f61-d2c8c604427b",
+					"stack": "",
+					"strategy": "highlander"
+				}
+			],
+			"name": "Deploy to stage",
+			"refId": "5",
+			"requisiteStageRefIds": [
+				"18",
+				"19"
+			],
+			"type": "deploy"
+		},
+		{
+			"clusters": [
+				{
+					"account": "calabasasaccount",
+					"application": "github_webhook",
+					"artifact": {
+						"account": "",
+						"pattern": "github-webhook.*.jar",
+						"type": "trigger"
+					},
+					"cloudProvider": "cloudfoundry",
+					"detail": "",
+					"manifest": {
+						"diskQuota": "1024M",
+						"env": [],
+						"instances": 1,
+						"memory": "1024M",
+						"services": [],
+						"type": "direct"
+					},
+					"provider": "cloudfoundry",
+					"region": "scpipelines/sc-pipelines-prod",
+					"spaceId": "6de0086f-2ea1-4a45-9647-de146652b245",
+					"stack": "",
+					"strategy": "highlander"
+				}
+			],
+			"name": "Deploy to prod",
+			"refId": "7",
+			"requisiteStageRefIds": [
+				"20"
+			],
+			"type": "deploy"
+		},
+		{
+			"failPipeline": true,
+			"judgmentInputs": [],
+			"name": "Wait for stage env",
+			"notifications": [],
+			"refId": "8",
+			"requisiteStageRefIds": [
+				"14"
+			],
+			"type": "manualJudgment"
+		},
+		{
+			"failPipeline": true,
+			"judgmentInputs": [],
+			"name": "Prepare for end to end tests",
+			"notifications": [],
+			"refId": "9",
+			"requisiteStageRefIds": [
+				"5"
+			],
+			"type": "manualJudgment"
+		},
+		{
+			"clusters": [],
+			"name": "Rollback",
+			"refId": "10",
+			"requisiteStageRefIds": [
+				"20"
+			],
+			"type": "deploy"
+		},
+		{
+			"continuePipeline": false,
+			"failPipeline": true,
+			"job": "spinnaker-github-webhook-pipeline-test-env-test",
+			"master": "my-jenkins-master",
+			"name": "Test on test",
+			"parameters": {},
+			"refId": "12",
+			"requisiteStageRefIds": [
+				"1"
+			],
+			"type": "jenkins"
+		},
+		{
+			"continuePipeline": false,
+			"failPipeline": true,
+			"job": "spinnaker-github-webhook-pipeline-test-env-rollback-test",
+			"master": "my-jenkins-master",
+			"name": "Test on test latest prod version",
+			"parameters": {},
+			"refId": "14",
+			"requisiteStageRefIds": [
+				"3"
+			],
+			"type": "jenkins"
+		},
+		{
+			"continuePipeline": false,
+			"failPipeline": true,
+			"job": "",
+			"master": "my-jenkins-master",
+			"name": "End to end test on stage",
+			"parameters": {},
+			"refId": "15",
+			"requisiteStageRefIds": [
+				"9"
+			],
+			"type": "jenkins"
+		},
+		{
+			"command": "echo \"Creating service\"",
+			"failPipeline": true,
+			"name": "Create Service 1",
+			"refId": "16",
+			"requisiteStageRefIds": [],
+			"scriptPath": "shell",
+			"type": "script",
+			"user": "anonymous",
+			"waitForCompletion": true
+		},
+		{
+			"command": "echo \"Creating service 2\"",
+			"failPipeline": true,
+			"name": "Create Service 2",
+			"refId": "17",
+			"requisiteStageRefIds": [],
+			"scriptPath": "shell",
+			"type": "script",
+			"user": "anonymous",
+			"waitForCompletion": true
+		},
+		{
+			"command": "echo \"Create stage service 1\"",
+			"failPipeline": true,
+			"name": "Create Stage Service 1",
+			"refId": "18",
+			"requisiteStageRefIds": [
+				"8"
+			],
+			"scriptPath": "shell",
+			"type": "script",
+			"user": "anonymous",
+			"waitForCompletion": true
+		},
+		{
+			"command": "echo \"Creating stage service 2\"",
+			"failPipeline": true,
+			"name": "Create Stage Service 2",
+			"refId": "19",
+			"requisiteStageRefIds": [
+				"8"
+			],
+			"scriptPath": "shell",
+			"type": "script",
+			"user": "anonymous",
+			"waitForCompletion": true
+		},
+		{
+			"failPipeline": true,
+			"judgmentInputs": [],
+			"name": "Approve Production",
+			"notifications": [],
+			"refId": "20",
+			"requisiteStageRefIds": [
+				"15"
+			],
+			"type": "manualJudgment"
+		}
+	],
+	"triggers": [
+		{
+			"account": "demo-gcr-account",
+			"branch": "dev/.*",
+			"enabled": true,
+			"job": "spinnaker-github-webhook-pipeline-build",
+			"master": "my-jenkins-master",
+			"organization": "cf-spinnaker",
+			"payloadConstraints": {},
+			"project": "marcingrzejszczak",
+			"registry": "gcr.io",
+			"repository": "cf-spinnaker/spin-kub-demo",
+			"slug": "github-webhook-kubernetes",
+			"source": "github",
+			"type": "jenkins"
+		}
+	],
+	"updateTs": "1531341886673"
+}
