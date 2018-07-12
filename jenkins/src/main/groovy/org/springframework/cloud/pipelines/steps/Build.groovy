@@ -46,6 +46,7 @@ class Build {
 			wrappers { WrapperContext context ->
 				deliveryPipelineVersion(pipelineVersion, true)
 				environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
+				println "AKJSDHKAJ: ${context}"
 				commonSteps.defaultWrappers(context)
 				if (pipelineDefaults.gitUseSshKey()) {
 					sshAgent(pipelineDefaults.gitSshCredentials())
