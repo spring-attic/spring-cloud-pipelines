@@ -49,7 +49,7 @@ class SpinnakerPipelineBuilder {
 		// Test Create Service 1 (x)
 		// Test Create Service 2 (x)
 		int firstRefId = 1
-		Tuple2<Integer, List<Stage>> testServices = createServices("test", firstRefId,
+		Tuple2<Integer, List<Stage>> testServices = createStageServices("test", firstRefId,
 			pipelineDescriptor.test.services)
 		stages.addAll(testServices.second)
 		// Deploy to test
@@ -74,7 +74,7 @@ class SpinnakerPipelineBuilder {
 		stages.add(waitingForStage.second)
 		// Stage Create Service 1
 		// Stage Create Service 2
-		Tuple2<Integer, List<Stage>> stageServices = createServices("stage", waitingForStage.first,
+		Tuple2<Integer, List<Stage>> stageServices = createStageServices("stage", waitingForStage.first,
 			pipelineDescriptor.stage.services)
 		stages.addAll(stageServices.second)
 		// Deploy to stage
@@ -103,8 +103,8 @@ class SpinnakerPipelineBuilder {
 		return stages
 	}
 
-	private Tuple2<Integer, List<Stage>> createServices(String env, int firstId,
-														List<PipelineDescriptor.Service> pipeServices) {
+	private Tuple2<Integer, List<Stage>> createStageServices(String env, int firstId,
+															 List<PipelineDescriptor.Service> pipeServices) {
 		if (!pipeServices) {
 			return new Tuple2(firstId, [])
 		}
@@ -112,14 +112,16 @@ class SpinnakerPipelineBuilder {
 		List<PipelineDescriptor.Service> services = pipeServices
 		int refId = 1
 		for (int i = 0; i < services.size(); i++) {
-			refId = i + firstId
+			refId = i + 1 + firstId
 			PipelineDescriptor.Service service = services[i]
 			testServices.add(new Stage(
 				command: "echo \"Creating service [${service.name}]\"",
 				failPipeline: true,
 				name: "Create ${env} service [${refId}]",
 				refId: "${refId}",
-				requisiteStageRefIds: [],
+				requisiteStageRefIds: [
+				        "${firstId}".toString()
+				],
 				scriptPath: "shell",
 				type: "script",
 				user: "anonymous",
