@@ -38,9 +38,9 @@ class TestOnStage {
 		String fullGitRepo = coordinates.fullGitRepo
 		dsl.job("${projectName}-stage-env-test") {
 			deliveryPipelineConfiguration('Stage', 'Tests on stage')
+			environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 				credentialsBinding {
 					// remove::start[CF]
 					if (pipelineDefaults.cfTestCredentialId()) usernamePassword('PAAS_STAGE_USERNAME', 'PAAS_STAGE_PASSWORD', pipelineDefaults.cfTestCredentialId())

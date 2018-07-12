@@ -43,13 +43,13 @@ class Build {
 				cron(pipelineDefaults.cronValue())
 				githubPush()
 			}
+			environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 			wrappers {
 				deliveryPipelineVersion(pipelineVersion, true)
 				commonSteps.defaultWrappers(delegate as WrapperContext)
 				if (pipelineDefaults.gitUseSshKey()) {
 					sshAgent(pipelineDefaults.gitSshCredentials())
 				}
-				environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 				credentialsBinding {
 					if (pipelineDefaults.repoWithBinariesCredentials()) {
 						usernamePassword('M2_SETTINGS_REPO_USERNAME', 'M2_SETTINGS_REPO_PASSWORD',

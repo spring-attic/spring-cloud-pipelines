@@ -38,9 +38,9 @@ class RollbackTestOnTest {
 		String fullGitRepo = coordinates.fullGitRepo
 		dsl.job("${projectName}-test-env-rollback-test") {
 			deliveryPipelineConfiguration('Test', 'Tests on test latest prod version')
+			environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 			wrappers {
 				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 				credentialsBinding {
 					// remove::start[CF]
 					if (pipelineDefaults.cfTestCredentialId()) usernamePassword('PAAS_TEST_USERNAME', 'PAAS_TEST_PASSWORD', pipelineDefaults.cfTestCredentialId())
