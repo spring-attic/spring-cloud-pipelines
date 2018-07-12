@@ -113,7 +113,7 @@ class SpinnakerPipelineBuilder {
 		List<PipelineDescriptor.Service> services = pipeServices
 		int refId = 0
 		for (int i = 0; i < services.size(); i++) {
-			refId = i + 1
+			refId = i + firstId
 			PipelineDescriptor.Service service = services[i]
 			testServices.add(new Stage(
 				command: "echo \"Creating service [${service.name}]\"",
