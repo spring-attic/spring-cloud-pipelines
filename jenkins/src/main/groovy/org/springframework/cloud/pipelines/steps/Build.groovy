@@ -1,5 +1,7 @@
 package org.springframework.cloud.pipelines.steps
 
+import java.sql.Wrapper
+
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
@@ -44,7 +46,7 @@ class Build {
 			wrappers {
 				deliveryPipelineVersion(pipelineVersion, true)
 				environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
-				commonSteps.defaultWrappers(delegate as WrapperContext)
+				commonSteps.defaultWrappers((delegate as Closure).delegate as WrapperContext)
 				if (pipelineDefaults.gitUseSshKey()) {
 					sshAgent(pipelineDefaults.gitSshCredentials())
 				}
