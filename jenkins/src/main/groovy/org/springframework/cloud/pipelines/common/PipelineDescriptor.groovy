@@ -42,6 +42,9 @@ class PipelineDescriptor {
 	}
 
 	static PipelineDescriptor from(String yaml) {
+		if (!yaml) {
+			return new PipelineDescriptor()
+		}
 		ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory())
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 		return objectMapper.readValue(yaml, PipelineDescriptor)
