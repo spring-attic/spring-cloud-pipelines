@@ -4,10 +4,10 @@ import groovy.transform.CompileStatic
 
 @CompileStatic
 class Root {
-	AppConfig appConfig
+	AppConfig appConfig = new AppConfig()
 	List<String> expectedArtifacts = []
 	boolean keepWaitingPipelines
-	String lastModifiedBy
+	String lastModifiedBy = ""
 	boolean limitConcurrent
 	List<Stage> stages = []
 	List<Trigger> triggers = []

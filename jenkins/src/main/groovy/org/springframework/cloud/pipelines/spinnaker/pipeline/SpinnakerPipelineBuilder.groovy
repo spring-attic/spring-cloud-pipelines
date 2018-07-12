@@ -185,7 +185,7 @@ class SpinnakerPipelineBuilder {
 			),
 			provider: "cloudfoundry",
 			region: "system/system",
-			spaceId: "85fbe929-2abb-4ce0-8f4f-414528999098",
+			//spaceId: "85fbe929-2abb-4ce0-8f4f-414528999098",
 			stack: "",
 			strategy: "highlander"
 		)
