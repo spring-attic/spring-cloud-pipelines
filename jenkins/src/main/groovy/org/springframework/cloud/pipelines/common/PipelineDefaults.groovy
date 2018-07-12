@@ -14,11 +14,14 @@ class PipelineDefaults {
 
 	public static final String GIT_USER_NAME_ENV_VAR = "GIT_USERNAME"
 	public static final String GIT_PASSWORD_ENV_VAR = "GIT_PASSWORD"
+	public static final String GIT_TOKEN_ENV_VAR = "GIT_TOKEN"
 
 	final Map<String, String> defaultEnvVars
+	final Map<String, String> variables
 
 	PipelineDefaults(Map<String, String> variables) {
 		this.defaultEnvVars = defaultEnvVars(variables)
+		this.variables = variables
 	}
 
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
@@ -111,13 +114,18 @@ class PipelineDefaults {
 		this.defaultEnvVars.put(key, value)
 	}
 
+	protected String prop(String key, String defaultValue = null) {
+		return this.defaultEnvVars.get(key) ?:
+			this.variables.get(key) ?: defaultValue
+	}
+
 	// Example of a version with date and time in the name
 	String pipelineVersion() {
-		return defaultEnvVars["PIPELINE_VERSION"] ?: '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION'''
+		return prop("PIPELINE_VERSION", '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION''')
 	}
 
 	String pipelineDescriptor() {
-		return defaultEnvVars["PIPELINE_DESCRIPTOR"] ?: "sc-pipelines.yml"
+		return prop("PIPELINE_DESCRIPTOR", "sc-pipelines.yml")
 	}
 
 	String cronValue() {
@@ -130,67 +138,67 @@ class PipelineDefaults {
 	}
 
 	String gitCredentials() {
-		return defaultEnvVars["GIT_CREDENTIAL_ID"] ?: "git"
+		return prop("GIT_CREDENTIAL_ID", "git")
 	}
 
 	String gitUsername() {
-		return defaultEnvVars[GIT_USER_NAME_ENV_VAR] ?: ""
+		return prop(GIT_USER_NAME_ENV_VAR, "")
 	}
 
 	String gitPassword() {
-		return defaultEnvVars[GIT_PASSWORD_ENV_VAR] ?: ""
+		return prop(GIT_PASSWORD_ENV_VAR, "")
 	}
 
 	String gitToken() {
-		return defaultEnvVars["GIT_TOKEN_ID"] ?: ""
+		return prop("GIT_TOKEN_ID", "")
 	}
 
 	String gitSshCredentials() {
-		return defaultEnvVars["GIT_SSH_CREDENTIAL_ID"] ?: "gitSsh"
+		return prop("GIT_SSH_CREDENTIAL_ID", "gitSsh")
 	}
 
 	boolean gitUseSshKey() {
-		return defaultEnvVars["GIT_USE_SSH_KEY"] == null ? false : Boolean.parseBoolean(defaultEnvVars["GIT_USE_SSH_KEY"] as String)
+		return prop("GIT_USE_SSH_KEY") == null ? false : Boolean.parseBoolean(prop("GIT_USE_SSH_KEY"))
 	}
 
 	String repoWithBinariesCredentials() {
-		return defaultEnvVars["REPO_WITH_BINARIES_CREDENTIAL_ID"] ?: ""
+		return prop("REPO_WITH_BINARIES_CREDENTIAL_ID", "")
 	}
 
 	String dockerCredentials() {
-		return defaultEnvVars["DOCKER_REGISTRY_CREDENTIAL_ID"] ?: ""
+		return prop("DOCKER_REGISTRY_CREDENTIAL_ID", "")
 	}
 
-	String jdkVersion() { return defaultEnvVars["JDK_VERSION"] ?: "jdk8" }
+	String jdkVersion() { return prop("JDK_VERSION", "jdk8") }
 
 // remove::start[CF]
 	String cfTestCredentialId() {
-		return defaultEnvVars["PAAS_TEST_CREDENTIAL_ID"] ?: ""
+		return prop("PAAS_TEST_CREDENTIAL_ID", "")
 	}
 
 	String cfStageCredentialId() {
-		return defaultEnvVars["PAAS_STAGE_CREDENTIAL_ID"] ?: ""
+		return prop("PAAS_STAGE_CREDENTIAL_ID", "")
 	}
 // remove::end[CF]
 // remove::start[K8S]
 	String k8sTestTokenCredentialId() {
-		return defaultEnvVars["PAAS_TEST_CLIENT_TOKEN_ID"] ?: ""
+		return prop("PAAS_TEST_CLIENT_TOKEN_ID", "")
 	}
 
 	String k8sStageTokenCredentialId() {
-		return defaultEnvVars["PAAS_STAGE_CLIENT_TOKEN_ID"] ?: ""
+		return prop("PAAS_STAGE_CLIENT_TOKEN_ID", "")
 	}
 // remove::end[K8S]
-	String gitEmail() { return defaultEnvVars["GIT_EMAIL"] ?: "pivo@tal.com" }
+	String gitEmail() { return prop("GIT_EMAIL", "pivo@tal.com") }
 
-	String gitName() { return defaultEnvVars["GIT_NAME"] ?: "Pivo Tal" }
+	String gitName() { return prop("GIT_NAME", "Pivo Tal") }
 
 	BashFunctions bashFunctions() {
 		return new BashFunctions(gitName(), gitEmail(), gitUseSshKey())
 	}
 
 	boolean apiCompatibilityStep() {
-		return defaultEnvVars["API_COMPATIBILITY_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(defaultEnvVars["API_COMPATIBILITY_STEP_REQUIRED"] as String)
+		return prop("API_COMPATIBILITY_STEP_REQUIRED") == null ? true : Boolean.parseBoolean(prop("API_COMPATIBILITY_STEP_REQUIRED") as String)
 	}
 
 	void apiCompatibilityStep(boolean stepEnabled) {
@@ -198,7 +206,7 @@ class PipelineDefaults {
 	}
 
 	boolean rollbackStep() {
-		return defaultEnvVars["DB_ROLLBACK_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(defaultEnvVars["DB_ROLLBACK_STEP_REQUIRED"] as String)
+		return prop("DB_ROLLBACK_STEP_REQUIRED") == null ? true : Boolean.parseBoolean(prop("DB_ROLLBACK_STEP_REQUIRED"))
 	}
 
 	void rollbackStep(boolean stepEnabled) {
@@ -206,7 +214,7 @@ class PipelineDefaults {
 	}
 
 	boolean stageStep() {
-		return defaultEnvVars["DEPLOY_TO_STAGE_STEP_REQUIRED"] == null ? true : Boolean.parseBoolean(defaultEnvVars["DEPLOY_TO_STAGE_STEP_REQUIRED"] as String)
+		return prop("DEPLOY_TO_STAGE_STEP_REQUIRED") == null ? true : Boolean.parseBoolean(prop("DEPLOY_TO_STAGE_STEP_REQUIRED"))
 	}
 
 	void stageStep(boolean stepEnabled) {
@@ -214,7 +222,7 @@ class PipelineDefaults {
 	}
 
 	boolean autoStage() {
-		return defaultEnvVars["AUTO_DEPLOY_TO_STAGE"] == null ? true : Boolean.parseBoolean(defaultEnvVars["AUTO_DEPLOY_TO_STAGE"] as String)
+		return prop("AUTO_DEPLOY_TO_STAGE") == null ? true : Boolean.parseBoolean(prop("AUTO_DEPLOY_TO_STAGE"))
 	}
 
 	void autoStage(boolean stepEnabled) {
@@ -222,7 +230,7 @@ class PipelineDefaults {
 	}
 
 	boolean autoProd() {
-		return defaultEnvVars["AUTO_DEPLOY_TO_PROD"] == null ? true : Boolean.parseBoolean(defaultEnvVars["AUTO_DEPLOY_TO_PROD"] as String)
+		return prop("AUTO_DEPLOY_TO_PROD") == null ? true : Boolean.parseBoolean(prop("AUTO_DEPLOY_TO_PROD"))
 	}
 
 	void autoProd(boolean stepEnabled) {
@@ -230,21 +238,21 @@ class PipelineDefaults {
 	}
 
 // TODO: Automate customization of this value
-	String toolsBranch() { return defaultEnvVars["TOOLS_BRANCH"] ?: "master" }
+	String toolsBranch() { return prop("TOOLS_BRANCH", "master") }
 
 	String toolsRepo() {
-		return defaultEnvVars["TOOLS_REPOSITORY"] ?: "https://github.com/spring-cloud/spring-cloud-pipelines/raw/${toolsBranch()}/dist/spring-cloud-pipelines.tar.gz"
+		return prop("TOOLS_REPOSITORY", "https://github.com/spring-cloud/spring-cloud-pipelines/raw/${toolsBranch()}/dist/spring-cloud-pipelines.tar.gz")
 	}
 
 	RepoType repoType() { return RepoType.from(toolsRepo()) }
 // TODO: K8S - consider parametrization
 // remove::start[K8S]
 	String mySqlRootCredential() {
-		return defaultEnvVars["MYSQL_ROOT_CREDENTIAL_ID"] ?: ""
+		return prop("MYSQL_ROOT_CREDENTIAL_ID", "")
 	}
 
 	String mySqlCredential() {
-		return defaultEnvVars["MYSQL_CREDENTIAL_ID"] ?: ""
+		return prop("MYSQL_CREDENTIAL_ID", "")
 	}
 // remove::end[K8S]
 }

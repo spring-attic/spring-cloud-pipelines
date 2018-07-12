@@ -27,8 +27,8 @@ String workspace = binding.variables["WORKSPACE"] ?: "."
 // crawl the org
 RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
 	.builder().rootUrl(urlRoot)
-	.username(binding.variables[PipelineDefaults.GIT_USER_NAME_ENV_VAR])
-	.password(binding.variables[PipelineDefaults.GIT_PASSWORD_ENV_VAR])
+	.username(defaults.gitUsername())
+	.password(defaults.gitPassword())
 	.token(defaults.gitToken())
 	.repository(repoType).build())
 // get the repos from the org
