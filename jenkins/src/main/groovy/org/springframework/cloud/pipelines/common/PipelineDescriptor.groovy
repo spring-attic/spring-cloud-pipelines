@@ -28,7 +28,7 @@ class PipelineDescriptor {
 
 	@CompileStatic
 	static class Pipeline {
-		List<String> project_names
+		List<String> project_names = []
 		Boolean auto_stage
 		Boolean auto_prod
 		Boolean api_compatibility_step
