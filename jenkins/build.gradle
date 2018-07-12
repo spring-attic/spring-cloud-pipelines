@@ -46,6 +46,7 @@ dependencies {
     libs "org.springframework.cloud.internal:spring-cloud-repository-management:${scRepoManagementVersion}"
     libs "com.fasterxml.jackson.core:jackson-core:2.9.5"
     libs "com.fasterxml.jackson.core:jackson-databind:2.9.5"
+    libs "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.5"
 
     testCompile project(":common")
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
