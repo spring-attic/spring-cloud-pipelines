@@ -11,4 +11,12 @@ class Stages {
 	String refId
 	List<String> requisiteStageRefIds = []
 	String type
+	String command
+	boolean failPipeline = true
+	String scriptPath
+	String user
+	boolean waitForCompletion
+	List<String> parameters = []
+	String master
+	String job
 }
