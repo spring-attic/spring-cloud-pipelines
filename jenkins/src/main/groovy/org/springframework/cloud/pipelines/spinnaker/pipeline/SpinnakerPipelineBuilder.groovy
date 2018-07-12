@@ -48,7 +48,7 @@ class SpinnakerPipelineBuilder {
 		List<Stage> stages = []
 		// Test Create Service 1 (x)
 		// Test Create Service 2 (x)
-		int firstRefId = 0
+		int firstRefId = 1
 		Tuple2<Integer, List<Stage>> testServices = createServices("test", firstRefId,
 			pipelineDescriptor.test.services)
 		stages.addAll(testServices.second)
