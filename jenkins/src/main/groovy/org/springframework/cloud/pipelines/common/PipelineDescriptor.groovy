@@ -1,6 +1,7 @@
 package org.springframework.cloud.pipelines.common
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import groovy.transform.CompileStatic
 
 /**
@@ -12,8 +13,8 @@ class PipelineDescriptor {
 	String language_type
 	Build build = new Build()
 	Pipeline pipeline = new Pipeline()
-	Test test = new Test()
-	Stage stage = new Stage()
+	Services test = new Services()
+	Services stage = new Services()
 
 	@CompileStatic
 	static class Build {
@@ -39,21 +40,8 @@ class PipelineDescriptor {
 		String type, name, coordinates, pathToManifest, broker, plan
 	}
 
-	@CompileStatic
-	static class Test {
-		Services services
-	}
-
-	@CompileStatic
-	static class Stage {
-		Services services
-	}
-
 	static PipelineDescriptor from(String yaml) {
-		String noComments = yaml.readLines().findAll {
-			!it.trim().stripIndent().stripMargin().startsWith("#")
-		}.join("\n")
-		ObjectMapper objectMapper = new ObjectMapper()
-		return objectMapper.readValue(noComments, PipelineDescriptor)
+		ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory())
+		return objectMapper.readValue(yaml, PipelineDescriptor)
 	}
 }
