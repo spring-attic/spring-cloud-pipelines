@@ -107,13 +107,13 @@ class SpinnakerPipelineBuilder {
 	private Tuple2<Integer, List<Stage>> createServices(String env, int firstId,
 														List<PipelineDescriptor.Service> pipeServices) {
 		if (!pipeServices) {
-			return new Tuple2(firstId + 1, [])
+			return new Tuple2(firstId, [])
 		}
 		List<Stage> testServices = []
 		List<PipelineDescriptor.Service> services = pipeServices
 		int refId = 1
 		for (int i = 0; i < services.size(); i++) {
-			refId = i + 1 + firstId
+			refId = i + firstId
 			PipelineDescriptor.Service service = services[i]
 			testServices.add(new Stage(
 				command: "echo \"Creating service [${service.name}]\"",
