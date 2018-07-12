@@ -12,7 +12,6 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class PipelineDescriptor {
 	String language_type
-	Build build = new Build()
 	Pipeline pipeline = new Pipeline()
 	Services test = new Services()
 	Services stage = new Services()
@@ -22,18 +21,14 @@ class PipelineDescriptor {
 	}
 
 	@CompileStatic
-	static class Build {
+	static class Pipeline {
+		String main_module
+		List<String> project_names
 		Boolean auto_stage
 		Boolean auto_prod
 		Boolean api_compatibility_step
 		Boolean rollback_step
 		Boolean stage_step
-	}
-
-	@CompileStatic
-	static class Pipeline {
-		String main_module
-		List<String> project_names
 	}
 
 	@CompileStatic

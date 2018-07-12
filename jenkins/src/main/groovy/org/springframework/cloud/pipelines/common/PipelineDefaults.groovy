@@ -92,7 +92,7 @@ class PipelineDefaults {
 	}
 
 	void updateFromPipeline(PipelineDescriptor descriptor) {
-		descriptor.build.with {
+		descriptor.pipeline.with {
 			if (it.auto_prod != null)
 				autoProd(it.auto_prod)
 			if (it.auto_stage != null)

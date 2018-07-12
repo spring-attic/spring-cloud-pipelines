@@ -289,8 +289,16 @@ Each application can contain a file called `sc-pipelines.yml` with the following
 [source,yaml]
 ----
 language_type: jvm
-build:
+pipeline:
   main_module: foo/bar
+  project_names:
+    - monoRepoA
+    - monoRepoB
+  auto_stage: true
+  auto_prod: true
+  api_compatibility_step: true
+  rollback_step: true
+  stage_step: true
 lowercaseEnvironmentName1:
     services:
         - type: service1Type
