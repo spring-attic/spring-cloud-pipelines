@@ -21,9 +21,9 @@ class DefaultView {
 	}
 
 	void view(String gitRepoName) {
-		dsl.listView("spinnnaker-${gitRepoName}") {
+		dsl.listView("${gitRepoName}") {
 			jobs {
-				regex("spinnaker-${gitRepoName}.*")
+				regex("${gitRepoName}.*")
 			}
 			columns {
 				status()
