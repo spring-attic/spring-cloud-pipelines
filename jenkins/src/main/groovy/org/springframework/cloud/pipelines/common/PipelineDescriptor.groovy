@@ -39,7 +39,10 @@ class PipelineDescriptor {
 	}
 
 	static PipelineDescriptor from(String yaml) {
+		String noComments = yaml.readLines().findAll {
+			!it.trim().stripIndent().stripMargin().startsWith("#")
+		}
 		ObjectMapper objectMapper = new ObjectMapper()
-		return objectMapper.readValue(yaml, PipelineDescriptor)
+		return objectMapper.readValue(noComments, PipelineDescriptor)
 	}
 }
