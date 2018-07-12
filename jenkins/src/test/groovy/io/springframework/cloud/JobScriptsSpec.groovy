@@ -20,7 +20,8 @@ class JobScriptsSpec extends Specification {
 		defaultStubbing(jm)
 		jm.parameters << [
 				SCRIPTS_DIR: 'foo',
-				JENKINSFILE_DIR: 'foo'
+				JENKINSFILE_DIR: 'foo',
+				TEST_MODE: 'true'
 		]
 		DslScriptLoader loader = new DslScriptLoader(jm)
 

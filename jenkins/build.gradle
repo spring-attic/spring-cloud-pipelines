@@ -24,6 +24,11 @@ repositories {
     maven { url "http://repo.spring.io/libs-release-local" }
 }
 
+configurations {
+    libs
+    compile.extendsFrom(libs)
+}
+
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.7'
     compile 'org.jenkins-ci.plugins:job-dsl-core:1.58'
@@ -37,6 +42,10 @@ dependencies {
     // for Intellij not to throw exceptions
     compile 'javax.servlet:servlet-api:2.4'
 
+    // for dsl
+    libs "org.springframework.cloud.internal:spring-cloud-repository-management:${scRepoManagementVersion}"
+    libs "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.5"
+
     testCompile project(":common")
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
@@ -48,15 +57,6 @@ test {
     testLogging {
         exceptionFormat = 'full'
     }
-}
-
-configurations {
-    libs
-    compile.extendsFrom(libs)
-}
-
-dependencies {
-    libs "org.springframework.cloud.internal:spring-cloud-repository-management:${scRepoManagementVersion}"
 }
 
 task libs(type: Copy) {
