@@ -58,7 +58,7 @@ class SpinnakerPipelineBuilder {
 		stages.add(testDeployment.second)
 		// Test on test
 		Tuple2<Integer, Stage> testsOnTest = runTests("Run testServices on test", "test",
-			testServices.first)
+			testDeployment.first)
 		stages.add(testsOnTest.second)
 		// Deploy to test latest prod version
 		Tuple2<Integer, Stage> testDeploymentRollback =
@@ -67,7 +67,7 @@ class SpinnakerPipelineBuilder {
 		stages.add(testDeploymentRollback.second)
 		// Test on test latest prod version
 		Tuple2<Integer, Stage> rollbackTests = runTests("Run rollback testServices on test", "rollback-test",
-			testServices.first)
+			testDeploymentRollback.first)
 		stages.add(rollbackTests.second)
 		// Wait for stage env
 		Tuple2<Integer, Stage> waitingForStage = manualJudgement("Wait for stage env",
