@@ -8,6 +8,6 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class SpinnakerDefaults {
 	static String projectName(String gitRepoName) {
-		return "spinnaker-${gitRepoName}-pipeline"
+		return "spinnaker-${gitRepoName}"
 	}
 }
