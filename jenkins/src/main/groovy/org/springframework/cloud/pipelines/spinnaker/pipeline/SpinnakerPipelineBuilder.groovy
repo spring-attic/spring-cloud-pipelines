@@ -30,6 +30,7 @@ class SpinnakerPipelineBuilder {
 		this.pipelineDescriptor = pipelineDescriptor
 		this.repository = repository
 		this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
+		this.objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
 	}
 
 	String spinnakerPipeline() {
