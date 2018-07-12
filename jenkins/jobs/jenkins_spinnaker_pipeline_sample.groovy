@@ -37,7 +37,7 @@ repositories.each {
 	String gitRepoName = coordinates.gitRepoName
 	String projectName = "spinnaker-${gitRepoName}-pipeline"
 	defaults.addEnvVar("PROJECT_NAME", gitRepoName)
-
+	println "Creating jobs and views for [${projectName}]"
 	new Build(dsl, defaults).step(projectName, pipelineVersion, coordinates)
 	new TestOnTest(dsl, defaults).step(projectName, coordinates)
 	new RollbackTestOnTest(dsl, defaults).step(projectName, coordinates)
