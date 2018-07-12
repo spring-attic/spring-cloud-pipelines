@@ -22,6 +22,7 @@ String pipelineVersion = defaults.pipelineVersion()
 String org = binding.variables["ORG"] ?: "sc-pipelines"
 String repoType = binding.variables["REPO_MANAGEMENT_TYPE"] ?: "GITHUB"
 String urlRoot = binding.variables["REPO_URL_ROOT"] ?: "https://github.com"
+String workspace = binding.variables["WORKSPACE"] ?: "."
 
 // crawl the org
 RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
@@ -46,7 +47,9 @@ Closure buildProjects = { PipelineDefaults pipelineDefaults,
 // JSON dump
 Closure dumpJson = { PipelineDescriptor pipeline, Repository repo ->
 	String json = new SpinnakerPipelineBuilder(pipeline, repo).spinnakerPipeline()
-	new File("build", repo.name + "_pipeline.json").text = json
+	File pipelineJson = new File("${workspace}/build", repo.name + "_pipeline.json")
+	pipelineJson.createNewFile()
+	pipelineJson.text = json
 }
 
 List<Repository> repositoriesForViews = []
