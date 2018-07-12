@@ -133,6 +133,18 @@ class PipelineDefaults {
 		return defaultEnvVars["GIT_CREDENTIAL_ID"] ?: "git"
 	}
 
+	String gitUsername() {
+		return defaultEnvVars[GIT_USER_NAME_ENV_VAR] ?: ""
+	}
+
+	String gitPassword() {
+		return defaultEnvVars[GIT_PASSWORD_ENV_VAR] ?: ""
+	}
+
+	String gitToken() {
+		return defaultEnvVars["GIT_TOKEN_ID"] ?: ""
+	}
+
 	String gitSshCredentials() {
 		return defaultEnvVars["GIT_SSH_CREDENTIAL_ID"] ?: "gitSsh"
 	}
@@ -150,6 +162,7 @@ class PipelineDefaults {
 	}
 
 	String jdkVersion() { return defaultEnvVars["JDK_VERSION"] ?: "jdk8" }
+
 // remove::start[CF]
 	String cfTestCredentialId() {
 		return defaultEnvVars["PAAS_TEST_CREDENTIAL_ID"] ?: ""
@@ -215,7 +228,6 @@ class PipelineDefaults {
 	void autoProd(boolean stepEnabled) {
 		defaultEnvVars["AUTO_DEPLOY_TO_PROD"] = stepEnabled as String
 	}
-
 
 // TODO: Automate customization of this value
 	String toolsBranch() { return defaultEnvVars["TOOLS_BRANCH"] ?: "master" }

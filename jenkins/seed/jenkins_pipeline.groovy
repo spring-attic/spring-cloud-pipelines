@@ -158,6 +158,14 @@ factory.job('jenkins-spinnaker-cf-seed') {
 		}
 	}
 	wrappers {
+		credentialsBinding {
+			if (Boolean.parseBoolean(binding.variables["GIT_TOKEN"] as String)) {
+				string("GIT_TOKEN", binding.variables["GIT_TOKEN_ID"] as String)
+			} else {
+				usernamePassword("GIT_USERNAME", "GIT_PASSWORD",
+					binding.variables["GIT_CREDENTIAL_ID"] as String)
+			}
+		}
 		parameters {
 			// Common
 			stringParam('REPOS', repos,

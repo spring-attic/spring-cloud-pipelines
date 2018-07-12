@@ -27,7 +27,10 @@ String repoType = binding.variables["REPO_MANAGEMENT_TYPE"] ?: "GITHUB"
 String urlRoot = binding.variables["REPO_URL_ROOT"] ?: "https://github.com"
 
 RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
-	.builder().rootUrl(urlRoot).repository(repoType).build())
+	.builder().rootUrl(urlRoot)
+	.username(defaults.gitUsername()).password(defaults.gitPassword())
+	.token(defaults.gitToken())
+	.repository(repoType).build())
 List<Repository> repositories = binding.variables["TEST_MODE"] ? [] : repositoryManagers.repositories(org)
 repositories.each {
 	String descriptor = repositoryManagers.fileContent(org, it.name,

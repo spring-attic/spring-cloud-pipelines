@@ -28,8 +28,7 @@ class Build {
 	Build(DslFactory dsl, PipelineDefaults pipelineDefaults) {
 		this.dsl = dsl
 		this.pipelineDefaults = pipelineDefaults
-		this.bashFunctions = new BashFunctions(pipelineDefaults.gitCredentials(),
-			pipelineDefaults.gitEmail(), pipelineDefaults.gitUseSshKey())
+		this.bashFunctions = pipelineDefaults.bashFunctions()
 		this.commonSteps = new CommonSteps(this.pipelineDefaults, this.bashFunctions)
 	}
 
