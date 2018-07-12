@@ -94,11 +94,11 @@ class SpinnakerPipelineBuilder {
 		stages.add(approveProd.second)
 		// Deploy to prod
 		Tuple2<Integer, Stage> deployToProd =
-			deploymentStage("Deploy to stage", approveProd.first)
+			deploymentToProd("Deploy to prod", approveProd.first)
 		stages.add(deployToProd.second)
 		// Rollback
 		Tuple2<Integer, Stage> rollback =
-			deploymentStage("Rollback", approveProd.first)
+			rollbackStage(approveProd.first, deployToProd.first)
 		stages.add(rollback.second)
 		return stages
 	}
@@ -163,7 +163,7 @@ class SpinnakerPipelineBuilder {
 		)
 	}
 
-	private Tuple2<Integer, Stage> deploymentStage(String text, int firstRefId) {
+	private Tuple2<Integer, Stage> deploymentToProd(String text, int firstRefId) {
 		return deploymentStage(text, firstRefId, firstRefId + 1)
 	}
 
@@ -183,11 +183,27 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> deploymentStage(String text, int firstRefId, int lastRefId) {
-		int refId = lastRefId + (firstRefId == lastRefId ? 2 : 1)
+		int refId = lastRefId + 1
 		Stage stage = new Stage(
 			name: text,
 			refId: "${refId}",
 			requisiteStageRefIds: intToRange(firstRefId, lastRefId),
+			type: "deploy",
+			clusters: [
+			        cluster()
+			]
+		)
+		return new Tuple2(refId, stage)
+	}
+
+	private Tuple2<Integer, Stage> rollbackStage(int idToReference, int lastRefId) {
+		int refId = lastRefId + 1
+		Stage stage = new Stage(
+			name: "Rollback",
+			refId: "${refId}",
+			requisiteStageRefIds: [
+					"${idToReference}".toString()
+			],
 			type: "deploy",
 			clusters: [
 			        cluster()
