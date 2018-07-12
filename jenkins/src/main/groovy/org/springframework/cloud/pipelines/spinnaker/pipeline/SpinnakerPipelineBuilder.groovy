@@ -53,8 +53,7 @@ class SpinnakerPipelineBuilder {
 			pipelineDescriptor.test.services)
 		stages.addAll(testServices.second)
 		// Deploy to test
-		Tuple2<Integer, Stage> testDeployment =
-			deploymentStage("Deploy to test", firstRefId, testServices.first)
+		Tuple2<Integer, Stage> testDeployment = testDeploymentStage(testServices.first)
 		stages.add(testDeployment.second)
 		// Test on test
 		Tuple2<Integer, Stage> testsOnTest = runTests("Run testServices on test", "test",
@@ -166,8 +165,23 @@ class SpinnakerPipelineBuilder {
 		return deploymentStage(text, firstRefId, firstRefId + 1)
 	}
 
+	private Tuple2<Integer, Stage> testDeploymentStage(int lastRefId) {
+		int refId = pipelineDescriptor.test.services.empty ?
+			1 :lastRefId + 1
+		Stage stage = new Stage(
+			name: "Deploy to test",
+			refId: "${refId}",
+			requisiteStageRefIds: intToRange(1, lastRefId),
+			type: "deploy",
+			clusters: [
+			        cluster()
+			]
+		)
+		return new Tuple2(refId, stage)
+	}
+
 	private Tuple2<Integer, Stage> deploymentStage(String text, int firstRefId, int lastRefId) {
-		int refId = lastRefId + firstRefId == lastRefId ? 2 : 1
+		int refId = lastRefId + (firstRefId == lastRefId ? 2 : 1)
 		Stage stage = new Stage(
 			name: text,
 			refId: "${refId}",
