@@ -55,10 +55,10 @@ class CommonSteps {
 
 	void configureScm(ScmContext context, String repoId, String branchId) {
 		context.git {
+			branch(branchId)
 			remote {
 				name('origin')
 				url(repoId)
-				branch(branchId)
 				credentials(defaults.gitUseSshKey() ?
 					defaults.gitSshCredentials() : defaults.gitCredentials())
 			}
