@@ -4,6 +4,7 @@ import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaults
+import org.springframework.cloud.pipelines.spinnaker.pipeline.SpinnakerPipelineBuilder
 import org.springframework.cloud.pipelines.steps.Build
 import org.springframework.cloud.pipelines.steps.RollbackTestOnTest
 import org.springframework.cloud.pipelines.steps.TestOnStage
@@ -42,6 +43,12 @@ Closure buildProjects = { PipelineDefaults pipelineDefaults,
 	new RollbackTestOnTest(dsl, pipelineDefaults).step(projectName, coordinates)
 	new TestOnStage(dsl, pipelineDefaults).step(projectName, coordinates)
 }
+// JSON dump
+Closure dumpJson = { PipelineDescriptor pipeline, Repository repo ->
+	String json = new SpinnakerPipelineBuilder(pipeline, repo).spinnakerPipeline()
+	new File("build", repo.name + "_pipeline.json").text = json
+}
+
 List<Repository> repositoriesForViews = []
 // for every repo
 repositories.each { Repository repo ->
@@ -58,11 +65,13 @@ repositories.each { Repository repo ->
 			Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
 			repositoriesForViews.add(monoRepository)
 			buildProjects(pipelineDefaults, Coordinates.fromRepo(monoRepository, defaults))
+			dumpJson(pipeline, monoRepository)
 		}
 	} else {
 		// for any other repo build a single pipeline
 		repositoriesForViews.add(repo)
 		buildProjects(pipelineDefaults, Coordinates.fromRepo(repo, defaults))
+		dumpJson(pipeline, repo)
 	}
 }
 // build the views

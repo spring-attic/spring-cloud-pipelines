@@ -1,9 +1,9 @@
-package org.springframework.cloud.pipelines.spinnaker.pipeline
+package org.springframework.cloud.pipelines.spinnaker.pipeline.model
 
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class Triggers {
+class Trigger {
 	String account
 	String branch
 	boolean enabled

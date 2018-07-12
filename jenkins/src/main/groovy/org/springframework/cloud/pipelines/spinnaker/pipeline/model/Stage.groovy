@@ -1,12 +1,10 @@
-package org.springframework.cloud.pipelines.spinnaker.pipeline
-
-import java.util.List
+package org.springframework.cloud.pipelines.spinnaker.pipeline.model
 
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class Stages {
-	List<Clusters> clusters = []
+class Stage {
+	List<Cluster> clusters = []
 	String name
 	String refId
 	List<String> requisiteStageRefIds = []
@@ -19,4 +17,7 @@ class Stages {
 	List<String> parameters = []
 	String master
 	String job
+	List<String> judgmentInputs
+	List<String> notifications
+	boolean continuePipeline
 }

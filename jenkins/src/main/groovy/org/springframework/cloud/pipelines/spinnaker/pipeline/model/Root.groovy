@@ -1,6 +1,4 @@
-package org.springframework.cloud.pipelines.spinnaker.pipeline
-
-import java.util.List
+package org.springframework.cloud.pipelines.spinnaker.pipeline.model
 
 import groovy.transform.CompileStatic
 
@@ -11,7 +9,7 @@ class Root {
 	boolean keepWaitingPipelines
 	String lastModifiedBy
 	boolean limitConcurrent
-	List<Stages> stages = []
-	List<Triggers> triggers = []
+	List<Stage> stages = []
+	List<Trigger> triggers = []
 	String updateTs
 }

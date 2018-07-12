@@ -1,9 +1,9 @@
-package org.springframework.cloud.pipelines.spinnaker.pipeline
+package org.springframework.cloud.pipelines.spinnaker.pipeline.model
 
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class Clusters {
+class Cluster {
 	String account
 	String application
 	Artifact artifact
