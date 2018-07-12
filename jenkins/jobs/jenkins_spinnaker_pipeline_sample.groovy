@@ -18,7 +18,6 @@ DslFactory dsl = this
 // These will be taken either from seed or global variables
 PipelineDefaults defaults = new PipelineDefaults(binding.variables)
 String pipelineVersion = defaults.pipelineVersion()
-
 String org = binding.variables["ORG"] ?: "sc-pipelines"
 String repoType = binding.variables["REPO_MANAGEMENT_TYPE"] ?: "GITHUB"
 String urlRoot = binding.variables["REPO_URL_ROOT"] ?: "https://github.com"
@@ -66,6 +65,5 @@ repositories.each { Repository repo ->
 		buildProjects(pipelineDefaults, Coordinates.fromRepo(repo, defaults))
 	}
 }
-
 // build the views
 new DefaultView(dsl, defaults).view(repositoriesForViews)
