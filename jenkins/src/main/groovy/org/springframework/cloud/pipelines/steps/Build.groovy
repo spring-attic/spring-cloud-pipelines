@@ -43,11 +43,10 @@ class Build {
 				cron(pipelineDefaults.cronValue())
 				githubPush()
 			}
-			wrappers { WrapperContext context ->
+			wrappers {
 				deliveryPipelineVersion(pipelineVersion, true)
 				environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
-				println "AKJSDHKAJ: ${context}"
-				commonSteps.defaultWrappers(context)
+				commonSteps.defaultWrappers(delegate as WrapperContext)
 				if (pipelineDefaults.gitUseSshKey()) {
 					sshAgent(pipelineDefaults.gitSshCredentials())
 				}
