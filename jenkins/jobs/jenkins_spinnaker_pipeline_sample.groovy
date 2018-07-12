@@ -24,13 +24,11 @@ String repoType = binding.variables["REPO_MANAGEMENT_TYPE"] ?: "GITHUB"
 String urlRoot = binding.variables["REPO_URL_ROOT"] ?: "https://github.com"
 String workspace = binding.variables["WORKSPACE"] ?: "."
 
-println defaults.gitUsername() + " " + defaults.gitPassword()
-
-
 // crawl the org
 RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
 	.builder().rootUrl(urlRoot)
-	.username(defaults.gitUsername()).password(defaults.gitPassword())
+	.username(binding.variables[PipelineDefaults.GIT_USER_NAME_ENV_VAR])
+	.password(binding.variables[PipelineDefaults.GIT_PASSWORD_ENV_VAR])
 	.token(defaults.gitToken())
 	.repository(repoType).build())
 // get the repos from the org
