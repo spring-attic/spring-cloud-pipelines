@@ -1,5 +1,6 @@
 package org.springframework.cloud.pipelines.common
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import groovy.transform.CompileStatic
@@ -37,11 +38,12 @@ class PipelineDescriptor {
 
 	@CompileStatic
 	static class Service {
-		String type, name, coordinates, pathToManifest, broker, plan, database
+		String type, name, coordinates, pathToManifest, broker, plan
 	}
 
 	static PipelineDescriptor from(String yaml) {
 		ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory())
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 		return objectMapper.readValue(yaml, PipelineDescriptor)
 	}
 }
