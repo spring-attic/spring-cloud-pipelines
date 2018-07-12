@@ -20,24 +20,20 @@ DslFactory dsl = this
 PipelineDefaults defaults = new PipelineDefaults(binding.variables)
 String pipelineVersion = defaults.pipelineVersion()
 
-// go the old way if set
-String reposFromBinding = binding.variables["REPOS"] ?: ""
-String org = binding.variables["ORGANIZATION"] ?: "sc-pipelines"
+String org = binding.variables["ORG"] ?: "sc-pipelines"
 String repoType = binding.variables["REPO_MANAGEMENT_TYPE"] ?: "GITHUB"
 String urlRoot = binding.variables["REPO_URL_ROOT"] ?: "https://github.com"
 
+// crawl the org
 RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
 	.builder().rootUrl(urlRoot)
 	.username(defaults.gitUsername()).password(defaults.gitPassword())
 	.token(defaults.gitToken())
 	.repository(repoType).build())
+// get the repos from the org
 List<Repository> repositories = binding.variables["TEST_MODE"] ? [] : repositoryManagers.repositories(org)
-repositories.each {
-	String descriptor = repositoryManagers.fileContent(org, it.name,
-		it.requestedBranch, defaults.pipelineDescriptor())
-	PipelineDescriptor pipeline = PipelineDescriptor.from(descriptor)
-	defaults.updateFromPipeline(pipeline)
-	Coordinates coordinates = Coordinates.fromRepo(it, defaults)
+// definition of project building
+Closure buildProjects = { Coordinates coordinates ->
 	String gitRepoName = coordinates.gitRepoName
 	String projectName = SpinnakerDefaults.projectName(gitRepoName)
 	defaults.addEnvVar("PROJECT_NAME", gitRepoName)
@@ -47,5 +43,28 @@ repositories.each {
 	new RollbackTestOnTest(dsl, defaults).step(projectName, coordinates)
 	new TestOnStage(dsl, defaults).step(projectName, coordinates)
 }
+List<Repository> repositoriesForViews = []
+// for every repo
+repositories.each { Repository repo ->
+	// fetch the descriptor
+	String descriptor = repositoryManagers.fileContent(org, repo.name,
+		repo.requestedBranch, defaults.pipelineDescriptor())
+	// parse it
+	PipelineDescriptor pipeline = PipelineDescriptor.from(descriptor)
+	defaults.updateFromPipeline(pipeline)
+	if (pipeline.hasMonoRepoProjects()) {
+		// for monorepos treat the single repo as multiple ones
+		pipeline.pipeline.project_names.each { String monoRepo ->
+			Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
+			repositoriesForViews.add(monoRepository)
+			buildProjects(Coordinates.fromRepo(monoRepository, defaults))
+		}
+	} else {
+		// for any other repo build a single pipeline
+		repositoriesForViews.add(repo)
+		buildProjects(Coordinates.fromRepo(repo, defaults))
+	}
+}
 
-new DefaultView(dsl, defaults).view(repositories)
+// build the views
+new DefaultView(dsl, defaults).view(repositoriesForViews)

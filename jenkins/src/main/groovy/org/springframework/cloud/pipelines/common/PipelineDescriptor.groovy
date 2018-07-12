@@ -17,6 +17,10 @@ class PipelineDescriptor {
 	Services test = new Services()
 	Services stage = new Services()
 
+	boolean hasMonoRepoProjects() {
+		return !pipeline.project_names.empty
+	}
+
 	@CompileStatic
 	static class Build {
 		Boolean auto_stage
@@ -29,6 +33,7 @@ class PipelineDescriptor {
 	@CompileStatic
 	static class Pipeline {
 		String main_module
+		List<String> project_names
 	}
 
 	@CompileStatic
