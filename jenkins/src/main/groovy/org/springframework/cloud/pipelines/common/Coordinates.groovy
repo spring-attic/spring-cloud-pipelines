@@ -3,6 +3,8 @@ package org.springframework.cloud.pipelines.common
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
 
+import org.springframework.cloud.repositorymanagement.Repository
+
 /**
  * @author Marcin Grzejszczak
  * @since 1.0.0
@@ -14,7 +16,8 @@ class Coordinates {
 	String fullGitRepo
 	String branchName
 
-	static Coordinates fromRepo(String repo) {
+	static Coordinates fromRepo(Repository repository, PipelineDefaults defaults) {
+		String repo = defaults.gitUseSshKey() ? repository.ssh_url : repository.clone_url
 		String gitRepoName = repo.split('/').last() - '.git'
 		String fullGitRepo = ""
 		String branchName = "master"

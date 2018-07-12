@@ -4,6 +4,7 @@ import javaposse.jobdsl.dsl.helpers.ScmContext
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
+import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaults
 import org.springframework.cloud.pipelines.steps.Build
 import org.springframework.cloud.pipelines.steps.RollbackTestOnTest
 import org.springframework.cloud.pipelines.steps.TestOnStage
@@ -33,14 +34,15 @@ repositories.each {
 		it.requestedBranch, defaults.pipelineDescriptor())
 	PipelineDescriptor pipeline = PipelineDescriptor.from(descriptor)
 	defaults.updateFromPipeline(pipeline)
-	Coordinates coordinates = Coordinates.fromRepo(defaults.gitUseSshKey() ? it.ssh_url : it.clone_url)
+	Coordinates coordinates = Coordinates.fromRepo(it, defaults)
 	String gitRepoName = coordinates.gitRepoName
-	String projectName = "spinnaker-${gitRepoName}-pipeline"
+	String projectName = SpinnakerDefaults.projectName(gitRepoName)
 	defaults.addEnvVar("PROJECT_NAME", gitRepoName)
 	println "Creating jobs and views for [${projectName}]"
 	new Build(dsl, defaults).step(projectName, pipelineVersion, coordinates)
 	new TestOnTest(dsl, defaults).step(projectName, coordinates)
 	new RollbackTestOnTest(dsl, defaults).step(projectName, coordinates)
 	new TestOnStage(dsl, defaults).step(projectName, coordinates)
-	new DefaultView(dsl, defaults).view(projectName)
 }
+
+new DefaultView(dsl, defaults).view(repositories)
