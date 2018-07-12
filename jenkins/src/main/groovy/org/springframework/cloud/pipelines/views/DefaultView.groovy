@@ -27,9 +27,10 @@ class DefaultView {
 		dsl.nestedView('Spinnaker') {
 			repositories.each { Repository repo ->
 				Coordinates coordinates = Coordinates.fromRepo(repo, pipelineDefaults)
+				String viewName = SpinnakerDefaults.viewName(coordinates.gitRepoName)
 				String gitRepoName = SpinnakerDefaults.projectName(coordinates.gitRepoName)
 				views {
-					listView("${gitRepoName}") {
+					listView(viewName) {
 						jobs {
 							regex("${gitRepoName}.*")
 						}
