@@ -94,11 +94,11 @@ class SpinnakerPipelineBuilder {
 		stages.add(approveProd.second)
 		// Deploy to prod
 		Tuple2<Integer, Stage> deployToProd =
-			deploymentToProd("Deploy to prod", approveProd.first)
+			prodDeployment("Deploy to prod", approveProd.first, approveProd.first)
 		stages.add(deployToProd.second)
 		// Rollback
 		Tuple2<Integer, Stage> rollback =
-			rollbackStage(approveProd.first, deployToProd.first)
+			prodDeployment("Rollback", approveProd.first, deployToProd.first)
 		stages.add(rollback.second)
 		return stages
 	}
@@ -196,10 +196,10 @@ class SpinnakerPipelineBuilder {
 		return new Tuple2(refId, stage)
 	}
 
-	private Tuple2<Integer, Stage> rollbackStage(int idToReference, int lastRefId) {
+	private Tuple2<Integer, Stage> prodDeployment(String text, int idToReference, int lastRefId) {
 		int refId = lastRefId + 1
 		Stage stage = new Stage(
-			name: "Rollback",
+			name: text,
 			refId: "${refId}",
 			requisiteStageRefIds: [
 					"${idToReference}".toString()
