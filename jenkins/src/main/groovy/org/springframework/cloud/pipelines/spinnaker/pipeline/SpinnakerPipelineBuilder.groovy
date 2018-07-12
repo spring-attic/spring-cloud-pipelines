@@ -167,7 +167,7 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> deploymentStage(String text, int firstRefId, int lastRefId) {
-		int refId = lastRefId + 1
+		int refId = lastRefId + ((firstRefId == lastRefId) ? 2 + 1)
 		Stage stage = new Stage(
 			name: text,
 			refId: "${refId}",
