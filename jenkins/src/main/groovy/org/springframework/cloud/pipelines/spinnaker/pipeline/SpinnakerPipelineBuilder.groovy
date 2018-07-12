@@ -111,7 +111,7 @@ class SpinnakerPipelineBuilder {
 		}
 		List<Stage> testServices = []
 		List<PipelineDescriptor.Service> services = pipeServices
-		int refId = 0
+		int refId = 1
 		for (int i = 0; i < services.size(); i++) {
 			refId = i + firstId
 			PipelineDescriptor.Service service = services[i]
