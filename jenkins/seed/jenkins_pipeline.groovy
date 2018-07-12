@@ -34,7 +34,7 @@ factory.job('meta-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
@@ -136,7 +136,7 @@ factory.job('jenkins-pipeline-cf-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
@@ -191,7 +191,7 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
@@ -261,7 +261,7 @@ factory.job('jenkins-pipeline-cf-declarative-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
@@ -356,7 +356,7 @@ factory.job('jenkins-pipeline-k8s-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
@@ -450,7 +450,7 @@ factory.job('jenkins-pipeline-k8s-declarative-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
