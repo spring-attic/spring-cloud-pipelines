@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import groovy.transform.CompileStatic
 
+import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaults
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Artifact
@@ -24,11 +25,14 @@ class SpinnakerPipelineBuilder {
 
 	private final PipelineDescriptor pipelineDescriptor
 	private final Repository repository
+	private final PipelineDefaults defaults
 	private final ObjectMapper objectMapper = new ObjectMapper()
 
-	SpinnakerPipelineBuilder(PipelineDescriptor pipelineDescriptor, Repository repository) {
+	SpinnakerPipelineBuilder(PipelineDescriptor pipelineDescriptor, Repository repository,
+							 PipelineDefaults defaults) {
 		this.pipelineDescriptor = pipelineDescriptor
 		this.repository = repository
+		this.defaults = defaults
 		this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
 		this.objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
 	}
@@ -49,15 +53,15 @@ class SpinnakerPipelineBuilder {
 		// Test Create Service 1 (x)
 		// Test Create Service 2 (x)
 		int firstRefId = 1
-		Tuple2<Integer, List<Stage>> testServices = createTestServices("test", firstRefId,
-			pipelineDescriptor.test.services)
+		Tuple2<Integer, List<Stage>> testServices =
+			createTestServices("test", firstRefId, pipelineDescriptor.test.services)
 		stages.addAll(testServices.second)
 		// Deploy to test
 		Tuple2<Integer, Stage> testDeployment = testDeploymentStage(testServices.first)
 		stages.add(testDeployment.second)
 		// Test on test
-		Tuple2<Integer, Stage> testsOnTest = runTests("Run tests on test", "test",
-			testDeployment.first)
+		Tuple2<Integer, Stage> testsOnTest = runTests("Run tests on test",
+			"test", testDeployment.first)
 		stages.add(testsOnTest.second)
 		// Deploy to test latest prod version
 		Tuple2<Integer, Stage> testDeploymentRollback =
@@ -65,8 +69,8 @@ class SpinnakerPipelineBuilder {
 				testsOnTest.first)
 		stages.add(testDeploymentRollback.second)
 		// Test on test latest prod version
-		Tuple2<Integer, Stage> rollbackTests = runTests("Run rollback tests on test", "rollback-test",
-			testDeploymentRollback.first)
+		Tuple2<Integer, Stage> rollbackTests = runTests("Run rollback tests on test",
+			"rollback-test", testDeploymentRollback.first)
 		stages.add(rollbackTests.second)
 		// Wait for stage env
 		Tuple2<Integer, Stage> waitingForStage = manualJudgement("Wait for stage env",
@@ -74,20 +78,21 @@ class SpinnakerPipelineBuilder {
 		stages.add(waitingForStage.second)
 		// Stage Create Service 1
 		// Stage Create Service 2
-		Tuple2<Integer, List<Stage>> stageServices = createStageServices("stage", waitingForStage.first,
-			pipelineDescriptor.stage.services)
+		Tuple2<Integer, List<Stage>> stageServices = createStageServices("stage",
+			waitingForStage.first, pipelineDescriptor.stage.services)
 		stages.addAll(stageServices.second)
 		// Deploy to stage
 		Tuple2<Integer, Stage> stageDeployment =
-			deploymentStage("Deploy to stage", waitingForStage.first + 1, stageServices.first)
+			deploymentStage("Deploy to stage", waitingForStage.first + 1,
+				stageServices.first)
 		stages.add(stageDeployment.second)
 		// Prepare for end to end tests
-		Tuple2<Integer, Stage> prepareForE2e = manualJudgement("Prepare for end to end tests",
-			stageDeployment.first)
+		Tuple2<Integer, Stage> prepareForE2e = manualJudgement(
+			"Prepare for end to end tests", stageDeployment.first)
 		stages.add(prepareForE2e.second)
 		// Run end to end tests
-		Tuple2<Integer, Stage> e2eTests = runTests("End to end tests on stage", "e2e",
-			prepareForE2e.first)
+		Tuple2<Integer, Stage> e2eTests = runTests("End to end tests on stage",
+			"e2e", prepareForE2e.first)
 		stages.add(e2eTests.second)
 		// Approve production
 		Tuple2<Integer, Stage> approveProd = manualJudgement("Approve production",
@@ -105,7 +110,7 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, List<Stage>> createTestServices(String env, int firstId,
-															 List<PipelineDescriptor.Service> pipeServices) {
+															List<PipelineDescriptor.Service> pipeServices) {
 		if (!pipeServices) {
 			return new Tuple2(firstId, [])
 		}
@@ -146,7 +151,7 @@ class SpinnakerPipelineBuilder {
 				name: "Create ${env} service [${i}]",
 				refId: "${refId}",
 				requisiteStageRefIds: [
-				        "${firstId}".toString()
+					"${firstId}".toString()
 				],
 				scriptPath: "shell",
 				type: "script",
@@ -157,13 +162,13 @@ class SpinnakerPipelineBuilder {
 		return new Tuple2(refId, testServices)
 	}
 
-	private Cluster cluster() {
+	private Cluster cluster(String account, String org, String space, String deploymentStrategy) {
 		return new Cluster(
-			account: "calabasasaccount",
-			application: "github_webhook",
+			account: "${account}",
+			application: "${this.repository.name}",
 			artifact: new Artifact(
 				account: "",
-				pattern: "github-webhook.*.jar",
+				pattern: "${this.repository.name}.*.jar",
 				type: "trigger"
 			),
 			capacity: new Capacity(
@@ -182,30 +187,31 @@ class SpinnakerPipelineBuilder {
 				type: "direct"
 			),
 			provider: "cloudfoundry",
-			region: "system/system",
-			//spaceId: "85fbe929-2abb-4ce0-8f4f-414528999098",
+			region: "${org}/${space}",
 			stack: "",
 			strategy: "highlander"
 		)
 	}
 
-	private Tuple2<Integer, Stage> deploymentToProd(String text, int firstRefId) {
-		return deploymentStage(text, firstRefId, firstRefId + 1)
-	}
-
 	private Tuple2<Integer, Stage> testDeploymentStage(int lastRefId) {
 		int refId = pipelineDescriptor.test.services.empty ?
-			1 :lastRefId + 1
+			1 : lastRefId + 1
 		Stage stage = new Stage(
 			name: "Deploy to test",
 			refId: "${refId}",
 			requisiteStageRefIds: intToRange(1, lastRefId),
 			type: "deploy",
 			clusters: [
-			        cluster()
+				cluster(defaults.cfTestUsername(),
+					defaults.cfTestOrg(), testSpaceName(),
+				"highlander")
 			]
 		)
 		return new Tuple2(refId, stage)
+	}
+
+	private String testSpaceName() {
+		return defaults.cfTestSpacePrefix() + "-" + repository.name
 	}
 
 	private Tuple2<Integer, Stage> deploymentStage(String text, int firstRefId, int lastRefId) {
@@ -216,7 +222,9 @@ class SpinnakerPipelineBuilder {
 			requisiteStageRefIds: intToRange(firstRefId, lastRefId),
 			type: "deploy",
 			clusters: [
-			        cluster()
+				cluster(defaults.cfStagePassword(),
+					defaults.cfStageOrg(), defaults.cfStageSpace(),
+				"highlander")
 			]
 		)
 		return new Tuple2(refId, stage)
@@ -228,11 +236,13 @@ class SpinnakerPipelineBuilder {
 			name: text,
 			refId: "${refId}",
 			requisiteStageRefIds: [
-					"${idToReference}".toString()
+				"${idToReference}".toString()
 			],
 			type: "deploy",
 			clusters: [
-			        cluster()
+				cluster(defaults.cfProdUsername(),
+					defaults.cfProdOrg(), defaults.cfProdSpace(),
+				pipelineDescriptor.prod.deployment_strategy ?: "highlander")
 			]
 		)
 		return new Tuple2(refId, stage)
@@ -244,11 +254,13 @@ class SpinnakerPipelineBuilder {
 			name: text,
 			refId: "${refId}",
 			requisiteStageRefIds: [
-			        "${firstRefId}".toString()
+				"${firstRefId}".toString()
 			],
 			type: "deploy",
 			clusters: [
-			        cluster()
+				cluster(defaults.cfTestUsername(),
+					defaults.cfTestOrg(), testSpaceName(),
+					pipelineDescriptor.prod.deployment_strategy ?: "highlander")
 			]
 		)
 		return new Tuple2(refId, stage)
@@ -277,7 +289,7 @@ class SpinnakerPipelineBuilder {
 			continuePipeline: false,
 			failPipeline: true,
 			job: "${SpinnakerDefaults.projectName(repository.name)}-test-env-${testName}",
-			master: "my-jenkins-master",
+			master: defaults.spinnakerJenkinsMaster(),
 			name: "${text}",
 			parameters: [],
 			refId: "${refId}",
@@ -297,17 +309,17 @@ class SpinnakerPipelineBuilder {
 
 	private Trigger trigger() {
 		return new Trigger(
-			account: "demo-gcr-account",
+			account: "${defaults.spinnakerAccount()}",
 			branch: "dev/.*",
 			enabled: true,
-			job: "spinnaker-github-webhook-pipeline-build",
-			master: "my-jenkins-master",
-			organization: "cf-spinnaker",
+			job: "spinnaker-${repository.name}-pipeline-build",
+			master: defaults.spinnakerJenkinsMaster(),
+			organization: defaults.spinnakerOrg(),
 			payloadConstraints: new PayloadConstraints(),
-			project: "marcingrzejszczak",
-			registry: "gcr.io",
-			repository: "cf-spinnaker/spin-kub-demo",
-			slug: "github-webhook-kubernetes",
+			project: defaults.spinnakerProject(),
+			registry: defaults.spinnakerRegistry(),
+			repository: "${defaults.spinnakerOrg()}/${defaults.spinnakerSpace()}",
+			slug: "${repository.name}",
 			source: "github",
 			type: "jenkins"
 		)

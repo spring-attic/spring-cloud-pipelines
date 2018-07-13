@@ -14,8 +14,9 @@ class PipelineDescriptor {
 	String language_type
 	Build build = new Build()
 	Pipeline pipeline = new Pipeline()
-	Services test = new Services()
-	Services stage = new Services()
+	Environment test = new Environment()
+	Environment stage = new Environment()
+	Environment prod = new Environment()
 
 	boolean hasMonoRepoProjects() {
 		return !pipeline.project_names.empty
@@ -37,8 +38,9 @@ class PipelineDescriptor {
 	}
 
 	@CompileStatic
-	static class Services {
+	static class Environment {
 		List<Service> services = []
+		String deployment_strategy = ""
 	}
 
 	@CompileStatic

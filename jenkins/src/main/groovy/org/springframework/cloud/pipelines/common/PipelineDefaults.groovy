@@ -176,8 +176,56 @@ class PipelineDefaults {
 		return prop("PAAS_TEST_CREDENTIAL_ID", "")
 	}
 
+	String cfTestOrg() {
+		return prop("PAAS_TEST_ORG", "")
+	}
+
+	String cfTestSpacePrefix() {
+		return prop("PAAS_TEST_SPACE_PREFIX", "")
+	}
+
+	String cfTestUsername() {
+		return prop("PAAS_TEST_USERNAME", "")
+	}
+
+	String cfTestPassword() {
+		return prop("PAAS_TEST_PASSWORD", "")
+	}
+
 	String cfStageCredentialId() {
 		return prop("PAAS_STAGE_CREDENTIAL_ID", "")
+	}
+
+	String cfStageUsername() {
+		return prop("PAAS_STAGE_USERNAME", "")
+	}
+
+	String cfStagePassword() {
+		return prop("PAAS_STAGE_PASSWORD", "")
+	}
+
+	String cfStageOrg() {
+		return prop("PAAS_STAGE_ORG", "")
+	}
+
+	String cfStageSpace() {
+		return prop("PAAS_STAGE_SPACE", "")
+	}
+
+	String cfProdPassword() {
+		return prop("PAAS_PROD_PASSWORD", "")
+	}
+
+	String cfProdUsername() {
+		return prop("PAAS_PROD_USERNAME", "")
+	}
+
+	String cfProdOrg() {
+		return prop("PAAS_PROD_ORG", "")
+	}
+
+	String cfProdSpace() {
+		return prop("PAAS_PROD_SPACE", "")
 	}
 // remove::end[CF]
 // remove::start[K8S]
@@ -255,4 +303,30 @@ class PipelineDefaults {
 		return prop("MYSQL_CREDENTIAL_ID", "")
 	}
 // remove::end[K8S]
+
+// remove::start[SPINNAKER]
+	String spinnakerAccount() {
+		return prop("SPINNAKER_ACCOUNT", "")
+	}
+
+	String spinnakerJenkinsMaster() {
+		return prop("SPINNAKER_JENKINS_MASTER", "")
+	}
+
+	String spinnakerProject() {
+		return prop("SPINNAKER_PROJECT", "")
+	}
+
+	String spinnakerOrg() {
+		return prop("SPINNAKER_ORG", "")
+	}
+
+	String spinnakerSpace() {
+		return prop("SPINNAKER_SPACE", "")
+	}
+
+	String spinnakerRegistry() {
+		return prop("SPINNAKER_REGISTRY", "")
+	}
+// remove::end[SPINNAKER]
 }
