@@ -56,7 +56,7 @@ class SpinnakerPipelineBuilder {
 		Tuple2<Integer, Stage> testDeployment = testDeploymentStage(testServices.first)
 		stages.add(testDeployment.second)
 		// Test on test
-		Tuple2<Integer, Stage> testsOnTest = runTests("Run testServices on test", "test",
+		Tuple2<Integer, Stage> testsOnTest = runTests("Run tests on test", "test",
 			testDeployment.first)
 		stages.add(testsOnTest.second)
 		// Deploy to test latest prod version
@@ -65,7 +65,7 @@ class SpinnakerPipelineBuilder {
 				testsOnTest.first)
 		stages.add(testDeploymentRollback.second)
 		// Test on test latest prod version
-		Tuple2<Integer, Stage> rollbackTests = runTests("Run rollback testServices on test", "rollback-test",
+		Tuple2<Integer, Stage> rollbackTests = runTests("Run rollback tests on test", "rollback-test",
 			testDeploymentRollback.first)
 		stages.add(rollbackTests.second)
 		// Wait for stage env
@@ -79,7 +79,7 @@ class SpinnakerPipelineBuilder {
 		stages.addAll(stageServices.second)
 		// Deploy to stage
 		Tuple2<Integer, Stage> stageDeployment =
-			deploymentStage("Deploy to stage", waitingForStage.first, stageServices.first)
+			deploymentStage("Deploy to stage", waitingForStage.first + 1, stageServices.first)
 		stages.add(stageDeployment.second)
 		// Prepare for end to end tests
 		Tuple2<Integer, Stage> prepareForE2e = manualJudgement("Prepare for end to end tests",
@@ -88,6 +88,7 @@ class SpinnakerPipelineBuilder {
 		// Run end to end tests
 		Tuple2<Integer, Stage> e2eTests = runTests("End to end tests on stage", "e2e",
 			prepareForE2e.first)
+		stages.add(e2eTests.second)
 		// Approve production
 		Tuple2<Integer, Stage> approveProd = manualJudgement("Approve production",
 			e2eTests.first)
@@ -117,7 +118,7 @@ class SpinnakerPipelineBuilder {
 			testServices.add(new Stage(
 				command: "echo \"Creating service [${service.name}]\"",
 				failPipeline: true,
-				name: "Create ${env} service [${refId}]",
+				name: "Create ${env} service [${i}]",
 				refId: "${refId}",
 				scriptPath: "shell",
 				type: "script",
@@ -142,7 +143,7 @@ class SpinnakerPipelineBuilder {
 			testServices.add(new Stage(
 				command: "echo \"Creating service [${service.name}]\"",
 				failPipeline: true,
-				name: "Create ${env} service [${refId}]",
+				name: "Create ${env} service [${i}]",
 				refId: "${refId}",
 				requisiteStageRefIds: [
 				        "${firstId}".toString()
