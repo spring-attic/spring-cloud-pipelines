@@ -4,7 +4,7 @@ import groovy.transform.CompileStatic
 
 @CompileStatic
 class Stage {
-	List<Cluster> clusters = []
+	List<Cluster> clusters
 	String name
 	String refId
 	List<String> requisiteStageRefIds = []

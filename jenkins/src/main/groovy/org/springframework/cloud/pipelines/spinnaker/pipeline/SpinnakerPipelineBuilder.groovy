@@ -119,9 +119,6 @@ class SpinnakerPipelineBuilder {
 				failPipeline: true,
 				name: "Create ${env} service [${refId}]",
 				refId: "${refId}",
-				requisiteStageRefIds: [
-				        "${firstId}".toString()
-				],
 				scriptPath: "shell",
 				type: "script",
 				user: "anonymous",
