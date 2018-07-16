@@ -1,0 +1,817 @@
+pipeline-cf.sh(1)
+=================
+:compat-mode!:
+
+NAME
+----
+pipeline-cf.sh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+ addMultiplePortsSupport
+ bindService
+ completeSwitchOver
+ createServiceWithName
+ deleteApp
+ deleteService
+ deployAndRestartAppWithName
+ deployAppAsService
+ deployAppNoStart
+ deployBrokeredService
+ deployCupsService
+ deployService
+ deployStubRunnerBoot
+ getAppHostFromPaas
+ getArtifactType
+ getDomain
+ getHostFromManifest
+ getInstancesFromManifest
+ getProfilesFromManifest
+ hostname
+ logInToPaas
+ parseManifest
+ pathToPushToCf
+ pathToUnpackedSources
+ performProductionDeploymentOfTestedApplication
+ prepareForE2eTests
+ prepareForSmokeTests
+ prodDeploy
+ propagatePropertiesForTests
+ readTestPropertiesFromFile
+ restartApp
+ retrieveApplicationUrl
+ rollbackToPreviousVersion
+ setEnvVar
+ setEnvVarIfMissing
+ stageDeploy
+ testCleanup
+ testDeploy
+ testRollbackDeploy
+ waitForServicesToInitialize
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 7 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+
+addMultiplePortsSupport
+~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Adds multiple ports support for Stub Runner Boot
+ # Uses [PAAS_TEST_SPACE_PREFIX], [ENVIRONMENT] env vars
+ #
+ # $1 - Stub Runner name
+ # $2 - IDs of stubs to be downloaded
+ # $3 - path to Stub Runner manifest
+____
+
+Has 49 line(s). Calls functions:
+
+ addMultiplePortsSupport
+ `-- setEnvVar
+
+Called by:
+
+ deployStubRunnerBoot
+
+bindService
+~~~~~~~~~~~
+
+____
+ # Binds service $1 to application $2
+ #
+ # $1 - service name
+ # $2 - application name
+____
+
+Has 9 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+completeSwitchOver
+~~~~~~~~~~~~~~~~~~
+
+____
+ # Performs switch over of the venerable app (VEN) and leaves only current one (APP) running
+ # APP - current app to deploy, VEN - old (venerable), currently running app on production
+ # [Clicked COMPLETE] -> APP running, VEN stopped
+____
+
+Has 12 line(s). Calls functions:
+
+ completeSwitchOver
+ `-- logInToPaas
+
+Called by:
+
+ prod_complete.sh/Script-Body
+
+createServiceWithName
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Creates a CUPS (user provided service) for service with name $1
+ #
+ # $1 - service name
+____
+
+Has 5 line(s). Calls functions:
+
+ createServiceWithName
+ `-- deployCupsService
+
+Called by:
+
+ deployAppAsService
+
+deleteApp
+~~~~~~~~~
+
+____
+ # Deletes app with name $1 from CF
+ #
+ # $1 - app name
+____
+
+Has 6 line(s). Doesn't call other functions.
+
+Called by:
+
+ testRollbackDeploy
+
+deleteService
+~~~~~~~~~~~~~
+
+____
+ # Implementation of the CF delete service
+ #
+ # $1 - service name
+ # $2 - service type
+____
+
+Has 5 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+deployAndRestartAppWithName
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Deploys and restarts app with name $1 and binary name $2
+ #
+ # $1 - app name
+ # $2 - binary name
+____
+
+Has 22 line(s). Calls functions:
+
+ deployAndRestartAppWithName
+ |-- deployAppNoStart
+ |   `-- setEnvVar
+ |-- parseManifest
+ |-- restartApp
+ `-- setEnvVar
+
+Called by:
+
+ performProductionDeploymentOfTestedApplication
+ stageDeploy
+ testDeploy
+ testRollbackDeploy
+
+deployAppAsService
+~~~~~~~~~~~~~~~~~~
+
+____
+ # For app with binary name $1, app name $2 and manifest location $3, deploys the app to CF
+ # and creates a user provided services for it
+ #
+ # $1 - binary name
+ # $2 - app name
+ # $3 - manifest location
+____
+
+Has 11 line(s). Calls functions:
+
+ deployAppAsService
+ |-- createServiceWithName
+ |   `-- deployCupsService
+ |-- deployAppNoStart
+ |   `-- setEnvVar
+ `-- restartApp
+
+Called by:
+
+ deployService
+
+deployAppNoStart
+~~~~~~~~~~~~~~~~
+
+____
+ # Deploys an app without starting it
+ #
+ # $1 - app name
+ # $2 - artifact name
+ # $3 - environment name
+ # $4 - path to manifest
+ # $5 - host name suffix
+____
+
+Has 35 line(s). Calls functions:
+
+ deployAppNoStart
+ `-- setEnvVar
+
+Called by:
+
+ deployAndRestartAppWithName
+ deployAppAsService
+ deployStubRunnerBoot
+
+deployBrokeredService
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Deploys a brokered service with name $1, broker service type $2, plan $3 and parameters $4
+ #
+ # $1 - service name
+ # $2 - broker service type
+ # $3 - broker service plan
+ # $4 - broker service parameters
+____
+
+Has 17 line(s). Doesn't call other functions.
+
+Called by:
+
+ deployService
+
+deployCupsService
+~~~~~~~~~~~~~~~~~
+
+____
+ # Deploys a CUPS (user provided service) with name $1, option $2 and value $3
+ # Uses [OUTPUT_FOLDER] and [LOWERCASE_ENV] env variables
+ #
+ # $1 - service name
+ # $2 - cups option
+ # $3 - cups value
+____
+
+Has 13 line(s). Doesn't call other functions.
+
+Called by:
+
+ createServiceWithName
+ deployService
+
+deployService
+~~~~~~~~~~~~~
+
+____
+ # Implementation of the CF deployment of a service
+ #
+ # $1 - service name
+ # $2 - service type
+____
+
+Has 57 line(s). Calls functions:
+
+ deployService
+ |-- deployAppAsService
+ |   |-- createServiceWithName
+ |   |   `-- deployCupsService
+ |   |-- deployAppNoStart
+ |   |   `-- setEnvVar
+ |   `-- restartApp
+ |-- deployBrokeredService
+ |-- deployCupsService
+ `-- deployStubRunnerBoot
+     |-- addMultiplePortsSupport
+     |   `-- setEnvVar
+     |-- deployAppNoStart
+     |   `-- setEnvVar
+     |-- restartApp
+     `-- setEnvVar
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+deployStubRunnerBoot
+~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Deploys a Stub Runner Boot instance to CF
+ # Uses [REPO_WITH_BINARIES], [ENVIRONMENT] env vars
+ #
+ # $1 - Stub Runner Boot jar name
+ # $2 - Stub Runner name
+ # $3 - path to Stub Runner manifest
+____
+
+Has 16 line(s). Calls functions:
+
+ deployStubRunnerBoot
+ |-- addMultiplePortsSupport
+ |   `-- setEnvVar
+ |-- deployAppNoStart
+ |   `-- setEnvVar
+ |-- restartApp
+ `-- setEnvVar
+
+Called by:
+
+ deployService
+
+getAppHostFromPaas
+~~~~~~~~~~~~~~~~~~
+
+____
+ # Gets app host for app with name $1 from CF
+ #
+ # $1 - app name
+____
+
+Has 4 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+getArtifactType
+~~~~~~~~~~~~~~~
+
+____
+ # Gets the type of artifact that should be pushed to CF. [binary] or [source]?
+ # Uses [ARTIFACT_TYPE], [PARSED_YAML], [LANGUAGE_TYPE] env vars
+____
+
+Has 16 line(s). Calls functions:
+
+ getArtifactType
+ `-- pipeline.sh/toLowerCase
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+getDomain
+~~~~~~~~~
+
+____
+ # Gets domain from host $1
+ #
+ # $1 - host name
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+getHostFromManifest
+~~~~~~~~~~~~~~~~~~~
+
+____
+ # Gets host from [PARSED_APP_MANIFEST_YAML] for app with name $1
+ #
+ # $1 - app name
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+getInstancesFromManifest
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Gets instances from [PARSED_APP_MANIFEST_YAML] for app with name $1
+ #
+ # $1 - app name
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+getProfilesFromManifest
+~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Gets profiles from [PARSED_APP_MANIFEST_YAML] for app with name $1
+ #
+ # $1 - app name
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+hostname
+~~~~~~~~
+
+____
+ # Returns hostname for app with name $1, env $2 and manifest location $3
+ # Uses [PAAS_HOSTNAME_UUID] and [LOWERCASE_ENV] env vars
+ #
+ # $1 - app name
+ # $2 - environment name
+ # $3 - manifest location
+____
+
+Has 20 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+logInToPaas
+~~~~~~~~~~~
+
+____
+ # Implementation of the CF log in
+____
+
+Has 28 line(s). Doesn't call other functions.
+
+Called by:
+
+ completeSwitchOver
+ prepareForE2eTests
+ prepareForSmokeTests
+ prodDeploy
+ retrieveApplicationUrl
+ rollbackToPreviousVersion
+ stageDeploy
+ testDeploy
+ testRollbackDeploy
+
+parseManifest
+~~~~~~~~~~~~~
+
+____
+ # Parses the [manifest.yml] file into [PARSED_APP_MANIFEST_YAML] env var
+____
+
+Has 8 line(s). Doesn't call other functions.
+
+Uses feature(s): _export_
+
+Called by:
+
+ deployAndRestartAppWithName
+
+pathToPushToCf
+~~~~~~~~~~~~~~
+
+____
+ # Returns the path to push to CF for artifact with name $1
+ #
+ # $1 - artifact name
+____
+
+Has 11 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+pathToUnpackedSources
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Returns the path to unpacked sources. Uses [OUTPUT_FOLDER] env var
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+performProductionDeploymentOfTestedApplication
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Performs production deployment of application (APP)
+ # APP - current app to deploy, VEN - old (venerable), currently running app on production
+ # [Clicked DEPLOY] -> APP running, VEN running -> [Click DEPLOY] delete VEN, deploy new APP
+ # [Clicked COMPLETE] -> APP running, VEN stopped -> [Click DEPLOY] delete VEN, rename APP -> VEN, deploy APP
+ # [Clicked ROLLBACK] -> APP stopped, VEN running, VEN renamed to APP, latest PROD tag removed -> [Click DEPLOY] -> delete APP, deploy new APP, stop VEN
+____
+
+Has 27 line(s). Calls functions:
+
+ performProductionDeploymentOfTestedApplication
+ `-- deployAndRestartAppWithName
+     |-- deployAppNoStart
+     |   `-- setEnvVar
+     |-- parseManifest
+     |-- restartApp
+     `-- setEnvVar
+
+Called by:
+
+ prodDeploy
+
+prepareForE2eTests
+~~~~~~~~~~~~~~~~~~
+
+____
+ # CF implementation of prepare for e2e tests
+____
+
+Has 5 line(s). Calls functions:
+
+ prepareForE2eTests
+ `-- logInToPaas
+
+Uses feature(s): _export_
+
+Called by:
+
+ stage_e2e.sh/Script-Body
+
+prepareForSmokeTests
+~~~~~~~~~~~~~~~~~~~~
+
+____
+ # CF implementation of prepare for smoke tests
+____
+
+Has 11 line(s). Calls functions:
+
+ prepareForSmokeTests
+ |-- logInToPaas
+ |-- pipeline.sh/parsePipelineDescriptor
+ |-- propagatePropertiesForTests
+ |   `-- pipeline.sh/envNodeExists
+ `-- readTestPropertiesFromFile
+
+Called by:
+
+ test_rollback_smoke.sh/Script-Body
+ test_smoke.sh/Script-Body
+
+prodDeploy
+~~~~~~~~~~
+
+____
+ # CF implementation of deploy to production
+____
+
+Has 7 line(s). Calls functions:
+
+ prodDeploy
+ |-- logInToPaas
+ `-- performProductionDeploymentOfTestedApplication
+     `-- deployAndRestartAppWithName
+         |-- deployAppNoStart
+         |   `-- setEnvVar
+         |-- parseManifest
+         |-- restartApp
+         `-- setEnvVar
+
+Called by:
+
+ prod_deploy.sh/Script-Body
+
+propagatePropertiesForTests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # For project with name $1 resolves application URL and stub runner URL if applicable
+ #
+ # exports [APPLICATION_URL] and [STUBRUNNER_URL] env vars and stores those values in a
+ # properties file
+ #
+ # $1 - application name
+____
+
+Has 21 line(s). Calls functions:
+
+ propagatePropertiesForTests
+ `-- pipeline.sh/envNodeExists
+
+Uses feature(s): _export_
+
+Called by:
+
+ prepareForSmokeTests
+ retrieveApplicationUrl
+ stageDeploy
+ testDeploy
+ testRollbackDeploy
+
+readTestPropertiesFromFile
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Reads a properties file as env variables
+ # shellcheck disable=SC2120
+____
+
+Has 12 line(s). Doesn't call other functions.
+
+Uses feature(s): _eval_
+
+Called by:
+
+ prepareForSmokeTests
+ retrieveApplicationUrl
+
+restartApp
+~~~~~~~~~~
+
+____
+ # Restarts app with name $1
+ #
+ # $1 - app name
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Called by:
+
+ deployAndRestartAppWithName
+ deployAppAsService
+ deployStubRunnerBoot
+
+retrieveApplicationUrl
+~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Retrieves the application URL from CF
+____
+
+Has 9 line(s). Calls functions:
+
+ retrieveApplicationUrl
+ |-- logInToPaas
+ |-- propagatePropertiesForTests
+ |   `-- pipeline.sh/envNodeExists
+ `-- readTestPropertiesFromFile
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+rollbackToPreviousVersion
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Performs rollback of application (APP)
+ # APP - current app to deploy, VEN - old (venerable), currently running app on production
+ # [Clicked ROLLBACK] -> APP stopped, VEN running
+____
+
+Has 16 line(s). Calls functions:
+
+ rollbackToPreviousVersion
+ `-- logInToPaas
+
+Called by:
+
+ prod_rollback.sh/Script-Body
+
+setEnvVar
+~~~~~~~~~
+
+____
+ # For app with name $1 sets env var with key $2 and value $3
+ #
+ # $1 - app name
+ # $2 - env variable key
+ # $3 - env variable value
+____
+
+Has 5 line(s). Doesn't call other functions.
+
+Called by:
+
+ addMultiplePortsSupport
+ deployAndRestartAppWithName
+ deployAppNoStart
+ deployStubRunnerBoot
+ setEnvVarIfMissing
+
+setEnvVarIfMissing
+~~~~~~~~~~~~~~~~~~
+
+____
+ # For app with name $1 sets env var with key $2 and value $3 if that value is missing
+ #
+ # $1 - app name
+ # $2 - env variable key
+ # $3 - env variable value
+____
+
+Has 5 line(s). Calls functions:
+
+ setEnvVarIfMissing
+ `-- setEnvVar
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+stageDeploy
+~~~~~~~~~~~
+
+____
+ # CF implementation of deployment to stage
+____
+
+Has 12 line(s). Calls functions:
+
+ stageDeploy
+ |-- deployAndRestartAppWithName
+ |   |-- deployAppNoStart
+ |   |   `-- setEnvVar
+ |   |-- parseManifest
+ |   |-- restartApp
+ |   `-- setEnvVar
+ |-- logInToPaas
+ |-- pipeline.sh/deployServices
+ |-- propagatePropertiesForTests
+ |   `-- pipeline.sh/envNodeExists
+ `-- waitForServicesToInitialize
+
+Called by:
+
+ stage_deploy.sh/Script-Body
+
+testCleanup
+~~~~~~~~~~~
+
+____
+ # Uses a community plugin to clean up the whole test space
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ testDeploy
+
+testDeploy
+~~~~~~~~~~
+
+____
+ # Implementation of the CF deployment to test
+____
+
+Has 13 line(s). Calls functions:
+
+ testDeploy
+ |-- deployAndRestartAppWithName
+ |   |-- deployAppNoStart
+ |   |   `-- setEnvVar
+ |   |-- parseManifest
+ |   |-- restartApp
+ |   `-- setEnvVar
+ |-- logInToPaas
+ |-- pipeline.sh/deployServices
+ |-- propagatePropertiesForTests
+ |   `-- pipeline.sh/envNodeExists
+ |-- testCleanup
+ `-- waitForServicesToInitialize
+
+Called by:
+
+ test_deploy.sh/Script-Body
+
+testRollbackDeploy
+~~~~~~~~~~~~~~~~~~
+
+____
+ # Implementation of the CF deployment to test for rollback tests
+____
+
+Has 15 line(s). Calls functions:
+
+ testRollbackDeploy
+ |-- deleteApp
+ |-- deployAndRestartAppWithName
+ |   |-- deployAppNoStart
+ |   |   `-- setEnvVar
+ |   |-- parseManifest
+ |   |-- restartApp
+ |   `-- setEnvVar
+ |-- logInToPaas
+ |-- pipeline.sh/parsePipelineDescriptor
+ `-- propagatePropertiesForTests
+     `-- pipeline.sh/envNodeExists
+
+Called by:
+
+ test_rollback_deploy.sh/Script-Body
+
+waitForServicesToInitialize
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Waits for services to initialize
+____
+
+Has 10 line(s). Doesn't call other functions.
+
+Called by:
+
+ stageDeploy
+ testDeploy
+

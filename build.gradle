@@ -101,6 +101,7 @@ subprojects {
 				fileTree(relativePath(srcDir))
 					.include('**/*.sh')
 					.exclude("**/build/**")
+					.exclude("**/zsdoc/**")
 					.each { File script ->
 					exec {
 						commandLine pathToShellcheck, script

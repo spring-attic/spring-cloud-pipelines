@@ -1,0 +1,27 @@
+prod_rollback.sh(1)
+===================
+:compat-mode!:
+
+NAME
+----
+prod_rollback.sh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 19 line(s). Calls functions:
+
+ Script-Body
+ `-- pipeline-cf.sh/rollbackToPreviousVersion
+

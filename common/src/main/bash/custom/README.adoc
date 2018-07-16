@@ -1,0 +1,6 @@
+= Custom scripts
+
+Here you can place custom scripts that should be sourced to override the default
+functions. E.g. if you want to override the way the application is built,
+just create in this folder a `build_and_upload.sh` and provide your own
+implementation of the `build` function.

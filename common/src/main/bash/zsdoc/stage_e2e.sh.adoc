@@ -1,0 +1,28 @@
+stage_e2e.sh(1)
+===============
+:compat-mode!:
+
+NAME
+----
+stage_e2e.sh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 12 line(s). Calls functions:
+
+ Script-Body
+ |-- pipeline-cf.sh/prepareForE2eTests
+ `-- pipeline.sh/runE2eTests
+

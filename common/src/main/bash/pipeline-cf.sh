@@ -2,6 +2,8 @@
 
 set -e
 
+# FUNCTION: logInToPaas {{{
+# Implementation of the CF log in
 function logInToPaas() {
 	local user="PAAS_${ENVIRONMENT}_USERNAME"
 	local cfUsername="${!user}"
@@ -33,23 +35,32 @@ function logInToPaas() {
 	echo "Logging in to CF to org [${cfOrg}], space [${cfSpace}]"
 	"${CF_BIN}" api --skip-ssl-validation "${apiUrl}"
 	"${CF_BIN}" login -u "${cfUsername}" -p "${cfPassword}" -o "${cfOrg}" -s "${cfSpace}"
-}
+} # }}}
 
+# FUNCTION: testCleanup {{{
+# Uses a community plugin to clean up the whole test space
 function testCleanup() {
 	# TODO: Clean up space without relying on plug-ins???
 	#TODO: offline mode for when there is no internet connection
 	cf install-plugin do-all -r "CF-Community" -f
 	cf do-all delete {} -r -f
-}
+} # }}}
 
+# FUNCTION: deleteService {{{
+# Implementation of the CF delete service
+#
+# $1 - service name
+# $2 - service type
 function deleteService() {
 	local serviceName
 	serviceName=$(toLowerCase "${1}")
 	local serviceType="${2}"
 	"${CF_BIN}" delete -f "${serviceName}" || echo "Failed to delete app [${serviceName}]"
 	"${CF_BIN}" delete-service -f "${serviceName}" || echo "Failed to delete service [${serviceName}]"
-}
+} # }}}
 
+# FUNCTION: testDeploy {{{
+# Implementation of the CF deployment to test
 function testDeploy() {
 	# TODO: Consider making it less JVM specific
 	local projectGroupId
@@ -67,8 +78,10 @@ function testDeploy() {
 	downloadAppBinary "${REPO_WITH_BINARIES}" "${projectGroupId}" "${appName}" "${PIPELINE_VERSION}"
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 	propagatePropertiesForTests "${appName}"
-}
+} # }}}
 
+# FUNCTION: testRollbackDeploy {{{
+# Implementation of the CF deployment to test for rollback tests
 function testRollbackDeploy() {
 	rm -rf "${OUTPUT_FOLDER}/test.properties"
 	local latestProdTag="${1}"
@@ -88,8 +101,13 @@ function testRollbackDeploy() {
 	propagatePropertiesForTests "${appName}"
 	# Adding latest prod tag
 	echo "LATEST_PROD_TAG=${latestProdTag}" >>"${OUTPUT_FOLDER}/test.properties"
-}
+} # }}}
 
+# FUNCTION: deployService {{{
+# Implementation of the CF deployment of a service
+#
+# $1 - service name
+# $2 - service type
 function deployService() {
 	local serviceName="${1}"
 	local serviceType="${2}"
@@ -151,11 +169,16 @@ function deployService() {
 			return 1
 		;;
 	esac
-}
+} # }}}
 
+# FUNCTION: deployAndRestartAppWithName {{{
+# Deploys and restarts app with name $1 and binary name $2
+#
+# $1 - app name
+# $2 - binary name
 function deployAndRestartAppWithName() {
 	local appName="${1}"
-	local jarName="${2}"
+	local binaryName="${2}"
 	local lowerCaseAppName
 	lowerCaseAppName=$(toLowerCase "${appName}")
 	local profiles
@@ -172,12 +195,14 @@ function deployAndRestartAppWithName() {
 	if [[ ! -z "${manifestProfiles}" && "${manifestProfiles}" != "null" ]]; then
 		profiles="${profiles},${manifestProfiles}"
 	fi
-	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}] and env [${ENVIRONMENT}]"
-	deployAppNoStart "${appName}" "${jarName}" "${ENVIRONMENT}" "" ""
+	echo "Deploying and restarting app with name [${appName}] and jar name [${binaryName}] and env [${ENVIRONMENT}]"
+	deployAppNoStart "${appName}" "${binaryName}" "${ENVIRONMENT}" "" ""
 	setEnvVar "${lowerCaseAppName}" 'SPRING_PROFILES_ACTIVE' "${profiles}"
 	restartApp "${appName}"
-}
+} # }}}
 
+# FUNCTION: parseManifest {{{
+# Parses the [manifest.yml] file into [PARSED_APP_MANIFEST_YAML] env var
 function parseManifest() {
 	if [ -z "${PARSED_APP_MANIFEST_YAML}" ]; then
 		if [[ ! -f "manifest.yml" ]]; then
@@ -187,36 +212,64 @@ function parseManifest() {
 		export PARSED_APP_MANIFEST_YAML
 		PARSED_APP_MANIFEST_YAML="$(yaml2json "manifest.yml")"
 	fi
-}
+} # }}}
 
+# FUNCTION: getProfilesFromManifest {{{
+# Gets profiles from [PARSED_APP_MANIFEST_YAML] for app with name $1
+#
+# $1 - app name
 function getProfilesFromManifest() {
 	local appName="${1}"
 	echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/'
-}
+} # }}}
 
+# FUNCTION: getHostFromManifest {{{
+# Gets host from [PARSED_APP_MANIFEST_YAML] for app with name $1
+#
+# $1 - app name
 function getHostFromManifest() {
 	local appName="${1}"
 	local host
 	echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .host' | sed 's/^"\(.*\)"$/\1/'
-}
+} # }}}
 
+# FUNCTION: getInstancesFromManifest {{{
+# Gets instances from [PARSED_APP_MANIFEST_YAML] for app with name $1
+#
+# $1 - app name
 function getInstancesFromManifest() {
 	local appName="${1}"
 	echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .instances' | sed 's/^"\(.*\)"$/\1/'
-}
+} # }}}
 
+# FUNCTION: getAppHostFromPaas {{{
+# Gets app host for app with name $1 from CF
+#
+# $1 - app name
 function getAppHostFromPaas() {
 	local appName="${1}"
 	local lowerCase
 	lowerCase="$(toLowerCase "${appName}")"
 	"${CF_BIN}" apps | awk -v "app=${lowerCase}" '$1 == app {print($0)}' | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1 | head -1
-}
+} # }}}
 
+# FUNCTION: getDomain {{{
+# Gets domain from host $1
+#
+# $1 - host name
 function getDomain() {
 	local hostName="${1}"
 	${CF_BIN} routes | grep "${hostName}" | head -1 | awk '{print $3}'
-}
+} # }}}
 
+# FUNCTION: deployAppNoStart {{{
+# Deploys an app without starting it
+#
+# $1 - app name
+# $2 - artifact name
+# $3 - environment name
+# $4 - path to manifest
+# $5 - host name suffix
 function deployAppNoStart() {
 	local appName="${1}"
 	local artifactName="${2}"
@@ -255,9 +308,11 @@ function deployAppNoStart() {
 	if [[ "${artifactType}" == "${SOURCE_ARTIFACT_TYPE_NAME}" && "${DOWNLOADABLE_SOURCES}" == "true" ]]; then
 		popd
 	fi
-}
+} # }}}
 
+# FUNCTION: getArtifactType {{{
 # Gets the type of artifact that should be pushed to CF. [binary] or [source]?
+# Uses [ARTIFACT_TYPE], [PARSED_YAML], [LANGUAGE_TYPE] env vars
 function getArtifactType() {
 	if [[ "${ARTIFACT_TYPE}" != "" ]]; then
 		echo "${ARTIFACT_TYPE}"
@@ -275,8 +330,12 @@ function getArtifactType() {
 	else
 		echo "${BINARY_ARTIFACT_TYPE_NAME}"
 	fi
-}
+} # }}}
 
+# FUNCTION: pathToPushToCf {{{
+# Returns the path to push to CF for artifact with name $1
+#
+# $1 - artifact name
 function pathToPushToCf() {
 	local artifactName="${1}"
 	local artifactType
@@ -289,12 +348,21 @@ function pathToPushToCf() {
 		echo "Unknown artifact type"
 		return 1
 	fi
-}
+} # }}}
 
+# FUNCTION: pathToUnpackedSources {{{
+# Returns the path to unpacked sources. Uses [OUTPUT_FOLDER] env var
 function pathToUnpackedSources() {
 	echo "${OUTPUT_FOLDER}/source"
-}
+} # }}}
 
+# FUNCTION: hostname {{{
+# Returns hostname for app with name $1, env $2 and manifest location $3
+# Uses [PAAS_HOSTNAME_UUID] and [LOWERCASE_ENV] env vars
+#
+# $1 - app name
+# $2 - environment name
+# $3 - manifest location
 function hostname() {
 	local appName="${1}"
 	local env="${2}"
@@ -318,8 +386,12 @@ function hostname() {
 		hostname="${hostname}-${LOWERCASE_ENV}"
 	fi
 	echo "${hostname}"
-}
+} # }}}
 
+# FUNCTION: deleteApp {{{
+# Deletes app with name $1 from CF
+#
+# $1 - app name
 function deleteApp() {
 	local appName="${1}"
 	local lowerCaseAppName
@@ -328,44 +400,74 @@ function deleteApp() {
 	echo "Deleting application [${APP_NAME}]"
 	# Delete app and route
 	"${CF_BIN}" delete -f -r "${APP_NAME}" || echo "Failed to delete the app. Continuing with the script"
-}
+} # }}}
 
+# FUNCTION: setEnvVarIfMissing {{{
+# For app with name $1 sets env var with key $2 and value $3 if that value is missing
+#
+# $1 - app name
+# $2 - env variable key
+# $3 - env variable value
 function setEnvVarIfMissing() {
 	local appName="${1}"
 	local key="${2}"
 	local value="${3}"
 	echo "Setting env var [${key}] -> [${value}] for app [${appName}] if missing"
 	"${CF_BIN}" env "${appName}" | grep "${key}" || setEnvVar appName key value
-}
+} # }}}
 
+# FUNCTION: setEnvVar {{{
+# For app with name $1 sets env var with key $2 and value $3
+#
+# $1 - app name
+# $2 - env variable key
+# $3 - env variable value
 function setEnvVar() {
 	local appName="${1}"
 	local key="${2}"
 	local value="${3}"
 	echo "Setting env var [${key}] -> [${value}] for app [${appName}]"
 	"${CF_BIN}" set-env "${appName}" "${key}" "${value}"
-}
+} # }}}
 
+# FUNCTION: restartApp {{{
+# Restarts app with name $1
+#
+# $1 - app name
 function restartApp() {
 	local appName="${1}"
 	echo "Restarting app with name [${appName}]"
 	"${CF_BIN}" restart "${appName}"
-}
+} # }}}
 
+# FUNCTION: deployAppAsService {{{
+# For app with binary name $1, app name $2 and manifest location $3, deploys the app to CF
+# and creates a user provided services for it
+#
+# $1 - binary name
+# $2 - app name
+# $3 - manifest location
 function deployAppAsService() {
-	local jarName="${1}"
+	local binaryName="${1}"
 	local appName="${2}"
 	local pathToManifest="${3}"
-	echo "Deploying app as service. Options - jar name [${jarName}], app name [${appName}], env [${ENVIRONMENT}], path to manifest [${pathToManifest}]"
+	echo "Deploying app as service. Options - jar name [${binaryName}], app name [${appName}], env [${ENVIRONMENT}], path to manifest [${pathToManifest}]"
 	local suffix=""
 	if [[ "${LOWERCASE_ENV}" == "test" ]]; then
 		suffix="$(retrieveAppName)"
 	fi
-	deployAppNoStart "${appName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}" "${suffix}"
+	deployAppNoStart "${appName}" "${binaryName}" "${ENVIRONMENT}" "${pathToManifest}" "${suffix}"
 	restartApp "${appName}"
 	createServiceWithName "${appName}"
-}
+} # }}}
 
+# FUNCTION: deployBrokeredService {{{
+# Deploys a brokered service with name $1, broker service type $2, plan $3 and parameters $4
+#
+# $1 - service name
+# $2 - broker service type
+# $3 - broker service plan
+# $4 - broker service parameters
 function deployBrokeredService() {
 	local serviceName="${1}"
 	local broker="${2}"
@@ -389,8 +491,15 @@ function deployBrokeredService() {
 #		   TODO: For create-service and cups, do we need to consider updates for services that already exist?
 		# TODO: Marcin discussion - decision: hanlde the update using a diff in test-rollback
 	fi
-}
+} # }}}
 
+# FUNCTION: deployCupsService {{{
+# Deploys a CUPS (user provided service) with name $1, option $2 and value $3
+# Uses [OUTPUT_FOLDER] and [LOWERCASE_ENV] env variables
+#
+# $1 - service name
+# $2 - cups option
+# $3 - cups value
 function deployCupsService() {
 	# cupsOption should be -l, -r, or -p
 	local serviceName="${1}"
@@ -409,8 +518,12 @@ function deployCupsService() {
 		cupsValue="${destination}"
 	fi
 	"${CF_BIN}" cups "${serviceName}" "${cupsOption}" "${cupsValue}" || echo "Service already created. Proceeding with the script"
-}
+} # }}}
 
+# FUNCTION: createServiceWithName {{{
+# Creates a CUPS (user provided service) for service with name $1
+#
+# $1 - service name
 function createServiceWithName() {
 	local name="${1}"
 	echo "Creating service with name [${name}]"
@@ -422,11 +535,18 @@ function createServiceWithName() {
 	# TODO run edit by marcin
 	deployCupsService "${name}" "-p" "${JSON}"
 	#"${CF_BIN}" cups "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
-}
+} # }}}
 
 # used for tests
 export RETRIEVE_STUBRUNNER_IDS_FUNCTION="${RETRIEVE_STUBRUNNER_IDS_FUNCTION:-retrieveStubRunnerIds}"
 
+# FUNCTION: deployStubRunnerBoot {{{
+# Deploys a Stub Runner Boot instance to CF
+# Uses [REPO_WITH_BINARIES], [ENVIRONMENT] env vars
+#
+# $1 - Stub Runner Boot jar name
+# $2 - Stub Runner name
+# $3 - path to Stub Runner manifest
 function deployStubRunnerBoot() {
 	local jarName="${1}"
 	local stubRunnerName="${2}"
@@ -444,8 +564,15 @@ function deployStubRunnerBoot() {
 	fi
 	setEnvVar "${stubRunnerName}" "REPO_WITH_BINARIES" "${REPO_WITH_BINARIES}"
 	restartApp "${stubRunnerName}"
-}
+} # }}}
 
+# FUNCTION: addMultiplePortsSupport {{{
+# Adds multiple ports support for Stub Runner Boot
+# Uses [PAAS_TEST_SPACE_PREFIX], [ENVIRONMENT] env vars
+#
+# $1 - Stub Runner name
+# $2 - IDs of stubs to be downloaded
+# $3 - path to Stub Runner manifest
 function addMultiplePortsSupport() {
 	local stubRunnerName="${1}"
 	local stubrunnerIds="${2}"
@@ -498,8 +625,13 @@ function addMultiplePortsSupport() {
 		echo "Successfully updated the new route mapping for port [${port}]"
 	done
 	IFS="${previousIfs}"
-}
+} # }}}
 
+# FUNCTION: bindService {{{
+# Binds service $1 to application $2
+#
+# $1 - service name
+# $2 - application name
 function bindService() {
 	local serviceName="${1}"
 	local appName="${2}"
@@ -510,8 +642,10 @@ function bindService() {
 		echo "Binding service [${serviceName}] to app [${appName}]"
 		"${CF_BIN}" bind-service "${appName}" "${serviceName}"
 	fi
-}
+} # }}}
 
+# FUNCTION: prepareForSmokeTests {{{
+# CF implementation of prepare for smoke tests
 function prepareForSmokeTests() {
 	echo "Retrieving group and artifact id - it can take a while..."
 	local appName
@@ -525,16 +659,20 @@ function prepareForSmokeTests() {
 	echo "Application URL [${APPLICATION_URL}]"
 	echo "StubRunner URL [${STUBRUNNER_URL}]"
 	echo "Latest production tag [${LATEST_PROD_TAG}]"
-}
+} # }}}
 
+# FUNCTION: prepareForE2eTests {{{
+# CF implementation of prepare for e2e tests
 function prepareForE2eTests() {
 	logInToPaas
 
 	export APPLICATION_URL
 	APPLICATION_URL="$(retrieveApplicationUrl | tail -1)"
 	echo "Application URL [${APPLICATION_URL}]"
-}
+} # }}}
 
+# FUNCTION: readTestPropertiesFromFile {{{
+# Reads a properties file as env variables
 # shellcheck disable=SC2120
 function readTestPropertiesFromFile() {
 	local fileLocation="${1:-${OUTPUT_FOLDER}/test.properties}"
@@ -549,8 +687,10 @@ function readTestPropertiesFromFile() {
 	else
 		echo "${fileLocation} not found."
 	fi
-}
+} # }}}
 
+# FUNCTION: stageDeploy {{{
+# CF implementation of deployment to stage
 function stageDeploy() {
 	# TODO: Consider making it less JVM specific
 	local projectGroupId
@@ -568,8 +708,10 @@ function stageDeploy() {
 	# deploy app
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
 	propagatePropertiesForTests "${appName}"
-}
+} # }}}
 
+# FUNCTION: retrieveApplicationUrl {{{
+# Retrieves the application URL from CF
 function retrieveApplicationUrl() {
 	echo "Retrieving artifact id - it can take a while..."
 	local appName
@@ -581,8 +723,10 @@ function retrieveApplicationUrl() {
 	# shellcheck disable=SC2119
 	readTestPropertiesFromFile
 	echo "${APPLICATION_URL}"
-}
+} # }}}
 
+# FUNCTION: prodDeploy {{{
+# CF implementation of deploy to production
 function prodDeploy() {
 	local projectGroupId
 	projectGroupId="$(retrieveGroupId)"
@@ -596,8 +740,11 @@ function prodDeploy() {
 
 	# deploy app
 	performProductionDeploymentOfTestedApplication "${appName}"
-}
+} # }}}
 
+# FUNCTION: performProductionDeploymentOfTestedApplication {{{
+# Performs production deployment of application (APP)
+# APP - current app to deploy, VEN - old (venerable), currently running app on production
 # [Clicked DEPLOY] -> APP running, VEN running -> [Click DEPLOY] delete VEN, deploy new APP
 # [Clicked COMPLETE] -> APP running, VEN stopped -> [Click DEPLOY] delete VEN, rename APP -> VEN, deploy APP
 # [Clicked ROLLBACK] -> APP stopped, VEN running, VEN renamed to APP, latest PROD tag removed -> [Click DEPLOY] -> delete APP, deploy new APP, stop VEN
@@ -629,8 +776,11 @@ function performProductionDeploymentOfTestedApplication() {
 		echo "Will not rename the application cause it's not there and old is not running"
 	fi
 	deployAndRestartAppWithName "${appName}" "${appName}-${PIPELINE_VERSION}"
-}
+} # }}}
 
+# FUNCTION: rollbackToPreviousVersion {{{
+# Performs rollback of application (APP)
+# APP - current app to deploy, VEN - old (venerable), currently running app on production
 # [Clicked ROLLBACK] -> APP stopped, VEN running
 function rollbackToPreviousVersion() {
 	local appName
@@ -650,8 +800,11 @@ function rollbackToPreviousVersion() {
 		echo "Will not rollback to blue instance cause it's not there"
 		return 1
 	fi
-}
+} # }}}
 
+# FUNCTION: completeSwitchOver {{{
+# Performs switch over of the venerable app (VEN) and leaves only current one (APP) running
+# APP - current app to deploy, VEN - old (venerable), currently running app on production
 # [Clicked COMPLETE] -> APP running, VEN stopped
 function completeSwitchOver() {
 	local appName
@@ -667,8 +820,15 @@ function completeSwitchOver() {
 	else
 		echo "Will not stop the old application cause it's not there"
 	fi
-}
+} # }}}
 
+# FUNCTION: propagatePropertiesForTests {{{
+# For project with name $1 resolves application URL and stub runner URL if applicable
+#
+# exports [APPLICATION_URL] and [STUBRUNNER_URL] env vars and stores those values in a
+# properties file
+#
+# $1 - application name
 function propagatePropertiesForTests() {
 	local projectArtifactId="${1}"
 	local serviceType="stubrunner"
@@ -693,8 +853,10 @@ function propagatePropertiesForTests() {
 	echo "STUBRUNNER_URL=${host}" >>"${fileLocation}"
 	echo "Resolved properties"
 	cat "${fileLocation}"
-}
+} # }}}
 
+# FUNCTION: waitForServicesToInitialize {{{
+# Waits for services to initialize
 function waitForServicesToInitialize() {
 	# Wait until services are ready
 	while "${CF_BIN}" services | grep 'create in progress'
@@ -709,7 +871,7 @@ function waitForServicesToInitialize() {
 		return 1
 	fi
 	echo "Service initialization - successful"
-}
+} # }}}
 
 export CF_BIN
 CF_BIN="${CF_BIN:-cf}"

@@ -14,6 +14,9 @@ if [[ ${BUILD_OPTIONS} != *"java.security.egd"* ]]; then
 	fi
 fi
 
+# FUNCTION: build {{{
+# Maven implementation of build. Sets version, passes build options and distribution management properties.
+# Uses [PIPELINE_VERSION], [PASSED_PIPELINE_VERSION] and [M2_SETTINGS...], [REPO_WITH_BINARIES...] related env vars
 function build() {
 	local pipelineVersion="${PASSED_PIPELINE_VERSION:-${PIPELINE_VERSION:-}}"
 	# Required by settings.xml
@@ -27,8 +30,10 @@ function build() {
 		# shellcheck disable=SC2086
 		"${MAVENW_BIN}" clean verify deploy -Ddistribution.management.release.id="${M2_SETTINGS_REPO_ID}" -Ddistribution.management.release.url="${REPO_WITH_BINARIES_FOR_UPLOAD}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
 	fi
-}
+} # }}}
 
+# FUNCTION: executeApiCompatibilityCheck {{{
+# Maven implementation of executing API compatibility check
 function executeApiCompatibilityCheck() {
 	local latestProdVersion="${1}"
 	if [[ "${CI}" == "CONCOURSE" ]]; then
@@ -38,10 +43,12 @@ function executeApiCompatibilityCheck() {
 		# shellcheck disable=SC2086
 		"${MAVENW_BIN}" clean verify -Papicompatibility -Dlatest.production.version="${latestProdVersion}" -Drepo.with.binaries="${REPO_WITH_BINARIES}" ${BUILD_OPTIONS}
 	fi
-}
+} # }}}
 
-# The function uses Maven Wrapper - if you're using Maven you have to have it on your classpath
-# and change this function
+# FUNCTION: extractMavenProperty {{{
+# The function uses Maven Wrapper to extract property with name $1
+#
+# $1 - name of the property to extract
 function extractMavenProperty() {
 	local prop="${1}"
 	MAVEN_PROPERTY=$("${MAVENW_BIN}" -q  \
@@ -57,8 +64,13 @@ function extractMavenProperty() {
 	else
 		echo "${MAVEN_PROPERTY}"
 	fi
-}
+} # }}}
 
+# FUNCTION: retrieveGroupId {{{
+# Maven implementation of group id retrieval. First tries to use [ruby] to extract the
+# group id, if that's not possible uses Maven to do it. Requires path $1 to pom.xml
+#
+# $1 - path to pom.xml
 function retrieveGroupId() {
 	local path
 	path="${1:-.}"
@@ -68,9 +80,14 @@ function retrieveGroupId() {
  || "${MAVENW_BIN}" org.apache.maven.plugins:maven-help-plugin:2.2:evaluate  \
  -Dexpression=project.groupId -f "${path}"/pom.xml  | grep -Ev '(^\[|Download\w+:)'
 	} | tail -1
-}
+} # }}}
 
-# TODO: App name taken from build coordinates
+# FUNCTION: retrieveAppName {{{
+# For the given main module (if [getMainModulePath] function exists, it will return the path
+# to the main module), will use [ruby] if possible to return the application name. If that
+# doesn't bring a result, will use Maven to extract the artifact id.
+#
+# $1 - path to main module
 function retrieveAppName() {
 	local path
 	local mainModule
@@ -87,17 +104,23 @@ function retrieveAppName() {
  || "${MAVENW_BIN}" org.apache.maven.plugins:maven-help-plugin:2.2:evaluate  \
  -Dexpression=project.artifactId -f "${path}"/pom.xml  | grep -Ev '(^\[|Download\w+:)'
 	} | grep -Ev '(^\[|Error\w+:)' | tail -1
-}
+} # }}}
 
+# FUNCTION: printTestResults {{{
+# Prints test results. Used by Concourse.
 function printTestResults() {
 	# shellcheck disable=SC1117
 	echo -e "\n\nBuild failed!!! - will print all test results to the console (it's the easiest way to debug anything later)\n\n" && tail -n +1 "$(testResultsAntPattern)"
-}
+} # }}}
 
+# FUNCTION: retrieveStubRunnerIds {{{
+# Extracts the stub runner ids from the Maven properties
 function retrieveStubRunnerIds() {
 	extractMavenProperty 'stubrunner.ids'
-}
+} # }}}
 
+# FUNCTION: runSmokeTests {{{
+# Given [APPLICATION_URL] and [STUBRUNNER_URL] will run the tests with [smoke] profile
 function runSmokeTests() {
 	local applicationUrl="${APPLICATION_URL}"
 	local stubrunnerUrl="${STUBRUNNER_URL}"
@@ -110,8 +133,10 @@ function runSmokeTests() {
 		# shellcheck disable=SC2086
 		"${MAVENW_BIN}" clean test -Psmoke -Dapplication.url="${applicationUrl}" -Dstubrunner.url="${stubrunnerUrl}" ${BUILD_OPTIONS}
 	fi
-}
+} # }}}
 
+# FUNCTION: runE2eTests {{{
+# Given [APPLICATION_URL] will run the tests with [e2e] profile
 function runE2eTests() {
 	local applicationUrl="${APPLICATION_URL}"
 	echo "Running e2e tests for application with url [${applicationUrl}]"
@@ -123,15 +148,19 @@ function runE2eTests() {
 		# shellcheck disable=SC2086
 		"${MAVENW_BIN}" clean test -Pe2e -Dapplication.url="${applicationUrl}" ${BUILD_OPTIONS}
 	fi
-}
+} # }}}
 
+# FUNCTION: outputFolder {{{
+# Maven implementation of output folder
 function outputFolder() {
 	echo "target"
-}
+} # }}}
 
+# FUNCTION: testResultsAntPattern {{{
+# Maven implementation of test results ant pattern
 function testResultsAntPattern() {
 	echo "**/surefire-reports/*"
-}
+} # }}}
 
 export -f build
 export -f retrieveAppName

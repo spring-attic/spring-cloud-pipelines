@@ -1,0 +1,27 @@
+build_and_upload.sh(1)
+======================
+:compat-mode!:
+
+NAME
+----
+build_and_upload.sh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 11 line(s). Calls functions:
+
+ Script-Body
+ `-- pipeline.sh/build
+

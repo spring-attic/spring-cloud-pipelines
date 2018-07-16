@@ -1,4 +1,5 @@
 #!/bin/bash
+# -*- mode: shell-script -*-
 
 set -o errexit
 set -o errtrace
@@ -15,14 +16,22 @@ __ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---- BUILD PHASE ----
 
+# FUNCTION: build {{{
 # Build the application and produce a binary. Most likely you'll upload that binary somewhere
 function build() {
 	echo "Build the application and produce a binary. Most likely you'll
 		upload that binary somewhere"
 	exit 1
-}
+} # }}}
 
-# Execute api compatibility check step
+# FUNCTION: apiCompatibilityCheck {{{
+# Execute api compatibility check step. Uses the LATEST_PROD_TAG or PASSED_LATEST_PROD_TAG
+# env vars if latest production tag has already been retrieved. If not will call the
+# [findLatestProdTag] function to retrieve the latest production tag.
+#
+# Requires the [PROJECT_NAME] env variable to be set. Otherwise will not be able to
+# parse the latest production tag. As a reminder, latest production tag should be of
+# structure [dev/appName/version] or [prod/appName/version].
 function apiCompatibilityCheck() {
 	# Find latest prod version
 	local prodTag="${PASSED_LATEST_PROD_TAG:-${LATEST_PROD_TAG:-}}"
@@ -36,161 +45,184 @@ function apiCompatibilityCheck() {
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		executeApiCompatibilityCheck "${LATEST_PROD_VERSION}"
 	fi
-}
+} # }}}
 
-# Execute api compatibility check step
-# @param - retrieved latest production version
+# FUNCTION: apiCompatibilityCheck {{{
+# Execute api compatibility check step for the given latest production version $1
+#
+# $1 - retrieved latest production version
 function executeApiCompatibilityCheck() {
 	# shellcheck disable=SC2034
 	local latestProdVersion="${1}"
 	echo "Execute api compatibility check step"
 	exit 1
-}
+} # }}}
 
+# FUNCTION: retrieveGroupId {{{
 # Echos the namespace that corresponds to the given application. In the
-#	JVM world corresponds to a group id of a project
+# JVM world corresponds to a group id of a project
 function retrieveGroupId() {
 	echo "Echos the namespace that corresponds to the given application. In the
 	JVM world corresponds to a group id of a project"
 	exit 1
-}
+} # }}}
 
+# FUNCTION: retrieveAppName {{{
 # Echos the name of the application
+# JVM world corresponds to a group id of a project
 function retrieveAppName() {
 	echo "Echos the name of the application"
 	exit 1
-}
+} # }}}
 
 # ---- TEST PHASE ----
 
+# FUNCTION: testDeploy {{{
 # Deploy binaries and required services to test environment
 function testDeploy() {
 	echo "Deploy binaries and required services to test environment"
 	exit 1
-}
+} # }}}
 
+# FUNCTION: testRollbackDeploy {{{
 # Deploy binaries and required services to test environment for rollback testing
 function testRollbackDeploy() {
 	echo "Deploy binaries and required services to test environment for rollback testing"
 	exit 1
-}
+} # }}}
 
+# FUNCTION: prepareForSmokeTests {{{
 # Prepares environment for smoke tests. Retrieves the latest production
-#	tags, exports all URLs required for smoke tests, etc.
+# tags, exports all URLs required for smoke tests, etc.
 function prepareForSmokeTests() {
 	echo "Prepares environment for smoke tests. Retrieves the latest production
 	tags, exports all URLs required for smoke tests, etc."
 	exit 1
-}
+} # }}}
 
+# FUNCTION: runSmokeTests {{{
 # Executes smoke tests. Profits from env vars set by 'prepareForSmokeTests'
 function runSmokeTests() {
 	echo "Executes smoke tests. Profits from env vars set by 'prepareForSmokeTests'"
 	exit 1
-}
+} # }}}
 
 # ---- STAGE PHASE ----
 
+# FUNCTION: stageDeploy {{{
 # Deploy binaries and required services to stage environment
 function stageDeploy() {
 	echo "Deploy binaries and required services to stage environment"
 	exit 1
-}
+} # }}}
 
+# FUNCTION: prepareForE2eTests {{{
 # Prepares environment for smoke tests. Logs in to PAAS etc.
 function prepareForE2eTests() {
 	echo "Prepares environment for smoke tests. Logs in to PAAS etc."
 	exit 1
-}
+} # }}}
 
+# FUNCTION: runE2eTests {{{
 # Executes end to end tests. Profits from env vars set by 'prepareForE2eTests'
 function runE2eTests() {
 	echo "Executes end to end tests. Profits from env vars set by 'prepareForE2eTests'"
 	exit 1
-}
+} # }}}
 
 # ---- PRODUCTION PHASE ----
 
+# FUNCTION: prodDeploy {{{
 # Will deploy the Green binary next to the Blue one, on the production environment
 function prodDeploy() {
 	echo "Will deploy the Green binary next to the Blue one, on the production environment"
 	exit 1
-}
+} # }}}
 
+# FUNCTION: rollbackToPreviousVersion {{{
 # Will rollback to blue instance
 function rollbackToPreviousVersion() {
 	echo "Will rollback to blue instance"
 	exit 1
-}
+} # }}}
 
+# FUNCTION: completeSwitchOver {{{
 # Deletes the old, Blue binary from the production environment
 function completeSwitchOver() {
 	echo "Deletes the old, Blue binary from the production environment"
 	exit 1
-}
+} # }}}
 
 # ---- DEPLOYMENT RELATED ---
 
-
-# Contract for deleting a service
-# @param {1} - service name
-# @param {2} - service type
+# FUNCTION: deleteService {{{
+# Contract for deleting a service with name $1 and type $2
+#
+# $1 - service name
+# $2 - service type
 function deleteService() {
 	local serviceName="${1}"
 	local serviceType="${2}"
 	echo "Should delete a service with name [${serviceName}] and type [${serviceType}]
 	Example: deleteService foo-eureka eureka"
 	exit 1
-}
+} # }}}
 
-# Contract for deploying a single service
-# @param {1} - service name
-# @param {2} - service type
+# FUNCTION: deployService {{{
+# Contract for deploying a single service with name $1 and type $2
+#
+# $1 - service name
+# $2 - service type
 function deployService() {
 	local serviceName="${1}"
 	local serviceType="${2}"
 	echo "Should deploy a service with name [${serviceName}] and type [${serviceType}]
 	Example: deployService foo-eureka eureka"
 	exit 1
-}
+} # }}}
 
+# FUNCTION: serviceExists {{{
 # Contract for verification if a service exists
-# @param {1} - service type
-# @param {2} - service name
+#
+# $1 - service type
+# $2 - service name
 function serviceExists() {
-	local serviceName="${2}"
 	local serviceType="${1}"
+	local serviceName="${2}"
 	echo "Should check if a service of type [${serviceType}] and name [${serviceName}] exists
 	Example: serviceExists mysql foo-mysql
 	Returns: 'true' if service exists and 'false' if it doesn't"
 	exit 1
-}
+} # }}}
 
 # ---- COMMON ----
 
+# FUNCTION: projectType {{{
 # Returns the type of the project basing on the cloned sources.
-# Example: MAVEN, GRADLE etc.
+# Example: MAVEN, GRADLE etc
 function projectType() {
 	echo "Returns the type of the project basing on the cloned sources.
 	Example: MAVEN, GRADLE etc."
 	exit 1
-}
+} # }}}
 
+# FUNCTION: outputFolder {{{
 # Returns the folder where the built binary will be stored.
 # Example: 'target/' - for Maven, 'build/' - for Gradle etc.
 function outputFolder() {
 	echo "Returns the folder where the built binary will be stored.
 	Example: 'target/' - for Maven, 'build/' - for Gradle etc."
 	exit 1
-}
+} # }}}
 
+# FUNCTION: testResultsAntPattern {{{
 # Returns the ant pattern for the test results.
 # Example: '**/test-results/*.xml' - for Maven, '**/surefire-reports/*' - for Gradle etc.
 function testResultsAntPattern() {
 	echo "Returns the ant pattern for the test results.
 	Example: '**/test-results/*.xml' - for Maven, '**/surefire-reports/*' - for Gradle etc."
 	exit 1
-}
+} # }}}
 
 # ================================================================
 #                      INTERFACES - END
@@ -201,7 +233,12 @@ function testResultsAntPattern() {
 #                  COMMON FUNCTIONS - START
 # ================================================================
 
-# Echoes the latest prod tag from git with trimmed refs part
+# FUNCTION: findLatestProdTag {{{
+# Echoes the latest prod tag from git with trimmed refs part. Uses the
+# LATEST_PROD_TAG and PASSED_LATEST_PROD_TAG env vars if latest production tag
+# was already found. If not, retrieves the latest prod tag via [latestProdTagFromGit]
+# function and sets the [PASSED_LATEST_PROD_TAG] and [LATEST_PROD_TAG] env vars with
+# the trimmed prod tag. Trimming occurs via the [trimRefsTag] function
 function findLatestProdTag() {
 	local prodTag="${PASSED_LATEST_PROD_TAG:-${LATEST_PROD_TAG:-}}"
 	if [[ ! -z "${prodTag}" ]]; then
@@ -214,28 +251,35 @@ function findLatestProdTag() {
 		PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
 		echo "${LATEST_PROD_TAG}"
 	fi
-}
+} # }}}
 
-# Extracts latest prod tag
+
+# FUNCTION: latestProdTagFromGit {{{
+# Echos latest productino tag from git
 function latestProdTagFromGit() {
 	local latestProdTag
 	latestProdTag=$("${GIT_BIN}" for-each-ref --sort=taggerdate --format '%(refname)' "refs/tags/prod/${PROJECT_NAME}" | tail -1)
 	echo "${latestProdTag}"
-}
+} # }}}
 
+# FUNCTION: trimRefsTag {{{
 # Extracts latest prod tag
 function trimRefsTag() {
 	local latestProdTag="${1}"
 	echo "${latestProdTag#refs/tags/}"
-}
+} # }}}
 
+# FUNCTION: extractVersionFromProdTag {{{
 # Extracts the version from the production tag
 function extractVersionFromProdTag() {
 	local tag="${1}"
 	echo "${tag#prod/}"
-}
+} # }}}
 
-# Sets the environment variable with contents of the parsed pipeline descriptor
+# FUNCTION: parsePipelineDescriptor {{{
+# Sets the [PARSED_YAML] environment variable with contents of the parsed pipeline
+# descriptor assuming that the file described by the [PIPELINE_DESCRIPTOR] env variable
+# is present. If that's the case sets the [PIPELINE_DESCRIPTOR_PRESENT] to [true]
 # shellcheck disable=SC2120
 function parsePipelineDescriptor() {
 	export PIPELINE_DESCRIPTOR_PRESENT
@@ -251,8 +295,9 @@ function parsePipelineDescriptor() {
 		export PARSED_YAML
 		PARSED_YAML=$(yaml2json "${PIPELINE_DESCRIPTOR}")
 	fi
-}
+} # }}}
 
+# FUNCTION: deployServices {{{
 # Deploys services assuming that pipeline descriptor exists
 # For TEST environment first deletes, then deploys services
 # For other environments only deploys a service if it wasn't there.
@@ -290,9 +335,13 @@ function deployServices() {
 	# retrieve the space separated name and type
 	done <<<"$(echo "${PARSED_YAML}" | \
 				 jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | "\(.name) \(.type) \(.useExisting)"')"
-}
+} # }}}
 
-# Returns 0 if services node exists, 1 if it doesn't
+# FUNCTION: envNodeExists {{{
+# Returns 0 if environment $1 node exists in the pipeline descriptor, 1 if it doesn't.
+# Requires the [PARSED_YAML] env var to contain the parsed descriptor
+#
+# $1 - name of the environment (e.g. test)
 function envNodeExists() {
 	local environment="${1}"
 	local services
@@ -302,19 +351,25 @@ function envNodeExists() {
 	else
 		return 0
 	fi
-}
+} # }}}
 
+# FUNCTION: yaml2json {{{
 # Converts YAML to JSON - uses ruby
 function yaml2json() {
 	ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load(ARGF))' "$@"
-}
+} # }}}
 
-# Converts a string to lower case
+# FUNCTION: toLowerCase {{{
+# Converts a string $1 to lower case
+#
+# $1 - string to convert
 function toLowerCase() {
 	echo "$1" | tr '[:upper:]' '[:lower:]'
-}
+} # }}}
 
-# Gets the build coordinates from descriptor
+# FUNCTION: getMainModulePath {{{
+# Gets the build coordinates from descriptor. Requires the [PARSED_YAML] to parse
+# otherwise returns empty main module
 function getMainModulePath() {
 	if [[ ! -z "${PARSED_YAML}" ]]; then
 		local mainModule
@@ -326,7 +381,7 @@ function getMainModulePath() {
 	else
 		echo ""
 	fi
-}
+} # }}}
 
 # ================================================================
 #                  COMMON FUNCTIONS - END
@@ -335,8 +390,13 @@ function getMainModulePath() {
 # ================================================================
 #           DEFINING PROJECT SETUP / LANGUAGE - START
 # ================================================================
+
+
+# FUNCTION: defineProjectSetup {{{
 # Defines the project setup. Takes into consideration the location of the pipeline
 # descriptor, project name, main module path etc.
+# Sets the [PROJECT_SETUP], [ROOT_PROJECT_DIR] env vars.
+# Uses [PROJECT_NAME] env var and [getMainModulePath] functions
 function defineProjectSetup() {
 	# if pipeline descriptor is in the provided folder that means that
 	# we don't have a descriptor per application
@@ -379,7 +439,7 @@ function defineProjectSetup() {
 			ROOT_PROJECT_DIR="."
 		fi
 	fi
-}
+} # }}}
 
 # ================================================================
 #                      EXPORTS AND CONSTANTS

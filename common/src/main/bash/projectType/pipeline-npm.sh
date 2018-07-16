@@ -12,27 +12,39 @@ CURL_BIN="${CURL_BIN:-curl}"
 SUDO_BIN="${SUDO_BIN:-sudo}"
 
 # ---- BUILD PHASE ----
+
+# FUNCTION: build {{{
+# npm implementation of the build function.
+# Requires [npm] and [node]. Installs those if possible
 function build() {
 	downloadNpmIfMissing
 	"${NPM_BIN}" install
 	"${NPM_BIN}" run test
-}
+} # }}}
 
+# FUNCTION: downloadAppBinary {{{
+# Just downloads the npm libraries. We will use sources
 function downloadAppBinary() {
 	echo "Nothing to download - will call npm install to speed things up"
 	"${NPM_BIN}" install
-}
+} # }}}
 
+# FUNCTION: executeApiCompatibilityCheck {{{
+# npm implementation of the execute API compatibility check
 function executeApiCompatibilityCheck() {
 	downloadNpmIfMissing
 	"${NPM_BIN}" run test-apicompatibility
-}
+} # }}}
 
+# FUNCTION: retrieveGroupId {{{
+# npm implementation of the retrieve group id
 function retrieveGroupId() {
 	downloadNpmIfMissing
 	"${NPM_BIN}" run group-id 2>/dev/null | tail -1
-}
+} # }}}
 
+# FUNCTION: retrieveAppName {{{
+# npm implementation of the retrieve app name
 function retrieveAppName() {
 	if [[ "${PROJECT_NAME}" != "" && "${PROJECT_NAME}" != "${DEFAULT_PROJECT_NAME}" ]]; then
 		echo "${PROJECT_NAME}"
@@ -40,38 +52,51 @@ function retrieveAppName() {
 		downloadNpmIfMissing
 		"${NPM_BIN}" run app-name 2>/dev/null | tail -1
 	fi
-}
+} # }}}
 
 # ---- TEST PHASE ----
 
+# FUNCTION: runSmokeTests {{{
+# npm implementation of the run smoke tests
 function runSmokeTests() {
 	downloadNpmIfMissing
 	"${NPM_BIN}" run test-smoke
-}
+} # }}}
 
 # ---- STAGE PHASE ----
 
+# FUNCTION: runE2eTests {{{
+# npm implementation of the e2e tests
 function runE2eTests() {
 	downloadNpmIfMissing
 	"${NPM_BIN}" run test-e2e
-}
+} # }}}
 
 # ---- COMMON ----
 
+# FUNCTION: projectType {{{
+# npm implementation of the project type
 function projectType() {
 	echo "NPM"
-}
+} # }}}
 
+# FUNCTION: projectType {{{
+# npm implementation of the output folder
 function outputFolder() {
 	echo "target"
-}
+} # }}}
 
+# FUNCTION: projectType {{{
+# npm implementation of the test results ant pattern
 function testResultsAntPattern() {
 	echo ""
-}
+} # }}}
 
 # ---- NPM SPECIFIC ----
 
+
+# FUNCTION: downloadNpmIfMissing {{{
+# Downloads and installs node and npm if missing
 function downloadNpmIfMissing() {
 	installNodeIfMissing
 	local npmInstalled
@@ -79,8 +104,10 @@ function downloadNpmIfMissing() {
 	if [[ "${npmInstalled}" == "false" ]]; then
 		"${CURL_BIN}" -L https://www.npmjs.com/install.sh | sh  > /dev/null 2>&1
 	fi
-}
+} # }}}
 
+# FUNCTION: downloadNpmIfMissing {{{
+# Installs node if missing
 function installNodeIfMissing() {
 	local nodeInstalled
 	"${NODE_BIN}" --version > /dev/null 2>&1 && nodeInstalled="true" || nodeInstalled="false"
@@ -90,7 +117,7 @@ function installNodeIfMissing() {
 		"${CURL_BIN}" -sL https://deb.nodesource.com/setup_10.x | "${SUDO_BIN}" -E bash -  > /dev/null 2>&1
 		"${SUDO_BIN}" "${APT_BIN}" install -y nodejs  > /dev/null 2>&1
 	fi
-}
+} # }}}
 
 export ARTIFACT_TYPE
 ARTIFACT_TYPE="${SOURCE_ARTIFACT_TYPE_NAME}"

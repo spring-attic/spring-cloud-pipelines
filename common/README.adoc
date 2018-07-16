@@ -34,6 +34,8 @@ Spring Cloud Pipelines is built on top of conventions. Here's how they look like
 There is one script called `pipeline.sh` that contains all required functions
 necessary to be implemented by any other scripts.
 
+Under `zsdoc` you can find the asciidoctor documentation of the scripts.
+
 === Supported platforms
 
 In terms of platforms we support the convention looks as follows: `pipeline-${plaform}.sh`,
@@ -74,3 +76,11 @@ Then, you can override the build function in `common/src/main/bash/projectType/p
 with your own without re-writing all the logic up to that point. Here is an
 https://github.com/pivotalservices/pcf-apptx-pipelines/tree/spike-150749835/common/src/main/bash/apptx[example]
 and a https://github.com/malston/github-webhook/blob/spike-150749835/ci/pipeline.yml[pipeline] that uses it.
+
+== Scripts documentation
+
+We're using https://github.com/zdharma/zshelldoc[zshelldoc] to generate documentation
+of bash scripts. You can run `./gradlew zsd` to generate that documentation. Whenever
+you run tests, bash documentation will be generated too.
+
+Check out the link:src/main/bash/README.adoc[] for a detailed documentation of the scripts.

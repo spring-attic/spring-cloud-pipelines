@@ -7,6 +7,13 @@ set -e
 export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
 export BINARY_EXTENSION="${BINARY_EXTENSION:-jar}"
 
+# FUNCTION: downloadAppBinary {{{
+# Fetches a JAR from a binary storage
+#
+# $1 - URL to repo with binaries
+# $2 - group id of the packaged sources
+# $3 - artifact id of the packaged sources
+# $4 - version of the packaged sources
 function downloadAppBinary() {
 	local repoWithJars="${1}"
 	local groupId="${2}"
@@ -29,18 +36,22 @@ function downloadAppBinary() {
 		echo "Failed to download file!"
 		return 1
 	fi
-}
+} # }}}
 
+# FUNCTION: isMavenProject {{{
+# Returns true if Maven Wrapper is used
 function isMavenProject() {
 	[ -f "mvnw" ]
-}
+} # }}}
 
+# FUNCTION: isGradleProject {{{
+# Returns true if Gradle Wrapper is used
 function isGradleProject() {
 	[ -f "gradlew" ]
-}
+} # }}}
 
-# TODO: consider also a project descriptor file
-# that could override these values
+# FUNCTION: projectType {{{
+# JVM implementation of projectType
 function projectType() {
 	if isMavenProject; then
 		echo "MAVEN"
@@ -49,7 +60,7 @@ function projectType() {
 	else
 		echo "UNKNOWN"
 	fi
-}
+} # }}}
 
 [[ -z "${PROJECT_TYPE}" || "${PROJECT_TYPE}" == "null" ]] && PROJECT_TYPE=$(projectType)
 

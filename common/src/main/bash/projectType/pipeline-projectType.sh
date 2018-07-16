@@ -4,7 +4,10 @@ set -o errexit
 set -o errtrace
 set -o pipefail
 
-# Gets the language type from descriptor
+# FUNCTION: getLanguageType {{{
+# Gets the language type from the parsed descriptor. Returns empty if it's not present
+# or if [language_type] node is not present in the descriptor.
+# Uses [PARSER_YAML] env var
 function getLanguageType() {
 	if [[ ! -z "${PARSED_YAML}" ]]; then
 		local languageType
@@ -16,8 +19,9 @@ function getLanguageType() {
 	else
 		echo ""
 	fi
-}
+} # }}}
 
+# FUNCTION: guessLanguageType {{{
 # Tries to guess the language type basing on the contents of the repository
 function guessLanguageType() {
 	if [[ -f "mvnw" ||  -f "gradlew" ]]; then
@@ -29,7 +33,7 @@ function guessLanguageType() {
 	else
 		echo ""
 	fi
-}
+} # }}}
 
 LANGUAGE_TYPE_FROM_DESCRIPTOR="$( getLanguageType )"
 
@@ -50,6 +54,7 @@ echo "Language type [${LANGUAGE_TYPE}]"
 
 # ---- [SOURCE] sourcing concrete language type ----
 # shellcheck source=/dev/null
+# Sources a file for the given [LANGUAGE_TYPE]
 [[ -f "${__DIR}/projectType/pipeline-${LANGUAGE_TYPE}.sh" ]] && source "${__DIR}/projectType/pipeline-${LANGUAGE_TYPE}.sh" ||  \
  echo "No projectType/pipeline-${LANGUAGE_TYPE}.sh found"
 

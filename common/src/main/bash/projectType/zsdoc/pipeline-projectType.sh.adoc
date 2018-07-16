@@ -1,0 +1,50 @@
+pipeline-projectType.sh(1)
+==========================
+:compat-mode!:
+
+NAME
+----
+pipeline-projectType.sh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+ getLanguageType
+ guessLanguageType
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 24 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+
+getLanguageType
+~~~~~~~~~~~~~~~
+
+____
+ # Gets the language type from the parsed descriptor. Returns empty if it's not present
+ # or if [language_type] node is not present in the descriptor.
+ # Uses [PARSER_YAML] env var
+____
+
+Has 10 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+guessLanguageType
+~~~~~~~~~~~~~~~~~
+
+____
+ # Tries to guess the language type basing on the contents of the repository
+____
+
+Has 9 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+

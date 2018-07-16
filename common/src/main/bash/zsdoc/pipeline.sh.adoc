@@ -1,0 +1,523 @@
+pipeline.sh(1)
+==============
+:compat-mode!:
+
+NAME
+----
+pipeline.sh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+ apiCompatibilityCheck
+ build
+ completeSwitchOver
+ defineProjectSetup
+ deleteService
+ deployService
+ deployServices
+ envNodeExists
+ executeApiCompatibilityCheck
+ extractVersionFromProdTag
+ findLatestProdTag
+ getMainModulePath
+ latestProdTagFromGit
+ outputFolder
+ parsePipelineDescriptor
+ prepareForE2eTests
+ prepareForSmokeTests
+ prodDeploy
+ projectType
+ retrieveAppName
+ retrieveGroupId
+ rollbackToPreviousVersion
+ runE2eTests
+ runSmokeTests
+ serviceExists
+ stageDeploy
+ testDeploy
+ testResultsAntPattern
+ testRollbackDeploy
+ toLowerCase
+ trimRefsTag
+ yaml2json
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 49 line(s). Calls functions:
+
+ Script-Body
+ |-- defineProjectSetup
+ |   `-- parsePipelineDescriptor
+ `-- parsePipelineDescriptor
+
+apiCompatibilityCheck
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Execute api compatibility check step. Uses the LATEST_PROD_TAG or PASSED_LATEST_PROD_TAG
+ # env vars if latest production tag has already been retrieved. If not will call the
+ # [findLatestProdTag] function to retrieve the latest production tag.
+ #
+ # Requires the [PROJECT_NAME] env variable to be set. Otherwise will not be able to
+ # parse the latest production tag. As a reminder, latest production tag should be of
+ # structure [dev/appName/version] or [prod/appName/version].
+____
+
+Has 11 line(s). Calls functions:
+
+ apiCompatibilityCheck
+ `-- executeApiCompatibilityCheck
+
+Called by:
+
+ build_api_compatibility_check.sh/Script-Body
+
+build
+~~~~~
+
+____
+ # Build the application and produce a binary. Most likely you'll upload that binary somewhere
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Called by:
+
+ build_and_upload.sh/Script-Body
+
+completeSwitchOver
+~~~~~~~~~~~~~~~~~~
+
+____
+ # Deletes the old, Blue binary from the production environment
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ prod_complete.sh/Script-Body
+
+defineProjectSetup
+~~~~~~~~~~~~~~~~~~
+
+____
+ # Defines the project setup. Takes into consideration the location of the pipeline
+ # descriptor, project name, main module path etc.
+ # Sets the [PROJECT_SETUP], [ROOT_PROJECT_DIR] env vars.
+ # Uses [PROJECT_NAME] env var and [getMainModulePath] functions
+____
+
+Has 32 line(s). Calls functions:
+
+ defineProjectSetup
+ `-- parsePipelineDescriptor
+
+Called by:
+
+ Script-Body
+
+deleteService
+~~~~~~~~~~~~~
+
+____
+ # Contract for deleting a service with name $1 and type $2
+ #
+ # $1 - service name
+ # $2 - service type
+____
+
+Has 5 line(s). Doesn't call other functions.
+
+Called by:
+
+ deployServices
+
+deployService
+~~~~~~~~~~~~~
+
+____
+ # Contract for deploying a single service with name $1 and type $2
+ #
+ # $1 - service name
+ # $2 - service type
+____
+
+Has 5 line(s). Doesn't call other functions.
+
+Called by:
+
+ deployServices
+
+deployServices
+~~~~~~~~~~~~~~
+
+____
+ # Deploys services assuming that pipeline descriptor exists
+ # For TEST environment first deletes, then deploys services
+ # For other environments only deploys a service if it wasn't there.
+ # Uses ruby and jq
+____
+
+Has 28 line(s). Calls functions:
+
+ deployServices
+ |-- deleteService
+ |-- deployService
+ |-- envNodeExists
+ `-- parsePipelineDescriptor
+
+Uses feature(s): _read_
+
+Called by:
+
+ pipeline-cf.sh/stageDeploy
+ pipeline-cf.sh/testDeploy
+ pipeline-k8s.sh/testDeploy
+
+envNodeExists
+~~~~~~~~~~~~~
+
+____
+ # Returns 0 if environment $1 node exists in the pipeline descriptor, 1 if it doesn't.
+ # Requires the [PARSED_YAML] env var to contain the parsed descriptor
+ #
+ # $1 - name of the environment (e.g. test)
+____
+
+Has 8 line(s). Doesn't call other functions.
+
+Called by:
+
+ deployServices
+ pipeline-cf.sh/propagatePropertiesForTests
+
+executeApiCompatibilityCheck
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Execute api compatibility check step for the given latest production version $1
+ #
+ # $1 - retrieved latest production version
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Called by:
+
+ apiCompatibilityCheck
+
+extractVersionFromProdTag
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Extracts the version from the production tag
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+findLatestProdTag
+~~~~~~~~~~~~~~~~~
+
+____
+ # Echoes the latest prod tag from git with trimmed refs part. Uses the
+ # LATEST_PROD_TAG and PASSED_LATEST_PROD_TAG env vars if latest production tag
+ # was already found. If not, retrieves the latest prod tag via [latestProdTagFromGit]
+ # function and sets the [PASSED_LATEST_PROD_TAG] and [LATEST_PROD_TAG] env vars with
+ # the trimmed prod tag. Trimming occurs via the [trimRefsTag] function
+____
+
+Has 11 line(s). Doesn't call other functions.
+
+Uses feature(s): _export_
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+getMainModulePath
+~~~~~~~~~~~~~~~~~
+
+____
+ # Gets the build coordinates from descriptor. Requires the [PARSED_YAML] to parse
+ # otherwise returns empty main module
+____
+
+Has 10 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+latestProdTagFromGit
+~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Echos latest productino tag from git
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+outputFolder
+~~~~~~~~~~~~
+
+____
+ # Returns the folder where the built binary will be stored.
+ # Example: 'target/' - for Maven, 'build/' - for Gradle etc.
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+parsePipelineDescriptor
+~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Sets the [PARSED_YAML] environment variable with contents of the parsed pipeline
+ # descriptor assuming that the file described by the [PIPELINE_DESCRIPTOR] env variable
+ # is present. If that's the case sets the [PIPELINE_DESCRIPTOR_PRESENT] to [true]
+ # shellcheck disable=SC2120
+____
+
+Has 13 line(s). Doesn't call other functions.
+
+Uses feature(s): _export_
+
+Called by:
+
+ defineProjectSetup
+ deployServices
+ Script-Body
+ pipeline-cf.sh/prepareForSmokeTests
+ pipeline-cf.sh/testRollbackDeploy
+ pipeline-k8s.sh/testRollbackDeploy
+
+prepareForE2eTests
+~~~~~~~~~~~~~~~~~~
+
+____
+ # Prepares environment for smoke tests. Logs in to PAAS etc.
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ stage_e2e.sh/Script-Body
+
+prepareForSmokeTests
+~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Prepares environment for smoke tests. Retrieves the latest production
+ # tags, exports all URLs required for smoke tests, etc.
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Called by:
+
+ test_rollback_smoke.sh/Script-Body
+ test_smoke.sh/Script-Body
+
+prodDeploy
+~~~~~~~~~~
+
+____
+ # Will deploy the Green binary next to the Blue one, on the production environment
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ prod_deploy.sh/Script-Body
+
+projectType
+~~~~~~~~~~~
+
+____
+ # Returns the type of the project basing on the cloned sources.
+ # Example: MAVEN, GRADLE etc
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+retrieveAppName
+~~~~~~~~~~~~~~~
+
+____
+ # Echos the name of the application
+ # JVM world corresponds to a group id of a project
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+retrieveGroupId
+~~~~~~~~~~~~~~~
+
+____
+ # Echos the namespace that corresponds to the given application. In the
+ # JVM world corresponds to a group id of a project
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+rollbackToPreviousVersion
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Will rollback to blue instance
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ prod_rollback.sh/Script-Body
+
+runE2eTests
+~~~~~~~~~~~
+
+____
+ # Executes end to end tests. Profits from env vars set by 'prepareForE2eTests'
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ stage_e2e.sh/Script-Body
+
+runSmokeTests
+~~~~~~~~~~~~~
+
+____
+ # Executes smoke tests. Profits from env vars set by 'prepareForSmokeTests'
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ test_rollback_smoke.sh/Script-Body
+ test_smoke.sh/Script-Body
+
+serviceExists
+~~~~~~~~~~~~~
+
+____
+ # Contract for verification if a service exists
+ #
+ # $1 - service type
+ # $2 - service name
+____
+
+Has 6 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+stageDeploy
+~~~~~~~~~~~
+
+____
+ # Deploy binaries and required services to stage environment
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ stage_deploy.sh/Script-Body
+
+testDeploy
+~~~~~~~~~~
+
+____
+ # Deploy binaries and required services to test environment
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ test_deploy.sh/Script-Body
+
+testResultsAntPattern
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Returns the ant pattern for the test results.
+ # Example: '**/test-results/*.xml' - for Maven, '**/surefire-reports/*' - for Gradle etc.
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+testRollbackDeploy
+~~~~~~~~~~~~~~~~~~
+
+____
+ # Deploy binaries and required services to test environment for rollback testing
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Called by:
+
+ test_rollback_deploy.sh/Script-Body
+
+toLowerCase
+~~~~~~~~~~~
+
+____
+ # Converts a string $1 to lower case
+ #
+ # $1 - string to convert
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Called by:
+
+ pipeline-cf.sh/getArtifactType
+
+trimRefsTag
+~~~~~~~~~~~
+
+____
+ # Extracts latest prod tag
+____
+
+Has 2 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+yaml2json
+~~~~~~~~~
+
+____
+ # Converts YAML to JSON - uses ruby
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+

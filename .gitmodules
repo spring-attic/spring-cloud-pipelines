@@ -4,3 +4,6 @@
 [submodule "common/src/test/bats/test_helper/bats-support"]
 	path = common/src/test/bats/test_helper/bats-support
 	url = https://github.com/ztombol/bats-support
+[submodule "common/src/test/bats/docs_helper/zshelldoc"]
+	path = common/src/test/bats/docs_helper/zshelldoc
+	url = https://github.com/zdharma/zshelldoc.git

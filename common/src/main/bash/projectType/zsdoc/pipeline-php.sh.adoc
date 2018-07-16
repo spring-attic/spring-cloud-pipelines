@@ -1,0 +1,214 @@
+pipeline-php.sh(1)
+==================
+:compat-mode!:
+
+NAME
+----
+pipeline-php.sh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+ build
+ downloadAppBinary
+ downloadComposerIfMissing
+ executeApiCompatibilityCheck
+ installPhpIfMissing
+ outputFolder
+ projectType
+ retrieveAppName
+ retrieveGroupId
+ runE2eTests
+ runSmokeTests
+ testResultsAntPattern
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 19 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+
+build
+~~~~~
+
+____
+ # PHP implementation of the build function.
+ # Requires [composer] and [php]. Installs those if possible
+____
+
+Has 30 line(s). Calls functions:
+
+ build
+ `-- downloadComposerIfMissing
+     `-- installPhpIfMissing
+
+Uses feature(s): _trap_
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+downloadAppBinary
+~~~~~~~~~~~~~~~~~
+
+____
+ # Fetches PHP tar.gz sources from a binary storage
+ #
+ # $1 - URL to repo with binaries
+ # $2 - group id of the packaged sources
+ # $3 - artifact id of the packaged sources
+ # $4 - version of the packaged sources
+____
+
+Has 26 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+downloadComposerIfMissing
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Downloads and installs PHP and Composer if missing
+____
+
+Has 13 line(s). Calls functions:
+
+ downloadComposerIfMissing
+ `-- installPhpIfMissing
+
+Called by:
+
+ build
+ executeApiCompatibilityCheck
+ retrieveAppName
+ retrieveGroupId
+ runE2eTests
+ runSmokeTests
+
+executeApiCompatibilityCheck
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # PHP implementation of the execute API compatibility check
+____
+
+Has 2 line(s). Calls functions:
+
+ executeApiCompatibilityCheck
+ `-- downloadComposerIfMissing
+     `-- installPhpIfMissing
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+installPhpIfMissing
+~~~~~~~~~~~~~~~~~~~
+
+____
+ # Downloads and installs PHP if missing
+____
+
+Has 9 line(s). Doesn't call other functions.
+
+Uses feature(s): _export_
+
+Called by:
+
+ downloadComposerIfMissing
+
+outputFolder
+~~~~~~~~~~~~
+
+____
+ # PHP implementation of the output folder
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+projectType
+~~~~~~~~~~~
+
+____
+ # PHP implementation of the project type
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+retrieveAppName
+~~~~~~~~~~~~~~~
+
+____
+ # PHP implementation of the retrieve application name
+____
+
+Has 6 line(s). Calls functions:
+
+ retrieveAppName
+ `-- downloadComposerIfMissing
+     `-- installPhpIfMissing
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+retrieveGroupId
+~~~~~~~~~~~~~~~
+
+____
+ # PHP implementation of the retrieve group id
+____
+
+Has 2 line(s). Calls functions:
+
+ retrieveGroupId
+ `-- downloadComposerIfMissing
+     `-- installPhpIfMissing
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+runE2eTests
+~~~~~~~~~~~
+
+____
+ # PHP implementation of the run e2e tests
+____
+
+Has 2 line(s). Calls functions:
+
+ runE2eTests
+ `-- downloadComposerIfMissing
+     `-- installPhpIfMissing
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+runSmokeTests
+~~~~~~~~~~~~~
+
+____
+ # PHP implementation of the run smoke tests
+____
+
+Has 2 line(s). Calls functions:
+
+ runSmokeTests
+ `-- downloadComposerIfMissing
+     `-- installPhpIfMissing
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+testResultsAntPattern
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # PHP implementation of the test results ant pattern
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+

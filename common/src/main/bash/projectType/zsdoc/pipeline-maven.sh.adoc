@@ -1,0 +1,188 @@
+pipeline-maven.sh(1)
+====================
+:compat-mode!:
+
+NAME
+----
+pipeline-maven.sh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+ build
+ executeApiCompatibilityCheck
+ extractMavenProperty
+ outputFolder
+ printTestResults
+ retrieveAppName
+ retrieveGroupId
+ retrieveStubRunnerIds
+ runE2eTests
+ runSmokeTests
+ testResultsAntPattern
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 22 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+
+build
+~~~~~
+
+____
+ # Maven implementation of build. Sets version, passes build options and distribution management properties.
+ # Uses [PIPELINE_VERSION], [PASSED_PIPELINE_VERSION] and [M2_SETTINGS...], [REPO_WITH_BINARIES...] related env vars
+____
+
+Has 8 line(s). Calls functions:
+
+ build
+ `-- printTestResults
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+executeApiCompatibilityCheck
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Maven implementation of executing API compatibility check
+____
+
+Has 6 line(s). Calls functions:
+
+ executeApiCompatibilityCheck
+ `-- printTestResults
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+extractMavenProperty
+~~~~~~~~~~~~~~~~~~~~
+
+____
+ # The function uses Maven Wrapper to extract property with name $1
+ #
+ # $1 - name of the property to extract
+____
+
+Has 12 line(s). Doesn't call other functions.
+
+Called by:
+
+ retrieveStubRunnerIds
+
+outputFolder
+~~~~~~~~~~~~
+
+____
+ # Maven implementation of output folder
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+printTestResults
+~~~~~~~~~~~~~~~~
+
+____
+ # Prints test results. Used by Concourse.
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Called by:
+
+ build
+ executeApiCompatibilityCheck
+ runE2eTests
+ runSmokeTests
+
+retrieveAppName
+~~~~~~~~~~~~~~~
+
+____
+ # For the given main module (if [getMainModulePath] function exists, it will return the path
+ # to the main module), will use [ruby] if possible to return the application name. If that
+ # doesn't bring a result, will use Maven to extract the artifact id.
+ #
+ # $1 - path to main module
+____
+
+Has 14 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+retrieveGroupId
+~~~~~~~~~~~~~~~
+
+____
+ # Maven implementation of group id retrieval. First tries to use [ruby] to extract the
+ # group id, if that's not possible uses Maven to do it. Requires path $1 to pom.xml
+ #
+ # $1 - path to pom.xml
+____
+
+Has 8 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+retrieveStubRunnerIds
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Extracts the stub runner ids from the Maven properties
+____
+
+Has 1 line(s). Calls functions:
+
+ retrieveStubRunnerIds
+ `-- extractMavenProperty
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+runE2eTests
+~~~~~~~~~~~
+
+____
+ # Given [APPLICATION_URL] will run the tests with [e2e] profile
+____
+
+Has 8 line(s). Calls functions:
+
+ runE2eTests
+ `-- printTestResults
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+runSmokeTests
+~~~~~~~~~~~~~
+
+____
+ # Given [APPLICATION_URL] and [STUBRUNNER_URL] will run the tests with [smoke] profile
+____
+
+Has 9 line(s). Calls functions:
+
+ runSmokeTests
+ `-- printTestResults
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+
+testResultsAntPattern
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Maven implementation of test results ant pattern
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function, may be a hook or Zle widget, etc.
+

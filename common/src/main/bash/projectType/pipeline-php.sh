@@ -14,6 +14,10 @@ CURL_BIN="${CURL_BIN:-curl}"
 BINARY_EXTENSION="${BINARY_EXTENSION:-tar.gz}"
 
 # ---- BUILD PHASE ----
+
+# FUNCTION: build {{{
+# PHP implementation of the build function.
+# Requires [composer] and [php]. Installs those if possible
 function build() {
 	downloadComposerIfMissing
 	"${COMPOSER_BIN}" install
@@ -46,8 +50,15 @@ function build() {
 		echo "Failed to upload file!"
 		return 1
 	fi
-}
+} # }}}
 
+# FUNCTION: downloadAppBinary {{{
+# Fetches PHP tar.gz sources from a binary storage
+#
+# $1 - URL to repo with binaries
+# $2 - group id of the packaged sources
+# $3 - artifact id of the packaged sources
+# $4 - version of the packaged sources
 function downloadAppBinary() {
 	local repoWithBinaries="${1}"
 	local groupId="${2}"
@@ -75,20 +86,28 @@ function downloadAppBinary() {
 		echo "Failed to download file!"
 		return 1
 	fi
-}
+} # }}}
 
+# FUNCTION: executeApiCompatibilityCheck {{{
+# PHP implementation of the execute API compatibility check
 function executeApiCompatibilityCheck() {
 	downloadComposerIfMissing
 	"${COMPOSER_BIN}" test-apicompatibility
-}
+} # }}}
 
 # TODO: Add to list of required functions
+
+# FUNCTION: retrieveGroupId {{{
+# PHP implementation of the retrieve group id
 function retrieveGroupId() {
 	downloadComposerIfMissing
 	"${COMPOSER_BIN}" group-id 2>/dev/null | tail -1
-}
+} # }}}
 
 # TODO: Add to list of required functions
+
+# FUNCTION: retrieveAppName {{{
+# PHP implementation of the retrieve application name
 function retrieveAppName() {
 	if [[ "${PROJECT_NAME}" != "" && "${PROJECT_NAME}" != "${DEFAULT_PROJECT_NAME}" ]]; then
 		echo "${PROJECT_NAME}"
@@ -96,39 +115,51 @@ function retrieveAppName() {
 		downloadComposerIfMissing
 		"${COMPOSER_BIN}" app-name 2>/dev/null | tail -1
 	fi
-}
+} # }}}
 
 # ---- TEST PHASE ----
 
+# FUNCTION: runSmokeTests {{{
+# PHP implementation of the run smoke tests
 function runSmokeTests() {
 	downloadComposerIfMissing
 	"${COMPOSER_BIN}" test-smoke
-}
+} # }}}
 
 # ---- STAGE PHASE ----
 
+# FUNCTION: runE2eTests {{{
+# PHP implementation of the run e2e tests
 function runE2eTests() {
 	downloadComposerIfMissing
 	"${COMPOSER_BIN}" test-e2e
-}
+} # }}}
 
 # ---- COMMON ----
 
+# FUNCTION: projectType {{{
+# PHP implementation of the project type
 function projectType() {
 	echo "COMPOSER"
-}
+} # }}}
 
+# FUNCTION: outputFolder {{{
+# PHP implementation of the output folder
 function outputFolder() {
 	echo "target"
-}
+} # }}}
 
+# FUNCTION: testResultsAntPattern {{{
+# PHP implementation of the test results ant pattern
 function testResultsAntPattern() {
 	echo ""
-}
+} # }}}
 
 
 # ---- PHP SPECIFIC ----
 
+# FUNCTION: downloadComposerIfMissing {{{
+# Downloads and installs PHP and Composer if missing
 function downloadComposerIfMissing() {
 	installPhpIfMissing
 	local composerInstalled
@@ -143,8 +174,10 @@ function downloadComposerIfMissing() {
 			COMPOSER_BIN="$( pwd )/composer.phar"
 		popd  > /dev/null 2>&1
 	fi
-}
+} # }}}
 
+# FUNCTION: installPhpIfMissing {{{
+# Downloads and installs PHP if missing
 function installPhpIfMissing() {
 	local phpInstalled
 	"${PHP_BIN}" --version > /dev/null 2>&1 && phpInstalled="true" || phpInstalled="false"
@@ -156,7 +189,7 @@ function installPhpIfMissing() {
 		"${APT_BIN}" -y update && "${APT_BIN}" -y install php7.2  > /dev/null 2>&1
 		"${APT_BIN}" -y install php-pear php7.2-curl php7.2-dev php7.2-gd php7.2-mbstring php7.2-zip php7.2-mysql php7.2-xml  > /dev/null 2>&1
 	fi
-}
+} # }}}
 
 export ARTIFACT_TYPE
 ARTIFACT_TYPE="${SOURCE_ARTIFACT_TYPE_NAME}"
