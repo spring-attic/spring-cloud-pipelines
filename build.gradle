@@ -159,6 +159,11 @@ jruby {
 	defaultRepositories false
 }
 
+task generateScriptsReadme(type: JRubyExec) {
+	script "${projectDir}/tools/coalesce-readme.rb"
+	scriptArgs "-i ${projectDir}/common/src/main/bash/BASH_SCRIPTS.adoc", "-o ${projectDir}/common/src/main/bash/README.adoc"
+}
+
 // remove::start[JENKINS]
 task generateJenkinsReadme(type: JRubyExec) {
 	script "${projectDir}/tools/coalesce-readme.rb"
@@ -217,7 +222,7 @@ task copyGeneratedSources(type: Copy) {
 	into project(":docs").projectDir.path
 }
 
-task generateDocs(dependsOn: ["copyJekyll", "copyGeneratedSources"]) {
+task generateDocs(dependsOn: ["copyJekyll", "copyGeneratedSources", "generateScriptsReadme"]) {
 	description = "Creates documentation for the project"
 }
 
