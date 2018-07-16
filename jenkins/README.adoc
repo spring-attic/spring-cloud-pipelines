@@ -3,6 +3,7 @@
 :demo-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/demo
 :concourse-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/concourse
 :intro-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/intro
+:toc:
 == Jenkins Pipeline (Common)
 
 In this section we will present the common setup of Jenkins for any platform.

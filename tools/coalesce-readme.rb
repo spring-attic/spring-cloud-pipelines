@@ -37,6 +37,7 @@ out = <<-EOF.gsub(/^\s+/, '')
   :demo-root-docs: #{DOCS_BASE_URL}/docs/img/demo
   :concourse-root-docs: #{DOCS_BASE_URL}/docs/img/concourse
   :intro-root-docs: #{DOCS_BASE_URL}/docs/img/intro
+  :toc:
 EOF
 
 out << doc.reader.read

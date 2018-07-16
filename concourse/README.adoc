@@ -3,6 +3,7 @@
 :demo-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/demo
 :concourse-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/concourse
 :intro-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs/img/intro
+:toc:
 // remove::start[CF]
 [[concourse-pipeline-cf]]
 == Concourse Pipeline (Cloud Foundry)
