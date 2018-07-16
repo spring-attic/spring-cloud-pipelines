@@ -50,7 +50,8 @@ case $1 in
         git clone https://github.com/bats-core/bats-core.git "${ROOT_DIR}/../build/bats"
         ;;
     install-zsd)
-        zsh --version && zshInstalled="true"
+        zshInstalled="false"
+        zsh --version && zshInstalled="true" || echo "zsh is missing"
         if [[ "${zshInstalled}" != "true" ]]; then
             echo  "ZSH is missing! Will return 0 but won't generate any docs"
             exit 0
@@ -65,7 +66,8 @@ case $1 in
         popd
         ;;
     generate-zsd)
-        zsh --version && zshInstalled="true"
+        zshInstalled="false"
+        zsh --version && zshInstalled="true" || echo "zsh is missing"
         if [[ "${zshInstalled}" != "true" ]]; then
             echo  "ZSH is missing! Will return 0 but won't generate any docs"
             exit 0
