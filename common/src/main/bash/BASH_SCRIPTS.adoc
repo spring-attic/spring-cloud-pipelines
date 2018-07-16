@@ -1,3 +1,5 @@
+= SCRIPTS
+
 include::zsdoc/pipeline.sh.adoc[]
 
 include::projectType/zsdoc/pipeline-projectType.sh.adoc[]
