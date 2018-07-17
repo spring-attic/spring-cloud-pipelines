@@ -12,7 +12,6 @@ class Trigger {
 	String organization
 	PayloadConstraints payloadConstraints
 	String project
-	String registry
 	String repository
 	String slug
 	String source

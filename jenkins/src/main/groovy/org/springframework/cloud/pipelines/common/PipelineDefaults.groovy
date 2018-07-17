@@ -324,9 +324,5 @@ class PipelineDefaults {
 	String spinnakerSpace() {
 		return prop("SPINNAKER_SPACE", "")
 	}
-
-	String spinnakerRegistry() {
-		return prop("SPINNAKER_REGISTRY", "")
-	}
 // remove::end[SPINNAKER]
 }

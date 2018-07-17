@@ -18,7 +18,11 @@ import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Trigger
 import org.springframework.cloud.repositorymanagement.Repository
 
 /**
+ * Given the env variables produces a JSON with a Spinnaker
+ * opinionated deployment pipeline
+ *
  * @author Marcin Grzejszczak
+ * @since 1.0.0
  */
 @CompileStatic
 class SpinnakerPipelineBuilder {
@@ -189,7 +193,7 @@ class SpinnakerPipelineBuilder {
 			provider: "cloudfoundry",
 			region: "${org}/${space}",
 			stack: "",
-			strategy: "highlander"
+			strategy: deploymentStrategy
 		)
 	}
 
@@ -222,7 +226,7 @@ class SpinnakerPipelineBuilder {
 			requisiteStageRefIds: intToRange(firstRefId, lastRefId),
 			type: "deploy",
 			clusters: [
-				cluster(defaults.cfStagePassword(),
+				cluster(defaults.cfStageUsername(),
 					defaults.cfStageOrg(), defaults.cfStageSpace(),
 				"highlander")
 			]
@@ -317,7 +321,6 @@ class SpinnakerPipelineBuilder {
 			organization: defaults.spinnakerOrg(),
 			payloadConstraints: new PayloadConstraints(),
 			project: defaults.spinnakerProject(),
-			registry: defaults.spinnakerRegistry(),
 			repository: "${defaults.spinnakerOrg()}/${defaults.spinnakerSpace()}",
 			slug: "${repository.name}",
 			source: "github",

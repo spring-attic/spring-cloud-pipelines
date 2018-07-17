@@ -13,6 +13,7 @@ sourceSets {
 
 ext {
     scRepoManagementVersion = "1.0.0.BUILD-SNAPSHOT"
+    jacksonVersion = "2.9.5"
 }
 
 repositories {
@@ -44,15 +45,16 @@ dependencies {
 
     // for dsl
     libs "org.springframework.cloud.internal:spring-cloud-repository-management:${scRepoManagementVersion}"
-    libs "com.fasterxml.jackson.core:jackson-core:2.9.5"
-    libs "com.fasterxml.jackson.core:jackson-databind:2.9.5"
-    libs "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.5"
+    libs "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    libs "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    libs "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
 
     testCompile project(":common")
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
     }
     testCompile 'xmlunit:xmlunit:1.6'
+    testCompile "org.skyscreamer:jsonassert:1.4.0"
 }
 
 test {
