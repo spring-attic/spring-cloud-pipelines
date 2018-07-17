@@ -379,7 +379,7 @@ function hostname() {
 	fi
 	# Even if host is specified in the manifest, append the hostname uuid from the credentials file
 	# TODO Reconsider - now that we are using the manifest, don't need this... also what if random-route is true?
-	if [[ "${PAAS_HOSTNAME_UUID}" != "" ]]; then
+	if [[ "${PAAS_HOSTNAME_UUID}" != "" && "${PAAS_HOSTNAME_UUID}" != "null" ]]; then
 		hostname="${hostname}-${PAAS_HOSTNAME_UUID}"
 	fi
 	if [[ ${env} != "PROD" ]]; then

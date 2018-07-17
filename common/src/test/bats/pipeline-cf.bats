@@ -943,3 +943,17 @@ export -f fakeRetrieveStubRunnerIds
 	refute_output --partial "cf stop ${projectName}"
 	assert_failure
 }
+
+# Issue 171
+@test "should not allow null in hostname" {
+	export PAAS_HOSTNAME_UUID="null"
+	export CF_BIN="cf_that_returns_nothing"
+	export PAAS_TYPE="cf"
+	export ENVIRONMENT="prod"
+	export LANGUAGE_TYPE="dummy"
+	cd "${TEMP_DIR}/maven/empty_project"
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	assert_success
+	assert_equal "foo-prod" "$( hostname "foo" "prod" )"
+}
