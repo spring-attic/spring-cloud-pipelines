@@ -954,6 +954,6 @@ export -f fakeRetrieveStubRunnerIds
 	cd "${TEMP_DIR}/maven/empty_project"
 	source "${SOURCE_DIR}/pipeline.sh"
 
-	assert_success
 	assert_equal "foo-prod" "$( hostname "foo" "prod" )"
+	assert_success
 }
