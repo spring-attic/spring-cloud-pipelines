@@ -194,7 +194,6 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
 			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 			// Spinnaker
-			stringParam('SPINNAKER_ACCOUNT', '', "The name of Spinnaker account")
 			stringParam('SPINNAKER_JENKINS_MASTER', '', "The name of Jenkins master")
 			stringParam('SPINNAKER_PROJECT', '', "The name of Spinnaker project")
 			stringParam('SPINNAKER_ORG', '', "The name of Spinnaker org")
@@ -222,8 +221,15 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			].join("\n"))
 		}
 	}
+	publishers {
+		archiveArtifacts {
+			allowEmpty(false)
+			pattern("**/build/*_pipeline.json")
+		}
+	}
 }
 // remove::end[SPINNAKER]
+
 factory.job('jenkins-pipeline-cf-declarative-seed') {
 	scm {
 		git {

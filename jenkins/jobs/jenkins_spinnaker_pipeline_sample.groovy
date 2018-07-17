@@ -4,6 +4,7 @@ import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaults
+import org.springframework.cloud.pipelines.spinnaker.SpinnakerJobsFactory
 import org.springframework.cloud.pipelines.spinnaker.pipeline.SpinnakerPipelineBuilder
 import org.springframework.cloud.pipelines.steps.Build
 import org.springframework.cloud.pipelines.steps.RollbackTestOnTest
@@ -33,26 +34,14 @@ RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
 	.repository(repoType).build())
 // get the repos from the org
 List<Repository> repositories = binding.variables["TEST_MODE"] ? [] : repositoryManagers.repositories(org)
-// definition of project building
-Closure buildProjects = { PipelineDefaults pipelineDefaults,
-						  Coordinates coordinates ->
-	String gitRepoName = coordinates.gitRepoName
-	String projectName = SpinnakerDefaults.projectName(gitRepoName)
-	pipelineDefaults.addEnvVar("PROJECT_NAME", gitRepoName)
-	println "Creating jobs and views for [${projectName}]"
-	new Build(dsl, pipelineDefaults).step(projectName, pipelineVersion, coordinates)
-	new TestOnTest(dsl, pipelineDefaults).step(projectName, coordinates)
-	new RollbackTestOnTest(dsl, pipelineDefaults).step(projectName, coordinates)
-	new TestOnStage(dsl, pipelineDefaults).step(projectName, coordinates)
-}
 // JSON dump
-Closure dumpJson = { PipelineDescriptor pipeline, Repository repo ->
-	String json = new SpinnakerPipelineBuilder(pipeline, repo).spinnakerPipeline()
+Closure dumpJsonToFile = { PipelineDescriptor pipeline, Repository repo ->
+	String json = new SpinnakerPipelineBuilder(pipeline, repo, defaults)
+		.spinnakerPipeline()
 	File pipelineJson = new File("${workspace}/build", repo.name + "_pipeline.json")
 	pipelineJson.createNewFile()
 	pipelineJson.text = json
 }
-
 List<Repository> repositoriesForViews = []
 // for every repo
 repositories.each { Repository repo ->
@@ -68,14 +57,16 @@ repositories.each { Repository repo ->
 		pipeline.pipeline.project_names.each { String monoRepo ->
 			Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
 			repositoriesForViews.add(monoRepository)
-			buildProjects(pipelineDefaults, Coordinates.fromRepo(monoRepository, defaults))
-			dumpJson(pipeline, monoRepository)
+			new SpinnakerJobsFactory(pipelineDefaults, dsl)
+				.allJobs(Coordinates.fromRepo(monoRepository, defaults), pipelineVersion)
+			dumpJsonToFile(pipeline, monoRepository)
 		}
 	} else {
 		// for any other repo build a single pipeline
 		repositoriesForViews.add(repo)
-		buildProjects(pipelineDefaults, Coordinates.fromRepo(repo, defaults))
-		dumpJson(pipeline, repo)
+		new SpinnakerJobsFactory(pipelineDefaults, dsl)
+			.allJobs(Coordinates.fromRepo(repo, defaults), pipelineVersion)
+		dumpJsonToFile(pipeline, repo)
 	}
 }
 // build the views
