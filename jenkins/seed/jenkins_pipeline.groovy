@@ -174,6 +174,12 @@ factory.job('jenkins-spinnaker-cf-seed') {
 				usernamePassword("GIT_USERNAME", "GIT_PASSWORD",
 					binding.variables["GIT_CREDENTIAL_ID"] as String)
 			}
+			usernamePassword("PAAS_TEST_USERNAME", "PAAS_TEST_PASSWORD",
+				binding.variables["PAAS_TEST_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_STAGE_USERNAME", "PAAS_STAGE_PASSWORD",
+				binding.variables["PAAS_STAGE_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_PROD_USERNAME", "PAAS_PROD_PASSWORD",
+				binding.variables["PAAS_PROD_CREDENTIAL_ID"] as String)
 		}
 		parameters {
 			// Common
