@@ -25,16 +25,6 @@ factory.job('meta-seed') {
 			}
 		}
 	}
-	wrappers {
-		credentialsBinding {
-			usernamePassword("PAAS_TEST_USERNAME", "PAAS_TEST_PASSWORD",
-				binding.variables["PAAS_TEST_CREDENTIAL_ID"] as String)
-			usernamePassword("PAAS_STAGE_USERNAME", "PAAS_STAGE_PASSWORD",
-				binding.variables["PAAS_STAGE_CREDENTIAL_ID"] as String)
-			usernamePassword("PAAS_PROD_USERNAME", "PAAS_PROD_PASSWORD",
-				binding.variables["PAAS_PROD_CREDENTIAL_ID"] as String)
-		}
-	}
 	steps {
 		gradle("clean build -x test")
 		dsl {
@@ -51,9 +41,6 @@ factory.job('meta-seed') {
 	wrappers {
 		parameters {
 			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
-			stringParam('PAAS_TEST_CREDENTIAL_ID', 'cf-test', 'ID of the CF credentials for test environment')
-			stringParam('PAAS_STAGE_CREDENTIAL_ID', 'cf-stage', 'ID of the CF credentials for stage environment')
-			stringParam('PAAS_PROD_CREDENTIAL_ID', 'cf-prod', 'ID of the CF credentials for prod environment')
 		}
 	}
 }
@@ -99,6 +86,15 @@ factory.job('jenkins-pipeline-cf-seed') {
 		}
 	}
 	wrappers {
+		credentialsBinding {
+			usernamePassword("PAAS_TEST_USERNAME", "PAAS_TEST_PASSWORD",
+				binding.variables["PAAS_TEST_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_STAGE_USERNAME", "PAAS_STAGE_PASSWORD",
+				binding.variables["PAAS_STAGE_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_PROD_USERNAME", "PAAS_PROD_PASSWORD",
+				binding.variables["PAAS_PROD_CREDENTIAL_ID"] as String)
+		}
+
 		parameters {
 			// Common
 			stringParam('REPOS', repos,
