@@ -5,19 +5,20 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class Stage {
 	List<Cluster> clusters
+	Boolean failPipeline
 	String name
 	String refId
 	List<String> requisiteStageRefIds = []
 	String type
 	String command
-	boolean failPipeline = true
 	String scriptPath
 	String user
-	boolean waitForCompletion
-	List<String> parameters = []
+	Boolean waitForCompletion
+	Map parameters
 	String master
 	String job
 	List<String> judgmentInputs
 	List<String> notifications
-	boolean continuePipeline
+	Boolean continuePipeline
+	Integer waitTime
 }

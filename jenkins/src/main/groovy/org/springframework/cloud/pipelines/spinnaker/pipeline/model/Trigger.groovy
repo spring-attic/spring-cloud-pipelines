@@ -6,7 +6,7 @@ import groovy.transform.CompileStatic
 class Trigger {
 	String account
 	String branch
-	boolean enabled
+	Boolean enabled
 	String job
 	String master
 	String organization

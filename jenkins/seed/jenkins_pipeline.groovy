@@ -177,12 +177,6 @@ factory.job('jenkins-spinnaker-cf-seed') {
 				usernamePassword("GIT_USERNAME", "GIT_PASSWORD",
 					binding.variables["GIT_CREDENTIAL_ID"] as String)
 			}
-			usernamePassword("PAAS_TEST_USERNAME", "PAAS_TEST_PASSWORD",
-				binding.variables["PAAS_TEST_CREDENTIAL_ID"] as String)
-			usernamePassword("PAAS_STAGE_USERNAME", "PAAS_STAGE_PASSWORD",
-				binding.variables["PAAS_STAGE_CREDENTIAL_ID"] as String)
-			usernamePassword("PAAS_PROD_USERNAME", "PAAS_PROD_PASSWORD",
-				binding.variables["PAAS_PROD_CREDENTIAL_ID"] as String)
 		}
 		parameters {
 			// Common
@@ -202,12 +196,8 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
 			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 			// Spinnaker
-			stringParam('SPINNAKER_JENKINS_MASTER', '', "The name of Jenkins master")
-			stringParam('SPINNAKER_PROJECT', '', "The name of Spinnaker project")
-			stringParam('SPINNAKER_ORG', '', "The name of Spinnaker org")
-			stringParam('SPINNAKER_SPACE', '', "The name of Spinnaker space")
-			stringParam('SPINNAKER_REGISTRY', '', "The name of Spinnaker registry")
-
+			stringParam('SPINNAKER_JENKINS_MASTER', '', "The name of Jenkins master used by Spinnaker")
+			stringParam('SPINNAKER_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
 			stringParam('PAAS_TEST_ORG', 'pcfdev-org', 'Name of the CF organization for test env')
 			stringParam('PAAS_TEST_SPACE_PREFIX', 'sc-pipelines-test', 'Prefix of the name of the CF space for the test env to which the app name will be appended')
 			stringParam('PAAS_STAGE_ORG', 'pcfdev-org', 'Name of the CF organization for stage env')

@@ -83,7 +83,7 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "PAAS_PROD_NAMESPACE")
 		setIfPresent(envs, variables, "KUBERNETES_MINIKUBE")
 		// remove::end[K8S]
-		println "Will analyze the following variables psased to the seed job \n\n${variables}"
+		println "Will analyze the following variables passed to the seed job \n\n${variables}"
 		println "Will set the following env vars to the generated jobs \n\n${envs}"
 		return envs
 	}
@@ -305,24 +305,20 @@ class PipelineDefaults {
 // remove::end[K8S]
 
 // remove::start[SPINNAKER]
-	String spinnakerAccount() {
-		return prop("SPINNAKER_ACCOUNT", "")
+	String spinnakerTestDeploymentAccount() {
+		return prop("SPINNAKER_TEST_DEPLOYMENT_ACCOUNT", "")
+	}
+
+	String spinnakerStageDeploymentAccount() {
+		return prop("SPINNAKER_STAGE_DEPLOYMENT_ACCOUNT", "")
+	}
+
+	String spinnakerProdDeploymentAccount() {
+		return prop("SPINNAKER_PROD_DEPLOYMENT_ACCOUNT", "")
 	}
 
 	String spinnakerJenkinsMaster() {
 		return prop("SPINNAKER_JENKINS_MASTER", "")
-	}
-
-	String spinnakerProject() {
-		return prop("SPINNAKER_PROJECT", "")
-	}
-
-	String spinnakerOrg() {
-		return prop("SPINNAKER_ORG", "")
-	}
-
-	String spinnakerSpace() {
-		return prop("SPINNAKER_SPACE", "")
 	}
 // remove::end[SPINNAKER]
 }
