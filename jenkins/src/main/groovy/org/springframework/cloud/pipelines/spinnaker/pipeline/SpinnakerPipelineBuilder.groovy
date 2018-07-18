@@ -55,73 +55,133 @@ class SpinnakerPipelineBuilder {
 
 	private List<Stage> stages() {
 		List<Stage> stages = []
-		// Test Create Service 1 (x)
-		// Test Create Service 2 (x)
 		int firstRefId = 1
-		Tuple2<Integer, List<Stage>> testServices =
-			createTestServices("test", firstRefId, pipelineDescriptor.test.services)
-		stages.addAll(testServices.second)
-		// Deploy to test
-		Tuple2<Integer, Stage> testDeployment = testDeploymentStage(testServices.first)
-		stages.add(testDeployment.second)
-		// Test on test
-		Tuple2<Integer, Stage> testsOnTest = runTests("test", "Run tests on test",
-			"test", testDeployment.first)
-		stages.add(testsOnTest.second)
-		// Deploy to test latest prod version
-		Tuple2<Integer, Stage> testDeploymentRollback =
-			rollbackDeploymentStage("Deploy to test latest prod version",
-				testsOnTest.first,
-				valueOrDefaultIfNull(pipelineDescriptor.pipeline.rollback_step, true))
-		stages.add(testDeploymentRollback.second)
-		// Test on test latest prod version
-		Tuple2<Integer, Stage> rollbackTests = runTests("test", "Run rollback tests on test",
-			"rollback-test", testDeploymentRollback.first,
-			valueOrDefaultIfNull(pipelineDescriptor.pipeline.rollback_step, true))
-		stages.add(rollbackTests.second)
-		// Wait for stage env
-		Tuple2<Integer, Stage> waitingForStage = manualJudgement(
-			!valueOrDefaultIfNull(pipelineDescriptor.pipeline.stage_step, true) ||
-			valueOrDefaultIfNull(pipelineDescriptor.pipeline.auto_stage, false),
-			"Wait for stage env", rollbackTests.first)
-		stages.add(waitingForStage.second)
-		// Stage Create Service 1
-		// Stage Create Service 2
-		Tuple2<Integer, List<Stage>> stageServices = createStageServices("stage",
-			waitingForStage.first, pipelineDescriptor.stage.services)
-		stages.addAll(stageServices.second)
-		// Deploy to stage
-		Tuple2<Integer, Stage> stageDeployment =
-			deploymentStage("Deploy to stage", waitingForStage.first,
-				stageServices.first,
-				valueOrDefaultIfNull(pipelineDescriptor.pipeline.stage_step, true))
-		stages.add(stageDeployment.second)
-		// Prepare for end to end tests
-		Tuple2<Integer, Stage> prepareForE2e = manualJudgement(
-			!valueOrDefaultIfNull(pipelineDescriptor.pipeline.stage_step, true) ||
-			valueOrDefaultIfNull(pipelineDescriptor.pipeline.auto_stage, false),
-			"Prepare for end to end tests", stageDeployment.first)
-		stages.add(prepareForE2e.second)
-		// Run end to end tests
-		Tuple2<Integer, Stage> e2eTests = runTests("stage", "End to end tests on stage",
-			"e2e", prepareForE2e.first,
-			valueOrDefaultIfNull(pipelineDescriptor.pipeline.stage_step, true))
-		stages.add(e2eTests.second)
-		// Approve production
-		Tuple2<Integer, Stage> approveProd = manualJudgement(
-			valueOrDefaultIfNull(pipelineDescriptor.pipeline.auto_prod, false),
-			"Approve production",
-			e2eTests.first)
-		stages.add(approveProd.second)
-		// Deploy to prod
-		Tuple2<Integer, Stage> deployToProd =
-			prodDeployment("Deploy to prod", approveProd.first, approveProd.first)
-		stages.add(deployToProd.second)
-		// Rollback
+		// each tuple represents the id of the job and list / single stage
+		Tuple2<Integer, List<Stage>> testServices = createTestServices(firstRefId, stages)
+		Tuple2<Integer, Stage> testDeployment = deployToTest(testServices, stages)
+		Tuple2<Integer, Stage> testsOnTest = testsOnTest(testDeployment, stages)
+		Tuple2<Integer, Stage> testDeploymentRollback = deployToTestLatestProdVersion(testsOnTest, stages)
+		Tuple2<Integer, Stage> rollbackTests = testOnTestLatestProdVersion(testDeploymentRollback, stages)
+		Tuple2<Integer, Stage> waitingForStage = waitForStage(rollbackTests, stages)
+		Tuple2<Integer, List<Stage>> stageServices = createStageServices(waitingForStage, stages)
+		Tuple2<Integer, Stage> stageDeployment = deployToStage(waitingForStage, stageServices, stages)
+		Tuple2<Integer, Stage> prepareForE2e = prepareForEndToEndTests(stageDeployment, stages)
+		Tuple2<Integer, Stage> e2eTests = runEndToEndTests(prepareForE2e, stages)
+		Tuple2<Integer, Stage> approveProd = approveProduction(e2eTests, stages)
+		Tuple2<Integer, Stage> deployToProd = deployToProd(approveProd, stages)
+		rollback(approveProd, deployToProd, stages)
+		return stages.findAll { it }
+	}
+
+	private void rollback(Tuple2<Integer, Stage> approveProd, Tuple2<Integer, Stage> deployToProd, List<Stage> stages) {
 		Tuple2<Integer, Stage> rollback =
 			prodDeployment("Rollback", approveProd.first, deployToProd.first)
 		stages.add(rollback.second)
-		return stages.findAll { it }
+	}
+
+	private Tuple2<Integer, Stage> deployToProd(Tuple2<Integer, Stage> approveProd, List<Stage> stages) {
+		Tuple2<Integer, Stage> deployToProd =
+			prodDeployment("Deploy to prod", approveProd.first, approveProd.first)
+		stages.add(deployToProd.second)
+		return deployToProd
+	}
+
+	private Tuple2<Integer, Stage> approveProduction(Tuple2<Integer, Stage> e2eTests, List<Stage> stages) {
+		Tuple2<Integer, Stage> approveProd = manualJudgement(
+			autoProdSet(), "Approve production", e2eTests.first)
+		stages.add(approveProd.second)
+		return approveProd
+	}
+
+	private Tuple2<Integer, Stage> runEndToEndTests(Tuple2<Integer, Stage> prepareForE2e, List<Stage> stages) {
+		Tuple2<Integer, Stage> e2eTests = runTests("stage", "End to end tests on stage",
+			"e2e", prepareForE2e.first, stageStepSet())
+		stages.add(e2eTests.second)
+		return e2eTests
+	}
+
+	private Tuple2<Integer, Stage> prepareForEndToEndTests(Tuple2<Integer, Stage> stageDeployment, List<Stage> stages) {
+		Tuple2<Integer, Stage> prepareForE2e = manualJudgement(shouldSkipStage(),
+			"Prepare for end to end tests", stageDeployment.first)
+		stages.add(prepareForE2e.second)
+		return prepareForE2e
+	}
+
+	private Tuple2<Integer, Stage> deployToStage(Tuple2<Integer, Stage> waitingForStage, Tuple2<Integer, List<Stage>> stageServices, List<Stage> stages) {
+		Tuple2<Integer, Stage> stageDeployment =
+			deploymentStage("Deploy to stage", waitingForStage.first,
+				stageServices.first, stageStepSet())
+		stages.add(stageDeployment.second)
+		return stageDeployment
+	}
+
+	private Tuple2<Integer, List<Stage>> createStageServices(Tuple2<Integer, Stage> waitingForStage, List<Stage> stages) {
+		Tuple2<Integer, List<Stage>> stageServices = createStageServices("stage",
+			waitingForStage.first, pipelineDescriptor.stage.services)
+		stages.addAll(stageServices.second)
+		return stageServices
+	}
+
+	private Tuple2<Integer, Stage> waitForStage(Tuple2<Integer, Stage> rollbackTests, List<Stage> stages) {
+		Tuple2<Integer, Stage> waitingForStage = manualJudgement(shouldSkipStage(),
+			"Wait for stage env", rollbackTests.first)
+		stages.add(waitingForStage.second)
+		return waitingForStage
+	}
+
+	private Tuple2<Integer, Stage> testOnTestLatestProdVersion(Tuple2<Integer, Stage> testDeploymentRollback, List<Stage> stages) {
+		Tuple2<Integer, Stage> rollbackTests = runTests("test", "Run rollback tests on test",
+			"rollback-test", testDeploymentRollback.first, rollbackStepSet())
+		stages.add(rollbackTests.second)
+		rollbackTests
+	}
+
+	private Tuple2<Integer, Stage> deployToTestLatestProdVersion(Tuple2<Integer, Stage> testsOnTest, List<Stage> stages) {
+		Tuple2<Integer, Stage> testDeploymentRollback =
+			rollbackDeploymentStage("Deploy to test latest prod version",
+				testsOnTest.first, rollbackStepSet())
+		stages.add(testDeploymentRollback.second)
+		return testDeploymentRollback
+	}
+
+	private Tuple2<Integer, Stage> testsOnTest(Tuple2<Integer, Stage> testDeployment, List<Stage> stages) {
+		Tuple2<Integer, Stage> testsOnTest = runTests("test", "Run tests on test",
+			"test", testDeployment.first)
+		stages.add(testsOnTest.second)
+		return testsOnTest
+	}
+
+	private Tuple2<Integer, Stage> deployToTest(Tuple2<Integer, List<Stage>> testServices, List<Stage> stages) {
+		Tuple2<Integer, Stage> testDeployment = testDeploymentStage(testServices.first)
+		stages.add(testDeployment.second)
+		return testDeployment
+	}
+
+	private Tuple2<Integer, List<Stage>> createTestServices(int firstRefId, List<Stage> stages) {
+		Tuple2<Integer, List<Stage>> testServices =
+			createTestServices("test", firstRefId, pipelineDescriptor.test.services)
+		stages.addAll(testServices.second)
+		return testServices
+	}
+
+	private boolean autoProdSet() {
+		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.auto_prod, false)
+	}
+
+	private boolean stageStepSet() {
+		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.stage_step, true)
+	}
+
+	private boolean shouldSkipStage() {
+		return !stageStepSet() || autoStageSet()
+	}
+
+	private boolean autoStageSet() {
+		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.auto_stage, false)
+	}
+
+	private boolean rollbackStepSet() {
+		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.rollback_step, true)
 	}
 
 	private boolean valueOrDefaultIfNull(Boolean value, boolean defaultValue) {
