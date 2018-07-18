@@ -55,7 +55,7 @@ class SpinnakerPipelineBuilder {
 
 	private List<Stage> stages() {
 		List<Stage> stages = []
-		int firstRefId = 1
+		int firstRefId = 0
 		// each tuple represents the id of the job and list / single stage
 		Tuple2<Integer, List<Stage>> testServices = createTestServices(firstRefId, stages)
 		Tuple2<Integer, Stage> testDeployment = deployToTest(testServices, stages)
@@ -146,7 +146,7 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, Stage> testsOnTest(Tuple2<Integer, Stage> testDeployment, List<Stage> stages) {
 		Tuple2<Integer, Stage> testsOnTest = runTests("test", "Run tests on test",
-			"test", testDeployment.first)
+			"test", testDeployment.first, testStepPresent())
 		stages.add(testsOnTest.second)
 		return testsOnTest
 	}
@@ -172,6 +172,10 @@ class SpinnakerPipelineBuilder {
 		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.stage_step, true)
 	}
 
+	private boolean stageStepMissing() {
+		return !stageStepSet()
+	}
+
 	private boolean shouldSkipStage() {
 		return !stageStepSet() || autoStageSet()
 	}
@@ -181,7 +185,8 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private boolean rollbackStepSet() {
-		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.rollback_step, true)
+		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.rollback_step, true) &&
+			testStepPresent()
 	}
 
 	private boolean valueOrDefaultIfNull(Boolean value, boolean defaultValue) {
@@ -190,9 +195,10 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, List<Stage>> createTestServices(String env, int firstId,
 															List<PipelineDescriptor.Service> pipeServices) {
-		if (!pipeServices) {
+		if (!pipeServices || testStepMissing()) {
 			return new Tuple2(firstId, [])
 		}
+		firstId = firstId + 1
 		List<Stage> testServices = []
 		List<PipelineDescriptor.Service> services = pipeServices
 		int refId = 1
@@ -210,8 +216,7 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, List<Stage>> createStageServices(String env, int firstId,
 															 List<PipelineDescriptor.Service> pipeServices) {
-		if (!pipeServices ||
-			!valueOrDefaultIfNull(pipelineDescriptor.pipeline.stage_step, true)) {
+		if (!pipeServices || stageStepMissing()) {
 			return new Tuple2(firstId, [])
 		}
 		List<Stage> testServices = []
@@ -265,6 +270,9 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> testDeploymentStage(int lastRefId) {
+		if (testStepMissing()) {
+			return new Tuple2<>(lastRefId, null)
+		}
 		int refId = pipelineDescriptor.test.services.empty ?
 			1 : lastRefId + 1
 		Stage stage = new Stage(
@@ -280,6 +288,14 @@ class SpinnakerPipelineBuilder {
 			]
 		)
 		return new Tuple2(refId, stage)
+	}
+
+	private boolean testStepPresent() {
+		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.test_step, true)
+	}
+
+	private boolean testStepMissing() {
+		return !testStepPresent()
 	}
 
 	private String testSpaceName() {
@@ -358,7 +374,7 @@ class SpinnakerPipelineBuilder {
 			name: text,
 			notifications: [],
 			refId: "${refId}",
-			requisiteStageRefIds: [
+			requisiteStageRefIds: firstRefId == 0 ? [] as List<String> : [
 				"${firstRefId}".toString()
 			],
 			type: "manualJudgment"

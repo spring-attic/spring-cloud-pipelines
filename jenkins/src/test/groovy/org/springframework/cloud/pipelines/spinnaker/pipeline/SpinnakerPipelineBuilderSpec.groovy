@@ -322,6 +322,55 @@ stage:
 			assertThatJsonsAreEqual(expectedPipelineWithoutStage, pipeline)
 	}
 
+	def expectedPipelineWithoutTest = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline_no_test_step.json').text
+	String descriptorYamlWithoutTest = """
+# This file describes which services are required by this application
+# in order for the smoke tests on the TEST environment and end to end testsx
+# on the STAGE environment to pass
+
+pipeline:
+  test_step: false
+
+# lowercase name of the environment
+test:
+  # list of required services
+  services:
+    # Prepared for PCF DEV
+    - name: github-rabbitmq
+      type: broker
+      broker: p-rabbitmq
+      plan: standard
+    - name: github-eureka
+      type: app
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+      pathToManifest: sc-pipelines/manifest-eureka.yml
+
+stage:
+  services:
+  # Prepared for PCF DEV
+    - name: github-rabbitmq
+      type: broker
+      broker: p-rabbitmq
+      plan: standard
+    - name: github-eureka
+      type: app
+      coordinates: com.example.eureka:github-eureka:0.0.1.M1
+      pathToManifest: sc-pipelines/manifest-eureka.yml
+"""
+
+	def "should produce a spinnaker pipeline without test step"() {
+		given:
+			PipelineDescriptor descriptor = PipelineDescriptor.from(descriptorYamlWithoutTest)
+			Repository repository = new Repository("github-webhook", "", "", "")
+			PipelineDefaults defaults = new PipelineDefaults([:])
+		and:
+			setupEnvVars(defaults)
+		when:
+			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
+		then:
+			assertThatJsonsAreEqual(expectedPipelineWithoutTest, pipeline)
+	}
+
 	void setupEnvVars(PipelineDefaults defaults) {
 		defaults.addEnvVar("SPINNAKER_TEST_DEPLOYMENT_ACCOUNT", "calabasasaccount")
 		defaults.addEnvVar("SPINNAKER_STAGE_DEPLOYMENT_ACCOUNT", "calabasasaccount")

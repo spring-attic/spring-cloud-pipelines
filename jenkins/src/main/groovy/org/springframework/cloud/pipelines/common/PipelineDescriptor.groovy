@@ -33,6 +33,7 @@ class PipelineDescriptor {
 		Boolean auto_stage
 		Boolean auto_prod
 		Boolean api_compatibility_step
+		Boolean test_step
 		Boolean rollback_step
 		Boolean stage_step
 	}
