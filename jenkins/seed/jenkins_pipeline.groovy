@@ -198,7 +198,9 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 			// Spinnaker
 			stringParam('SPINNAKER_JENKINS_MASTER', '', "The name of Jenkins master used by Spinnaker")
-			stringParam('SPINNAKER_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
+			stringParam('SPINNAKER_TEST_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
+			stringParam('SPINNAKER_STAGE_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
+			stringParam('SPINNAKER_PROD_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
 			stringParam('PAAS_TEST_ORG', 'pcfdev-org', 'Name of the CF organization for test env')
 			stringParam('PAAS_TEST_SPACE_PREFIX', 'sc-pipelines-test', 'Prefix of the name of the CF space for the test env to which the app name will be appended')
 			stringParam('PAAS_STAGE_ORG', 'pcfdev-org', 'Name of the CF organization for stage env')
