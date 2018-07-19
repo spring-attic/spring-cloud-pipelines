@@ -10,6 +10,7 @@ import javaposse.jobdsl.dsl.helpers.wrapper.WrapperContext
 import org.springframework.cloud.pipelines.common.BashFunctions
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
+import org.springframework.cloud.pipelines.common.PipelineDescriptor
 
 /**
  * @author Marcin Grzejszczak
@@ -29,7 +30,10 @@ class TestOnTest {
 		this.commonSteps = new CommonSteps(this.pipelineDefaults, this.bashFunctions)
 	}
 
-	void step(String projectName, Coordinates coordinates) {
+	void step(String projectName, Coordinates coordinates, PipelineDescriptor descriptor) {
+		if (descriptor.testStepMissing()) {
+			return
+		}
 		String gitRepoName = coordinates.gitRepoName
 		String fullGitRepo = coordinates.fullGitRepo
 		dsl.job("${projectName}-test-env-test") {

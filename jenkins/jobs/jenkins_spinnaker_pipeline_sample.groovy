@@ -33,7 +33,9 @@ RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
 	.token(defaults.gitToken())
 	.repository(repoType).build())
 // get the repos from the org
-List<Repository> repositories = binding.variables["TEST_MODE"] ? [] : repositoryManagers.repositories(org)
+List<Repository> repositories = binding.variables["TEST_MODE_DESCRIPTOR"] != null ?
+	[new Repository("foo", "git@bar.com:baz/foo.git", "http://bar.com/baz/foo.git", "master")]
+	: repositoryManagers.repositories(org)
 // JSON dump
 Closure dumpJsonToFile = { PipelineDescriptor pipeline, Repository repo ->
 	String json = new SpinnakerPipelineBuilder(pipeline, repo, defaults)
@@ -45,9 +47,11 @@ Closure dumpJsonToFile = { PipelineDescriptor pipeline, Repository repo ->
 List<Repository> repositoriesForViews = []
 // for every repo
 repositories.each { Repository repo ->
-	// fetch the descriptor
-	String descriptor = repositoryManagers.fileContent(org, repo.name,
-		repo.requestedBranch, defaults.pipelineDescriptor())
+	// fetch the descriptor (or pick one for tests form env var)
+	String descriptor = binding.variables["TEST_MODE_DESCRIPTOR"] != null ?
+		binding.variables["TEST_MODE_DESCRIPTOR"] as String :
+		repositoryManagers.fileContent(org, repo.name, repo.requestedBranch,
+			defaults.pipelineDescriptor())
 	// parse it
 	PipelineDescriptor pipeline = PipelineDescriptor.from(descriptor)
 	PipelineDefaults pipelineDefaults = new PipelineDefaults(binding.variables)
@@ -57,14 +61,14 @@ repositories.each { Repository repo ->
 		pipeline.pipeline.project_names.each { String monoRepo ->
 			Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
 			repositoriesForViews.add(monoRepository)
-			new SpinnakerJobsFactory(pipelineDefaults, dsl)
+			new SpinnakerJobsFactory(pipelineDefaults, pipeline, dsl)
 				.allJobs(Coordinates.fromRepo(monoRepository, defaults), pipelineVersion)
 			dumpJsonToFile(pipeline, monoRepository)
 		}
 	} else {
 		// for any other repo build a single pipeline
 		repositoriesForViews.add(repo)
-		new SpinnakerJobsFactory(pipelineDefaults, dsl)
+		new SpinnakerJobsFactory(pipelineDefaults, pipeline, dsl)
 			.allJobs(Coordinates.fromRepo(repo, defaults), pipelineVersion)
 		dumpJsonToFile(pipeline, repo)
 	}

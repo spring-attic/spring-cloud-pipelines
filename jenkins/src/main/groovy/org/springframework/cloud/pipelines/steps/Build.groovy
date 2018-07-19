@@ -1,7 +1,5 @@
 package org.springframework.cloud.pipelines.steps
 
-import java.sql.Wrapper
-
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
@@ -14,6 +12,7 @@ import javaposse.jobdsl.dsl.helpers.wrapper.WrapperContext
 import org.springframework.cloud.pipelines.common.BashFunctions
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
+import org.springframework.cloud.pipelines.common.PipelineDescriptor
 
 /**
  * @author Marcin Grzejszczak
@@ -32,7 +31,8 @@ class Build {
 		this.commonSteps = new CommonSteps(this.pipelineDefaults, this.bashFunctions)
 	}
 
-	void step(String projectName, String pipelineVersion, Coordinates coordinates) {
+	void step(String projectName, String pipelineVersion,
+			  Coordinates coordinates, PipelineDescriptor descriptor) {
 		String gitRepoName = coordinates.gitRepoName
 		String branchName = coordinates.branchName
 		String fullGitRepo = coordinates.fullGitRepo
@@ -76,7 +76,7 @@ class Build {
 		set -o errtrace
 		set -o pipefail
 		${bashFunctions.setupGitCredentials(fullGitRepo)}
-		${ if (pipelineDefaults.apiCompatibilityStep()) {
+		${ if (pipelineDefaults.apiCompatibilityStep() && descriptor.apiCompatibilityStepSet()) {
 					return '''\
 		echo "First running api compatibility check, so that what we commit and upload at the end is just built project"
 		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
@@ -93,6 +93,10 @@ class Build {
 						create()
 						update()
 					}
+				}
+				archiveArtifacts {
+					pattern("**/build/*.jar")
+					pattern("**/target/*.jar")
 				}
 			}
 		}

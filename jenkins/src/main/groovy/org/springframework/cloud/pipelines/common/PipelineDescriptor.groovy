@@ -22,6 +22,51 @@ class PipelineDescriptor {
 		return !pipeline.project_names.empty
 	}
 
+	boolean autoProdSet() {
+		return valueOrDefaultIfNull(pipeline.auto_prod, false)
+	}
+
+	boolean apiCompatibilityStepSet() {
+		return valueOrDefaultIfNull(pipeline.api_compatibility_step, true)
+	}
+
+	boolean stageStepSet() {
+		return valueOrDefaultIfNull(pipeline.stage_step, true)
+	}
+
+	boolean stageStepMissing() {
+		return !stageStepSet()
+	}
+
+	boolean shouldSkipStage() {
+		return !stageStepSet() || autoStageSet()
+	}
+
+	boolean autoStageSet() {
+		return valueOrDefaultIfNull(pipeline.auto_stage, false)
+	}
+
+	boolean rollbackStepSet() {
+		return valueOrDefaultIfNull(pipeline.rollback_step, true) &&
+			testStepPresent()
+	}
+
+	boolean rollbackStepSetMissing() {
+		return !rollbackStepSet()
+	}
+
+	boolean testStepPresent() {
+		return valueOrDefaultIfNull(pipeline.test_step, true)
+	}
+
+	boolean testStepMissing() {
+		return !testStepPresent()
+	}
+
+	private boolean valueOrDefaultIfNull(Boolean value, boolean defaultValue) {
+		return value == null ? defaultValue : value
+	}
+
 	@CompileStatic
 	static class Build {
 		String main_module
@@ -30,12 +75,12 @@ class PipelineDescriptor {
 	@CompileStatic
 	static class Pipeline {
 		List<String> project_names = []
-		Boolean auto_stage
-		Boolean auto_prod
 		Boolean api_compatibility_step
 		Boolean test_step
 		Boolean rollback_step
 		Boolean stage_step
+		Boolean auto_stage
+		Boolean auto_prod
 	}
 
 	@CompileStatic

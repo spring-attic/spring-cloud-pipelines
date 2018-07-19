@@ -10,6 +10,7 @@ import javaposse.jobdsl.dsl.helpers.wrapper.WrapperContext
 import org.springframework.cloud.pipelines.common.BashFunctions
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
+import org.springframework.cloud.pipelines.common.PipelineDescriptor
 
 /**
  * @author Marcin Grzejszczak
@@ -29,8 +30,8 @@ class RollbackTestOnTest {
 		this.commonSteps = new CommonSteps(this.pipelineDefaults, this.bashFunctions)
 	}
 
-	void step(String projectName, Coordinates coordinates) {
-		if (!pipelineDefaults.rollbackStep()) {
+	void step(String projectName, Coordinates coordinates, PipelineDescriptor descriptor) {
+		if (!pipelineDefaults.rollbackStep() || descriptor.rollbackStepSetMissing()) {
 			return
 		}
 		String gitRepoName = coordinates.gitRepoName

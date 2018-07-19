@@ -1,4 +1,4 @@
-package io.springframework.cloud
+package org.springframework.cloud.pipelines
 
 import groovy.io.FileType
 import javaposse.jobdsl.dsl.DslScriptLoader
@@ -21,7 +21,7 @@ class JobScriptsSpec extends Specification {
 		jm.parameters << [
 				SCRIPTS_DIR: 'foo',
 				JENKINSFILE_DIR: 'foo',
-				TEST_MODE: 'true'
+				TEST_MODE_DESCRIPTOR: ''
 		]
 		DslScriptLoader loader = new DslScriptLoader(jm)
 

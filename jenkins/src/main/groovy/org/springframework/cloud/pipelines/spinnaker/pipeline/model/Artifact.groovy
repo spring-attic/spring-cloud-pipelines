@@ -6,5 +6,6 @@ import groovy.transform.CompileStatic
 class Artifact {
 	String account
 	String reference
+	String pattern
 	String type
 }

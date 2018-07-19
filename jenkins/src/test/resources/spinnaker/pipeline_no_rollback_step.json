@@ -24,8 +24,8 @@
 					"application": "github-webhook",
 					"artifact": {
 						"account": "jenkins",
-						"reference": "github-webhook.*.jar",
-						"type": "artifact"
+						"pattern": "github-webhook.*.jar",
+						"type": "trigger"
 					},
 					"cloudProvider": "cloudfoundry",
 					"detail": "",
@@ -100,8 +100,8 @@
 					"application": "github-webhook",
 					"artifact": {
 						"account": "jenkins",
-						"reference": "github-webhook.*.jar",
-						"type": "artifact"
+						"pattern": "github-webhook.*.jar",
+						"type": "trigger"
 					},
 					"cloudProvider": "cloudfoundry",
 					"detail": "",
@@ -169,8 +169,8 @@
 					"application": "github-webhook",
 					"artifact": {
 						"account": "jenkins",
-						"reference": "github-webhook.*.jar",
-						"type": "artifact"
+						"pattern": "github-webhook.*.jar",
+						"type": "trigger"
 					},
 					"cloudProvider": "cloudfoundry",
 					"detail": "",
@@ -202,8 +202,8 @@
 					"application": "github-webhook",
 					"artifact": {
 						"account": "jenkins",
-						"reference": "github-webhook.*.jar",
-						"type": "artifact"
+						"pattern": "github-webhook.*.jar",
+						"type": "trigger"
 					},
 					"cloudProvider": "cloudfoundry",
 					"detail": "",

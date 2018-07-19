@@ -88,20 +88,20 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, Stage> approveProduction(Tuple2<Integer, Stage> e2eTests, List<Stage> stages) {
 		Tuple2<Integer, Stage> approveProd = manualJudgement(
-			autoProdSet(), "Approve production", e2eTests.first)
+			pipelineDescriptor.autoProdSet(), "Approve production", e2eTests.first)
 		stages.add(approveProd.second)
 		return approveProd
 	}
 
 	private Tuple2<Integer, Stage> runEndToEndTests(Tuple2<Integer, Stage> prepareForE2e, List<Stage> stages) {
 		Tuple2<Integer, Stage> e2eTests = runTests("stage", "End to end tests on stage",
-			"e2e", prepareForE2e.first, stageStepSet())
+			"e2e", prepareForE2e.first, pipelineDescriptor.stageStepSet())
 		stages.add(e2eTests.second)
 		return e2eTests
 	}
 
 	private Tuple2<Integer, Stage> prepareForEndToEndTests(Tuple2<Integer, Stage> stageDeployment, List<Stage> stages) {
-		Tuple2<Integer, Stage> prepareForE2e = manualJudgement(shouldSkipStage(),
+		Tuple2<Integer, Stage> prepareForE2e = manualJudgement(pipelineDescriptor.shouldSkipStage(),
 			"Prepare for end to end tests", stageDeployment.first)
 		stages.add(prepareForE2e.second)
 		return prepareForE2e
@@ -110,7 +110,7 @@ class SpinnakerPipelineBuilder {
 	private Tuple2<Integer, Stage> deployToStage(Tuple2<Integer, Stage> waitingForStage, Tuple2<Integer, List<Stage>> stageServices, List<Stage> stages) {
 		Tuple2<Integer, Stage> stageDeployment =
 			deploymentStage("Deploy to stage", waitingForStage.first,
-				stageServices.first, stageStepSet())
+				stageServices.first, pipelineDescriptor.stageStepSet())
 		stages.add(stageDeployment.second)
 		return stageDeployment
 	}
@@ -123,7 +123,7 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> waitForStage(Tuple2<Integer, Stage> rollbackTests, List<Stage> stages) {
-		Tuple2<Integer, Stage> waitingForStage = manualJudgement(shouldSkipStage(),
+		Tuple2<Integer, Stage> waitingForStage = manualJudgement(pipelineDescriptor.shouldSkipStage(),
 			"Wait for stage env", rollbackTests.first)
 		stages.add(waitingForStage.second)
 		return waitingForStage
@@ -131,7 +131,7 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, Stage> testOnTestLatestProdVersion(Tuple2<Integer, Stage> testDeploymentRollback, List<Stage> stages) {
 		Tuple2<Integer, Stage> rollbackTests = runTests("test", "Run rollback tests on test",
-			"rollback-test", testDeploymentRollback.first, rollbackStepSet())
+			"rollback-test", testDeploymentRollback.first, pipelineDescriptor.rollbackStepSet())
 		stages.add(rollbackTests.second)
 		rollbackTests
 	}
@@ -139,14 +139,14 @@ class SpinnakerPipelineBuilder {
 	private Tuple2<Integer, Stage> deployToTestLatestProdVersion(Tuple2<Integer, Stage> testsOnTest, List<Stage> stages) {
 		Tuple2<Integer, Stage> testDeploymentRollback =
 			rollbackDeploymentStage("Deploy to test latest prod version",
-				testsOnTest.first, rollbackStepSet())
+				testsOnTest.first, pipelineDescriptor.rollbackStepSet())
 		stages.add(testDeploymentRollback.second)
 		return testDeploymentRollback
 	}
 
 	private Tuple2<Integer, Stage> testsOnTest(Tuple2<Integer, Stage> testDeployment, List<Stage> stages) {
 		Tuple2<Integer, Stage> testsOnTest = runTests("test", "Run tests on test",
-			"test", testDeployment.first, testStepPresent())
+			"test", testDeployment.first, pipelineDescriptor.testStepPresent())
 		stages.add(testsOnTest.second)
 		return testsOnTest
 	}
@@ -164,38 +164,9 @@ class SpinnakerPipelineBuilder {
 		return testServices
 	}
 
-	private boolean autoProdSet() {
-		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.auto_prod, false)
-	}
-
-	private boolean stageStepSet() {
-		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.stage_step, true)
-	}
-
-	private boolean stageStepMissing() {
-		return !stageStepSet()
-	}
-
-	private boolean shouldSkipStage() {
-		return !stageStepSet() || autoStageSet()
-	}
-
-	private boolean autoStageSet() {
-		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.auto_stage, false)
-	}
-
-	private boolean rollbackStepSet() {
-		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.rollback_step, true) &&
-			testStepPresent()
-	}
-
-	private boolean valueOrDefaultIfNull(Boolean value, boolean defaultValue) {
-		return value == null ? defaultValue : value
-	}
-
 	private Tuple2<Integer, List<Stage>> createTestServices(String env, int firstId,
 															List<PipelineDescriptor.Service> pipeServices) {
-		if (!pipeServices || testStepMissing()) {
+		if (!pipeServices || pipelineDescriptor.testStepMissing()) {
 			return new Tuple2(firstId, [])
 		}
 		firstId = firstId + 1
@@ -216,7 +187,7 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, List<Stage>> createStageServices(String env, int firstId,
 															 List<PipelineDescriptor.Service> pipeServices) {
-		if (!pipeServices || stageStepMissing()) {
+		if (!pipeServices || pipelineDescriptor.stageStepMissing()) {
 			return new Tuple2(firstId, [])
 		}
 		List<Stage> testServices = []
@@ -244,8 +215,8 @@ class SpinnakerPipelineBuilder {
 			application: "${this.repository.name}",
 			artifact: new Artifact(
 				account: "jenkins",
-				reference: "${this.repository.name}.*.jar",
-				type: "artifact"
+				pattern: "${this.repository.name}.*.jar",
+				type: "trigger"
 			),
 			capacity: new Capacity(
 				desired: "1",
@@ -270,7 +241,7 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> testDeploymentStage(int lastRefId) {
-		if (testStepMissing()) {
+		if (pipelineDescriptor.testStepMissing()) {
 			return new Tuple2<>(lastRefId, null)
 		}
 		int refId = pipelineDescriptor.test.services.empty ?
@@ -288,14 +259,6 @@ class SpinnakerPipelineBuilder {
 			]
 		)
 		return new Tuple2(refId, stage)
-	}
-
-	private boolean testStepPresent() {
-		return valueOrDefaultIfNull(pipelineDescriptor.pipeline.test_step, true)
-	}
-
-	private boolean testStepMissing() {
-		return !testStepPresent()
 	}
 
 	private String testSpaceName() {
