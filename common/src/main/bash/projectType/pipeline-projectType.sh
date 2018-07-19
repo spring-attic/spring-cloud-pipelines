@@ -45,7 +45,7 @@ else
 	echo "Language needs to be guessed from the sources"
 	LANGUAGE_TYPE="$( guessLanguageType )"
 	if [[ "${LANGUAGE_TYPE}" == "" ]]; then
-		echo -e "\n\nFailed to guess the language type!"
+		echo "Failed to guess the language type!"
 		return 1
 	fi
 fi
@@ -57,4 +57,3 @@ echo "Language type [${LANGUAGE_TYPE}]"
 # Sources a file for the given [LANGUAGE_TYPE]
 [[ -f "${__DIR}/projectType/pipeline-${LANGUAGE_TYPE}.sh" ]] && source "${__DIR}/projectType/pipeline-${LANGUAGE_TYPE}.sh" ||  \
  echo "No projectType/pipeline-${LANGUAGE_TYPE}.sh found"
-
