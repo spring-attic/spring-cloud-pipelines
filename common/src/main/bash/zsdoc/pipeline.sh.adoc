@@ -326,9 +326,9 @@ Uses feature(s): _export_
 
 Called by:
 
- Script-Body
  defineProjectSetup
  deployServices
+ Script-Body
  pipeline-cf.sh/prepareForSmokeTests
  pipeline-cf.sh/testRollbackDeploy
  pipeline-k8s.sh/testRollbackDeploy
