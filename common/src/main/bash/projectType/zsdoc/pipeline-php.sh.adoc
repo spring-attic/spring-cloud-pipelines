@@ -9,7 +9,8 @@ pipeline-php.sh - a shell script
 SYNOPSIS
 --------
 
-Downloads and installs PHP if missing # 
+Contains all PHP related build functions
+
 
 FUNCTIONS
 ---------

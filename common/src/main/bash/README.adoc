@@ -17,10 +17,34 @@ pipeline.sh - a shell script
 SYNOPSIS
 --------
 
-Defines the project setup. Takes into consideration the location of the pipeline
-descriptor, project name, main module path etc.
-Sets the [PROJECT_SETUP], [ROOT_PROJECT_DIR] env vars.
-Uses [PROJECT_NAME] env var and [getMainModulePath] functions #
+Contains interfaces for all essential functions for different
+steps of deployment pipeline.
+
+Sources:
+- projectType/pipeline-projectType.sh
+- pipeline-${paasType}.sh (e.g. pipeline-cf.sh)
+- custom/${scriptName}.sh (e.g. custom/build_and_upload.sh)
+
+Essentially, the scripts implementing the functions can be divided
+into 2 types.
+
+1) Build related
+2) Deployment related
+
+The build related scripts need to define how to build an application.
+E.g. for Java we're using Maven or Gradle to build a project. For other
+languages other frameworks and approaches would be applicable. You can
+arbitrarily chose the language type via the LANGUAGE_TYPE env variable
+or via the language_type pipeline descriptor entry. That value, via convention,
+gets applied to the string [projectType/pipeline-${languageType}.sh] that
+represents a file that we will source in order to apply all the build functions.
+The deployment related scripts need to define how to upload the application.
+For Java and Cloud Foundry we're using the CF CLI to push the binary
+to PAAS. For NPM we're pushing sources. You can
+arbitrarily chose the platform type via the PAAS_TYPE env variable That value,
+via convention, gets applied to the string [pipeline-${paasType}.sh]
+that represents a file that we will source in order to apply all the deployment functions.
+
 
 FUNCTIONS
 ---------
@@ -545,7 +569,9 @@ pipeline-projectType.sh - a shell script
 SYNOPSIS
 --------
 
-Tries to guess the language type basing on the contents of the repository #
+Script that knows how to define the type of the project.
+Scans for presence of files or the language type configuration.
+
 
 FUNCTIONS
 ---------
@@ -597,7 +623,9 @@ pipeline-jvm.sh - a shell script
 SYNOPSIS
 --------
 
-JVM implementation of projectType #
+Script that knows how to define the concrete type of the JVM project.
+Scans for presence of files.
+
 
 FUNCTIONS
 ---------
@@ -684,7 +712,8 @@ pipeline-maven.sh - a shell script
 SYNOPSIS
 --------
 
-Maven implementation of test results ant pattern #
+Contains all Maven related build functions
+
 
 FUNCTIONS
 ---------
@@ -874,7 +903,8 @@ pipeline-gradle.sh - a shell script
 SYNOPSIS
 --------
 
-Gradle implementation of test results ant pattern #
+Contains all Gradle related build functions
+
 
 FUNCTIONS
 ---------
@@ -1038,7 +1068,8 @@ pipeline-php.sh - a shell script
 SYNOPSIS
 --------
 
-Downloads and installs PHP if missing #
+Contains all PHP related build functions
+
 
 FUNCTIONS
 ---------
@@ -1254,7 +1285,8 @@ pipeline-npm.sh - a shell script
 SYNOPSIS
 --------
 
-Installs node if missing #
+Contains all NPM related build functions
+
 
 FUNCTIONS
 ---------
@@ -1463,7 +1495,8 @@ pipeline-cf.sh - a shell script
 SYNOPSIS
 --------
 
-Waits for services to initialize #
+Contains all Cloud Foundry related deployment functions
+
 
 FUNCTIONS
 ---------

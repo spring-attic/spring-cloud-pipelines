@@ -9,7 +9,9 @@ pipeline-jvm.sh - a shell script
 SYNOPSIS
 --------
 
-JVM implementation of projectType # 
+Script that knows how to define the concrete type of the JVM project.
+Scans for presence of files.
+
 
 FUNCTIONS
 ---------

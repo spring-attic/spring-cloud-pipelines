@@ -9,7 +9,8 @@ pipeline-cf.sh - a shell script
 SYNOPSIS
 --------
 
-Waits for services to initialize # 
+Contains all Cloud Foundry related deployment functions
+
 
 FUNCTIONS
 ---------

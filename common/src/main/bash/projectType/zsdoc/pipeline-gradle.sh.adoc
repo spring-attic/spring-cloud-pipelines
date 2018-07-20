@@ -9,7 +9,8 @@ pipeline-gradle.sh - a shell script
 SYNOPSIS
 --------
 
-Gradle implementation of test results ant pattern # 
+Contains all Gradle related build functions
+
 
 FUNCTIONS
 ---------

@@ -9,7 +9,8 @@ pipeline-maven.sh - a shell script
 SYNOPSIS
 --------
 
-Maven implementation of test results ant pattern # 
+Contains all Maven related build functions
+
 
 FUNCTIONS
 ---------
