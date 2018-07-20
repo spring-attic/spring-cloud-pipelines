@@ -2,6 +2,11 @@
 
 set -o errexit
 
+# synopsis {{{
+# Executes a switch over of the traffic, fully to the new instance.
+# Sources pipeline.sh
+# }}}
+
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export ENVIRONMENT=PROD

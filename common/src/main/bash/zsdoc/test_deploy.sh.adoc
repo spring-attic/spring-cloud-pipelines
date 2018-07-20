@@ -8,7 +8,9 @@ test_deploy.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Deploys app to test environment. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------

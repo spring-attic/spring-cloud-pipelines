@@ -2,6 +2,10 @@
 
 set -e
 
+# synopsis {{{
+# Contains all Maven related build functions
+# }}}
+
 export MAVENW_BIN
 MAVENW_BIN="${MAVENW_BIN:-./mvnw}"
 

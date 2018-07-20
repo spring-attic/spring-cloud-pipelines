@@ -4,6 +4,10 @@ set -o errexit
 set -o errtrace
 set -o pipefail
 
+# synopsis {{{
+# Contains all NPM related build functions
+# }}}
+
 export NPM_BIN NODE_BIN
 NPM_BIN="${NPM_BIN:-npm}"
 NODE_BIN="${NODE_BIN:-node}"

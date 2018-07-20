@@ -1,9 +1,38 @@
 #!/bin/bash
-# -*- mode: shell-script -*-
 
 set -o errexit
 set -o errtrace
 set -o pipefail
+
+# synopsis {{{
+# Contains interfaces for all essential functions for different
+# steps of deployment pipeline.
+#
+# Sources:
+#  - projectType/pipeline-projectType.sh
+#  - pipeline-${paasType}.sh (e.g. pipeline-cf.sh)
+#  - custom/${scriptName}.sh (e.g. custom/build_and_upload.sh)
+#
+# Essentially, the scripts implementing the functions can be divided
+# into 2 types.
+#
+# 1) Build related
+# 2) Deployment related
+#
+# The build related scripts need to define how to build an application.
+# E.g. for Java we're using Maven or Gradle to build a project. For other
+# languages other frameworks and approaches would be applicable. You can
+# arbitrarily chose the language type via the LANGUAGE_TYPE env variable
+# or via the language_type pipeline descriptor entry. That value, via convention,
+# gets applied to the string [projectType/pipeline-${languageType}.sh] that
+# represents a file that we will source in order to apply all the build functions.
+# The deployment related scripts need to define how to upload the application.
+# For Java and Cloud Foundry we're using the CF CLI to push the binary
+# to PAAS. For NPM we're pushing sources. You can
+# arbitrarily chose the platform type via the PAAS_TYPE env variable That value,
+# via convention, gets applied to the string [pipeline-${paasType}.sh]
+# that represents a file that we will source in order to apply all the deployment functions.
+# }}}
 
 IFS=$' \n\t'
 

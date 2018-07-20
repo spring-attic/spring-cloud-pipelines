@@ -8,7 +8,11 @@ pipeline.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Defines the project setup. Takes into consideration the location of the pipeline
+descriptor, project name, main module path etc.
+Sets the [PROJECT_SETUP], [ROOT_PROJECT_DIR] env vars.
+Uses [PROJECT_NAME] env var and [getMainModulePath] functions # 
 
 FUNCTIONS
 ---------
@@ -295,9 +299,9 @@ Uses feature(s): _export_
 
 Called by:
 
+ Script-Body
  defineProjectSetup
  deployServices
- Script-Body
  pipeline-cf.sh/prepareForSmokeTests
  pipeline-cf.sh/testRollbackDeploy
  pipeline-k8s.sh/testRollbackDeploy

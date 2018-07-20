@@ -2,6 +2,10 @@
 
 set -o errexit
 
+# synopsis {{{
+# Deploys app to stage environment. Sources pipeline.sh
+# }}}
+
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export ENVIRONMENT=STAGE

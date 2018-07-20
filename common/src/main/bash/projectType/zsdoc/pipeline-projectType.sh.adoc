@@ -8,7 +8,8 @@ pipeline-projectType.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Tries to guess the language type basing on the contents of the repository # 
 
 FUNCTIONS
 ---------

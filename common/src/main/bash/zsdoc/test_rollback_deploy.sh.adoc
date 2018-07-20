@@ -8,7 +8,10 @@ test_rollback_deploy.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+If applicable, deploys current prod version to test environment.
+Sources pipeline.sh
+
 
 FUNCTIONS
 ---------

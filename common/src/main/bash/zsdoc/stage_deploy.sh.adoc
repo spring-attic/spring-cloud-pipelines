@@ -8,7 +8,9 @@ stage_deploy.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Deploys app to stage environment. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------

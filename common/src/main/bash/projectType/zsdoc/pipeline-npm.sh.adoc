@@ -8,7 +8,8 @@ pipeline-npm.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Installs node if missing # 
 
 FUNCTIONS
 ---------

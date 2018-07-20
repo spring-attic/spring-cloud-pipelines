@@ -2,6 +2,10 @@
 
 set -o errexit
 
+# synopsis {{{
+# Executes a build of the project. Sources pipeline.sh
+# }}}
+
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export ENVIRONMENT=BUILD

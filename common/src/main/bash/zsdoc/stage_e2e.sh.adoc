@@ -8,7 +8,9 @@ stage_e2e.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Runs end to end tests on stage. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------

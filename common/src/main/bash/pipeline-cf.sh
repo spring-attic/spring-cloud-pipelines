@@ -2,6 +2,10 @@
 
 set -e
 
+# synopsis {{{
+# Contains all Cloud Foundry related deployment functions
+# }}}
+
 # FUNCTION: logInToPaas {{{
 # Implementation of the CF log in
 function logInToPaas() {

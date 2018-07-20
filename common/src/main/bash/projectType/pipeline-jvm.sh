@@ -2,6 +2,11 @@
 
 set -e
 
+# synopsis {{{
+# Script that knows how to define the concrete type of the JVM project.
+# Scans for presence of files.
+# }}}
+
 # It takes ages on Docker to run the app without this
 # Also we want to disable the progress indicator for downloaded jars
 export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:///dev/urandom -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"

@@ -8,7 +8,10 @@ prod_complete.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Executes a switch over of the traffic, fully to the new instance.
+Sources pipeline.sh
+
 
 FUNCTIONS
 ---------

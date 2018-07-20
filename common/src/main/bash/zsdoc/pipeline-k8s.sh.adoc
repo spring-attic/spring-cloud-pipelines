@@ -8,7 +8,9 @@ pipeline-k8s.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Contains all Kubernetes related deployment functions
+
 
 FUNCTIONS
 ---------
@@ -29,12 +31,17 @@ Has 3 line(s). No functions are called (may attach to Zle or do hooks, etc.).
 deployService
 ~~~~~~~~~~~~~
 
-Has 7 line(s). Doesn't call other functions.
+Has 680 line(s). Doesn't call other functions.
 
 Not called by script or any function, may be a hook or Zle widget, etc.
 
 logInToPaas
 ~~~~~~~~~~~
+
+____
+ # Contains all Kubernetes related deployment functions
+ # }}}
+____
 
 Has 57 line(s). Doesn't call other functions.
 

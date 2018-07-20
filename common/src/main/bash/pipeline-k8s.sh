@@ -2,6 +2,10 @@
 
 set -e
 
+# synopsis {{{
+# Contains all Kubernetes related deployment functions
+# }}}
+
 function logInToPaas() {
 	local ca="PAAS_${ENVIRONMENT}_CA_PATH"
 	local k8sCa="${!ca}"

@@ -4,6 +4,11 @@ set -o errexit
 set -o errtrace
 set -o pipefail
 
+# synopsis {{{
+# Script that knows how to define the type of the project.
+# Scans for presence of files or the language type configuration.
+# }}}
+
 # FUNCTION: getLanguageType {{{
 # Gets the language type from the parsed descriptor. Returns empty if it's not present
 # or if [language_type] node is not present in the descriptor.

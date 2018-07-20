@@ -53,7 +53,7 @@ case $1 in
         zshInstalled="false"
         zsh --version && zshInstalled="true" || echo "zsh is missing"
         if [[ "${zshInstalled}" != "true" ]]; then
-            echo  "ZSH is missing! Will return 0 but won't generate any docs"
+            echo  "[WARNING] ZSH is missing! Will return 0 but won't generate any docs"
             exit 0
         fi
         if [[ -x "${ROOT_DIR}/../build/zsd/bin/zsd" ]]; then
@@ -62,22 +62,22 @@ case $1 in
         fi
         "${ROOT_DIR}/build-helper.sh" initialize-submodules
         pushd "${ROOT_DIR}/../common/src/test/bats/docs_helper/zshelldoc/"
-        make install PREFIX="${ROOT_DIR}/../build/zsd"
+            make install PREFIX="${ROOT_DIR}/../build/zsd"
         popd
         ;;
     generate-zsd)
         zshInstalled="false"
         zsh --version && zshInstalled="true" || echo "zsh is missing"
         if [[ "${zshInstalled}" != "true" ]]; then
-            echo  "ZSH is missing! Will return 0 but won't generate any docs"
+            echo  "[WARNING] ZSH is missing! Will return 0 but won't generate any docs"
             exit 0
         fi
         pushd "${ROOT_DIR}/../common/src/main/bash"
         # shellcheck disable=SC2035
-        "${ROOT_DIR}/../build/zsd/bin/zsd" --cignore '\#*FUNCTION:*{{{*' *.sh
+        "${ROOT_DIR}/../build/zsd/bin/zsd" --cignore '\#*FUNCTION:*{{{*|\#*synopsis*{{{*' *.sh
             pushd projectType
             # shellcheck disable=SC2035
-            "${ROOT_DIR}/../build/zsd/bin/zsd" --cignore '\#*FUNCTION:*{{{*' *.sh
+            "${ROOT_DIR}/../build/zsd/bin/zsd" --cignore '\#*FUNCTION:*{{{*|\#*synopsis*{{{*' *.sh
             popd
         popd
         ;;
@@ -85,9 +85,11 @@ case $1 in
         files="$( ls "${ROOT_DIR}/../common/src/test/docs_helper/zshelldoc/" || echo "" )"
         if [ ! -z "${files}" ]; then
             echo "Submodules already initialized";
+            git submodule foreach git pull
         else
             git submodule init
             git submodule update
+            git submodule foreach git pull origin master
         fi
         ;;
     *)

@@ -2,6 +2,11 @@
 
 set -o errexit
 
+# synopsis {{{
+# If applicable, runs smoke tests on the test environment.
+# Sources pipeline.sh
+# }}}
+
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export ENVIRONMENT=TEST

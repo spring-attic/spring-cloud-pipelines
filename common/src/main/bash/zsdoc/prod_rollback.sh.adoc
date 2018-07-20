@@ -8,7 +8,9 @@ prod_rollback.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Rolls back app from production. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------

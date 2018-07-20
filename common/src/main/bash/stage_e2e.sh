@@ -2,6 +2,10 @@
 
 set -o errexit
 
+# synopsis {{{
+# Runs end to end tests on stage. Sources pipeline.sh
+# }}}
+
 __DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export ENVIRONMENT=STAGE

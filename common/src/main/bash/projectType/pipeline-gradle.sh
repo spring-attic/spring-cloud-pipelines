@@ -2,6 +2,10 @@
 
 set -e
 
+# synopsis {{{
+# Contains all Gradle related build functions
+# }}}
+
 export GRADLEW_BIN
 GRADLEW_BIN="${GRADLEW_BIN:-./gradlew}"
 

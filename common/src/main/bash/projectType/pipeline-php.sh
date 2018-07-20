@@ -4,6 +4,10 @@ set -o errexit
 set -o errtrace
 set -o pipefail
 
+# synopsis {{{
+# Contains all PHP related build functions
+# }}}
+
 export COMPOSER_BIN PHP_BIN
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
 PHP_BIN="${PHP_BIN:-php}"
@@ -195,3 +199,6 @@ export ARTIFACT_TYPE
 ARTIFACT_TYPE="${SOURCE_ARTIFACT_TYPE_NAME}"
 export DOWNLOADABLE_SOURCES
 DOWNLOADABLE_SOURCES="true"
+
+# Setting a default when
+[[ -z "${REPO_WITH_BINARIES_FOR_UPLOAD}" ]] && REPO_WITH_BINARIES_FOR_UPLOAD="${REPO_WITH_BINARIES}"

@@ -8,7 +8,9 @@ build_and_upload.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Executes a build of the project. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------

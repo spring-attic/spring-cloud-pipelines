@@ -8,7 +8,9 @@ test_smoke.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Runs smoke tests on the test environment. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------

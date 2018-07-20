@@ -8,7 +8,8 @@ pipeline-php.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Downloads and installs PHP if missing # 
 
 FUNCTIONS
 ---------
@@ -32,7 +33,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 19 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 20 line(s). No functions are called (may attach to Zle or do hooks, etc.).
 
 build
 ~~~~~
