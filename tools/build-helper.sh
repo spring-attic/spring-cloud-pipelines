@@ -85,11 +85,11 @@ case $1 in
         files="$( ls "${ROOT_DIR}/../common/src/test/docs_helper/zshelldoc/" || echo "" )"
         if [ ! -z "${files}" ]; then
             echo "Submodules already initialized";
-            git submodule foreach git pull
+            git submodule foreach git pull origin master || echo "Failed to pull - continuing the script"
         else
             git submodule init
             git submodule update
-            git submodule foreach git pull origin master
+            git submodule foreach git pull origin master || echo "Failed to pull - continuing the script"
         fi
         ;;
     *)
