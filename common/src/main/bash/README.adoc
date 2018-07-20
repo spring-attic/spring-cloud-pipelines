@@ -16,7 +16,11 @@ pipeline.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Defines the project setup. Takes into consideration the location of the pipeline
+descriptor, project name, main module path etc.
+Sets the [PROJECT_SETUP], [ROOT_PROJECT_DIR] env vars.
+Uses [PROJECT_NAME] env var and [getMainModulePath] functions #
 
 FUNCTIONS
 ---------
@@ -303,9 +307,9 @@ Uses feature(s): _export_
 
 Called by:
 
+ Script-Body
  defineProjectSetup
  deployServices
- Script-Body
  pipeline-cf.sh/prepareForSmokeTests
  pipeline-cf.sh/testRollbackDeploy
  pipeline-k8s.sh/testRollbackDeploy
@@ -540,7 +544,8 @@ pipeline-projectType.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Tries to guess the language type basing on the contents of the repository #
 
 FUNCTIONS
 ---------
@@ -591,7 +596,8 @@ pipeline-jvm.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+JVM implementation of projectType #
 
 FUNCTIONS
 ---------
@@ -677,7 +683,8 @@ pipeline-maven.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Maven implementation of test results ant pattern #
 
 FUNCTIONS
 ---------
@@ -866,7 +873,8 @@ pipeline-gradle.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Gradle implementation of test results ant pattern #
 
 FUNCTIONS
 ---------
@@ -1029,7 +1037,8 @@ pipeline-php.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Downloads and installs PHP if missing #
 
 FUNCTIONS
 ---------
@@ -1053,7 +1062,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 19 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 20 line(s). No functions are called (may attach to Zle or do hooks, etc.).
 
 build
 ~~~~~
@@ -1244,7 +1253,8 @@ pipeline-npm.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Installs node if missing #
 
 FUNCTIONS
 ---------
@@ -1452,7 +1462,8 @@ pipeline-cf.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Waits for services to initialize #
 
 FUNCTIONS
 ---------
@@ -2270,7 +2281,9 @@ pipeline-k8s.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Contains all Kubernetes related deployment functions
+
 
 FUNCTIONS
 ---------
@@ -2291,12 +2304,17 @@ Has 3 line(s). No functions are called (may attach to Zle or do hooks, etc.).
 deployService
 ~~~~~~~~~~~~~
 
-Has 7 line(s). Doesn't call other functions.
+Has 680 line(s). Doesn't call other functions.
 
 Not called by script or any function, may be a hook or Zle widget, etc.
 
 logInToPaas
 ~~~~~~~~~~~
+
+____
+ # Contains all Kubernetes related deployment functions
+ # }}}
+____
 
 Has 57 line(s). Doesn't call other functions.
 
@@ -2344,7 +2362,9 @@ build_and_upload.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Executes a build of the project. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
@@ -2372,7 +2392,9 @@ test_deploy.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Deploys app to test environment. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
@@ -2400,7 +2422,9 @@ test_smoke.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Runs smoke tests on the test environment. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
@@ -2429,7 +2453,10 @@ test_rollback_deploy.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+If applicable, deploys current prod version to test environment.
+Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
@@ -2457,7 +2484,10 @@ test_rollback_smoke.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+If applicable, runs smoke tests on the test environment.
+Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
@@ -2486,7 +2516,9 @@ stage_deploy.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Deploys app to stage environment. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
@@ -2514,7 +2546,9 @@ stage_e2e.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Runs end to end tests on stage. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
@@ -2543,7 +2577,9 @@ prod_deploy.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Deploys app to production. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
@@ -2571,7 +2607,10 @@ prod_complete.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Executes a switch over of the traffic, fully to the new instance.
+Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
@@ -2599,7 +2638,9 @@ prod_rollback.sh - a shell script
 
 SYNOPSIS
 --------
-Documentation automatically generated with `zshelldoc'
+
+Rolls back app from production. Sources pipeline.sh
+
 
 FUNCTIONS
 ---------
