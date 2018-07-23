@@ -115,8 +115,16 @@ that needs to be installed on a CI server worker for the build to pass.</p><div 
 presented in the list since the installed versions by Linux distributions might be old.
 That&#8217;s why this project&#8217;s Gradle tasks will download latest versions of both libraries
 for you.</p></td></tr></table></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_pipeline_descriptor" href="#_pipeline_descriptor"></a>1.7&nbsp;Pipeline descriptor</h2></div></div></div><p>Each application can contain a file called <code class="literal">sc-pipelines.yml</code> with the following structure:</p><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">language_type</span>: jvm
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">build</span>:
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">pipeline</span>:
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  main_module</span>: foo/bar
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  project_names</span>:
+    - monoRepoA
+    - monoRepoB
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  auto_stage</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  auto_prod</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  api_compatibility_step</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  rollback_step</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  stage_step</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">lowercaseEnvironmentName1</span>:
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    services</span>:
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">        - type</span>: service1Type
