@@ -771,6 +771,7 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
     ** `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
     * `group-id` Composer task that echos the group id
     * `app-name` Composer task that echos application name
+    * `stub-ids` Composer task that echos stub runner ids
     * `test-apicompatibility` Composer task that is executed for api compatibility tests
     * `test-smoke` Composer task that is executed for smoke testing (`APPLICATION_URL` and `STUBRUNNER_URL` env vars are available here to be used)
     * `test-e2e` Composer task that is executed for end to end testing (`APPLICATION_URL` env vars is available here to be used)
@@ -781,6 +782,7 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
     * `npm test` is called to run tests
     * `npm run group-id` npm task that echos the group id
     * `npm run app-name` npm task that echos application name
+    * `npm run stub-ids` npm task that echos stub runner ids
     * `npm run test-apicompatibility` npm task that is executed for api compatibility tests
     * `npm run test-smoke` npm task that is executed for smoke testing
     * `npm run test-e2e` npm task that is executed for end to end testing

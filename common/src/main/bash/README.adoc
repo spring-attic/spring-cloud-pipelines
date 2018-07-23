@@ -70,6 +70,7 @@ FUNCTIONS
  projectType
  retrieveAppName
  retrieveGroupId
+ retrieveStubRunnerIds
  rollbackToPreviousVersion
  runE2eTests
  runSmokeTests
@@ -94,6 +95,8 @@ Has 49 line(s). Calls functions:
  |-- defineProjectSetup
  |   `-- parsePipelineDescriptor
  `-- parsePipelineDescriptor
+
+Uses feature(s): _export_, _source_
 
 apiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~
@@ -261,7 +264,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 findLatestProdTag
 ~~~~~~~~~~~~~~~~~
@@ -278,7 +281,7 @@ Has 11 line(s). Doesn't call other functions.
 
 Uses feature(s): _export_
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getMainModulePath
 ~~~~~~~~~~~~~~~~~
@@ -290,7 +293,7 @@ ____
 
 Has 10 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 latestProdTagFromGit
 ~~~~~~~~~~~~~~~~~~~~
@@ -301,7 +304,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 outputFolder
 ~~~~~~~~~~~~
@@ -313,7 +316,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 parsePipelineDescriptor
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -389,7 +392,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveAppName
 ~~~~~~~~~~~~~~~
@@ -401,7 +404,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -413,7 +416,20 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+retrieveStubRunnerIds
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Retrieves the ids for Spring Cloud Contract Stub Runner. If you don't use
+ # Stub Runner, overriding this method is not mandatory. The format of the IDS is
+ # [groupId:artifactId:version:classifier:port]. E.g. [com.example:foo:1.0.0.RELEASE:stubs:1234]
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 rollbackToPreviousVersion
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -467,7 +483,7 @@ ____
 
 Has 6 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 stageDeploy
 ~~~~~~~~~~~
@@ -505,7 +521,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 testRollbackDeploy
 ~~~~~~~~~~~~~~~~~~
@@ -544,7 +560,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 yaml2json
 ~~~~~~~~~
@@ -555,7 +571,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 
 pipeline-projectType.sh(1)
@@ -585,7 +601,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 24 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 24 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _source_
 
 getLanguageType
 ~~~~~~~~~~~~~~~
@@ -598,7 +616,7 @@ ____
 
 Has 10 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 guessLanguageType
 ~~~~~~~~~~~~~~~~~
@@ -609,7 +627,7 @@ ____
 
 Has 9 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 
 pipeline-jvm.sh(1)
@@ -641,7 +659,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 19 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 19 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_, _source_
 
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~
@@ -657,7 +677,7 @@ ____
 
 Has 21 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 isGradleProject
 ~~~~~~~~~~~~~~~
@@ -698,7 +718,7 @@ Has 7 line(s). Calls functions:
  |-- isGradleProject
  `-- isMavenProject
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 
 pipeline-maven.sh(1)
@@ -736,7 +756,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 22 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 22 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_
 
 build
 ~~~~~
@@ -751,7 +773,7 @@ Has 8 line(s). Calls functions:
  build
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -765,7 +787,7 @@ Has 6 line(s). Calls functions:
  executeApiCompatibilityCheck
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 extractMavenProperty
 ~~~~~~~~~~~~~~~~~~~~
@@ -791,7 +813,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 printTestResults
 ~~~~~~~~~~~~~~~~
@@ -822,7 +844,7 @@ ____
 
 Has 14 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -836,7 +858,7 @@ ____
 
 Has 8 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
@@ -850,7 +872,7 @@ Has 1 line(s). Calls functions:
  retrieveStubRunnerIds
  `-- extractMavenProperty
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runE2eTests
 ~~~~~~~~~~~
@@ -864,7 +886,7 @@ Has 8 line(s). Calls functions:
  runE2eTests
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runSmokeTests
 ~~~~~~~~~~~~~
@@ -878,7 +900,7 @@ Has 9 line(s). Calls functions:
  runSmokeTests
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -889,7 +911,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 
 pipeline-gradle.sh(1)
@@ -926,7 +948,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 22 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 22 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_
 
 build
 ~~~~~
@@ -941,7 +965,7 @@ Has 7 line(s). Calls functions:
  build
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -955,7 +979,7 @@ Has 6 line(s). Calls functions:
  executeApiCompatibilityCheck
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 outputFolder
 ~~~~~~~~~~~~
@@ -966,7 +990,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 printTestResults
 ~~~~~~~~~~~~~~~~
@@ -993,7 +1017,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -1004,7 +1028,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1015,7 +1039,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runE2eTests
 ~~~~~~~~~~~
@@ -1029,7 +1053,7 @@ Has 9 line(s). Calls functions:
  runE2eTests
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runSmokeTests
 ~~~~~~~~~~~~~
@@ -1043,7 +1067,7 @@ Has 10 line(s). Calls functions:
  runSmokeTests
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1054,7 +1078,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 
 pipeline-php.sh(1)
@@ -1083,6 +1107,7 @@ FUNCTIONS
  projectType
  retrieveAppName
  retrieveGroupId
+ retrieveStubRunnerIds
  runE2eTests
  runSmokeTests
  testResultsAntPattern
@@ -1093,7 +1118,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 20 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 20 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_
 
 build
 ~~~~~
@@ -1111,7 +1138,7 @@ Has 30 line(s). Calls functions:
 
 Uses feature(s): _trap_
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~
@@ -1127,7 +1154,7 @@ ____
 
 Has 26 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 downloadComposerIfMissing
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1147,6 +1174,7 @@ Called by:
  executeApiCompatibilityCheck
  retrieveAppName
  retrieveGroupId
+ retrieveStubRunnerIds
  runE2eTests
  runSmokeTests
 
@@ -1163,7 +1191,7 @@ Has 2 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 installPhpIfMissing
 ~~~~~~~~~~~~~~~~~~~
@@ -1189,7 +1217,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 projectType
 ~~~~~~~~~~~
@@ -1200,7 +1228,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveAppName
 ~~~~~~~~~~~~~~~
@@ -1215,7 +1243,7 @@ Has 6 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -1230,7 +1258,22 @@ Has 2 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+retrieveStubRunnerIds
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # PHP implementation of the retrieve stub runner ids
+____
+
+Has 2 line(s). Calls functions:
+
+ retrieveStubRunnerIds
+ `-- downloadComposerIfMissing
+     `-- installPhpIfMissing
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runE2eTests
 ~~~~~~~~~~~
@@ -1245,7 +1288,7 @@ Has 2 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runSmokeTests
 ~~~~~~~~~~~~~
@@ -1260,7 +1303,7 @@ Has 2 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1271,7 +1314,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 
 pipeline-npm.sh(1)
@@ -1300,6 +1343,7 @@ FUNCTIONS
  projectType
  retrieveAppName
  retrieveGroupId
+ retrieveStubRunnerIds
  runE2eTests
  runSmokeTests
  testResultsAntPattern
@@ -1310,7 +1354,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 15 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 15 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_
 
 build
 ~~~~~
@@ -1326,7 +1372,7 @@ Has 3 line(s). Calls functions:
  `-- downloadNpmIfMissing
      `-- installNodeIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~
@@ -1337,7 +1383,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 downloadNpmIfMissing
 ~~~~~~~~~~~~~~~~~~~~
@@ -1357,6 +1403,7 @@ Called by:
  executeApiCompatibilityCheck
  retrieveAppName
  retrieveGroupId
+ retrieveStubRunnerIds
  runE2eTests
  runSmokeTests
 
@@ -1373,7 +1420,7 @@ Has 2 line(s). Calls functions:
  `-- downloadNpmIfMissing
      `-- installNodeIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 installNodeIfMissing
 ~~~~~~~~~~~~~~~~~~~~
@@ -1399,7 +1446,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 projectType
 ~~~~~~~~~~~
@@ -1410,7 +1457,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveAppName
 ~~~~~~~~~~~~~~~
@@ -1425,7 +1472,7 @@ Has 6 line(s). Calls functions:
  `-- downloadNpmIfMissing
      `-- installNodeIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -1440,7 +1487,22 @@ Has 2 line(s). Calls functions:
  `-- downloadNpmIfMissing
      `-- installNodeIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+retrieveStubRunnerIds
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # npm implementation of the retrieve stub runner ids
+____
+
+Has 2 line(s). Calls functions:
+
+ retrieveStubRunnerIds
+ `-- downloadNpmIfMissing
+     `-- installNodeIfMissing
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runE2eTests
 ~~~~~~~~~~~
@@ -1455,7 +1517,7 @@ Has 2 line(s). Calls functions:
  `-- downloadNpmIfMissing
      `-- installNodeIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runSmokeTests
 ~~~~~~~~~~~~~
@@ -1470,7 +1532,7 @@ Has 2 line(s). Calls functions:
  `-- downloadNpmIfMissing
      `-- installNodeIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1481,7 +1543,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 
 pipeline-cf.sh(1)
@@ -1548,7 +1610,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 7 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 7 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_
 
 addMultiplePortsSupport
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -1583,7 +1647,7 @@ ____
 
 Has 9 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 completeSwitchOver
 ~~~~~~~~~~~~~~~~~~
@@ -1648,7 +1712,7 @@ ____
 
 Has 5 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 deployAndRestartAppWithName
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1791,7 +1855,7 @@ Has 57 line(s). Calls functions:
      |-- restartApp
      `-- setEnvVar
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 deployStubRunnerBoot
 ~~~~~~~~~~~~~~~~~~~~
@@ -1830,7 +1894,7 @@ ____
 
 Has 4 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getArtifactType
 ~~~~~~~~~~~~~~~
@@ -1845,7 +1909,7 @@ Has 16 line(s). Calls functions:
  getArtifactType
  `-- pipeline.sh/toLowerCase
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getDomain
 ~~~~~~~~~
@@ -1858,7 +1922,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getHostFromManifest
 ~~~~~~~~~~~~~~~~~~~
@@ -1871,7 +1935,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getInstancesFromManifest
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1884,7 +1948,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getProfilesFromManifest
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -1897,7 +1961,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 hostname
 ~~~~~~~~
@@ -1913,7 +1977,7 @@ ____
 
 Has 20 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 logInToPaas
 ~~~~~~~~~~~
@@ -1962,7 +2026,7 @@ ____
 
 Has 11 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 pathToUnpackedSources
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1973,7 +2037,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 performProductionDeploymentOfTestedApplication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2138,7 +2202,7 @@ Has 9 line(s). Calls functions:
  |   `-- pipeline.sh/envNodeExists
  `-- readTestPropertiesFromFile
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 rollbackToPreviousVersion
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2195,7 +2259,7 @@ Has 5 line(s). Calls functions:
  setEnvVarIfMissing
  `-- setEnvVar
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 stageDeploy
 ~~~~~~~~~~~
@@ -2332,14 +2396,14 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 3 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 3 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 deployService
 ~~~~~~~~~~~~~
 
 Has 680 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 logInToPaas
 ~~~~~~~~~~~
@@ -2414,6 +2478,8 @@ Has 11 line(s). Calls functions:
  Script-Body
  `-- pipeline.sh/build
 
+Uses feature(s): _export_, _source_
+
 
 test_deploy.sh(1)
 =================
@@ -2442,7 +2508,10 @@ Script Body
 Has 11 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/testDeploy
+ |-- pipeline-cf.sh/testDeploy
+ `-- pipeline.sh/testDeploy
+
+Uses feature(s): _export_, _source_
 
 
 test_smoke.sh(1)
@@ -2473,7 +2542,10 @@ Has 12 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/prepareForSmokeTests
+ |-- pipeline.sh/prepareForSmokeTests
  `-- pipeline.sh/runSmokeTests
+
+Uses feature(s): _export_, _source_
 
 
 test_rollback_deploy.sh(1)
@@ -2504,7 +2576,10 @@ Script Body
 Has 18 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/testRollbackDeploy
+ |-- pipeline-cf.sh/testRollbackDeploy
+ `-- pipeline.sh/testRollbackDeploy
+
+Uses feature(s): _export_, _source_
 
 
 test_rollback_smoke.sh(1)
@@ -2536,7 +2611,10 @@ Has 19 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/prepareForSmokeTests
+ |-- pipeline.sh/prepareForSmokeTests
  `-- pipeline.sh/runSmokeTests
+
+Uses feature(s): _export_, _source_
 
 
 stage_deploy.sh(1)
@@ -2566,7 +2644,10 @@ Script Body
 Has 11 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/stageDeploy
+ |-- pipeline-cf.sh/stageDeploy
+ `-- pipeline.sh/stageDeploy
+
+Uses feature(s): _export_, _source_
 
 
 stage_e2e.sh(1)
@@ -2597,7 +2678,10 @@ Has 12 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/prepareForE2eTests
+ |-- pipeline.sh/prepareForE2eTests
  `-- pipeline.sh/runE2eTests
+
+Uses feature(s): _export_, _source_
 
 
 prod_deploy.sh(1)
@@ -2627,7 +2711,10 @@ Script Body
 Has 11 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/prodDeploy
+ |-- pipeline-cf.sh/prodDeploy
+ `-- pipeline.sh/prodDeploy
+
+Uses feature(s): _export_, _source_
 
 
 prod_complete.sh(1)
@@ -2658,7 +2745,10 @@ Script Body
 Has 11 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/completeSwitchOver
+ |-- pipeline-cf.sh/completeSwitchOver
+ `-- pipeline.sh/completeSwitchOver
+
+Uses feature(s): _export_, _source_
 
 
 prod_rollback.sh(1)
@@ -2688,4 +2778,7 @@ Script Body
 Has 19 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/rollbackToPreviousVersion
+ |-- pipeline-cf.sh/rollbackToPreviousVersion
+ `-- pipeline.sh/rollbackToPreviousVersion
+
+Uses feature(s): _export_, _source_
