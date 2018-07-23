@@ -8,34 +8,34 @@ IMPORTANT: You don't need to use all pieces of Spring Cloud Pipelines. You
 can (and should) gradually migrate your applications to use those pieces of
 Spring Cloud Pipelines that you think best suit your needs.
 
-=== Project setup
+=== 5 second introduction
 
-[source,bash]
-----
-.
-├── common
-├── concourse
-├── dist
-├── docs
-├── docs-sources
-└── jenkins
-----
+Spring Cloud Pipelines provides scripts, configuration and convention for automated
+deployment pipeline creation for Jenkins, Concourse with Cloud Foundry or Kubernetes.
+We support JVM languages, PHP, NodeJS out of the box. Since SC-Pipelines uses bash scripts
+you can use it with whatever automation server you have.
 
-In the `common` folder you can find all the Bash scripts containing the pipeline logic. These
-scripts are reused by both Concourse and Jenkins pipelines.
+=== 5 minute introduction
 
-In the `concourse` folder you can find all the necessary scripts and setup to run Concourse demo.
+Spring Cloud Pipelines comes with bash scripts (available under `common/src/main/bash`)
+that represent the logic of all steps in our opinionated deployment pipeline.
+Since we believe in convention over configuration, for the supported framework and
+languages, we assume that the projects follow certain convention of task naming,
+profile setting etc. That way if you create a new application, it's enough for
+your app to follow those conventions and the deployment pipeline will work out of
+the box. Since there's no way that one pipeline can serve the purposes of all
+teams in a company we believe that minor deployment pipeline tweaking should take place,
+that's why we allow the usage of `sc-pipelines.yml` descriptor, that allows to
+provide some customization.
 
-In the `dist` folder you can find the packaged sources of the project. Since the package
-contains no tests or documentation it's extremely small and can be used in the pipelines.
+From the pipeline visualization perspective, we have prepared templates for Concourse
+and Jenkins (via Jenkins Job DSL and Jenkinsfile). That means you can reuse them
+immediately to visualize a deployment pipeline. If you use some other tool for
+continuous delivery, you can set the visualization yourself and reference the
+bash scripts for each step. In other words, Spring Cloud Pipelines can be reused
+with any continuous delivery tool.
 
-In the `docs` folder you have the whole generated documentation of the project.
-
-In the `docs-source` folder you have the sources required to generate the documentation.
-
-In the `jenkins` folder you can find all the necessary scripts and setup to run Jenkins demo.
-
-=== How to use it?
+==== How to use it?
 
 This repository can be treated as a template for your pipeline. We provide some opinionated
 implementation that you can alter to suit your needs. The best approach to use it
@@ -81,6 +81,17 @@ it works by reading <<how-do-the-scripts-work>> section.
 All of that happens out of the box if your application follows conventions.
 You can read about them in <<project-opinions>> section.
 
+==== Supported languages
+
+Currently we support out of the box:
+
+* JVM
+** Maven wrapper based project
+** Gradle wrapper based project
+* PHP
+** Composer based project
+* NPM
+
 ==== Centralized pipeline creation
 
 You can use Spring Cloud Pipelines to generate pipelines
@@ -92,6 +103,8 @@ and then...
 parameter that would contain the list of repositories
 * For Concourse, you'd have to call `fly` and set
 pipeline for every single repo
+
+TIP: This is the suggested way of using Spring Cloud Pipelines
 
 ==== Pipeline per repository
 
@@ -170,7 +183,6 @@ is not behaving properly.
 to check if your system can handle big load of input. In case of our opinionated pipeline
  these tests could be executed either on test (against stubbed environment) or
   stage (against the whole system)
-
 
 ==== Testing against stubs
 
@@ -517,7 +529,7 @@ The following sequence diagram describes how the sourcing of bash scripts takes 
      |                   | Ok, we know that it's Maven  |-|                                                         |                                |                        |                                             |                                     |
      |                   | and should be deployed to CF | |                                                         |                                |                        |                                             |                                     |
      |                   |------------------------------| |                                                         |                                |                        |                                             |                                     |
-     |                                                    | Try to source [custom/build.sh]                         |                                |                        |                                             |                                     |
+     |                                                    | Try to source [custom/build_and_upload.sh]              |                                |                        |                                             |                                     |
      |                                                    |------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------>|
      |                                                    |                                                         |                                |                        |                                             |                                     | ----------------------------\
      |                                                    |                                                         |                                |                        |                                             |                                     |-| No such file so           |

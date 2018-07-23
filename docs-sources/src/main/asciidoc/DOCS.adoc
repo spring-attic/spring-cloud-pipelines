@@ -22,6 +22,10 @@ include::OPINIONATED.adoc[]
 
 include::CUSTOMIZATION.adoc[]
 
+// remove::start[CF]
+include::CF_MIGRATION.adoc[]
+// remove::end[CF]
+
 // remove::start[CONCOURSE]
 include::CONCOURSE.adoc[]
 // remove::end[CONCOURSE]
@@ -42,8 +46,6 @@ include::CF_DEMO.adoc[]
 include::K8S_DEMO.adoc[]
 // remove::end[K8S]
 
-// remove::start[CF]
-include::CF_MIGRATION.adoc[]
-// remove::end[CF]
-
 include::TECH.adoc[]
+
+include::MISC.adoc[]

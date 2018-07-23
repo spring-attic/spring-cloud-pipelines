@@ -7,7 +7,3 @@ include::CF_JENKINS.adoc[]
 // remove::start[K8S]
 include::K8S_JENKINS.adoc[]
 // remove::end[K8S]
-
-include::JENKINS_FAQ.adoc[]
-
-include::CF_JENKINS_FAQ.adoc[]

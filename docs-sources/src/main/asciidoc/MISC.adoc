@@ -1,0 +1,10 @@
+// remove::start[CONCOURSE]
+include::CONCOURSE_FAQ.adoc[]
+// remove::end[CONCOURSE]
+
+// remove::start[JENKINS]
+include::JENKINS_FAQ.adoc[]
+// remove::start[CF]
+include::CF_JENKINS_FAQ.adoc[]
+// remove::end[CF]
+// remove::end[JENKINS]

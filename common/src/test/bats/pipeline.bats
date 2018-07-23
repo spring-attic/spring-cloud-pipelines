@@ -15,6 +15,7 @@ setup() {
 	cp -a "${FIXTURES_DIR}/generic" "${TEMP_DIR}"
 	cp -a "${FIXTURES_DIR}/maven" "${TEMP_DIR}/maven"
 	cp -a "${FIXTURES_DIR}/gradle" "${TEMP_DIR}/gradle"
+	cp -a "${SOURCE_DIR}" "${TEMP_DIR}/sc-pipelines"
 }
 
 teardown() {
@@ -408,5 +409,18 @@ teardown() {
 	run apiCompatibilityCheck
 
 	assert_output --partial "No prod release took place - skipping this step"
+	assert_success
+}
+
+@test "should source a custom script if present" {
+	export PAAS_TYPE=cf
+	cd "${TEMP_DIR}/gradle/build_project"
+	ln -s "${FIXTURES_DIR}/custom/build_and_upload.sh" "${TEMP_DIR}/sc-pipelines/custom/build_and_upload.sh"
+	export CUSTOM_SCRIPT_NAME="build_and_upload.sh"
+	source "${TEMP_DIR}/sc-pipelines/pipeline.sh"
+
+	run build
+
+	assert_output --partial "I am executing a custom build function"
 	assert_success
 }

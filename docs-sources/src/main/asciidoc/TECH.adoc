@@ -1,5 +1,32 @@
 == Building the project
 
+=== Project setup
+
+[source,bash]
+----
+.
+├── common
+├── concourse
+├── dist
+├── docs
+├── docs-sources
+└── jenkins
+----
+
+In the `common` folder you can find all the Bash scripts containing the pipeline logic. These
+scripts are reused by both Concourse and Jenkins pipelines.
+
+In the `concourse` folder you can find all the necessary scripts and setup to run Concourse demo.
+
+In the `dist` folder you can find the packaged sources of the project. Since the package
+contains no tests or documentation it's extremely small and can be used in the pipelines.
+
+In the `docs` folder you have the whole generated documentation of the project.
+
+In the `docs-source` folder you have the sources required to generate the documentation.
+
+In the `jenkins` folder you can find all the necessary scripts and setup to run Jenkins demo.
+
 === Prerequisites
 
 As prerequisites you need to have http://www.shellcheck.net/[shellcheck],

@@ -1,5 +1,9 @@
 == Opinionated implementation
 
+IMPORTANT: In the section below we're showing you a full flow of the demo apps.
+It doesn't mean that your applications are required to have the same dependencies
+such as e.g. `Eureka`.
+
 For the demo purposes we're providing Docker Compose setup with Artifactory and Concourse / Jenkins tools.
 Regardless of the picked CD application for the pipeline to pass one needs either
 

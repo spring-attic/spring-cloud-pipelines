@@ -531,14 +531,9 @@ function deployCupsService() {
 function createServiceWithName() {
 	local name="${1}"
 	echo "Creating service with name [${name}]"
-	# TODO run edit by marcin - DO IT!
-	#APPLICATION_DOMAIN="$("${CF_BIN}" apps | grep "${name}" | tr -s ' ' | cut -d' ' -f 6 | cut -d, -f1)"
 	APPLICATION_DOMAIN="$(getAppHostFromPaas "${name}")"
 	JSON='{"uri":"http://'${APPLICATION_DOMAIN}'"}'
-	# TODO leverage method deployCupsService? Does || echo really help? Add it to deployCupsService?
-	# TODO run edit by marcin
 	deployCupsService "${name}" "-p" "${JSON}"
-	#"${CF_BIN}" cups "${name}" -p "${JSON}" || echo "Service already created. Proceeding with the script"
 } # }}}
 
 # used for tests

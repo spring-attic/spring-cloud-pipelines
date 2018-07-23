@@ -5,5 +5,3 @@ include::CF_CONCOURSE.adoc[]
 // remove::start[K8S]
 include::K8S_CONCOURSE.adoc[]
 // remove::end[K8S]
-
-include::CONCOURSE_FAQ.adoc[]

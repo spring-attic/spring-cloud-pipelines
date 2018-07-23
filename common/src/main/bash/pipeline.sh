@@ -542,7 +542,8 @@ export CUSTOM_SCRIPT_IDENTIFIER="${CUSTOM_SCRIPT_IDENTIFIER:-custom}"
 echo "Custom script identifier is [${CUSTOM_SCRIPT_IDENTIFIER}]"
 CUSTOM_SCRIPT_DIR="${__ROOT}/${CUSTOM_SCRIPT_IDENTIFIER}"
 mkdir -p "${__ROOT}/${CUSTOM_SCRIPT_IDENTIFIER}"
-CUSTOM_SCRIPT_NAME="$(basename "${BASH_SOURCE[1]}")"
+# The check for null is used for tests
+[[ -z "${CUSTOM_SCRIPT_NAME}" ]] && CUSTOM_SCRIPT_NAME="$(basename "${BASH_SOURCE[1]}")"
 echo "Path to custom script is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
 
 # ================================================================

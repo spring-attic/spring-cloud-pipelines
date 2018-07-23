@@ -1,6 +1,40 @@
 == Customizing the project
 
+=== Overriding scripts
 
+Since Spring Cloud Pipelines evolves, you would like to pull the changes to your
+Spring Cloud Pipelines fork. In order not to have merge conflicts, the best approach
+to extending the functionality is to use a separate script with customizations.
+
+When we execute a script that represents a step (e.g. with name `build_and_upload.sh`),
+after we source all the deployment and build specific scripts (e.g. `pipeline-cf.sh`
+and `projectType/pipeline-jvm.sh` with `projectType/pipeline-gradle.sh`), we set
+a hook that allows to customize the behaviour. If the script that we're executing
+is `common/src/main/bash/build_and_upload.sh` then we will search for a script in
+Spring Cloud Pipelines repository under `common/src/main/bash/custom/build_and_upload.sh`
+and we will source that script just before executing any functions.
+
+Example of such customization can be seen below:
+
+.custom/build_and_upload.sh
+```bash
+#!/bin/bash
+
+function build() {
+    echo "I am executing a custom build function"
+}
+
+export -f build
+```
+
+when the function `build` will be called for our Gradle project, then instead of
+calling Gradle build process, we will just echo the `I am executing a custom build function`
+text.
+
+=== Overriding pipelines
+
+Currently the best way for extension of Concourse and Jenkins pipelines is to make
+a copy of the Concourse pipeline `yaml`s and Jenkins seed / pipeline jobs.
 
 === Leaving what's necessary
 

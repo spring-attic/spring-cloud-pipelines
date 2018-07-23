@@ -11,7 +11,7 @@ framework->pipeline: It's a Maven project
 pipeline->paas: The [PAAS_TYPE] is [cf] so I'll source [pipeline-cf.sh]
 note right of paas: Loading all \ndeployment-related functions
 note left of pipeline: Ok, we know that it's Maven \nand should be deployed to CF
-pipeline->custom: Try to source [custom/build.sh]
+pipeline->custom: Try to source [custom/build_and_upload.sh]
 note right of custom: No such file so \nnothing custom to be done
 note right of script: All build related functions \n overridden by language / framework scripts
 note right of script: All deploy related functions \n overridden by paas scripts
