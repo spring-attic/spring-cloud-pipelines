@@ -58,6 +58,13 @@ function retrieveAppName() {
 	fi
 } # }}}
 
+# FUNCTION: retrieveStubRunnerIds {{{
+# npm implementation of the retrieve stub runner ids
+function retrieveStubRunnerIds() {
+	downloadNpmIfMissing
+	"${NPM_BIN}" run stub-ids 2>/dev/null | tail -1
+} # }}}
+
 # ---- TEST PHASE ----
 
 # FUNCTION: runSmokeTests {{{

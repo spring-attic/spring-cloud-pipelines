@@ -26,5 +26,8 @@ Script Body
 Has 11 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/completeSwitchOver
+ |-- pipeline-cf.sh/completeSwitchOver
+ `-- pipeline.sh/completeSwitchOver
+
+Uses feature(s): _export_, _source_
 

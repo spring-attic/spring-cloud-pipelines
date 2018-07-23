@@ -22,6 +22,8 @@ function composer {
 		echo "my-project"
 	elif [[ "${1}" == "group-id" ]]; then
 		echo "com.example"
+	elif [[ "${1}" == "stub-ids" ]]; then
+		echo "com.example:foo:1.0.0.RELEASE:stubs:1234"
 	elif [[ "$*" == *"version"* ]]; then
 		echo "1.0.0"
 	else
@@ -86,6 +88,15 @@ function curl {
 	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
 
 	assert_equal "$( retrieveAppName )" "my-project"
+	assert_success
+}
+
+@test "should call composer to get the stubrunner ids [Composer]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="foo"
+	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
+
+	assert_equal "$( retrieveStubRunnerIds )" "com.example:foo:1.0.0.RELEASE:stubs:1234"
 	assert_success
 }
 

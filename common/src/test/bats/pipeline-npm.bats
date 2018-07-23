@@ -22,6 +22,8 @@ function npm {
 		echo "my-project"
 	elif [[ "${2}" == "group-id" ]]; then
 		echo "com.example"
+	elif [[ "${2}" == "stub-ids" ]]; then
+		echo "com.example:foo:1.0.0.RELEASE:stubs:1234"
 	elif [[ "$*" == *"version"* ]]; then
 		echo "1.0.0"
 	else
@@ -70,7 +72,7 @@ function curl {
 	assert_success
 }
 
-@test "should return fixed project name if differs from the default one [Composer]" {
+@test "should return fixed project name if differs from the default one [Npm]" {
 	export PROJECT_NAME="foo"
 	export DEFAULT_PROJECT_NAME="bar"
 	source "${SOURCE_DIR}/projectType/pipeline-npm.sh"
@@ -79,7 +81,7 @@ function curl {
 	assert_success
 }
 
-@test "should call composer to get the app name if it's equal to the default one [Composer]" {
+@test "should call npm to get the app name if it's equal to the default one [Npm]" {
 	export PROJECT_NAME="foo"
 	export DEFAULT_PROJECT_NAME="foo"
 	source "${SOURCE_DIR}/projectType/pipeline-npm.sh"
@@ -88,12 +90,21 @@ function curl {
 	assert_success
 }
 
-@test "should call composer to get the group id [Npm]" {
+@test "should call npm to get the group id [Npm]" {
 	export PROJECT_NAME="foo"
 	export DEFAULT_PROJECT_NAME="foo"
 	source "${SOURCE_DIR}/projectType/pipeline-npm.sh"
 
 	assert_equal "$( retrieveGroupId )" "com.example"
+	assert_success
+}
+
+@test "should call npm to get the stub runner ids [Npm]" {
+	export PROJECT_NAME="foo"
+	export DEFAULT_PROJECT_NAME="foo"
+	source "${SOURCE_DIR}/projectType/pipeline-npm.sh"
+
+	assert_equal "$( retrieveStubRunnerIds )" "com.example:foo:1.0.0.RELEASE:stubs:1234"
 	assert_success
 }
 

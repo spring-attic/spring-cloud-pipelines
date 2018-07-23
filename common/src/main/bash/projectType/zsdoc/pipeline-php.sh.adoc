@@ -24,6 +24,7 @@ FUNCTIONS
  projectType
  retrieveAppName
  retrieveGroupId
+ retrieveStubRunnerIds
  runE2eTests
  runSmokeTests
  testResultsAntPattern
@@ -34,7 +35,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 20 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 20 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_
 
 build
 ~~~~~
@@ -52,7 +55,7 @@ Has 30 line(s). Calls functions:
 
 Uses feature(s): _trap_
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~
@@ -68,7 +71,7 @@ ____
 
 Has 26 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 downloadComposerIfMissing
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,6 +91,7 @@ Called by:
  executeApiCompatibilityCheck
  retrieveAppName
  retrieveGroupId
+ retrieveStubRunnerIds
  runE2eTests
  runSmokeTests
 
@@ -104,7 +108,7 @@ Has 2 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 installPhpIfMissing
 ~~~~~~~~~~~~~~~~~~~
@@ -130,7 +134,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 projectType
 ~~~~~~~~~~~
@@ -141,7 +145,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveAppName
 ~~~~~~~~~~~~~~~
@@ -156,7 +160,7 @@ Has 6 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -171,7 +175,22 @@ Has 2 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+retrieveStubRunnerIds
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # PHP implementation of the retrieve stub runner ids
+____
+
+Has 2 line(s). Calls functions:
+
+ retrieveStubRunnerIds
+ `-- downloadComposerIfMissing
+     `-- installPhpIfMissing
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runE2eTests
 ~~~~~~~~~~~
@@ -186,7 +205,7 @@ Has 2 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runSmokeTests
 ~~~~~~~~~~~~~
@@ -201,7 +220,7 @@ Has 2 line(s). Calls functions:
  `-- downloadComposerIfMissing
      `-- installPhpIfMissing
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -212,5 +231,5 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 

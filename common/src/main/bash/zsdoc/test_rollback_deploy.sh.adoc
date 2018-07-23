@@ -26,5 +26,8 @@ Script Body
 Has 18 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/testRollbackDeploy
+ |-- pipeline-cf.sh/testRollbackDeploy
+ `-- pipeline.sh/testRollbackDeploy
+
+Uses feature(s): _export_, _source_
 

@@ -62,7 +62,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 7 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 7 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_
 
 addMultiplePortsSupport
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -97,7 +99,7 @@ ____
 
 Has 9 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 completeSwitchOver
 ~~~~~~~~~~~~~~~~~~
@@ -162,7 +164,7 @@ ____
 
 Has 5 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 deployAndRestartAppWithName
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -305,7 +307,7 @@ Has 57 line(s). Calls functions:
      |-- restartApp
      `-- setEnvVar
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 deployStubRunnerBoot
 ~~~~~~~~~~~~~~~~~~~~
@@ -344,7 +346,7 @@ ____
 
 Has 4 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getArtifactType
 ~~~~~~~~~~~~~~~
@@ -359,7 +361,7 @@ Has 16 line(s). Calls functions:
  getArtifactType
  `-- pipeline.sh/toLowerCase
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getDomain
 ~~~~~~~~~
@@ -372,7 +374,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getHostFromManifest
 ~~~~~~~~~~~~~~~~~~~
@@ -385,7 +387,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getInstancesFromManifest
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -398,7 +400,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getProfilesFromManifest
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -411,7 +413,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 hostname
 ~~~~~~~~
@@ -427,7 +429,7 @@ ____
 
 Has 20 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 logInToPaas
 ~~~~~~~~~~~
@@ -476,7 +478,7 @@ ____
 
 Has 11 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 pathToUnpackedSources
 ~~~~~~~~~~~~~~~~~~~~~
@@ -487,7 +489,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 performProductionDeploymentOfTestedApplication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -652,7 +654,7 @@ Has 9 line(s). Calls functions:
  |   `-- pipeline.sh/envNodeExists
  `-- readTestPropertiesFromFile
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 rollbackToPreviousVersion
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -709,7 +711,7 @@ Has 5 line(s). Calls functions:
  setEnvVarIfMissing
  `-- setEnvVar
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 stageDeploy
 ~~~~~~~~~~~

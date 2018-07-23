@@ -26,14 +26,14 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 3 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 3 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 deployService
 ~~~~~~~~~~~~~
 
 Has 680 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 logInToPaas
 ~~~~~~~~~~~

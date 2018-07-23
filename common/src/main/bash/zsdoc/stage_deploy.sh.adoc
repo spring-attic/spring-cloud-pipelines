@@ -25,5 +25,8 @@ Script Body
 Has 11 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/stageDeploy
+ |-- pipeline-cf.sh/stageDeploy
+ `-- pipeline.sh/stageDeploy
+
+Uses feature(s): _export_, _source_
 

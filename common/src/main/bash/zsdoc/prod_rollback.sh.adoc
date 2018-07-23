@@ -25,5 +25,8 @@ Script Body
 Has 19 line(s). Calls functions:
 
  Script-Body
- `-- pipeline-cf.sh/rollbackToPreviousVersion
+ |-- pipeline-cf.sh/rollbackToPreviousVersion
+ `-- pipeline.sh/rollbackToPreviousVersion
+
+Uses feature(s): _export_, _source_
 

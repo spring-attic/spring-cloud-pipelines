@@ -33,7 +33,9 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 22 line(s). No functions are called (may attach to Zle or do hooks, etc.).
+Has 22 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_
 
 build
 ~~~~~
@@ -48,7 +50,7 @@ Has 8 line(s). Calls functions:
  build
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,7 +64,7 @@ Has 6 line(s). Calls functions:
  executeApiCompatibilityCheck
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 extractMavenProperty
 ~~~~~~~~~~~~~~~~~~~~
@@ -88,7 +90,7 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 printTestResults
 ~~~~~~~~~~~~~~~~
@@ -119,7 +121,7 @@ ____
 
 Has 14 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -133,7 +135,7 @@ ____
 
 Has 8 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
@@ -147,7 +149,7 @@ Has 1 line(s). Calls functions:
  retrieveStubRunnerIds
  `-- extractMavenProperty
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runE2eTests
 ~~~~~~~~~~~
@@ -161,7 +163,7 @@ Has 8 line(s). Calls functions:
  runE2eTests
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 runSmokeTests
 ~~~~~~~~~~~~~
@@ -175,7 +177,7 @@ Has 9 line(s). Calls functions:
  runSmokeTests
  `-- printTestResults
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -186,5 +188,5 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 

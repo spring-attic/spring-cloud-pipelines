@@ -26,5 +26,8 @@ Has 12 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/prepareForE2eTests
+ |-- pipeline.sh/prepareForE2eTests
  `-- pipeline.sh/runE2eTests
+
+Uses feature(s): _export_, _source_
 

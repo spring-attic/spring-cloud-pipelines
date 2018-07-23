@@ -108,8 +108,6 @@ function retrieveGroupId() {
 	"${COMPOSER_BIN}" group-id 2>/dev/null | tail -1
 } # }}}
 
-# TODO: Add to list of required functions
-
 # FUNCTION: retrieveAppName {{{
 # PHP implementation of the retrieve application name
 function retrieveAppName() {
@@ -119,6 +117,13 @@ function retrieveAppName() {
 		downloadComposerIfMissing
 		"${COMPOSER_BIN}" app-name 2>/dev/null | tail -1
 	fi
+} # }}}
+
+# FUNCTION: retrieveStubRunnerIds {{{
+# PHP implementation of the retrieve stub runner ids
+function retrieveStubRunnerIds() {
+	downloadComposerIfMissing
+	"${COMPOSER_BIN}" stub-ids 2>/dev/null | tail -1
 } # }}}
 
 # ---- TEST PHASE ----

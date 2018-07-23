@@ -104,6 +104,17 @@ function retrieveAppName() {
 	exit 1
 } # }}}
 
+# FUNCTION: retrieveStubRunnerIds {{{
+# Retrieves the ids for Spring Cloud Contract Stub Runner. If you don't use
+# Stub Runner, overriding this method is not mandatory. The format of the IDS is
+# [groupId:artifactId:version:classifier:port]. E.g. [com.example:foo:1.0.0.RELEASE:stubs:1234]
+function retrieveStubRunnerIds() {
+	echo "Retrieves the ids for Spring Cloud Contract Stub Runner. If you don't use
+	Stub Runner, overriding this method is not mandatory"
+	exit 1
+}
+# }}}
+
 # ---- TEST PHASE ----
 
 # FUNCTION: testDeploy {{{

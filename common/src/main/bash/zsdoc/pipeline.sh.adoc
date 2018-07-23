@@ -62,6 +62,7 @@ FUNCTIONS
  projectType
  retrieveAppName
  retrieveGroupId
+ retrieveStubRunnerIds
  rollbackToPreviousVersion
  runE2eTests
  runSmokeTests
@@ -86,6 +87,8 @@ Has 49 line(s). Calls functions:
  |-- defineProjectSetup
  |   `-- parsePipelineDescriptor
  `-- parsePipelineDescriptor
+
+Uses feature(s): _export_, _source_
 
 apiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~
@@ -253,7 +256,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 findLatestProdTag
 ~~~~~~~~~~~~~~~~~
@@ -270,7 +273,7 @@ Has 11 line(s). Doesn't call other functions.
 
 Uses feature(s): _export_
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 getMainModulePath
 ~~~~~~~~~~~~~~~~~
@@ -282,7 +285,7 @@ ____
 
 Has 10 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 latestProdTagFromGit
 ~~~~~~~~~~~~~~~~~~~~
@@ -293,7 +296,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 outputFolder
 ~~~~~~~~~~~~
@@ -305,7 +308,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 parsePipelineDescriptor
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -381,7 +384,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveAppName
 ~~~~~~~~~~~~~~~
@@ -393,7 +396,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -405,7 +408,20 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+retrieveStubRunnerIds
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Retrieves the ids for Spring Cloud Contract Stub Runner. If you don't use
+ # Stub Runner, overriding this method is not mandatory. The format of the IDS is
+ # [groupId:artifactId:version:classifier:port]. E.g. [com.example:foo:1.0.0.RELEASE:stubs:1234]
+____
+
+Has 3 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 rollbackToPreviousVersion
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -459,7 +475,7 @@ ____
 
 Has 6 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 stageDeploy
 ~~~~~~~~~~~
@@ -497,7 +513,7 @@ ____
 
 Has 3 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 testRollbackDeploy
 ~~~~~~~~~~~~~~~~~~
@@ -536,7 +552,7 @@ ____
 
 Has 2 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 yaml2json
 ~~~~~~~~~
@@ -547,5 +563,5 @@ ____
 
 Has 1 line(s). Doesn't call other functions.
 
-Not called by script or any function, may be a hook or Zle widget, etc.
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 

@@ -7,6 +7,10 @@ function retrieveAppName() {
     echo "${PROJECT_NAME}"
 }
 
+function retrieveStubRunnerIds() {
+    echo "com.example:foo:1.0.0.RELEASE:stubs:1234"
+}
+
 function deleteService() {
     echo "$*"
 }

@@ -27,5 +27,8 @@ Has 19 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/prepareForSmokeTests
+ |-- pipeline.sh/prepareForSmokeTests
  `-- pipeline.sh/runSmokeTests
+
+Uses feature(s): _export_, _source_
 
