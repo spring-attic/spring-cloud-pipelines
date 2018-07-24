@@ -17,15 +17,4 @@ import org.springframework.cloud.pipelines.common.PipelineDescriptor
 @CompileStatic
 interface Step {
 	CreatedJob step(String projectName, Coordinates coordinates, PipelineDescriptor descriptor)
-
-	@CompileStatic
-	class CreatedJob {
-		final Job job
-		final boolean autoNextJob
-
-		CreatedJob(Job job, boolean autoNextJob) {
-			this.job = job
-			this.autoNextJob = autoNextJob
-		}
-	}
 }

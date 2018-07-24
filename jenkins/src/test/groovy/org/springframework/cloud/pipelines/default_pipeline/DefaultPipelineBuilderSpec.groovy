@@ -29,7 +29,7 @@ class DefaultPipelineBuilderSpec extends Specification implements JobCreator, Xm
 
 		when:
 			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
-				new File("jobs/jenkins_pipeline_sample_crawler.groovy").text)])
+				new File("jobs/jenkins_pipeline_crawler_sample.groovy").text)])
 
 		then:
 			noExceptionThrown()
@@ -58,7 +58,7 @@ pipeline:
 
 		when:
 			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
-				new File("jobs/jenkins_pipeline_sample_crawler.groovy").text)])
+				new File("jobs/jenkins_pipeline_crawler_sample.groovy").text)])
 
 		then:
 			noExceptionThrown()
@@ -88,7 +88,7 @@ pipeline:
 
 		when:
 			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
-				new File("jobs/jenkins_pipeline_sample_crawler.groovy").text)])
+				new File("jobs/jenkins_pipeline_crawler_sample.groovy").text)])
 
 		then:
 			noExceptionThrown()
@@ -120,7 +120,7 @@ pipeline:
 
 		when:
 			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
-				new File("jobs/jenkins_pipeline_sample_crawler.groovy").text)])
+				new File("jobs/jenkins_pipeline_crawler_sample.groovy").text)])
 
 		then:
 			noExceptionThrown()
@@ -152,7 +152,7 @@ pipeline:
 
 		when:
 			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
-				new File("jobs/jenkins_pipeline_sample_crawler.groovy").text)])
+				new File("jobs/jenkins_pipeline_crawler_sample.groovy").text)])
 
 		then:
 			noExceptionThrown()
@@ -183,7 +183,7 @@ pipeline:
 
 		when:
 			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
-				new File("jobs/jenkins_pipeline_sample_crawler.groovy").text)])
+				new File("jobs/jenkins_pipeline_crawler_sample.groovy").text)])
 
 		then:
 			noExceptionThrown()
@@ -214,7 +214,7 @@ pipeline:
 
 		when:
 			GeneratedItems scripts = loader.runScripts([new ScriptRequest(
-				new File("jobs/jenkins_pipeline_sample_crawler.groovy").text)])
+				new File("jobs/jenkins_pipeline_crawler_sample.groovy").text)])
 
 		then:
 			noExceptionThrown()

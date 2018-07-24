@@ -7,6 +7,7 @@ import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.steps.Build
+import org.springframework.cloud.pipelines.steps.CreatedJob
 import org.springframework.cloud.pipelines.steps.ProdComplete
 import org.springframework.cloud.pipelines.steps.ProdDeploy
 import org.springframework.cloud.pipelines.steps.ProdRollback
@@ -56,7 +57,7 @@ class DefaultPipelineJobsFactory {
 		)
 	}
 
-	private Step.CreatedJob step(Step step, String projectName, Coordinates coordinates) {
+	private CreatedJob step(Step step, String projectName, Coordinates coordinates) {
 		return step.step(projectName, coordinates, descriptor)
 	}
 }
@@ -71,7 +72,7 @@ class PipelineBuilder {
 		this.descriptor = descriptor
 	}
 
-	Node first(Step.CreatedJob createdJob) {
+	Node first(CreatedJob createdJob) {
 		return new Node(pipelineDefaults, descriptor, createdJob)
 	}
 }
@@ -80,15 +81,15 @@ class PipelineBuilder {
 class Node {
 	private final PipelineDefaults pipelineDefaults
 	private final PipelineDescriptor descriptor
-	private final Step.CreatedJob createdJob
+	private final CreatedJob createdJob
 
-	Node(PipelineDefaults pipelineDefaults, PipelineDescriptor descriptor, Step.CreatedJob createdJob) {
+	Node(PipelineDefaults pipelineDefaults, PipelineDescriptor descriptor, CreatedJob createdJob) {
 		this.pipelineDefaults = pipelineDefaults
 		this.descriptor = descriptor
 		this.createdJob = createdJob
 	}
 
-	Node then(Step.CreatedJob nextJob) {
+	Node then(CreatedJob nextJob) {
 		if (nextJob == null) {
 			return this
 		}
@@ -97,8 +98,8 @@ class Node {
 		return thatNode
 	}
 
-	void thenManualMultiple(Step.CreatedJob... nextJobs) {
-		String jobNames = nextJobs.collect { Step.CreatedJob job -> job.job.name }.join(",")
+	void thenManualMultiple(CreatedJob... nextJobs) {
+		String jobNames = nextJobs.collect { CreatedJob job -> job.job.name }.join(",")
 		createdJob.job.publishers {
 			buildPipelineTrigger(jobNames) {
 				parameters {
