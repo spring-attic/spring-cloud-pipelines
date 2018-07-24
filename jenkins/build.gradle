@@ -53,7 +53,7 @@ dependencies {
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
     }
-    testCompile 'xmlunit:xmlunit:1.6'
+    testCompile 'org.xmlunit:xmlunit-core:2.6.0'
     testCompile "org.skyscreamer:jsonassert:1.4.0"
 }
 

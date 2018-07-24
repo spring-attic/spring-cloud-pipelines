@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hudson.model.ListView>
+    <filterExecutors>false</filterExecutors>
+    <filterQueue>false</filterQueue>
+    <properties class="hudson.model.View$PropertyList"/>
+    <jobNames class="tree-set">
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+    </jobNames>
+    <jobFilters/>
+    <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <jenkins.plugins.extracolumns.LastBuildConsoleColumn/>
+        <hudson.views.BuildButtonColumn/>
+    </columns>
+    <includeRegex>.*-seed</includeRegex>
+</hudson.model.ListView>

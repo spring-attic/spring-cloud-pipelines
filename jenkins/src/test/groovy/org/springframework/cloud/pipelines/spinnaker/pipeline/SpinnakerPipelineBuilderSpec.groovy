@@ -19,6 +19,9 @@ class SpinnakerPipelineBuilderSpec extends Specification {
 # in order for the smoke tests on the TEST environment and end to end tests
 # on the STAGE environment to pass
 
+pipeline:
+  auto_stage: false
+
 # lowercase name of the environment
 test:
   # list of required services
@@ -46,13 +49,15 @@ stage:
       pathToManifest: sc-pipelines/manifest-eureka.yml
 """
 
-	def "should produce a spinnaker pipeline"() {
+	def "should produce a spinnaker pipeline with manual steps"() {
 		given:
 			PipelineDescriptor descriptor = PipelineDescriptor.from(descriptorYaml)
 			Repository repository = new Repository("github-webhook", "", "", "")
 			PipelineDefaults defaults = new PipelineDefaults([:])
 		and:
 			setupEnvVars(defaults)
+			defaults.addEnvVar("AUTO_DEPLOY_TO_STAGE", "false")
+			defaults.addEnvVar("AUTO_DEPLOY_TO_PROD", "false")
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:
@@ -382,6 +387,8 @@ stage:
 		defaults.addEnvVar("PAAS_STAGE_ORG", "scpipelines")
 		defaults.addEnvVar("PAAS_PROD_ORG", "scpipelines")
 		defaults.addEnvVar("SPINNAKER_JENKINS_MASTER", "Spinnaker-Jenkins")
+		defaults.addEnvVar("AUTO_DEPLOY_TO_STAGE", "false")
+		defaults.addEnvVar("AUTO_DEPLOY_TO_PROD", "false")
 	}
 
 	void assertThatJsonsAreEqual(String expected, String actual) {

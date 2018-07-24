@@ -12,10 +12,6 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class PipelineDefaults {
 
-	public static final String GIT_USER_NAME_ENV_VAR = "GIT_USERNAME"
-	public static final String GIT_PASSWORD_ENV_VAR = "GIT_PASSWORD"
-	public static final String GIT_TOKEN_ENV_VAR = "GIT_TOKEN"
-
 	final Map<String, String> defaultEnvVars
 	final Map<String, String> variables
 
@@ -26,62 +22,61 @@ class PipelineDefaults {
 
 	private Map<String, String> defaultEnvVars(Map<String, String> variables) {
 		Map<String, String> envs = [:]
-		setIfPresent(envs, variables, "PROJECT_NAME")
-		setIfPresent(envs, variables, "PROJECT_TYPE")
-		setIfPresent(envs, variables, "PAAS_TYPE")
-		setIfPresent(envs, variables, "TOOLS_BRANCH")
-		setIfPresent(envs, variables, "M2_SETTINGS_REPO_ID")
-		setIfPresent(envs, variables, "REPO_WITH_BINARIES")
-		setIfPresent(envs, variables, "REPO_WITH_BINARIES_FOR_UPLOAD")
-		setIfPresent(envs, variables, "REPO_WITH_BINARIES_CREDENTIAL_ID")
-		setIfPresent(envs, variables, "PIPELINE_DESCRIPTOR")
+		setIfPresent(envs, variables, EnvironmentVariables.PROJECT_NAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PROJECT_TYPE_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TYPE_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.TOOLS_BRANCH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.M2_SETTINGS_REPO_ID_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.REPO_WITH_BINARIES_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.REPO_WITH_BINARIES_FOR_UPLOAD_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.REPO_WITH_BINARIES_CREDENTIAL_ID_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PIPELINE_DESCRIPTOR_ENV_VAR)
 		// remove::start[CF]
-		setIfPresent(envs, variables, "PAAS_TEST_API_URL")
-		setIfPresent(envs, variables, "PAAS_STAGE_API_URL")
-		setIfPresent(envs, variables, "PAAS_PROD_API_URL")
-		setIfPresent(envs, variables, "PAAS_TEST_ORG")
-		setIfPresent(envs, variables, "PAAS_TEST_SPACE_PREFIX")
-		setIfPresent(envs, variables, "PAAS_STAGE_ORG")
-		setIfPresent(envs, variables, "PAAS_STAGE_SPACE")
-		setIfPresent(envs, variables, "PAAS_PROD_ORG")
-		setIfPresent(envs, variables, "PAAS_PROD_SPACE")
-		setIfPresent(envs, variables, "PAAS_HOSTNAME_UUID")
-		setIfPresent(envs, variables, "JAVA_BUILDPACK_URL")
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_API_URL_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_API_URL_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_API_URL_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_ORG_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_SPACE_PREFIX_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_ORG_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_SPACE_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_ORG_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_SPACE_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_HOSTNAME_UUID_ENV_VAR)
 		// remove::end[CF]
 		// remove::start[K8S]
-		setIfPresent(envs, variables, "DOCKER_REGISTRY_URL")
-		setIfPresent(envs, variables, "DOCKER_REGISTRY_ORGANIZATION")
-		setIfPresent(envs, variables, "DOCKER_REGISTRY_CREDENTIAL_ID")
-		setIfPresent(envs, variables, "DOCKER_SERVER_ID")
-		setIfPresent(envs, variables, "DOCKER_EMAIL")
-		setIfPresent(envs, variables, "PAAS_TEST_API_URL")
-		setIfPresent(envs, variables, "PAAS_STAGE_API_URL")
-		setIfPresent(envs, variables, "PAAS_PROD_API_URL")
-		setIfPresent(envs, variables, "PAAS_TEST_CA_PATH")
-		setIfPresent(envs, variables, "PAAS_STAGE_CA_PATH")
-		setIfPresent(envs, variables, "PAAS_PROD_CA_PATH")
-		setIfPresent(envs, variables, "PAAS_TEST_CLIENT_CERT_PATH")
-		setIfPresent(envs, variables, "PAAS_STAGE_CLIENT_CERT_PATH")
-		setIfPresent(envs, variables, "PAAS_PROD_CLIENT_CERT_PATH")
-		setIfPresent(envs, variables, "PAAS_TEST_CLIENT_KEY_PATH")
-		setIfPresent(envs, variables, "PAAS_STAGE_CLIENT_KEY_PATH")
-		setIfPresent(envs, variables, "PAAS_PROD_CLIENT_KEY_PATH")
-		setIfPresent(envs, variables, "PAAS_TEST_CLIENT_TOKEN_PATH")
-		setIfPresent(envs, variables, "PAAS_STAGE_CLIENT_TOKEN_PATH")
-		setIfPresent(envs, variables, "PAAS_PROD_CLIENT_TOKEN_PATH")
-		setIfPresent(envs, variables, "PAAS_TEST_CLUSTER_NAME")
-		setIfPresent(envs, variables, "PAAS_STAGE_CLUSTER_NAME")
-		setIfPresent(envs, variables, "PAAS_PROD_CLUSTER_NAME")
-		setIfPresent(envs, variables, "PAAS_TEST_CLUSTER_USERNAME")
-		setIfPresent(envs, variables, "PAAS_STAGE_CLUSTER_USERNAME")
-		setIfPresent(envs, variables, "PAAS_PROD_CLUSTER_USERNAME")
-		setIfPresent(envs, variables, "PAAS_TEST_SYSTEM_NAME")
-		setIfPresent(envs, variables, "PAAS_STAGE_SYSTEM_NAME")
-		setIfPresent(envs, variables, "PAAS_PROD_SYSTEM_NAME")
-		setIfPresent(envs, variables, "PAAS_TEST_NAMESPACE")
-		setIfPresent(envs, variables, "PAAS_STAGE_NAMESPACE")
-		setIfPresent(envs, variables, "PAAS_PROD_NAMESPACE")
-		setIfPresent(envs, variables, "KUBERNETES_MINIKUBE")
+		setIfPresent(envs, variables, EnvironmentVariables.DOCKER_REGISTRY_URL_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.DOCKER_REGISTRY_ORGANIZATION_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.DOCKER_REGISTRY_CREDENTIAL_ID_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.DOCKER_SERVER_ID_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.DOCKER_EMAIL_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_API_URL_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_API_URL_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_API_URL_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_CA_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_CA_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_CA_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_CLIENT_CERT_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_CLIENT_CERT_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_CLIENT_CERT_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_CLIENT_KEY_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_CLIENT_KEY_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_CLIENT_KEY_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_CLIENT_TOKEN_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_CLIENT_TOKEN_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_CLIENT_TOKEN_PATH_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_CLUSTER_NAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_CLUSTER_NAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_CLUSTER_NAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_CLUSTER_USERNAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_CLUSTER_USERNAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_CLUSTER_USERNAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_SYSTEM_NAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_SYSTEM_NAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_SYSTEM_NAME_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_TEST_NAMESPACE_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_STAGE_NAMESPACE_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.PAAS_PROD_NAMESPACE_ENV_VAR)
+		setIfPresent(envs, variables, EnvironmentVariables.KUBERNETES_MINIKUBE_ENV_VAR)
 		// remove::end[K8S]
 		println "Will analyze the following variables passed to the seed job \n\n${variables}"
 		println "Will set the following env vars to the generated jobs \n\n${envs}"
@@ -104,6 +99,8 @@ class PipelineDefaults {
 				apiCompatibilityStep(it.api_compatibility_step)
 			if (it.rollback_step != null)
 				rollbackStep(it.rollback_step)
+			if (it.test_step != null)
+				testStep(it.test_step)
 			if (it.stage_step != null) {
 				stageStep(it.stage_step)
 			}
@@ -121,11 +118,11 @@ class PipelineDefaults {
 
 	// Example of a version with date and time in the name
 	String pipelineVersion() {
-		return prop("PIPELINE_VERSION", '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION''')
+		return prop(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR, '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION''')
 	}
 
 	String pipelineDescriptor() {
-		return prop("PIPELINE_DESCRIPTOR", "sc-pipelines.yml")
+		return prop(EnvironmentVariables.PIPELINE_DESCRIPTOR_ENV_VAR, "sc-pipelines.yml")
 	}
 
 	String cronValue() {
@@ -138,187 +135,199 @@ class PipelineDefaults {
 	}
 
 	String gitCredentials() {
-		return prop("GIT_CREDENTIAL_ID", "git")
+		return prop(EnvironmentVariables.GIT_CREDENTIAL_ID_ENV_VAR, "git")
 	}
 
 	String gitUsername() {
-		return prop(GIT_USER_NAME_ENV_VAR, "")
+		return prop(EnvironmentVariables.GIT_USERNAME_ENV_VAR, "")
 	}
 
 	String gitPassword() {
-		return prop(GIT_PASSWORD_ENV_VAR, "")
+		return prop(EnvironmentVariables.GIT_PASSWORD_ENV_VAR, "")
 	}
 
 	String gitToken() {
-		return prop(GIT_TOKEN_ENV_VAR, "")
+		return prop(EnvironmentVariables.GIT_TOKEN_ENV_VAR, "")
 	}
 
 	String gitSshCredentials() {
-		return prop("GIT_SSH_CREDENTIAL_ID", "gitSsh")
+		return prop(EnvironmentVariables.GIT_SSH_CREDENTIAL_ID_ENV_VAR, "gitSsh")
 	}
 
 	boolean gitUseSshKey() {
-		return prop("GIT_USE_SSH_KEY") == null ? false : Boolean.parseBoolean(prop("GIT_USE_SSH_KEY"))
+		return prop(EnvironmentVariables.GIT_USE_SSH_ENV_VAR) == null ? false : Boolean.parseBoolean(prop("GIT_USE_SSH_KEY"))
 	}
 
 	String repoWithBinariesCredentials() {
-		return prop("REPO_WITH_BINARIES_CREDENTIAL_ID", "")
+		return prop(EnvironmentVariables.REPO_WITH_BINARIES_CREDENTIAL_ID_ENV_VAR, "")
 	}
 
 	String dockerCredentials() {
-		return prop("DOCKER_REGISTRY_CREDENTIAL_ID", "")
+		return prop(EnvironmentVariables.DOCKER_REGISTRY_CREDENTIAL_ID_ENV_VAR, "")
 	}
 
-	String jdkVersion() { return prop("JDK_VERSION", "jdk8") }
+	String jdkVersion() { return prop(EnvironmentVariables.JDK_VERSION_ENV_VAR, "jdk8") }
 
 // remove::start[CF]
 	String cfTestCredentialId() {
-		return prop("PAAS_TEST_CREDENTIAL_ID", "")
+		return prop(EnvironmentVariables.PAAS_TEST_CREDENTIAL_ID_ENV_VAR, "")
 	}
 
 	String cfTestOrg() {
-		return prop("PAAS_TEST_ORG", "")
+		return prop(EnvironmentVariables.PAAS_TEST_ORG_ENV_VAR, "")
 	}
 
 	String cfTestSpacePrefix() {
-		return prop("PAAS_TEST_SPACE_PREFIX", "")
-	}
-
-	String cfTestUsername() {
-		return prop("PAAS_TEST_USERNAME", "")
+		return prop(EnvironmentVariables.PAAS_TEST_SPACE_PREFIX_ENV_VAR, "")
 	}
 
 	String cfTestPassword() {
-		return prop("PAAS_TEST_PASSWORD", "")
-	}
-
-	String cfStageCredentialId() {
-		return prop("PAAS_STAGE_CREDENTIAL_ID", "")
+		return prop(EnvironmentVariables.PAAS_TEST_PASSWORD_ENV_VAR, "")
 	}
 
 	String cfStageUsername() {
-		return prop("PAAS_STAGE_USERNAME", "")
+		return prop(EnvironmentVariables.PAAS_STAGE_USERNAME_ENV_VAR, "")
 	}
 
 	String cfStagePassword() {
-		return prop("PAAS_STAGE_PASSWORD", "")
+		return prop(EnvironmentVariables.PAAS_STAGE_PASSWORD_ENV_VAR, "")
 	}
 
 	String cfStageOrg() {
-		return prop("PAAS_STAGE_ORG", "")
+		return prop(EnvironmentVariables.PAAS_STAGE_ORG_ENV_VAR, "")
 	}
 
 	String cfStageSpace() {
-		return prop("PAAS_STAGE_SPACE", "")
+		return prop(EnvironmentVariables.PAAS_STAGE_SPACE_ENV_VAR, "")
+	}
+
+	String cfStageCredentialId() {
+		return prop(EnvironmentVariables.PAAS_STAGE_CREDENTIAL_ID_ENV_VAR, "")
+	}
+
+	String cfProdCredentialId() {
+		return prop(EnvironmentVariables.PAAS_PROD_CREDENTIAL_ID_ENV_VAR, "")
 	}
 
 	String cfProdPassword() {
-		return prop("PAAS_PROD_PASSWORD", "")
+		return prop(EnvironmentVariables.PAAS_PROD_PASSWORD_ENV_VAR, "")
 	}
 
 	String cfProdUsername() {
-		return prop("PAAS_PROD_USERNAME", "")
+		return prop(EnvironmentVariables.PAAS_PROD_USERNAME_ENV_VAR, "")
 	}
 
 	String cfProdOrg() {
-		return prop("PAAS_PROD_ORG", "")
+		return prop(EnvironmentVariables.PAAS_PROD_ORG_ENV_VAR, "")
 	}
 
 	String cfProdSpace() {
-		return prop("PAAS_PROD_SPACE", "")
+		return prop(EnvironmentVariables.PAAS_PROD_SPACE_ENV_VAR, "")
 	}
 // remove::end[CF]
 // remove::start[K8S]
 	String k8sTestTokenCredentialId() {
-		return prop("PAAS_TEST_CLIENT_TOKEN_ID", "")
+		return prop(EnvironmentVariables.PAAS_TEST_CLIENT_TOKEN_ID_ENV_VAR, "")
 	}
 
 	String k8sStageTokenCredentialId() {
-		return prop("PAAS_STAGE_CLIENT_TOKEN_ID", "")
+		return prop(EnvironmentVariables.PAAS_STAGE_CLIENT_TOKEN_ID_ENV_VAR, "")
+	}
+
+	String k8sProdTokenCredentialId() {
+		return prop(EnvironmentVariables.PAAS_PROD_CLIENT_TOKEN_ID_ENV_VAR, "")
 	}
 // remove::end[K8S]
-	String gitEmail() { return prop("GIT_EMAIL", "pivo@tal.com") }
+	String gitEmail() { return prop(EnvironmentVariables.GIT_EMAIL_ENV_VAR, "pivo@tal.com") }
 
-	String gitName() { return prop("GIT_NAME", "Pivo Tal") }
+	String gitName() { return prop(EnvironmentVariables.GIT_NAME_ENV_VAR, "Pivo Tal") }
 
 	BashFunctions bashFunctions() {
 		return new BashFunctions(gitName(), gitEmail(), gitUseSshKey())
 	}
 
 	boolean apiCompatibilityStep() {
-		return prop("API_COMPATIBILITY_STEP_REQUIRED") == null ? true : Boolean.parseBoolean(prop("API_COMPATIBILITY_STEP_REQUIRED") as String)
+		return prop(EnvironmentVariables.API_COMPATIBILITY_STEP_REQUIRED_ENV_VAR) == null ? true : Boolean.parseBoolean(prop(EnvironmentVariables.API_COMPATIBILITY_STEP_REQUIRED_ENV_VAR) as String)
 	}
 
 	void apiCompatibilityStep(boolean stepEnabled) {
-		defaultEnvVars["API_COMPATIBILITY_STEP_REQUIRED"] = stepEnabled as String
+		defaultEnvVars[EnvironmentVariables.API_COMPATIBILITY_STEP_REQUIRED_ENV_VAR] = stepEnabled as String
 	}
 
 	boolean rollbackStep() {
-		return prop("DB_ROLLBACK_STEP_REQUIRED") == null ? true : Boolean.parseBoolean(prop("DB_ROLLBACK_STEP_REQUIRED"))
+		return prop(EnvironmentVariables.DB_ROLLBACK_STEP_REQUIRED_ENV_VAR) == null ? true : Boolean.parseBoolean(prop(EnvironmentVariables.DB_ROLLBACK_STEP_REQUIRED_ENV_VAR))
 	}
 
 	void rollbackStep(boolean stepEnabled) {
-		defaultEnvVars["DB_ROLLBACK_STEP_REQUIRED"] = stepEnabled as String
+		defaultEnvVars[EnvironmentVariables.DB_ROLLBACK_STEP_REQUIRED_ENV_VAR] = stepEnabled as String
+	}
+
+	boolean testStep() {
+		return prop(EnvironmentVariables.DEPLOY_TO_TEST_STEP_REQUIRED_ENV_VAR) == null ? true : Boolean.parseBoolean(prop(EnvironmentVariables.DEPLOY_TO_TEST_STEP_REQUIRED_ENV_VAR))
+	}
+
+	void testStep(boolean stepEnabled) {
+		defaultEnvVars[EnvironmentVariables.DEPLOY_TO_TEST_STEP_REQUIRED_ENV_VAR] = stepEnabled as String
 	}
 
 	boolean stageStep() {
-		return prop("DEPLOY_TO_STAGE_STEP_REQUIRED") == null ? true : Boolean.parseBoolean(prop("DEPLOY_TO_STAGE_STEP_REQUIRED"))
+		return prop(EnvironmentVariables.DEPLOY_TO_STAGE_STEP_REQUIRED_ENV_VAR) == null ? true : Boolean.parseBoolean(prop(EnvironmentVariables.DEPLOY_TO_STAGE_STEP_REQUIRED_ENV_VAR))
 	}
 
 	void stageStep(boolean stepEnabled) {
-		defaultEnvVars["DEPLOY_TO_STAGE_STEP_REQUIRED"] = stepEnabled as String
+		defaultEnvVars[EnvironmentVariables.DEPLOY_TO_STAGE_STEP_REQUIRED_ENV_VAR] = stepEnabled as String
 	}
 
 	boolean autoStage() {
-		return prop("AUTO_DEPLOY_TO_STAGE") == null ? true : Boolean.parseBoolean(prop("AUTO_DEPLOY_TO_STAGE"))
+		return prop(EnvironmentVariables.AUTO_DEPLOY_TO_STAGE_ENV_VAR) == null ? true : Boolean.parseBoolean(prop(EnvironmentVariables.AUTO_DEPLOY_TO_STAGE_ENV_VAR))
 	}
 
 	void autoStage(boolean stepEnabled) {
-		defaultEnvVars["AUTO_DEPLOY_TO_STAGE"] = stepEnabled as String
+		defaultEnvVars[EnvironmentVariables.AUTO_DEPLOY_TO_STAGE_ENV_VAR] = stepEnabled as String
 	}
 
 	boolean autoProd() {
-		return prop("AUTO_DEPLOY_TO_PROD") == null ? true : Boolean.parseBoolean(prop("AUTO_DEPLOY_TO_PROD"))
+		return prop(EnvironmentVariables.AUTO_DEPLOY_TO_PROD_ENV_VAR) == null ? true : Boolean.parseBoolean(prop(EnvironmentVariables.AUTO_DEPLOY_TO_PROD_ENV_VAR))
 	}
 
 	void autoProd(boolean stepEnabled) {
-		defaultEnvVars["AUTO_DEPLOY_TO_PROD"] = stepEnabled as String
+		defaultEnvVars[EnvironmentVariables.AUTO_DEPLOY_TO_PROD_ENV_VAR] = stepEnabled as String
 	}
 
 // TODO: Automate customization of this value
-	String toolsBranch() { return prop("TOOLS_BRANCH", "master") }
+	String toolsBranch() { return prop(EnvironmentVariables.TOOLS_BRANCH_ENV_VAR, "master") }
 
 	String toolsRepo() {
-		return prop("TOOLS_REPOSITORY", "https://github.com/spring-cloud/spring-cloud-pipelines/raw/${toolsBranch()}/dist/spring-cloud-pipelines.tar.gz")
+		return prop(EnvironmentVariables.TOOLS_REPOSITORY_ENV_VAR, "https://github.com/spring-cloud/spring-cloud-pipelines/raw/${toolsBranch()}/dist/spring-cloud-pipelines.tar.gz")
 	}
 
 	RepoType repoType() { return RepoType.from(toolsRepo()) }
 // TODO: K8S - consider parametrization
 // remove::start[K8S]
 	String mySqlRootCredential() {
-		return prop("MYSQL_ROOT_CREDENTIAL_ID", "")
+		return prop(EnvironmentVariables.MYSQL_ROOT_CREDENTIAL_ID_ENV_VAR, "")
 	}
 
 	String mySqlCredential() {
-		return prop("MYSQL_CREDENTIAL_ID", "")
+		return prop(EnvironmentVariables.MYSQL_CREDENTIAL_ID_ENV_VAR, "")
 	}
 // remove::end[K8S]
 
 // remove::start[SPINNAKER]
 	String spinnakerTestDeploymentAccount() {
-		return prop("SPINNAKER_TEST_DEPLOYMENT_ACCOUNT", "")
+		return prop(EnvironmentVariables.SPINNAKER_TEST_DEPLOYMENT_ACCOUNT_ENV_VAR, "")
 	}
 
 	String spinnakerStageDeploymentAccount() {
-		return prop("SPINNAKER_STAGE_DEPLOYMENT_ACCOUNT", "")
+		return prop(EnvironmentVariables.SPINNAKER_STAGE_DEPLOYMENT_ACCOUNT_ENV_VAR, "")
 	}
 
 	String spinnakerProdDeploymentAccount() {
-		return prop("SPINNAKER_PROD_DEPLOYMENT_ACCOUNT", "")
+		return prop(EnvironmentVariables.SPINNAKER_PROD_DEPLOYMENT_ACCOUNT_ENV_VAR, "")
 	}
 
 	String spinnakerJenkinsMaster() {
-		return prop("SPINNAKER_JENKINS_MASTER", "")
+		return prop(EnvironmentVariables.SPINNAKER_JENKINS_MASTER_ENV_VAR, "")
 	}
 // remove::end[SPINNAKER]
 }

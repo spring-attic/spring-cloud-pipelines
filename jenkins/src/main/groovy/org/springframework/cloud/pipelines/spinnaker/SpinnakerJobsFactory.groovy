@@ -7,9 +7,9 @@ import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.steps.Build
-import org.springframework.cloud.pipelines.steps.RollbackTestOnTest
-import org.springframework.cloud.pipelines.steps.TestOnStage
-import org.springframework.cloud.pipelines.steps.TestOnTest
+import org.springframework.cloud.pipelines.steps.TestRollbackTest
+import org.springframework.cloud.pipelines.steps.StageTest
+import org.springframework.cloud.pipelines.steps.TestTest
 
 /**
  * Factory for Spinnaker Jenkins jobs
@@ -34,10 +34,10 @@ class SpinnakerJobsFactory {
 		String projectName = SpinnakerDefaults.projectName(gitRepoName)
 		pipelineDefaults.addEnvVar("PROJECT_NAME", gitRepoName)
 		println "Creating jobs and views for [${projectName}]"
-		new Build(dsl, pipelineDefaults).step(projectName, pipelineVersion, coordinates, descriptor)
-		new TestOnTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
-		new RollbackTestOnTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
-		new TestOnStage(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
+		new Build(dsl, pipelineDefaults, pipelineVersion).step(projectName, coordinates, descriptor)
+		new TestTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
+		new TestRollbackTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
+		new StageTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
 	}
 
 }

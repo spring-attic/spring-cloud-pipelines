@@ -781,7 +781,6 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "PAAS_PROD_ORG")
 		setIfPresent(envs, variables, "PAAS_PROD_SPACE")
 		setIfPresent(envs, variables, "PAAS_HOSTNAME_UUID")
-		setIfPresent(envs, variables, "JAVA_BUILDPACK_URL")
 		// remove::end[CF]
 		// remove::start[K8S]
 		setIfPresent(envs, variables, "DOCKER_REGISTRY_URL")

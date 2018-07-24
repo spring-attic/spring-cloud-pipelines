@@ -1,24 +1,22 @@
-package org.springframework.cloud.pipelines.views
+package org.springframework.cloud.pipelines.spinnaker
 
 import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
 
-import org.springframework.cloud.pipelines.common.BashFunctions
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaults
-import org.springframework.cloud.pipelines.steps.CommonSteps
 import org.springframework.cloud.repositorymanagement.Repository
 
 /**
  * @author Marcin Grzejszczak
  */
 @CompileStatic
-class DefaultView {
+class SpinnakerDefaultView {
 	private final DslFactory dsl
 	private final PipelineDefaults pipelineDefaults
 
-	DefaultView(DslFactory dsl, PipelineDefaults pipelineDefaults) {
+	SpinnakerDefaultView(DslFactory dsl, PipelineDefaults pipelineDefaults) {
 		this.dsl = dsl
 		this.pipelineDefaults = pipelineDefaults
 	}

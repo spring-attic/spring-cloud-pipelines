@@ -7,6 +7,7 @@ import groovy.transform.CompileStatic
 
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
+import org.springframework.cloud.pipelines.common.StepEnabledChecker
 import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaults
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Artifact
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Capacity
@@ -31,6 +32,7 @@ class SpinnakerPipelineBuilder {
 	private final Repository repository
 	private final PipelineDefaults defaults
 	private final ObjectMapper objectMapper = new ObjectMapper()
+	private final StepEnabledChecker stepEnabledChecker
 
 	SpinnakerPipelineBuilder(PipelineDescriptor pipelineDescriptor, Repository repository,
 							 PipelineDefaults defaults) {
@@ -40,6 +42,7 @@ class SpinnakerPipelineBuilder {
 		this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
 		this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 		this.objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+		this.stepEnabledChecker = new StepEnabledChecker(pipelineDescriptor, defaults)
 	}
 
 	String spinnakerPipeline() {
@@ -88,20 +91,33 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, Stage> approveProduction(Tuple2<Integer, Stage> e2eTests, List<Stage> stages) {
 		Tuple2<Integer, Stage> approveProd = manualJudgement(
-			pipelineDescriptor.autoProdSet(), "Approve production", e2eTests.first)
+			stepEnabledChecker.autoProdSet(), "Approve production", e2eTests.first)
 		stages.add(approveProd.second)
 		return approveProd
 	}
 
 	private Tuple2<Integer, Stage> runEndToEndTests(Tuple2<Integer, Stage> prepareForE2e, List<Stage> stages) {
 		Tuple2<Integer, Stage> e2eTests = runTests("stage", "End to end tests on stage",
-			"e2e", prepareForE2e.first, pipelineDescriptor.stageStepSet())
+			"e2e", prepareForE2e.first, stageSet())
 		stages.add(e2eTests.second)
 		return e2eTests
 	}
 
+	private boolean stageSet() {
+		return stepEnabledChecker.stageStepSet()
+	}
+
+	private boolean stageMissing() {
+		return stepEnabledChecker.stageStepMissing()
+	}
+
+	private boolean shouldSkipManualJudgementForStage() {
+		// there's no stage or stage is automatic
+		return stepEnabledChecker.stageStepMissing() || stepEnabledChecker.autoStageSet()
+	}
+
 	private Tuple2<Integer, Stage> prepareForEndToEndTests(Tuple2<Integer, Stage> stageDeployment, List<Stage> stages) {
-		Tuple2<Integer, Stage> prepareForE2e = manualJudgement(pipelineDescriptor.shouldSkipStage(),
+		Tuple2<Integer, Stage> prepareForE2e = manualJudgement(shouldSkipManualJudgementForStage(),
 			"Prepare for end to end tests", stageDeployment.first)
 		stages.add(prepareForE2e.second)
 		return prepareForE2e
@@ -110,7 +126,7 @@ class SpinnakerPipelineBuilder {
 	private Tuple2<Integer, Stage> deployToStage(Tuple2<Integer, Stage> waitingForStage, Tuple2<Integer, List<Stage>> stageServices, List<Stage> stages) {
 		Tuple2<Integer, Stage> stageDeployment =
 			deploymentStage("Deploy to stage", waitingForStage.first,
-				stageServices.first, pipelineDescriptor.stageStepSet())
+				stageServices.first, stageSet())
 		stages.add(stageDeployment.second)
 		return stageDeployment
 	}
@@ -123,7 +139,7 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> waitForStage(Tuple2<Integer, Stage> rollbackTests, List<Stage> stages) {
-		Tuple2<Integer, Stage> waitingForStage = manualJudgement(pipelineDescriptor.shouldSkipStage(),
+		Tuple2<Integer, Stage> waitingForStage = manualJudgement(shouldSkipManualJudgementForStage(),
 			"Wait for stage env", rollbackTests.first)
 		stages.add(waitingForStage.second)
 		return waitingForStage
@@ -131,7 +147,7 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, Stage> testOnTestLatestProdVersion(Tuple2<Integer, Stage> testDeploymentRollback, List<Stage> stages) {
 		Tuple2<Integer, Stage> rollbackTests = runTests("test", "Run rollback tests on test",
-			"rollback-test", testDeploymentRollback.first, pipelineDescriptor.rollbackStepSet())
+			"rollback-test", testDeploymentRollback.first, stepEnabledChecker.rollbackStepSet())
 		stages.add(rollbackTests.second)
 		rollbackTests
 	}
@@ -139,14 +155,14 @@ class SpinnakerPipelineBuilder {
 	private Tuple2<Integer, Stage> deployToTestLatestProdVersion(Tuple2<Integer, Stage> testsOnTest, List<Stage> stages) {
 		Tuple2<Integer, Stage> testDeploymentRollback =
 			rollbackDeploymentStage("Deploy to test latest prod version",
-				testsOnTest.first, pipelineDescriptor.rollbackStepSet())
+				testsOnTest.first, stepEnabledChecker.rollbackStepSet())
 		stages.add(testDeploymentRollback.second)
 		return testDeploymentRollback
 	}
 
 	private Tuple2<Integer, Stage> testsOnTest(Tuple2<Integer, Stage> testDeployment, List<Stage> stages) {
 		Tuple2<Integer, Stage> testsOnTest = runTests("test", "Run tests on test",
-			"test", testDeployment.first, pipelineDescriptor.testStepPresent())
+			"test", testDeployment.first, stepEnabledChecker.testStepSet())
 		stages.add(testsOnTest.second)
 		return testsOnTest
 	}
@@ -166,7 +182,7 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, List<Stage>> createTestServices(String env, int firstId,
 															List<PipelineDescriptor.Service> pipeServices) {
-		if (!pipeServices || pipelineDescriptor.testStepMissing()) {
+		if (!pipeServices || stepEnabledChecker.testStepMissing()) {
 			return new Tuple2(firstId, [])
 		}
 		firstId = firstId + 1
@@ -187,7 +203,7 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, List<Stage>> createStageServices(String env, int firstId,
 															 List<PipelineDescriptor.Service> pipeServices) {
-		if (!pipeServices || pipelineDescriptor.stageStepMissing()) {
+		if (!pipeServices || stageMissing()) {
 			return new Tuple2(firstId, [])
 		}
 		List<Stage> testServices = []
@@ -241,7 +257,7 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> testDeploymentStage(int lastRefId) {
-		if (pipelineDescriptor.testStepMissing()) {
+		if (stepEnabledChecker.testStepMissing()) {
 			return new Tuple2<>(lastRefId, null)
 		}
 		int refId = pipelineDescriptor.test.services.empty ?

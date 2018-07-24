@@ -39,7 +39,7 @@ class BashFunctions {
 				git config user.name "${gitUser}"
 				git config user.email "${gitEmail}"
 				git config credential.helper "store --file=\${tmpDir}/gitcredentials"
-				echo "https://\$${PipelineDefaults.GIT_USER_NAME_ENV_VAR}:\$${PipelineDefaults.GIT_PASSWORD_ENV_VAR}@${host}" > \${tmpDir}/gitcredentials
+				echo "https://\$${EnvironmentVariables.GIT_USERNAME_ENV_VAR}:\$${EnvironmentVariables.GIT_PASSWORD_ENV_VAR}@${host}" > \${tmpDir}/gitcredentials
 			"""
 	}
 }

@@ -8,58 +8,66 @@ import javaposse.jobdsl.dsl.helpers.ScmContext
 import javaposse.jobdsl.dsl.helpers.publisher.PublisherContext
 import javaposse.jobdsl.dsl.helpers.step.StepContext
 import javaposse.jobdsl.dsl.helpers.wrapper.WrapperContext
+import javaposse.jobdsl.dsl.jobs.FreeStyleJob
 
 import org.springframework.cloud.pipelines.common.BashFunctions
 import org.springframework.cloud.pipelines.common.Coordinates
+import org.springframework.cloud.pipelines.common.EnvironmentVariables
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
+import org.springframework.cloud.pipelines.common.StepEnabledChecker
 
 /**
  * @author Marcin Grzejszczak
  */
 @CompileStatic
-class Build {
+class Build implements Step {
 	private final DslFactory dsl
 	private final PipelineDefaults pipelineDefaults
 	private final BashFunctions bashFunctions
 	private final CommonSteps commonSteps
+	private final String pipelineVersion
 
-	Build(DslFactory dsl, PipelineDefaults pipelineDefaults) {
+	Build(DslFactory dsl, PipelineDefaults pipelineDefaults, String pipelineVersion) {
 		this.dsl = dsl
 		this.pipelineDefaults = pipelineDefaults
 		this.bashFunctions = pipelineDefaults.bashFunctions()
 		this.commonSteps = new CommonSteps(this.pipelineDefaults, this.bashFunctions)
+		this.pipelineVersion = pipelineVersion
 	}
 
-	void step(String projectName, String pipelineVersion,
-			  Coordinates coordinates, PipelineDescriptor descriptor) {
+	static String stepName(String projectName) {
+		return "${projectName}-build"
+	}
+
+	@Override
+	CreatedJob step(String projectName, Coordinates coordinates, PipelineDescriptor descriptor) {
 		String gitRepoName = coordinates.gitRepoName
 		String branchName = coordinates.branchName
 		String fullGitRepo = coordinates.fullGitRepo
-		dsl.job("${projectName}-build") {
+		StepEnabledChecker checker = new StepEnabledChecker(descriptor, pipelineDefaults)
+		FreeStyleJob job = dsl.job(stepName(projectName)) {
 			deliveryPipelineConfiguration('Build', 'Build and Upload')
+			environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 			triggers {
 				cron(pipelineDefaults.cronValue())
 				githubPush()
 			}
-			environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 			wrappers {
 				deliveryPipelineVersion(pipelineVersion, true)
 				commonSteps.defaultWrappers(delegate as WrapperContext)
-				if (pipelineDefaults.gitUseSshKey()) {
-					sshAgent(pipelineDefaults.gitSshCredentials())
-				}
 				credentialsBinding {
 					if (pipelineDefaults.repoWithBinariesCredentials()) {
-						usernamePassword('M2_SETTINGS_REPO_USERNAME', 'M2_SETTINGS_REPO_PASSWORD',
+						usernamePassword(EnvironmentVariables.M2_SETTINGS_REPO_USERNAME_ENV_VAR,
+							EnvironmentVariables.M2_SETTINGS_REPO_PASSWORD_ENV_VAR,
 							pipelineDefaults.repoWithBinariesCredentials())
 					}
 					if (pipelineDefaults.dockerCredentials()) {
-						usernamePassword('DOCKER_USERNAME', 'DOCKER_PASSWORD',
+						usernamePassword(EnvironmentVariables.DOCKER_USERNAME_ENV_VAR, EnvironmentVariables.DOCKER_PASSWORD_ENV_VAR,
 							pipelineDefaults.dockerCredentials())
 					}
 					if (!pipelineDefaults.gitUseSshKey()) {
-						usernamePassword(PipelineDefaults.GIT_USER_NAME_ENV_VAR, PipelineDefaults.GIT_PASSWORD_ENV_VAR,
+						usernamePassword(EnvironmentVariables.GIT_USERNAME_ENV_VAR, EnvironmentVariables.GIT_PASSWORD_ENV_VAR,
 							pipelineDefaults.gitCredentials())
 					}
 				}
@@ -76,12 +84,15 @@ class Build {
 		set -o errtrace
 		set -o pipefail
 		${bashFunctions.setupGitCredentials(fullGitRepo)}
-		${ if (pipelineDefaults.apiCompatibilityStep() && descriptor.apiCompatibilityStepSet()) {
-					return '''\
+		${
+					if (checker.apiCompatibilityStepSet()) {
+						return '''\
 		echo "First running api compatibility check, so that what we commit and upload at the end is just built project"
 		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
-		'''}
-		}
+		'''
+					}
+					return ''
+				}
 		\${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 		""")
 			}
@@ -89,7 +100,7 @@ class Build {
 				commonSteps.defaultPublishers(delegate as PublisherContext)
 				git {
 					pushOnlyIfSuccess()
-					tag('origin', "dev/${gitRepoName}/\${PIPELINE_VERSION}") {
+					tag('origin', "dev/${gitRepoName}/\${${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}") {
 						create()
 						update()
 					}
@@ -97,9 +108,22 @@ class Build {
 				archiveArtifacts {
 					pattern("**/build/*.jar")
 					pattern("**/target/*.jar")
+					allowEmpty()
 				}
 			}
 		}
+		return new CreatedJob(job, autoNextJob(checker))
+	}
+
+	private boolean autoNextJob(StepEnabledChecker checker) {
+		if (checker.apiCompatibilityStepSet()) {
+			return true
+		} else if (checker.testStepSet()) {
+			return true
+		} else if (checker.stageStepSet()) {
+			return checker.autoStageSet()
+		}
+		return checker.autoProdSet()
 	}
 
 	@CompileDynamic

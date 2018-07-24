@@ -1,12 +1,14 @@
 package org.springframework.cloud.pipelines.steps
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import javaposse.jobdsl.dsl.helpers.ScmContext
 import javaposse.jobdsl.dsl.helpers.publisher.PublisherContext
 import javaposse.jobdsl.dsl.helpers.step.StepContext
 import javaposse.jobdsl.dsl.helpers.wrapper.WrapperContext
 
 import org.springframework.cloud.pipelines.common.BashFunctions
+import org.springframework.cloud.pipelines.common.EnvironmentVariables
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.RepoType
 
@@ -14,6 +16,7 @@ import org.springframework.cloud.pipelines.common.RepoType
  * @author Marcin Grzejszczak
  */
 @CompileStatic
+@PackageScope
 class CommonSteps {
 
 	private final PipelineDefaults defaults
@@ -21,7 +24,13 @@ class CommonSteps {
 
 	CommonSteps(PipelineDefaults defaults, BashFunctions bashFunctions) {
 		this.defaults = defaults
-		this.bashFunctions = new BashFunctions(defaults)
+		this.bashFunctions = bashFunctions ?: new BashFunctions(defaults)
+	}
+
+	void deliveryPipelineVersion(WrapperContext wrapperContext) {
+		wrapperContext.with {
+			deliveryPipelineVersion('${ENV,var="' + EnvironmentVariables.PIPELINE_VERSION_ENV_VAR + '"}', true)
+		}
 	}
 
 	void defaultWrappers(WrapperContext wrapperContext) {
@@ -34,6 +43,7 @@ class CommonSteps {
 				failBuild()
 				writeDescription('Build failed due to timeout after {0} minutes of inactivity')
 			}
+			if (defaults.gitUseSshKey()) sshAgent(defaults.gitSshCredentials())
 		}
 	}
 
@@ -41,6 +51,45 @@ class CommonSteps {
 		publisherContext.with {
 			archiveJunit(defaults.testReports()) {
 				allowEmptyResults()
+			}
+		}
+	}
+
+	void deployPublishers(PublisherContext publisherContext) {
+		publisherContext.with {
+			// remove::start[K8S]
+			archiveArtifacts {
+				pattern("**/build/**/k8s/*.yml")
+				pattern("**/target/**/k8s/*.yml")
+				// remove::start[CF]
+				allowEmpty()
+				// remove::end[CF]
+			}
+			// remove::end[K8S]
+		}
+	}
+
+	void runNextJob(PublisherContext publisherContext, String nextJob, boolean automatic) {
+		if (automatic) {
+			publisherContext.with {
+				downstreamParameterized {
+					trigger(nextJob) {
+						parameters {
+							currentBuild()
+							propertiesFile('${' + EnvironmentVariables.OUTPUT_FOLDER_ENV_VAR + '}/test.properties', false)
+						}
+						triggerWithNoParameters()
+					}
+				}
+			}
+		} else {
+			publisherContext.with {
+				buildPipelineTrigger(nextJob) {
+					parameters {
+						propertiesFile('${' + EnvironmentVariables.OUTPUT_FOLDER_ENV_VAR + '}/test.properties', false)
+						currentBuild()
+					}
+				}
 			}
 		}
 	}

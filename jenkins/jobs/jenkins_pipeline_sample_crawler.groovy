@@ -3,9 +3,8 @@ import javaposse.jobdsl.dsl.DslFactory
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
-import org.springframework.cloud.pipelines.spinnaker.SpinnakerJobsFactory
-import org.springframework.cloud.pipelines.spinnaker.pipeline.SpinnakerPipelineBuilder
-import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaultView
+import org.springframework.cloud.pipelines.default_pipeline.DefaultPipelineJobsFactory
+import org.springframework.cloud.pipelines.default_pipeline.DefaultView
 import org.springframework.cloud.repositorymanagement.OptionsBuilder
 import org.springframework.cloud.repositorymanagement.Repository
 import org.springframework.cloud.repositorymanagement.RepositoryManagers
@@ -18,7 +17,6 @@ String pipelineVersion = defaults.pipelineVersion()
 String org = binding.variables["ORG"] ?: "sc-pipelines"
 String repoType = binding.variables["REPO_MANAGEMENT_TYPE"] ?: "GITHUB"
 String urlRoot = binding.variables["REPO_URL_ROOT"] ?: "https://github.com"
-String workspace = binding.variables["WORKSPACE"] ?: "."
 
 // crawl the org
 RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
@@ -31,14 +29,6 @@ RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
 List<Repository> repositories = binding.variables["TEST_MODE_DESCRIPTOR"] != null ?
 	[new Repository("foo", "git@bar.com:baz/foo.git", "http://bar.com/baz/foo.git", "master")]
 	: repositoryManagers.repositories(org)
-// JSON dump
-Closure dumpJsonToFile = { PipelineDescriptor pipeline, Repository repo ->
-	String json = new SpinnakerPipelineBuilder(pipeline, repo, defaults)
-		.spinnakerPipeline()
-	File pipelineJson = new File("${workspace}/build", repo.name + "_pipeline.json")
-	pipelineJson.createNewFile()
-	pipelineJson.text = json
-}
 List<Repository> repositoriesForViews = []
 // for every repo
 repositories.each { Repository repo ->
@@ -55,18 +45,18 @@ repositories.each { Repository repo ->
 		// for monorepos treat the single repo as multiple ones
 		pipeline.pipeline.project_names.each { String monoRepo ->
 			Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
+			Coordinates coordinates = Coordinates.fromRepo(monoRepository, defaults)
 			repositoriesForViews.add(monoRepository)
-			new SpinnakerJobsFactory(pipelineDefaults, pipeline, dsl)
-				.allJobs(Coordinates.fromRepo(monoRepository, defaults), pipelineVersion)
-			dumpJsonToFile(pipeline, monoRepository)
+			new DefaultPipelineJobsFactory(pipeline, pipelineDefaults, dsl)
+				.allJobs(coordinates, pipelineVersion)
 		}
 	} else {
 		// for any other repo build a single pipeline
+		Coordinates coordinates = Coordinates.fromRepo(repo, defaults)
 		repositoriesForViews.add(repo)
-		new SpinnakerJobsFactory(pipelineDefaults, pipeline, dsl)
-			.allJobs(Coordinates.fromRepo(repo, defaults), pipelineVersion)
-		dumpJsonToFile(pipeline, repo)
+		new DefaultPipelineJobsFactory(pipeline, pipelineDefaults, dsl)
+			.allJobs(coordinates, pipelineVersion)
 	}
 }
-// build the views
-new SpinnakerDefaultView(dsl, defaults).view(repositoriesForViews)
+
+new DefaultView(defaults, dsl).allViews(repositories)

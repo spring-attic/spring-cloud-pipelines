@@ -49,7 +49,6 @@ envs["PAAS_STAGE_SPACE"] = binding.variables["PAAS_STAGE_SPACE"] ?: "sc-pipeline
 envs["PAAS_PROD_ORG"] = binding.variables["PAAS_PROD_ORG"] ?: "pcfdev-org"
 envs["PAAS_PROD_SPACE"] = binding.variables["PAAS_PROD_SPACE"] ?: "sc-pipelines-prod"
 envs["PAAS_HOSTNAME_UUID"] = binding.variables["PAAS_HOSTNAME_UUID"] ?: ""
-envs["JAVA_BUILDPACK_URL"] = binding.variables["JAVA_BUILDPACK_URL"] ?: "https://github.com/cloudfoundry/java-buildpack.git#v3.8.1"
 envs["PIPELINE_DESCRIPTOR"] = binding.variables["PIPELINE_DESCRIPTOR"] ?: ""
 // remove::end[CF]
 // remove::start[K8S]
