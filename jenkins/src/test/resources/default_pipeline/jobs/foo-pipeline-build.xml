@@ -61,6 +61,7 @@
 				echo "First running api compatibility check, so that what we commit and upload at the end is just built project"
 		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
 		
+		echo "Running the build and upload script"
 		${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 		</command>
         </hudson.tasks.Shell>
