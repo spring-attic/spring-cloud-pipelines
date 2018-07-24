@@ -1,5 +1,6 @@
 package org.springframework.cloud.pipelines.default_pipeline
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
 
@@ -98,6 +99,9 @@ class Node {
 		return thatNode
 	}
 
+	@CompileDynamic
+	// [Static type checking] - Cannot find matching method javaposse.jobdsl.dsl.Job#publishers(groovy.lang.Closure).
+	// Please check if the declared type is right and if the method exists.
 	void thenManualMultiple(CreatedJob... nextJobs) {
 		String jobNames = nextJobs.collect { CreatedJob job -> job.job.name }.join(",")
 		createdJob.job.publishers {
@@ -109,6 +113,7 @@ class Node {
 		}
 	}
 
+	@CompileDynamic
 	private void link(Node thisNode, Node thatNode, boolean auto) {
 		String nextJob = thatNode.createdJob.job.name
 		thisNode.createdJob.job.publishers {
