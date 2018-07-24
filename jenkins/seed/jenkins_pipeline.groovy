@@ -176,13 +176,16 @@ factory.job('jenkins-pipeline-cf-crawler-seed') {
 				binding.variables["PAAS_STAGE_CREDENTIAL_ID"] as String)
 			usernamePassword("PAAS_PROD_USERNAME", "PAAS_PROD_PASSWORD",
 				binding.variables["PAAS_PROD_CREDENTIAL_ID"] as String)
+			if (Boolean.parseBoolean(binding.variables["GIT_TOKEN"] as String)) {
+				string("GIT_TOKEN", binding.variables["GIT_TOKEN_ID"] as String)
+			} else {
+				usernamePassword("GIT_USERNAME", "GIT_PASSWORD",
+					binding.variables["GIT_CREDENTIAL_ID"] as String)
+			}
 		}
-
 		parameters {
 			// Common
-			stringParam('REPOS', repos,
-				"Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
-					"first provide the name and separate the url with \$ sign")
+			stringParam('ORG', "sc-pipelines", "Pass the name of the organization for which you want to generate the pipeline")
 			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
 			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
 			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
@@ -195,8 +198,8 @@ factory.job('jenkins-pipeline-cf-crawler-seed') {
 			stringParam('GIT_NAME', 'Pivo Tal', "Name used to tag the repo")
 			stringParam('TOOLS_REPOSITORY', 'https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.tar.gz', "The URL to tarball or URL to git repository containing pipeline functions repository. Has to end either with .tar.gz or .git ")
 			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
-			booleanParam('AUTO_DEPLOY_TO_STAGE', false, 'Should deployment to stage be automatic')
-			booleanParam('AUTO_DEPLOY_TO_PROD', false, 'Should deployment to prod be automatic')
+			booleanParam('AUTO_DEPLOY_TO_STAGE', true, 'Should deployment to stage be automatic')
+			booleanParam('AUTO_DEPLOY_TO_PROD', true, 'Should deployment to prod be automatic')
 			booleanParam('API_COMPATIBILITY_STEP_REQUIRED', true, 'Should api compatibility step be present')
 			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
 			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
