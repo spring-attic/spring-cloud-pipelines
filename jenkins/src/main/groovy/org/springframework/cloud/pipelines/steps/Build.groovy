@@ -93,6 +93,7 @@ class Build implements Step {
 					}
 					return ''
 				}
+		echo "Running the build and upload script"
 		\${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 		""")
 			}
