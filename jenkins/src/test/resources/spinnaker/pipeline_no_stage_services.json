@@ -21,7 +21,7 @@
 			"clusters": [
 				{
 					"account": "calabasasaccount",
-					"application": "github-webhook",
+					"application": "githubwebhook",
 					"artifact": {
 						"account": "jenkins",
 						"pattern": "github-webhook.*.jar",
@@ -68,7 +68,7 @@
 			"clusters": [
 				{
 					"account": "calabasasaccount",
-					"application": "github-webhook",
+					"application": "githubwebhook",
 					"artifact": {
 						"account": "jenkins",
 						"pattern": "github-webhook.*.jar",
@@ -126,7 +126,7 @@
 			"clusters": [
 				{
 					"account": "calabasasaccount",
-					"application": "github-webhook",
+					"application": "githubwebhook",
 					"artifact": {
 						"account": "jenkins",
 						"pattern": "github-webhook.*.jar",
@@ -194,7 +194,7 @@
 			"clusters": [
 				{
 					"account": "calabasasaccount",
-					"application": "github-webhook",
+					"application": "githubwebhook",
 					"artifact": {
 						"account": "jenkins",
 						"pattern": "github-webhook.*.jar",
@@ -227,7 +227,7 @@
 			"clusters": [
 				{
 					"account": "calabasasaccount",
-					"application": "github-webhook",
+					"application": "githubwebhook",
 					"artifact": {
 						"account": "jenkins",
 						"pattern": "github-webhook.*.jar",

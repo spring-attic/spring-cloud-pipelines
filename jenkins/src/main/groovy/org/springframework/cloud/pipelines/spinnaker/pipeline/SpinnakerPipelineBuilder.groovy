@@ -228,7 +228,7 @@ class SpinnakerPipelineBuilder {
 							String deploymentStrategy) {
 		return new Cluster(
 			account: account,
-			application: "${this.repository.name}",
+			application: "${alphaNumericOnly(this.repository.name)}",
 			artifact: new Artifact(
 				account: "jenkins",
 				pattern: "${this.repository.name}.*.jar",
@@ -254,6 +254,11 @@ class SpinnakerPipelineBuilder {
 			stack: "",
 			strategy: deploymentStrategy
 		)
+	}
+
+	private String alphaNumericOnly(String string) {
+		return string.replace("_", "")
+					.replace("-", "")
 	}
 
 	private Tuple2<Integer, Stage> testDeploymentStage(int lastRefId) {
