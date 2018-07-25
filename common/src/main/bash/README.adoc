@@ -659,7 +659,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 19 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+Has 21 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 Uses feature(s): _export_, _source_
 
@@ -756,7 +756,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 22 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+Has 24 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 Uses feature(s): _export_
 
@@ -948,7 +948,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 22 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+Has 24 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 Uses feature(s): _export_
 
@@ -1610,7 +1610,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 7 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+Has 9 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 Uses feature(s): _export_
 
@@ -2396,7 +2396,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 3 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+Has 5 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 deployService
 ~~~~~~~~~~~~~
@@ -2473,7 +2473,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 11 line(s). Calls functions:
+Has 13 line(s). Calls functions:
 
  Script-Body
  `-- pipeline.sh/build
@@ -2505,7 +2505,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 11 line(s). Calls functions:
+Has 13 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/testDeploy
@@ -2538,7 +2538,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 12 line(s). Calls functions:
+Has 14 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/prepareForSmokeTests
@@ -2573,7 +2573,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 18 line(s). Calls functions:
+Has 20 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/testRollbackDeploy
@@ -2607,7 +2607,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 19 line(s). Calls functions:
+Has 21 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/prepareForSmokeTests
@@ -2641,7 +2641,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 11 line(s). Calls functions:
+Has 13 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/stageDeploy
@@ -2674,7 +2674,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 12 line(s). Calls functions:
+Has 14 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/prepareForE2eTests
@@ -2708,7 +2708,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 11 line(s). Calls functions:
+Has 13 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/prodDeploy
@@ -2742,7 +2742,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 11 line(s). Calls functions:
+Has 13 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/completeSwitchOver
@@ -2775,7 +2775,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 19 line(s). Calls functions:
+Has 21 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/rollbackToPreviousVersion
