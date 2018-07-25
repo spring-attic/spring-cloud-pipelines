@@ -38,7 +38,7 @@
 						"type": "direct"
 					},
 					"provider": "cloudfoundry",
-					"region": "scpipelines/sc-pipelines-test-github-webhook",
+					"region": "scpipelines > sc-pipelines-test-github-webhook",
 					"stack": "",
 					"strategy": "highlander"
 				}
@@ -114,7 +114,7 @@
 						"type": "direct"
 					},
 					"provider": "cloudfoundry",
-					"region": "scpipelines/sc-pipelines-stage",
+					"region": "scpipelines > sc-pipelines-stage",
 					"stack": "",
 					"strategy": "highlander"
 				}
@@ -183,7 +183,7 @@
 						"type": "direct"
 					},
 					"provider": "cloudfoundry",
-					"region": "scpipelines/sc-pipelines-prod",
+					"region": "scpipelines > sc-pipelines-prod",
 					"stack": "",
 					"strategy": "highlander"
 				}
@@ -216,7 +216,7 @@
 						"type": "direct"
 					},
 					"provider": "cloudfoundry",
-					"region": "scpipelines/sc-pipelines-prod",
+					"region": "scpipelines > sc-pipelines-prod",
 					"stack": "",
 					"strategy": "highlander"
 				}

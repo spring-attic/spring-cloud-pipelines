@@ -250,7 +250,7 @@ class SpinnakerPipelineBuilder {
 				type: "direct"
 			),
 			provider: "cloudfoundry",
-			region: "${org}/${space}",
+			region: "${org} > ${space}",
 			stack: "",
 			strategy: deploymentStrategy
 		)
