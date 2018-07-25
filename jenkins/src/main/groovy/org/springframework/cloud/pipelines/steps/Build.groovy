@@ -18,7 +18,10 @@ import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.common.StepEnabledChecker
 
 /**
+ * Build and api compatibility step
+ *
  * @author Marcin Grzejszczak
+ * @since 1.0.0
  */
 @CompileStatic
 class Build implements Step {

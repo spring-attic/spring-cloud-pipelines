@@ -7,6 +7,7 @@ import javaposse.jobdsl.dsl.DslFactory
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
+import org.springframework.cloud.pipelines.common.PipelineJobsFactory
 import org.springframework.cloud.pipelines.steps.Build
 import org.springframework.cloud.pipelines.steps.CreatedJob
 import org.springframework.cloud.pipelines.steps.ProdComplete
@@ -21,13 +22,14 @@ import org.springframework.cloud.pipelines.steps.TestRollbackTest
 import org.springframework.cloud.pipelines.steps.TestTest
 
 /**
- * Factory for default Spring Cloud Pipelines Jenkins jobs
+ * Factory for default Spring Cloud Pipelines Jenkins jobs. This class
+ * knows how to create a pipeline and link the jobs in it.
  *
  * @author Marcin Grzejszczak
  * @since 1.0.0
  */
 @CompileStatic
-class DefaultPipelineJobsFactory {
+class DefaultPipelineJobsFactory implements PipelineJobsFactory {
 	private final PipelineDefaults pipelineDefaults
 	private final DslFactory dsl
 	private final PipelineDescriptor descriptor
@@ -38,6 +40,7 @@ class DefaultPipelineJobsFactory {
 		this.descriptor = descriptor
 	}
 
+	@Override
 	void allJobs(Coordinates coordinates, String pipelineVersion) {
 		String gitRepoName = coordinates.gitRepoName
 		String projectName = DefaultPipelineDefaults.projectName(gitRepoName)

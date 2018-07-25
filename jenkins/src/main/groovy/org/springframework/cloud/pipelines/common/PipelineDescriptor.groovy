@@ -6,6 +6,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import groovy.transform.CompileStatic
 
 /**
+ * The model representing {@code sc-pipelines.yml} descriptor
+ *
  * @author Marcin Grzejszczak
  * @since 1.0.0
  */

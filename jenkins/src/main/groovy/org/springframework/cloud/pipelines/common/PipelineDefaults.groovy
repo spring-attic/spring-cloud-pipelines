@@ -16,7 +16,7 @@ class PipelineDefaults {
 	final Map<String, String> variables
 
 	PipelineDefaults(Map<String, String> variables) {
-		this.defaultEnvVars = defaultEnvVars(variables)
+		this.defaultEnvVars = new HashMap<>(defaultEnvVars(variables))
 		this.variables = variables
 	}
 
@@ -112,13 +112,33 @@ class PipelineDefaults {
 	}
 
 	protected String prop(String key, String defaultValue = null) {
-		return this.defaultEnvVars.get(key) ?:
-			this.variables.get(key) ?: defaultValue
+		return this.defaultEnvVars.get(key) != null ? this.defaultEnvVars.get(key) :
+			this.variables.get(key) != null ? this.variables.get(key) : defaultValue
 	}
 
 	// Example of a version with date and time in the name
 	String pipelineVersion() {
 		return prop(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR, '''1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION''')
+	}
+
+	String workspace() {
+		return prop(EnvironmentVariables.WORKSPACE_ENV_VAR, ".")
+	}
+
+	String testModeDescriptor() {
+		return prop(EnvironmentVariables.TEST_MODE_DESCRIPTOR_ENV_VAR, null)
+	}
+
+	String repoOrganization() {
+		return prop(EnvironmentVariables.REPO_ORGANIZATION_ENV_VAR, "")
+	}
+
+	String repoManagement() {
+		return prop(EnvironmentVariables.REPO_MANAGEMENT_TYPE_ENV_VAR, "")
+	}
+
+	String repoUrlRoot() {
+		return prop(EnvironmentVariables.REPO_URL_ROOT_ENV_VAR, "")
 	}
 
 	String pipelineDescriptor() {

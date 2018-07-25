@@ -15,6 +15,8 @@ import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 
 /**
+ * Switches over the production deployment
+ *
  * @author Marcin Grzejszczak
  * @since 1.0.0
  */

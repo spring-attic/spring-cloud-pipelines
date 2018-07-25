@@ -6,6 +6,9 @@ import groovy.transform.Immutable
 import org.springframework.cloud.repositorymanagement.Repository
 
 /**
+ * Git repo (either https or ssh) together with the proper project
+ * and branch names
+ *
  * @author Marcin Grzejszczak
  * @since 1.0.0
  */

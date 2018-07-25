@@ -9,7 +9,10 @@ import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaults
 import org.springframework.cloud.repositorymanagement.Repository
 
 /**
+ * Default view for Spinnaker
+ *
  * @author Marcin Grzejszczak
+ * @since 1.0.0
  */
 @CompileStatic
 class SpinnakerDefaultView {

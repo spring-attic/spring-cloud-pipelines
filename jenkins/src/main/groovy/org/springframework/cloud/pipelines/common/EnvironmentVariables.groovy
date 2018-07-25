@@ -11,6 +11,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 final class EnvironmentVariables {
 
+	// tag::envs[]
 	/**
 	 * {@code GIT_CREDENTIAL_ID} - ID of credentials used for GIT interaction
 	 */
@@ -170,6 +171,35 @@ final class EnvironmentVariables {
 	 * {@code PIPELINE_VERSION} - env var containing the version of the pipeline
 	 */
 	public static final String PIPELINE_VERSION_ENV_VAR = "PIPELINE_VERSION"
+
+	/**
+	 * {@code WORKSPACE} - env var containing the Jenkins workspace path
+	 */
+	public static final String WORKSPACE_ENV_VAR = "WORKSPACE"
+
+	/**
+	 * {@code TEST_MODE_DESCRIPTOR} - *used for tests* - descriptor to be returned
+	 * for test purposes
+	 */
+	public static final String TEST_MODE_DESCRIPTOR_ENV_VAR = "TEST_MODE_DESCRIPTOR"
+
+	// Project crawler
+
+	/**
+	 * {@code REPO_ORGANIZATION} - organization / team to crawl by project crawler
+	 */
+	public static final String REPO_ORGANIZATION_ENV_VAR = "REPO_ORGANIZATION"
+
+	/**
+	 * {@code REPO_MANAGEMENT_TYPE} - type of repo management used. Can be
+	 * GITHUB, GITLAB, BITBUCKET or OTHER
+	 */
+	public static final String REPO_MANAGEMENT_TYPE_ENV_VAR = "REPO_MANAGEMENT_TYPE"
+
+	/**
+	 * {@code REPO_URL_ROOT} - URL of the API to reach to crawl the organization
+	 */
+	public static final String REPO_URL_ROOT_ENV_VAR = "REPO_URL_ROOT"
 
 	// COMMON for all PAASes
 	/**
@@ -498,4 +528,5 @@ final class EnvironmentVariables {
 	public static final String SPINNAKER_JENKINS_MASTER_ENV_VAR = "SPINNAKER_JENKINS_MASTER"
 	// remove::end[SPINNAKER]
 
+	// end::envs[]
 }

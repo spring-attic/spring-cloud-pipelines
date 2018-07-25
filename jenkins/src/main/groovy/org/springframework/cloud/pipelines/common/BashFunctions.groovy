@@ -3,6 +3,8 @@ package org.springframework.cloud.pipelines.common
 import groovy.transform.CompileStatic
 
 /**
+ * Useful bash functions
+ *
  * @author Marcin Grzejszczak
  * @since 1.0.0
  */

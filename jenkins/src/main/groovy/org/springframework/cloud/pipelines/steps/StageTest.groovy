@@ -16,6 +16,8 @@ import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.common.StepEnabledChecker
 
 /**
+ * Tests on stage
+ *
  * @author Marcin Grzejszczak
  * @since 1.0.0
  */
