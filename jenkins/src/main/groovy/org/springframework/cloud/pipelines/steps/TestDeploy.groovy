@@ -79,6 +79,10 @@ class TestDeploy implements Step {
 				commonSteps.deployPublishers(delegate as PublisherContext)
 			}
 		}
+		commonSteps.customizers().each {
+			it.customizeAll(job)
+			it.customizeTest(job)
+		}
 		return new CreatedJob(job, true)
 	}
 }

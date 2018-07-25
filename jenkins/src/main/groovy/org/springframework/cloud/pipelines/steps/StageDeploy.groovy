@@ -79,6 +79,10 @@ class StageDeploy implements Step {
 				commonSteps.deployPublishers(delegate as PublisherContext)
 			}
 		}
+		commonSteps.customizers().each {
+			it.customizeAll(job)
+			it.customizeStage(job)
+		}
 		return new CreatedJob(job, checker.autoStageSet())
 	}
 }

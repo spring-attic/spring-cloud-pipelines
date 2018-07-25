@@ -9,8 +9,10 @@ import javaposse.jobdsl.dsl.helpers.wrapper.WrapperContext
 
 import org.springframework.cloud.pipelines.common.BashFunctions
 import org.springframework.cloud.pipelines.common.EnvironmentVariables
+import org.springframework.cloud.pipelines.common.JobCustomizer
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.RepoType
+import org.springframework.cloud.repositorymanagement.RepositoryManagementBuilder
 
 /**
  * @author Marcin Grzejszczak
@@ -18,6 +20,9 @@ import org.springframework.cloud.pipelines.common.RepoType
 @CompileStatic
 @PackageScope
 class CommonSteps {
+
+	private static final ServiceLoader<JobCustomizer> LOADED = ServiceLoader
+		.load(JobCustomizer)
 
 	private final PipelineDefaults defaults
 	private final BashFunctions bashFunctions
@@ -132,5 +137,9 @@ class CommonSteps {
 			return script + """rm -rf .git/tools && mkdir -p .git/tools && pushd .git/tools && curl -Lk "${defaults.toolsRepo()}" -o pipelines.tar.gz && tar xf pipelines.tar.gz --strip-components 1 && popd"""
 		}
 		return script + """rm -rf .git/tools && git clone -b ${defaults.toolsBranch()} --single-branch ${defaults.toolsRepo()} .git/tools"""
+	}
+
+	Iterable<JobCustomizer> customizers() {
+		return LOADED
 	}
 }

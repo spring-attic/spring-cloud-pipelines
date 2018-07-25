@@ -80,6 +80,10 @@ class ProdDeploy implements Step {
 				}
 			}
 		}
+		commonSteps.customizers().each {
+			it.customizeAll(job)
+			it.customizeProd(job)
+		}
 		return new CreatedJob(job, false)
 	}
 }

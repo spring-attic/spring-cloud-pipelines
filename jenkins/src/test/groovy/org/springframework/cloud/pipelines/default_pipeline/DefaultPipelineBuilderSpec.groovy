@@ -7,6 +7,7 @@ import javaposse.jobdsl.dsl.MemoryJobManagement
 import javaposse.jobdsl.dsl.ScriptRequest
 import spock.lang.Specification
 
+import org.springframework.cloud.pipelines.common.TestJobCustomizer
 import org.springframework.cloud.pipelines.util.JobCreator
 import org.springframework.cloud.pipelines.util.XmlComparator
 
@@ -17,6 +18,14 @@ class DefaultPipelineBuilderSpec extends Specification implements JobCreator, Xm
 
 	JobParent jobParent = createJobParent()
 	MemoryJobManagement jm = jobParent.jm
+
+	def setup() {
+		TestJobCustomizer.EXECUTED_ALL = false
+		TestJobCustomizer.EXECUTED_BUILD = false
+		TestJobCustomizer.EXECUTED_TEST = false
+		TestJobCustomizer.EXECUTED_STAGE = false
+		TestJobCustomizer.EXECUTED_PROD = false
+	}
 
 	def 'should create the whole pipeline'() {
 		given:
@@ -42,6 +51,12 @@ class DefaultPipelineBuilderSpec extends Specification implements JobCreator, Xm
 			jm.savedViews.each {
 				assertThatViewIsOk(it.key, it.value)
 			}
+		and:
+			TestJobCustomizer.EXECUTED_ALL
+			TestJobCustomizer.EXECUTED_BUILD
+			TestJobCustomizer.EXECUTED_TEST
+			TestJobCustomizer.EXECUTED_STAGE
+			TestJobCustomizer.EXECUTED_PROD
 	}
 
 	def 'should not run api compatibility when descriptor disables it'() {

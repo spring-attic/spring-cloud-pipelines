@@ -116,6 +116,10 @@ class Build implements Step {
 				}
 			}
 		}
+		commonSteps.customizers().each {
+			it.customizeAll(job)
+			it.customizeBuild(job)
+		}
 		return new CreatedJob(job, autoNextJob(checker))
 	}
 

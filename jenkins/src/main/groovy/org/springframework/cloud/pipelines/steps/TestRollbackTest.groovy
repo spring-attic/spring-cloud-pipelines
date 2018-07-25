@@ -74,6 +74,10 @@ class TestRollbackTest implements Step {
 				commonSteps.defaultPublishers(delegate as PublisherContext)
 			}
 		}
+		commonSteps.customizers().each {
+			it.customizeAll(job)
+			it.customizeTest(job)
+		}
 		return new CreatedJob(job, autoNextJob(checker))
 	}
 

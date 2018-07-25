@@ -73,6 +73,10 @@ class ProdRollback implements Step {
 				commonSteps.deployPublishers(delegate as PublisherContext)
 			}
 		}
+		commonSteps.customizers().each {
+			it.customizeAll(job)
+			it.customizeProd(job)
+		}
 		return new CreatedJob(job, false)
 	}
 }
