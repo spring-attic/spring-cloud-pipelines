@@ -141,6 +141,10 @@ class PipelineDefaults {
 		return prop(EnvironmentVariables.REPO_URL_ROOT_ENV_VAR, "")
 	}
 
+	String repoProjectsExcludePattern() {
+		return prop(EnvironmentVariables.REPO_PROJECTS_EXCLUDE_PATTERN_ENV_VAR, "")
+	}
+
 	String pipelineDescriptor() {
 		return prop(EnvironmentVariables.PIPELINE_DESCRIPTOR_ENV_VAR, "sc-pipelines.yml")
 	}

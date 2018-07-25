@@ -26,6 +26,7 @@ RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
 	.username(defaults.gitUsername())
 	.password(defaults.gitPassword())
 	.token(defaults.gitToken())
+	.exclude(defaults.repoProjectsExcludePattern())
 	.repository(repoType).build())
 
 // get the repos from the org

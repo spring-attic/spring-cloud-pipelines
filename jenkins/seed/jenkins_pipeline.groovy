@@ -185,7 +185,8 @@ factory.job('jenkins-pipeline-cf-crawler-seed') {
 		}
 		parameters {
 			// Common
-			stringParam('ORG', "sc-pipelines", "Pass the name of the organization for which you want to generate the pipeline")
+			stringParam('REPO_ORGANIZATION', "sc-pipelines", "Pass the name of the organization for which you want to generate the pipeline")
+			stringParam('REPO_PROJECTS_EXCLUDE_PATTERN', "", "Regex pattern used to exclude projects from pipeline generation")
 			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
 			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
 			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
@@ -262,7 +263,8 @@ factory.job('jenkins-spinnaker-cf-seed') {
 		}
 		parameters {
 			// Common
-			stringParam('ORG', "sc-pipelines", "Pass the name of the organization for which you want to generate the pipeline")
+			stringParam('REPO_ORGANIZATION', "sc-pipelines", "Pass the name of the organization for which you want to generate the pipeline")
+			stringParam('REPO_PROJECTS_EXCLUDE_PATTERN', "", "Regex pattern used to exclude projects from pipeline generation")
 			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
 			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
 			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')

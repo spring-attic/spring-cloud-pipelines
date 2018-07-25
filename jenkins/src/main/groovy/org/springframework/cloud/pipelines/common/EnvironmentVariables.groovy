@@ -201,6 +201,11 @@ final class EnvironmentVariables {
 	 */
 	public static final String REPO_URL_ROOT_ENV_VAR = "REPO_URL_ROOT"
 
+	/**
+	 * {@code REPO_PROJECTS_EXCLUDE_PATTERN} - Pattern of projects to exclude
+	 */
+	public static final String REPO_PROJECTS_EXCLUDE_PATTERN_ENV_VAR = "REPO_PROJECTS_EXCLUDE_PATTERN"
+
 	// COMMON for all PAASes
 	/**
 	 * {@code PAAS_TEST_API_URL} - URL of the test environment
