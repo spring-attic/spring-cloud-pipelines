@@ -64,7 +64,10 @@ dependencies {
 }
 ----
 
-That wat your implementation will be executed for each job. You can add notifications
+Another option is to just create an implementation in the sources under `src/main/resources/META-INF`
+if you don't want to create a separate library.
+
+Regardless of what you chose, your implementation will be executed for each job. You can add notifications
 or any other customizations of your choosing.
 
 === Leaving what's necessary
