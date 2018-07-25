@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -o errexit
+set -o errtrace
+set -o pipefail
 
 # synopsis {{{
 # Executes a build of the project. Sources pipeline.sh

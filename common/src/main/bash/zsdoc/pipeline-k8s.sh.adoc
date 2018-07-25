@@ -26,7 +26,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 3 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+Has 5 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 deployService
 ~~~~~~~~~~~~~

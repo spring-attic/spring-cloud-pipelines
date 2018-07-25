@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -o errexit
+set -o errtrace
+set -o pipefail
 
 # synopsis {{{
 # Deploys app to test environment. Sources pipeline.sh

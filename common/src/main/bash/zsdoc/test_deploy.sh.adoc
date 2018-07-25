@@ -22,7 +22,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 11 line(s). Calls functions:
+Has 13 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/testDeploy

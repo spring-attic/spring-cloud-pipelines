@@ -1,6 +1,8 @@
 #!/bin/bash
 
-set -e
+set -o errexit
+set -o errtrace
+set -o pipefail
 
 # synopsis {{{
 # Contains all Gradle related build functions

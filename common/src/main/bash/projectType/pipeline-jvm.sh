@@ -1,6 +1,8 @@
 #!/bin/bash
 
-set -e
+set -o errexit
+set -o errtrace
+set -o pipefail
 
 # synopsis {{{
 # Script that knows how to define the concrete type of the JVM project.
