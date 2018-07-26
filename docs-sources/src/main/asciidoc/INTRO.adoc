@@ -570,14 +570,16 @@ In Jenkins, you can generate the deployment pipelines by passing an environment 
 separated list of repositories. This however doesn't scale. We would like to automatically fetch
 a list of all repositories from a given organization / team.
 
-That's why we're using the https://github.com/spring-cloud/spring-cloud-repository-management[Project Crawler]
+That's why we're using the https://github.com/spring-cloud/project-crawler[Project Crawler]
 library, that is able to:
 
 * fetch all projects for a given organization
 * fetch contents of a file for a given repository
 
 Thanks to the Project Crawler you can run the seed job and automatically all the new repositories
-will be picked and pipelines will be created for them. Project Crawler supports
+will be picked and pipelines will be created for them. Project Crawler supports repositories
+stored at Github, Gitlab, Bitbucket. You can also register your own implementation. Please check the
+https://github.com/spring-cloud/project-crawler[Project Crawler] repository for more information.
 
 
 [[how-do-the-scripts-work-with-spinanker]]
