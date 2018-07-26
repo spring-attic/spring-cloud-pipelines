@@ -104,7 +104,7 @@ class Build implements Step {
 				commonSteps.defaultPublishers(delegate as PublisherContext)
 				git {
 					pushOnlyIfSuccess()
-					tag('origin', "dev/${gitRepoName}/\${${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}") {
+					tag('origin', "dev/${gitRepoName}/\${${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}}") {
 						create()
 						update()
 					}
