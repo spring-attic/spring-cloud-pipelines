@@ -51,18 +51,18 @@ class StageDeploy implements Step {
 				commonSteps.deliveryPipelineVersion(delegate as WrapperContext)
 				credentialsBinding {
 					// remove::start[CF]
-					if (pipelineDefaults.cfTestCredentialId()) usernamePassword(
-						EnvironmentVariables.PAAS_TEST_USERNAME_ENV_VAR,
-						EnvironmentVariables.PAAS_TEST_PASSWORD_ENV_VAR,
-						pipelineDefaults.cfTestCredentialId())
+					if (pipelineDefaults.cfStageCredentialId()) usernamePassword(
+						EnvironmentVariables.PAAS_STAGE_USERNAME_ENV_VAR,
+						EnvironmentVariables.PAAS_STAGE_PASSWORD_ENV_VAR,
+						pipelineDefaults.cfStageCredentialId())
 					// remove::end[CF]
 					// remove::start[K8S]
 					if (pipelineDefaults.mySqlCredential()) string(EnvironmentVariables.MYSQL_USER_ENV_VAR,
 						pipelineDefaults.mySqlCredential())
 					if (pipelineDefaults.mySqlRootCredential()) string(EnvironmentVariables.MYSQL_ROOT_USER_ENV_VAR,
 						pipelineDefaults.mySqlRootCredential())
-					if (pipelineDefaults.k8sTestTokenCredentialId()) string(EnvironmentVariables.TOKEN_ENV_VAR,
-						pipelineDefaults.k8sTestTokenCredentialId())
+					if (pipelineDefaults.k8sStageTokenCredentialId()) string(EnvironmentVariables.TOKEN_ENV_VAR,
+						pipelineDefaults.k8sStageTokenCredentialId())
 					// remove::end[K8S]
 				}
 			}

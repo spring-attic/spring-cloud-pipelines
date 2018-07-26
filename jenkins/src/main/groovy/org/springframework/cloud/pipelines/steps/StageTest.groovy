@@ -51,7 +51,7 @@ class StageTest implements Step {
 				commonSteps.deliveryPipelineVersion(delegate as WrapperContext)
 				credentialsBinding {
 					// remove::start[CF]
-					if (pipelineDefaults.cfStageUsername()) usernamePassword(
+					if (pipelineDefaults.cfStageCredentialId()) usernamePassword(
 						EnvironmentVariables.PAAS_STAGE_USERNAME_ENV_VAR,
 						EnvironmentVariables.PAAS_STAGE_PASSWORD_ENV_VAR,
 						pipelineDefaults.cfStageCredentialId())
