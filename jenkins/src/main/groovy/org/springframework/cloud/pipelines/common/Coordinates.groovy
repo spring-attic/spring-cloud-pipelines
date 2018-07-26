@@ -3,7 +3,7 @@ package org.springframework.cloud.pipelines.common
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
 
-import org.springframework.cloud.repositorymanagement.Repository
+import org.springframework.cloud.projectcrawler.Repository
 
 /**
  * Git repo (either https or ssh) together with the proper project

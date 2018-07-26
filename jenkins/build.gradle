@@ -12,7 +12,7 @@ sourceSets {
 }
 
 ext {
-    scRepoManagementVersion = "1.0.0.BUILD-SNAPSHOT"
+    projectCrawlerVersion = "1.0.0.BUILD-SNAPSHOT"
     jacksonVersion = "2.9.5"
 }
 
@@ -44,7 +44,7 @@ dependencies {
     compile 'javax.servlet:servlet-api:2.4'
 
     // for dsl
-    libs "org.springframework.cloud.internal:spring-cloud-repository-management:${scRepoManagementVersion}"
+    libs "org.springframework.cloud.internal:project-crawler:${projectCrawlerVersion}"
     libs "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     libs "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     libs "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"

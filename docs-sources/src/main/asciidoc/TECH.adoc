@@ -131,3 +131,30 @@ $ docker login
 $ docker build -t springcloud/spring-cloud-pipeline-jenkins:<version> ./jenkins
 $ docker push springcloud/spring-cloud-pipeline-jenkins:<version>
 ----
+
+== CI Server worker prerequisites
+
+Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
+that needs to be installed on a CI server worker for the build to pass.
+
+TIP: In the demo setup all of these libraries are already installed.
+
+[source,bash]
+----
+ apt-get -y install \
+    bash \
+    git \
+    tar \
+    zip \
+    curl \
+    ruby \
+    wget \
+    unzip \
+    python \
+    jq
+----
+
+IMPORTANT: In the Jenkins case you will also need `bats` and `shellcheck`. They are not
+presented in the list since the installed versions by Linux distributions might be old.
+That's why this project's Gradle tasks will download latest versions of both libraries
+for you.

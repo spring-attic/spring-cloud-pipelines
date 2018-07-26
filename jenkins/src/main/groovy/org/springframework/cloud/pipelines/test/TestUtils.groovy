@@ -2,7 +2,7 @@ package org.springframework.cloud.pipelines.test
 
 import groovy.transform.CompileStatic
 
-import org.springframework.cloud.repositorymanagement.Repository
+import org.springframework.cloud.projectcrawler.Repository
 
 /**
  * Utility class helping to test the scripts

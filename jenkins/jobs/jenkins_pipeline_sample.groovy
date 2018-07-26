@@ -2,10 +2,10 @@ import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
 import javaposse.jobdsl.dsl.helpers.ScmContext
 
-import org.springframework.cloud.repositorymanagement.OptionsBuilder
-import org.springframework.cloud.repositorymanagement.Repositories
-import org.springframework.cloud.repositorymanagement.Repository
-import org.springframework.cloud.repositorymanagement.RepositoryManagers
+import org.springframework.cloud.projectcrawler.OptionsBuilder
+import org.springframework.cloud.projectcrawler.Repositories
+import org.springframework.cloud.projectcrawler.Repository
+import org.springframework.cloud.projectcrawler.ProjectCrawler
 
 DslFactory dsl = this
 

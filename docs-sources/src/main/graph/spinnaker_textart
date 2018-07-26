@@ -1,0 +1,26 @@
+object Jenkins Seed SCPipelines Github Spinnaker
+Jenkins->SCPipelines: Copy the seed job from the repo
+Jenkins->Seed: Run seed job to generate Spinnaker pipelines and jobs
+Seed->Github: Crawl org [foo] and fetch all repositories
+Github->Seed: In org [foo] there [a,b,c] repos
+Seed->Github: For each repo fetch pipeline descriptor
+Github->Seed: There you go. [a] wants no [test], [b] no [stage], [c] wants all
+Seed->Seed: Build pipelines. For [a] without [test], for [b] without [stage]. All for [c]
+note left of Seed: By having descriptors, \nwe can tune the pipelines \nas the app wanted it to.
+Seed->Seed: Build CI jobs for [a,b,c] repos
+Seed->Seed: Build Spinnaker pipelines JSON definitions
+Seed->Jenkins: Seed job done
+Jenkins->Spinnaker: Upload JSON pipelines to Spinnaker
+Spinnaker->Spinnaker: The pipelines for [a,b,c] successfully created
+Spinnaker->Jenkins: Waiting for [spinnaker-a-build] build to start & complete
+Jenkins->Jenkins: New commit! Running a build [spinnaker-a-build]
+Jenkins->SCPipelines: Run the [build_and_upload.sh] script
+note right of SCPipelines: Proceed with all the sourcing\n depending on language etc.
+SCPipelines->Jenkins: Build completed!
+Jenkins->Spinnaker: [spinnaker-a-build] started and completed
+note right of Spinnaker: Running the rest of the pipeline!
+Spinnaker->Spinnaker: Pipeline for [a] in progress. Deploy [a] to test env
+Spinnaker->Jenkins: Calling [spinnaker-a-test-on-test] to run test on test
+Jenkins->Spinnaker: [spinnaker-a-test-on-test] started and completed
+Spinnaker->Spinnaker: ... we continue like this throughout the pipeline ...
+Spinnaker->Spinnaker: ... and the pipeline is done

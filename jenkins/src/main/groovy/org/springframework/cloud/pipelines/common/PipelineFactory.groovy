@@ -3,8 +3,8 @@ package org.springframework.cloud.pipelines.common
 import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
 
-import org.springframework.cloud.repositorymanagement.Repository
-import org.springframework.cloud.repositorymanagement.RepositoryManagers
+import org.springframework.cloud.projectcrawler.Repository
+import org.springframework.cloud.projectcrawler.ProjectCrawler
 
 /**
  * Entry point to creating pipeline / build jobs and providing input for
@@ -18,14 +18,14 @@ class PipelineFactory {
 
 	private final PipelineJobsFactoryProvider factory
 	private final PipelineDefaults defaults
-	private final RepositoryManagers repositoryManagers
+	private final ProjectCrawler projectCrawler
 	private final DslFactory dsl
 
 	PipelineFactory(PipelineJobsFactoryProvider factory, PipelineDefaults defaults,
-					RepositoryManagers repositoryManagers, DslFactory dsl) {
+					ProjectCrawler projectCrawler, DslFactory dsl) {
 		this.factory = factory
 		this.defaults = defaults
-		this.repositoryManagers = repositoryManagers
+		this.projectCrawler = projectCrawler
 		this.dsl = dsl
 	}
 
@@ -46,7 +46,7 @@ class PipelineFactory {
 			// fetch the descriptor (or pick one for tests form env var)
 			String descriptor = defaults.testModeDescriptor() != null ?
 				defaults.testModeDescriptor() as String :
-				repositoryManagers.fileContent(org,
+				projectCrawler.fileContent(org,
 					repo.name, repo.requestedBranch,
 					defaults.pipelineDescriptor())
 			// parse it

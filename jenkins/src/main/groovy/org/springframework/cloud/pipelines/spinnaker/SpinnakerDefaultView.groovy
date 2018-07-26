@@ -6,7 +6,7 @@ import javaposse.jobdsl.dsl.DslFactory
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaults
-import org.springframework.cloud.repositorymanagement.Repository
+import org.springframework.cloud.projectcrawler.Repository
 
 /**
  * Default view for Spinnaker

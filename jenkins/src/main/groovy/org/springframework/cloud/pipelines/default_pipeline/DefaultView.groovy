@@ -11,7 +11,7 @@ import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.steps.Build
-import org.springframework.cloud.repositorymanagement.Repository
+import org.springframework.cloud.projectcrawler.Repository
 
 /**
  * Generates views for a project

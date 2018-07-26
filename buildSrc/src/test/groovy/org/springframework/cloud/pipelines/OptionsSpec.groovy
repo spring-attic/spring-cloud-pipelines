@@ -13,7 +13,7 @@ class OptionsSpec extends Specification {
 				.ciTool(Options.CiTool.CONCOURSE)
 				.build()
 		expect:
-			options.asKeywordsToDelete() == ["CF", "JENKINS"]
+			options.asKeywordsToDelete() == ["CF", "SPINNAKER", "JENKINS"]
 	}
 
 	def "should return empty list options as a list of keywords when BOTH is picked"() {

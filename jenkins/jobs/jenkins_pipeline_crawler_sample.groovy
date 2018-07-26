@@ -7,9 +7,9 @@ import org.springframework.cloud.pipelines.common.PipelineFactory
 import org.springframework.cloud.pipelines.default_pipeline.DefaultPipelineJobsFactory
 import org.springframework.cloud.pipelines.default_pipeline.DefaultView
 import org.springframework.cloud.pipelines.test.TestUtils
-import org.springframework.cloud.repositorymanagement.OptionsBuilder
-import org.springframework.cloud.repositorymanagement.Repository
-import org.springframework.cloud.repositorymanagement.RepositoryManagers
+import org.springframework.cloud.projectcrawler.OptionsBuilder
+import org.springframework.cloud.projectcrawler.Repository
+import org.springframework.cloud.projectcrawler.ProjectCrawler
 
 DslFactory dsl = this
 
@@ -22,7 +22,7 @@ String repoType = defaults.repoManagement() ?: "GITHUB"
 String urlRoot = defaults.repoUrlRoot() ?: "https://github.com"
 
 // crawl the org
-RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
+ProjectCrawler crawler = new ProjectCrawler(OptionsBuilder
 	.builder().rootUrl(urlRoot)
 	.username(defaults.gitUsername())
 	.password(defaults.gitPassword())
@@ -32,14 +32,14 @@ RepositoryManagers repositoryManagers = new RepositoryManagers(OptionsBuilder
 
 // get the repos from the org
 List<Repository> repositories = defaults.testModeDescriptor() != null ?
-	TestUtils.TEST_REPO : repositoryManagers.repositories(org)
+	TestUtils.TEST_REPO : crawler.repositories(org)
 
 // generate jobs and store errors
 GeneratedJobs generatedJobs = new PipelineFactory({ PipelineDefaults pipelineDefaults,
 													DslFactory dslFactory, PipelineDescriptor descriptor,
 													Repository repository ->
 	return new DefaultPipelineJobsFactory(descriptor, pipelineDefaults, dslFactory)
-}, defaults, repositoryManagers, dsl).generate(repositories, org, pipelineVersion)
+}, defaults, crawler, dsl).generate(repositories, org, pipelineVersion)
 
 if (generatedJobs.hasErrors()) {
 	println "\n\n\nWARNING, THERE WERE ERRORS WHILE TRYING TO BUILD PROJECTS\n\n\n"

@@ -16,7 +16,7 @@ import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Manifest
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Root
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Stage
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Trigger
-import org.springframework.cloud.repositorymanagement.Repository
+import org.springframework.cloud.projectcrawler.Repository
 
 /**
  * Given the env variables produces a JSON with a Spinnaker

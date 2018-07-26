@@ -27,8 +27,8 @@ class OptionsReaderSpec extends Specification {
 		when:
 			Options options = optionsReader.read()
 		then:
-			options.paasType == Options.PaasType.BOTH
-			options.ciTool == Options.CiTool.BOTH
+			options.paasType == Options.PaasType.ALL
+			options.ciTool == Options.CiTool.ALL
 	}
 
 	def 'should throw exception when parsing invalid input'() {

@@ -12,7 +12,7 @@ import org.springframework.cloud.pipelines.common.EnvironmentVariables
 import org.springframework.cloud.pipelines.common.JobCustomizer
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.RepoType
-import org.springframework.cloud.repositorymanagement.RepositoryManagementBuilder
+import org.springframework.cloud.projectcrawler.RepositoryManagementBuilder
 
 /**
  * @author Marcin Grzejszczak
