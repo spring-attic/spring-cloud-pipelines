@@ -1,0 +1,10 @@
+object Jenkins Seed SCPipelines Github
+Jenkins->SCPipelines: Copy the seed job from the repo
+Jenkins->Seed: Run seed job to generate Spinnaker pipelines and jobs
+Seed->Github: Crawl org [foo] and fetch all repositories
+Github->Seed: In org [foo] there [a,b,c] repos
+Seed->Github: For each repo fetch pipeline descriptor
+Github->Seed: There you go. [a] wants no [test] env, [b] no [stage] env, [c] wants all envs
+Seed->Seed: Build pipelines. For [a] without [test], for [b] without [stage]. All for [c]
+note left of Seed: By having descriptors, \nwe can tune the pipelines \nas the app wanted it to.
+Seed->Seed: Build jobs / pipelines for [a,b,c] repos
