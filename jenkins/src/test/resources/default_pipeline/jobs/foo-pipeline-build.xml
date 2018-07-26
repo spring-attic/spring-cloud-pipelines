@@ -91,7 +91,7 @@
             <branchesToPush/>
         </hudson.plugins.git.GitPublisher>
         <hudson.tasks.ArtifactArchiver>
-            <artifacts>**/build/*.jar,**/target/*.jar</artifacts>
+            <artifacts>**/build/libs/*.jar,**/target/*.jar</artifacts>
             <allowEmptyArchive>true</allowEmptyArchive>
             <defaultExcludes>true</defaultExcludes>
             <fingerprint>false</fingerprint>

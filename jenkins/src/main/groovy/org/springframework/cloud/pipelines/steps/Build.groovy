@@ -110,7 +110,7 @@ class Build implements Step {
 					}
 				}
 				archiveArtifacts {
-					pattern("**/build/*.jar")
+					pattern("**/build/libs/*.jar")
 					pattern("**/target/*.jar")
 					allowEmpty()
 				}
