@@ -82,7 +82,7 @@
             <tagsToPush>
                 <hudson.plugins.git.GitPublisher_-TagToPush>
                     <targetRepoName>origin</targetRepoName>
-                    <tagName>dev/foo/${PIPELINE_VERSION</tagName>
+                    <tagName>dev/foo/${PIPELINE_VERSION}</tagName>
                     <tagMessage/>
                     <createTag>true</createTag>
                     <updateTag>true</updateTag>
