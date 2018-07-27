@@ -12,4 +12,5 @@ class Manifest {
 	String memory
 	List<String> services = []
 	String type
+	List<String> routes
 }

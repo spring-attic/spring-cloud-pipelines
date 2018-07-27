@@ -531,6 +531,11 @@ final class EnvironmentVariables {
 	 * {@code SPINNAKER_JENKINS_MASTER} - name of the Jenkins master installation
 	 */
 	public static final String SPINNAKER_JENKINS_MASTER_ENV_VAR = "SPINNAKER_JENKINS_MASTER"
+
+	/**
+	 * {@code SPINNAKER_HOSTNAME} - the hostname appended to the routes
+	 */
+	public static final String SPINNAKER_HOSTNAME_ENV_VAR = "SPINNAKER_HOSTNAME"
 	// remove::end[SPINNAKER]
 
 	// end::envs[]

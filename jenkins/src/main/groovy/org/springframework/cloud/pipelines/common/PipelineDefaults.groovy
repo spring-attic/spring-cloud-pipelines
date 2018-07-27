@@ -353,5 +353,9 @@ class PipelineDefaults {
 	String spinnakerJenkinsMaster() {
 		return prop(EnvironmentVariables.SPINNAKER_JENKINS_MASTER_ENV_VAR, "")
 	}
+
+	String spinnakerHostname() {
+		return prop(EnvironmentVariables.SPINNAKER_HOSTNAME_ENV_VAR, "")
+	}
 // remove::end[SPINNAKER]
 }

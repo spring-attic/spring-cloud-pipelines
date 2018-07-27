@@ -58,6 +58,7 @@ stage:
 			setupEnvVars(defaults)
 			defaults.addEnvVar("AUTO_DEPLOY_TO_STAGE", "false")
 			defaults.addEnvVar("AUTO_DEPLOY_TO_PROD", "false")
+			defaults.addEnvVar("SPINNAKER_HOSTNAME", "apps.foo.com")
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:

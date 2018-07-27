@@ -34,6 +34,9 @@
 						"env": [],
 						"instances": 1,
 						"memory": "1024M",
+						"routes": [
+							"sc-pipelines-test-github-webhook.apps.foo.com"
+						],
 						"services": [],
 						"type": "direct"
 					},

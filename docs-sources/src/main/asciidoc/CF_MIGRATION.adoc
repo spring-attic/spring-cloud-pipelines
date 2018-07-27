@@ -1398,7 +1398,7 @@ To accomplish this, we put stub and port configuration information into the prop
 Spring Cloud Pipelines will use this information in two ways:
 
 . It will provide this information to the stub runner app via the app's environment variables
-- Spring Cloud Pipelines will aslo provide the `$REPO_WITH_BINARIES` as an env var for the stub runner app
+- Spring Cloud Pipelines will also provide the `$REPO_WITH_BINARIES` as an env var for the stub runner app
 - The stub runner app will use this information to download the stub from Bintray and expose it on the specified port
 . It will open the additional port specified on the stub runner app and map a new route to it
 - The format for each route will be `<stub-runner-app-name>-<hostname-uuid>-<env>-<app-name>-<port>.<domain>`
