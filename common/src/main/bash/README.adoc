@@ -98,6 +98,8 @@ Has 49 line(s). Calls functions:
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ BINARY_ARTIFACT_TYPE_NAME [big]*//* CUSTOM_SCRIPT_IDENTIFIER [big]*//* DEFAULT_PROJECT_NAME [big]*//* DOWNLOADABLE_SOURCES [big]*//* GIT_BIN [big]*//* LANGUAGE_TYPE [big]*//* LOWERCASE_ENV [big]*//* OUTPUT_FOLDER [big]*//* PAAS_TYPE [big]*//* PIPELINE_DESCRIPTOR [big]*//* PROJECT_NAME [big]*//* PROJECT_SETUP [big]*//* ROOT_PROJECT_DIR [big]*//* SOURCE_ARTIFACT_TYPE_NAME [big]*//* TEST_REPORTS_FOLDER
+
 apiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -119,6 +121,8 @@ Has 11 line(s). Calls functions:
 Called by:
 
  build_api_compatibility_check.sh/Script-Body
+
+_Environment variables used:_ PROJECT_NAME [big]*//* LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
 
 build
 ~~~~~
@@ -164,6 +168,8 @@ Has 32 line(s). Calls functions:
 Called by:
 
  Script-Body
+
+_Environment variables used:_ PROJECT_NAME [big]*//* PROJECT_SETUP [big]*//* PIPELINE_DESCRIPTOR_PRESENT
 
 deleteService
 ~~~~~~~~~~~~~
@@ -223,6 +229,8 @@ Called by:
  pipeline-cf.sh/testDeploy
  pipeline-k8s.sh/testDeploy
 
+_Environment variables used:_ LOWERCASE_ENV [big]*//* PARSED_YAML [big]*//* test_smoke.sh -> ENVIRONMENT
+
 envNodeExists
 ~~~~~~~~~~~~~
 
@@ -239,6 +247,8 @@ Called by:
 
  deployServices
  pipeline-cf.sh/propagatePropertiesForTests
+
+_Environment variables used:_ PARSED_YAML
 
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -283,6 +293,10 @@ Uses feature(s): _export_
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_List of exports (to environment):_ LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
+
+_Environment variables used:_ LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
+
 getMainModulePath
 ~~~~~~~~~~~~~~~~~
 
@@ -295,6 +309,8 @@ Has 10 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ PARSED_YAML
+
 latestProdTagFromGit
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -305,6 +321,8 @@ ____
 Has 3 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ GIT_BIN [big]*//* PROJECT_NAME
 
 outputFolder
 ~~~~~~~~~~~~
@@ -340,6 +358,10 @@ Called by:
  pipeline-cf.sh/prepareForSmokeTests
  pipeline-cf.sh/testRollbackDeploy
  pipeline-k8s.sh/testRollbackDeploy
+
+_List of exports (to environment):_ PARSED_YAML [big]*//* PIPELINE_DESCRIPTOR_PRESENT
+
+_Environment variables used:_ PIPELINE_DESCRIPTOR [big]*//* PARSED_YAML
 
 prepareForE2eTests
 ~~~~~~~~~~~~~~~~~~
@@ -663,6 +685,8 @@ Has 21 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ BINARY_EXTENSION [big]*//* MAVEN_OPTS [big]*//* PROJECT_TYPE [big]*//* projectType
+
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~
 
@@ -678,6 +702,8 @@ ____
 Has 21 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ BINARY_EXTENSION
 
 isGradleProject
 ~~~~~~~~~~~~~~~
@@ -760,6 +786,8 @@ Has 24 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_
 
+_Exports (environment):_ BUILD_OPTIONS [big]*//* MAVENW_BIN [big]*//* build [big]*//* executeApiCompatibilityCheck [big]*//* outputFolder [big]*//* retrieveAppName [big]*//* retrieveGroupId [big]*//* runE2eTests [big]*//* runSmokeTests [big]*//* testResultsAntPattern
+
 build
 ~~~~~
 
@@ -775,6 +803,8 @@ Has 8 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ BUILD_OPTIONS [big]*//* MAVENW_BIN
+
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -788,6 +818,8 @@ Has 6 line(s). Calls functions:
  `-- printTestResults
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ BUILD_OPTIONS [big]*//* MAVENW_BIN
 
 extractMavenProperty
 ~~~~~~~~~~~~~~~~~~~~
@@ -803,6 +835,8 @@ Has 12 line(s). Doesn't call other functions.
 Called by:
 
  retrieveStubRunnerIds
+
+_Environment variables used:_ MAVENW_BIN
 
 outputFolder
 ~~~~~~~~~~~~
@@ -846,6 +880,8 @@ Has 14 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ MAVENW_BIN
+
 retrieveGroupId
 ~~~~~~~~~~~~~~~
 
@@ -859,6 +895,8 @@ ____
 Has 8 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ MAVENW_BIN
 
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
@@ -888,6 +926,8 @@ Has 8 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ BUILD_OPTIONS [big]*//* MAVENW_BIN
+
 runSmokeTests
 ~~~~~~~~~~~~~
 
@@ -901,6 +941,8 @@ Has 9 line(s). Calls functions:
  `-- printTestResults
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ BUILD_OPTIONS [big]*//* MAVENW_BIN
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -952,6 +994,8 @@ Has 24 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_
 
+_Exports (environment):_ BUILD_OPTIONS [big]*//* GRADLEW_BIN [big]*//* build [big]*//* executeApiCompatibilityCheck [big]*//* outputFolder [big]*//* retrieveAppName [big]*//* retrieveGroupId [big]*//* runE2eTests [big]*//* runSmokeTests [big]*//* testResultsAntPattern
+
 build
 ~~~~~
 
@@ -967,6 +1011,8 @@ Has 7 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ GRADLEW_BIN [big]*//* pipeline-maven.sh -> BUILD_OPTIONS
+
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -980,6 +1026,8 @@ Has 6 line(s). Calls functions:
  `-- printTestResults
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ GRADLEW_BIN [big]*//* pipeline-maven.sh -> BUILD_OPTIONS
 
 outputFolder
 ~~~~~~~~~~~~
@@ -1019,6 +1067,8 @@ Has 1 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ GRADLEW_BIN
+
 retrieveGroupId
 ~~~~~~~~~~~~~~~
 
@@ -1030,6 +1080,8 @@ Has 1 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ GRADLEW_BIN
+
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -1040,6 +1092,8 @@ ____
 Has 1 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ GRADLEW_BIN
 
 runE2eTests
 ~~~~~~~~~~~
@@ -1055,6 +1109,8 @@ Has 9 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ GRADLEW_BIN [big]*//* pipeline-maven.sh -> BUILD_OPTIONS
+
 runSmokeTests
 ~~~~~~~~~~~~~
 
@@ -1068,6 +1124,8 @@ Has 10 line(s). Calls functions:
  `-- printTestResults
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ GRADLEW_BIN [big]*//* pipeline-maven.sh -> BUILD_OPTIONS
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1122,6 +1180,8 @@ Has 20 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_
 
+_Exports (environment):_ ARTIFACT_TYPE [big]*//* COMPOSER_BIN [big]*//* DOWNLOADABLE_SOURCES [big]*//* PHP_BIN
+
 build
 ~~~~~
 
@@ -1140,6 +1200,8 @@ Uses feature(s): _trap_
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ pipeline-jvm.sh -> BINARY_EXTENSION [big]*//* COMPOSER_BIN
+
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~
 
@@ -1155,6 +1217,8 @@ ____
 Has 26 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ pipeline-jvm.sh -> BINARY_EXTENSION
 
 downloadComposerIfMissing
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1178,6 +1242,8 @@ Called by:
  runE2eTests
  runSmokeTests
 
+_Environment variables used:_ COMPOSER_BIN [big]*//* PHP_BIN
+
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1193,6 +1259,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ COMPOSER_BIN
+
 installPhpIfMissing
 ~~~~~~~~~~~~~~~~~~~
 
@@ -1207,6 +1275,10 @@ Uses feature(s): _export_
 Called by:
 
  downloadComposerIfMissing
+
+_List of exports (to environment):_ LANG
+
+_Environment variables used:_ PHP_BIN
 
 outputFolder
 ~~~~~~~~~~~~
@@ -1245,6 +1317,8 @@ Has 6 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ COMPOSER_BIN
+
 retrieveGroupId
 ~~~~~~~~~~~~~~~
 
@@ -1259,6 +1333,8 @@ Has 2 line(s). Calls functions:
      `-- installPhpIfMissing
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ COMPOSER_BIN
 
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1275,6 +1351,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ COMPOSER_BIN
+
 runE2eTests
 ~~~~~~~~~~~
 
@@ -1290,6 +1368,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ COMPOSER_BIN
+
 runSmokeTests
 ~~~~~~~~~~~~~
 
@@ -1304,6 +1384,8 @@ Has 2 line(s). Calls functions:
      `-- installPhpIfMissing
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ COMPOSER_BIN
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1358,6 +1440,8 @@ Has 15 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_
 
+_Exports (environment):_ ARTIFACT_TYPE [big]*//* NODE_BIN [big]*//* NPM_BIN
+
 build
 ~~~~~
 
@@ -1374,6 +1458,8 @@ Has 3 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~
 
@@ -1384,6 +1470,8 @@ ____
 Has 2 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ NPM_BIN
 
 downloadNpmIfMissing
 ~~~~~~~~~~~~~~~~~~~~
@@ -1407,6 +1495,8 @@ Called by:
  runE2eTests
  runSmokeTests
 
+_Environment variables used:_ NPM_BIN
+
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1422,6 +1512,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 installNodeIfMissing
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -1436,6 +1528,10 @@ Uses feature(s): _export_
 Called by:
 
  downloadNpmIfMissing
+
+_List of exports (to environment):_ LANG
+
+_Environment variables used:_ NODE_BIN
 
 outputFolder
 ~~~~~~~~~~~~
@@ -1474,6 +1570,8 @@ Has 6 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 retrieveGroupId
 ~~~~~~~~~~~~~~~
 
@@ -1488,6 +1586,8 @@ Has 2 line(s). Calls functions:
      `-- installNodeIfMissing
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ NPM_BIN
 
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1504,6 +1604,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 runE2eTests
 ~~~~~~~~~~~
 
@@ -1519,6 +1621,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 runSmokeTests
 ~~~~~~~~~~~~~
 
@@ -1533,6 +1637,8 @@ Has 2 line(s). Calls functions:
      `-- installNodeIfMissing
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ NPM_BIN
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1614,6 +1720,8 @@ Has 9 line(s). No functions are called (may set up e.g. a hook, a Zle widget bou
 
 Uses feature(s): _export_
 
+_Exports (environment):_ CF_BIN [big]*//* RETRIEVE_STUBRUNNER_IDS_FUNCTION
+
 addMultiplePortsSupport
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1635,6 +1743,8 @@ Called by:
 
  deployStubRunnerBoot
 
+_Environment variables used:_ CF_BIN [big]*//* test_smoke.sh -> ENVIRONMENT
+
 bindService
 ~~~~~~~~~~~
 
@@ -1648,6 +1758,8 @@ ____
 Has 9 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ CF_BIN
 
 completeSwitchOver
 ~~~~~~~~~~~~~~~~~~
@@ -1666,6 +1778,8 @@ Has 12 line(s). Calls functions:
 Called by:
 
  prod_complete.sh/Script-Body
+
+_Environment variables used:_ CF_BIN
 
 createServiceWithName
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1700,6 +1814,8 @@ Called by:
 
  testRollbackDeploy
 
+_Environment variables used:_ CF_BIN
+
 deleteService
 ~~~~~~~~~~~~~
 
@@ -1713,6 +1829,8 @@ ____
 Has 5 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ CF_BIN
 
 deployAndRestartAppWithName
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1740,6 +1858,8 @@ Called by:
  testDeploy
  testRollbackDeploy
 
+_Environment variables used:_ test_smoke.sh -> ENVIRONMENT
+
 deployAppAsService
 ~~~~~~~~~~~~~~~~~~
 
@@ -1765,6 +1885,8 @@ Called by:
 
  deployService
 
+_Environment variables used:_ pipeline.sh -> LOWERCASE_ENV [big]*//* test_smoke.sh -> ENVIRONMENT
+
 deployAppNoStart
 ~~~~~~~~~~~~~~~~
 
@@ -1789,6 +1911,8 @@ Called by:
  deployAppAsService
  deployStubRunnerBoot
 
+_Environment variables used:_ CF_BIN [big]*//* pipeline.sh -> DOWNLOADABLE_SOURCES [big]*//* pipeline.sh -> SOURCE_ARTIFACT_TYPE_NAME
+
 deployBrokeredService
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -1806,6 +1930,8 @@ Has 17 line(s). Doesn't call other functions.
 Called by:
 
  deployService
+
+_Environment variables used:_ CF_BIN [big]*//* pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> OUTPUT_FOLDER
 
 deployCupsService
 ~~~~~~~~~~~~~~~~~
@@ -1825,6 +1951,8 @@ Called by:
 
  createServiceWithName
  deployService
+
+_Environment variables used:_ CF_BIN [big]*//* pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> OUTPUT_FOLDER
 
 deployService
 ~~~~~~~~~~~~~
@@ -1857,6 +1985,8 @@ Has 57 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> PARSED_YAML
+
 deployStubRunnerBoot
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -1883,6 +2013,8 @@ Called by:
 
  deployService
 
+_Environment variables used:_ RETRIEVE_STUBRUNNER_IDS_FUNCTION [big]*//* test_smoke.sh -> ENVIRONMENT
+
 getAppHostFromPaas
 ~~~~~~~~~~~~~~~~~~
 
@@ -1895,6 +2027,8 @@ ____
 Has 4 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ CF_BIN
 
 getArtifactType
 ~~~~~~~~~~~~~~~
@@ -1911,6 +2045,8 @@ Has 16 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ pipeline.sh -> BINARY_ARTIFACT_TYPE_NAME [big]*//* pipeline.sh -> LANGUAGE_TYPE [big]*//* pipeline.sh -> SOURCE_ARTIFACT_TYPE_NAME [big]*//* pipeline.sh -> PARSED_YAML
+
 getDomain
 ~~~~~~~~~
 
@@ -1923,6 +2059,8 @@ ____
 Has 2 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ CF_BIN
 
 getHostFromManifest
 ~~~~~~~~~~~~~~~~~~~
@@ -1937,6 +2075,8 @@ Has 3 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ PARSED_APP_MANIFEST_YAML
+
 getInstancesFromManifest
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1950,6 +2090,8 @@ Has 2 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ PARSED_APP_MANIFEST_YAML
+
 getProfilesFromManifest
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1962,6 +2104,8 @@ ____
 Has 2 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ PARSED_APP_MANIFEST_YAML
 
 hostname
 ~~~~~~~~
@@ -1978,6 +2122,8 @@ ____
 Has 20 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ pipeline.sh -> LOWERCASE_ENV
 
 logInToPaas
 ~~~~~~~~~~~
@@ -2000,6 +2146,8 @@ Called by:
  testDeploy
  testRollbackDeploy
 
+_Environment variables used:_ CF_BIN [big]*//* pipeline.sh -> LOWERCASE_ENV [big]*//* test_smoke.sh -> ENVIRONMENT
+
 parseManifest
 ~~~~~~~~~~~~~
 
@@ -2015,6 +2163,10 @@ Called by:
 
  deployAndRestartAppWithName
 
+_List of exports (to environment):_ PARSED_APP_MANIFEST_YAML
+
+_Environment variables used:_ PARSED_APP_MANIFEST_YAML
+
 pathToPushToCf
 ~~~~~~~~~~~~~~
 
@@ -2028,6 +2180,8 @@ Has 11 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ pipeline.sh -> BINARY_ARTIFACT_TYPE_NAME [big]*//* pipeline.sh -> OUTPUT_FOLDER [big]*//* pipeline.sh -> SOURCE_ARTIFACT_TYPE_NAME
+
 pathToUnpackedSources
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -2038,6 +2192,8 @@ ____
 Has 1 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ pipeline.sh -> OUTPUT_FOLDER
 
 performProductionDeploymentOfTestedApplication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2064,6 +2220,8 @@ Called by:
 
  prodDeploy
 
+_Environment variables used:_ CF_BIN
+
 prepareForE2eTests
 ~~~~~~~~~~~~~~~~~~
 
@@ -2081,6 +2239,10 @@ Uses feature(s): _export_
 Called by:
 
  stage_e2e.sh/Script-Body
+
+_List of exports (to environment):_ APPLICATION_URL
+
+_Environment variables used:_ APPLICATION_URL
 
 prepareForSmokeTests
 ~~~~~~~~~~~~~~~~~~~~
@@ -2102,6 +2264,8 @@ Called by:
 
  test_rollback_smoke.sh/Script-Body
  test_smoke.sh/Script-Body
+
+_Environment variables used:_ APPLICATION_URL [big]*//* STUBRUNNER_URL [big]*//* pipeline.sh -> OUTPUT_FOLDER [big]*//* pipeline.sh -> LATEST_PROD_TAG
 
 prodDeploy
 ~~~~~~~~~~
@@ -2153,6 +2317,10 @@ Called by:
  testDeploy
  testRollbackDeploy
 
+_List of exports (to environment):_ APPLICATION_URL [big]*//* STUBRUNNER_URL
+
+_Environment variables used:_ pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> OUTPUT_FOLDER [big]*//* pipeline.sh -> PARSED_YAML
+
 readTestPropertiesFromFile
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2169,6 +2337,8 @@ Called by:
 
  prepareForSmokeTests
  retrieveApplicationUrl
+
+_Environment variables used:_ pipeline.sh -> OUTPUT_FOLDER
 
 restartApp
 ~~~~~~~~~~
@@ -2187,6 +2357,8 @@ Called by:
  deployAppAsService
  deployStubRunnerBoot
 
+_Environment variables used:_ CF_BIN
+
 retrieveApplicationUrl
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2203,6 +2375,8 @@ Has 9 line(s). Calls functions:
  `-- readTestPropertiesFromFile
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ APPLICATION_URL [big]*//* pipeline.sh -> OUTPUT_FOLDER
 
 rollbackToPreviousVersion
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2221,6 +2395,8 @@ Has 16 line(s). Calls functions:
 Called by:
 
  prod_rollback.sh/Script-Body
+
+_Environment variables used:_ CF_BIN
 
 setEnvVar
 ~~~~~~~~~
@@ -2243,6 +2419,8 @@ Called by:
  deployStubRunnerBoot
  setEnvVarIfMissing
 
+_Environment variables used:_ CF_BIN
+
 setEnvVarIfMissing
 ~~~~~~~~~~~~~~~~~~
 
@@ -2260,6 +2438,8 @@ Has 5 line(s). Calls functions:
  `-- setEnvVar
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ CF_BIN
 
 stageDeploy
 ~~~~~~~~~~~
@@ -2353,6 +2533,8 @@ Called by:
 
  test_rollback_deploy.sh/Script-Body
 
+_Environment variables used:_ pipeline.sh -> OUTPUT_FOLDER [big]*//* pipeline.sh -> PROJECT_NAME
+
 waitForServicesToInitialize
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2366,6 +2548,8 @@ Called by:
 
  stageDeploy
  testDeploy
+
+_Environment variables used:_ CF_BIN
 
 
 pipeline-k8s.sh(1)
@@ -2405,6 +2589,8 @@ Has 680 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> OUTPUT_FOLDER [big]*//* pipeline.sh -> PARSED_YAML [big]*//* test_smoke.sh -> ENVIRONMENT
+
 logInToPaas
 ~~~~~~~~~~~
 
@@ -2421,6 +2607,8 @@ Called by:
 
  testDeploy
  testRollbackDeploy
+
+_Environment variables used:_ test_smoke.sh -> ENVIRONMENT
 
 testDeploy
 ~~~~~~~~~~
@@ -2447,6 +2635,8 @@ Has 12 line(s). Calls functions:
 Called by:
 
  test_rollback_deploy.sh/Script-Body
+
+_Environment variables used:_ pipeline.sh -> OUTPUT_FOLDER [big]*//* pipeline.sh -> PROJECT_NAME
 
 
 build_and_upload.sh(1)
@@ -2480,6 +2670,8 @@ Has 13 line(s). Calls functions:
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ ENVIRONMENT
+
 
 test_deploy.sh(1)
 =================
@@ -2512,6 +2704,8 @@ Has 13 line(s). Calls functions:
  `-- pipeline.sh/testDeploy
 
 Uses feature(s): _export_, _source_
+
+_Exports (environment):_ ENVIRONMENT
 
 
 test_smoke.sh(1)
@@ -2547,6 +2741,8 @@ Has 14 line(s). Calls functions:
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ ENVIRONMENT
+
 
 test_rollback_deploy.sh(1)
 ==========================
@@ -2580,6 +2776,8 @@ Has 20 line(s). Calls functions:
  `-- pipeline.sh/testRollbackDeploy
 
 Uses feature(s): _export_, _source_
+
+_Exports (environment):_ ENVIRONMENT
 
 
 test_rollback_smoke.sh(1)
@@ -2616,6 +2814,8 @@ Has 21 line(s). Calls functions:
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ ENVIRONMENT
+
 
 stage_deploy.sh(1)
 ==================
@@ -2648,6 +2848,8 @@ Has 13 line(s). Calls functions:
  `-- pipeline.sh/stageDeploy
 
 Uses feature(s): _export_, _source_
+
+_Exports (environment):_ ENVIRONMENT
 
 
 stage_e2e.sh(1)
@@ -2683,6 +2885,8 @@ Has 14 line(s). Calls functions:
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ ENVIRONMENT
+
 
 prod_deploy.sh(1)
 =================
@@ -2715,6 +2919,8 @@ Has 13 line(s). Calls functions:
  `-- pipeline.sh/prodDeploy
 
 Uses feature(s): _export_, _source_
+
+_Exports (environment):_ ENVIRONMENT
 
 
 prod_complete.sh(1)
@@ -2750,6 +2956,8 @@ Has 13 line(s). Calls functions:
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ ENVIRONMENT
+
 
 prod_rollback.sh(1)
 ===================
@@ -2782,3 +2990,5 @@ Has 21 line(s). Calls functions:
  `-- pipeline.sh/rollbackToPreviousVersion
 
 Uses feature(s): _export_, _source_
+
+_Exports (environment):_ ENVIRONMENT

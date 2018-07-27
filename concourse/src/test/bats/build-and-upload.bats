@@ -33,6 +33,8 @@ setup() {
 	export SSH_AGENT_BIN="stubbed-ssh-agent"
 	export TMPDIR="${TEMP_DIR}/generic/project/tmp"
 	mkdir -p "${TMPDIR}"
+
+	mv "${ROOT_FOLDER}"/repo/git "${ROOT_FOLDER}"/repo/.git
 }
 
 teardown() {
@@ -40,13 +42,16 @@ teardown() {
 }
 
 @test "should run the build-and-upload task and tag the repo" {
-	export PROJECT_NAME="foo"
-	export PASSED_PIPELINE_VERSION="1.2.3.FOO"
+	export PROJECT_NAME="app-monolith"
 	cd "${ROOT_FOLDER}"
 
 	run "${ROOT_FOLDER}"/tools/concourse/tasks/build-and-upload/task.sh
 
 	assert_success
-	assert_equal "$( cat "${ROOT_FOLDER}"/keyvalout/keyval.properties )" "PASSED_PIPELINE_VERSION=1.2.3.FOO"
-	assert_equal "$( cat "${ROOT_FOLDER}"/repo/tag )" "dev/foo/1.2.3.FOO"
+	assert_output --partial "apiCompatibilityCheck"
+	assert_output --partial "prod/app-monolith/1.0.0.M1-20180607_144049-VERSION"
+	assert_output --partial "build"
+	KEYVAL="$( cat "${ROOT_FOLDER}"/keyvalout/keyval.properties )"
+	PASSED_LATEST_PROD_TAG_PRESENT="$( echo "${KEYVAL}" | grep -q "PASSED_LATEST_PROD_TAG=prod/app-monolith/1.0.0.M1-20180607_144049-VERSION"; echo $? )"
+	assert_equal "${PASSED_LATEST_PROD_TAG_PRESENT}" "0"
 }

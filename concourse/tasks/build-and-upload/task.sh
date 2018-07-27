@@ -29,6 +29,19 @@ source "${ROOT_FOLDER}/${TOOLS_RESOURCE}/concourse/tasks/pipeline.sh"
 echo "Building and uploading the projects artifacts"
 cd "${ROOT_FOLDER}/${REPO_RESOURCE}" || exit
 
+# Find latest prod tag
+latestProdTag="$(latestProdTagFromGit)"
+export LATEST_PROD_TAG
+LATEST_PROD_TAG="$(trimRefsTag "${latestProdTag}")"
+echo "Latest prod tag is [${LATEST_PROD_TAG}]"
+export PASSED_LATEST_PROD_TAG
+PASSED_LATEST_PROD_TAG="${LATEST_PROD_TAG}"
+
+echo "First running api compatibility check, so that what we commit and upload at the end is just built project"
+# shellcheck source=/dev/null
+. "${SCRIPTS_OUTPUT_FOLDER}/build_api_compatibility_check.sh"
+
+echo "Running the build and upload script"
 # shellcheck source=/dev/null
 . "${SCRIPTS_OUTPUT_FOLDER}/build_and_upload.sh"
 

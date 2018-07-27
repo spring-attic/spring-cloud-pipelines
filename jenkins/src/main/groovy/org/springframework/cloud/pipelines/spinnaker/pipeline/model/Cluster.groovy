@@ -13,6 +13,7 @@ class Cluster {
 	Manifest manifest
 	String provider
 	String region
+	List<String> routes
 	String spaceId
 	String stack
 	String strategy

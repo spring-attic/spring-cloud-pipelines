@@ -158,6 +158,15 @@ parsedRepos.each {
 			shell(downloadTools(fullGitRepo))
 			shell("""#!/bin/bash 
 		${bashFunctions.setupGitCredentials(fullGitRepo)}
+		${if (apiCompatibilityStep) {
+			return '''\
+				echo "First running api compatibility check, so that what we commit and upload at the end is just built project"
+				${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
+				'''
+			}
+			return ''
+		}
+		echo "Running the build and upload script"
 		\${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 		""")
 		}
@@ -165,9 +174,7 @@ parsedRepos.each {
 			archiveJunit(testReports) {
 				allowEmptyResults()
 			}
-			String nextProject = apiCompatibilityStep ?
-				"${projectName}-build-api-check" :
-				"${projectName}-test-env-deploy"
+			String nextProject = "${projectName}-test-env-deploy"
 			downstreamParameterized {
 				trigger(nextProject) {
 					triggerWithNoParameters()
@@ -181,53 +188,6 @@ parsedRepos.each {
 				tag('origin', "dev/${gitRepoName}/\${PIPELINE_VERSION}") {
 					create()
 					update()
-				}
-			}
-		}
-	}
-
-	if (apiCompatibilityStep) {
-		dsl.job("${projectName}-build-api-check") {
-			deliveryPipelineConfiguration('Build', 'API compatibility check')
-			triggers {
-				cron(cronValue)
-				githubPush()
-			}
-			wrappers {
-				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				environmentVariables(defaults.defaultEnvVars)
-				timestamps()
-				colorizeOutput()
-				maskPasswords()
-				if (gitUseSshKey) sshAgent(gitSshCredentials)
-				timeout {
-					noActivity(300)
-					failBuild()
-					writeDescription('Build failed due to timeout after {0} minutes of inactivity')
-				}
-			}
-			jdk(jdkVersion)
-			scm {
-				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
-			}
-			steps {
-				shell(downloadTools(fullGitRepo))
-				shell('''#!/bin/bash
-		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
-		''')
-			}
-			publishers {
-				archiveJunit(testReports) {
-					allowEmptyResults()
-				}
-				downstreamParameterized {
-					trigger("${projectName}-test-env-deploy") {
-						triggerWithNoParameters()
-						parameters {
-							currentBuild()
-							propertiesFile('${OUTPUT_FOLDER}/test.properties', false)
-						}
-					}
 				}
 			}
 		}

@@ -30,3 +30,5 @@ Has 21 line(s). Calls functions:
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ ENVIRONMENT
+

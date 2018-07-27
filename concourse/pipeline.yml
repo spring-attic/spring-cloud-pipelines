@@ -74,28 +74,6 @@ jobs:
     params:
       file: keyvalout/keyval.properties
 
-- name: build-api-compatibility-check
-  serial: true
-  public: false
-  plan:
-  - aggregate:
-    - get: tools
-    - get: repo
-    - get: keyval
-      passed:
-      - build-and-upload
-      trigger: true
-  - task: build-api-compatibility-check
-    privileged: true
-    file: tools/concourse/tasks/build-api-compatibility-check/task.yml
-    params:
-      MESSAGE: "Deploying the built application on test environment"
-      SCRIPT_TO_RUN: "build_api_compatibility_check.sh"
-      <<: *common-params
-  - put: keyval
-    params:
-      file: keyvalout/keyval.properties
-
 - name: test-deploy
   serial: true
   public: false
@@ -105,7 +83,7 @@ jobs:
     - get: repo
     - get: keyval
       passed:
-      - build-api-compatibility-check
+      - build-and-upload
       trigger: true
   - task: test-deploy
     privileged: true

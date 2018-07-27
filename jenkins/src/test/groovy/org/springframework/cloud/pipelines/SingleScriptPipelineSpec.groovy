@@ -249,7 +249,8 @@ class SingleScriptPipelineSpec extends Specification {
 		and:
 		jm.savedConfigs.find { it.key == "github-webhook-pipeline-build" }.with {
 			assert it.value.contains("hudson.plugins.parameterizedtrigger.BuildTrigger")
-			assert it.value.contains("<projects>github-webhook-pipeline-build-api-check</projects>")
+			assert it.value.contains("build_api_compatibility_check.sh")
+			assert it.value.contains("<projects>github-webhook-pipeline-test-env-deploy</projects>")
 			assert !it.value.contains("au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger")
 			return it
 		}
@@ -275,8 +276,8 @@ class SingleScriptPipelineSpec extends Specification {
 		and:
 		jm.savedConfigs.find { it.key == "github-webhook-pipeline-build" }.with {
 			assert it.value.contains("hudson.plugins.parameterizedtrigger.BuildTrigger")
+			assert !it.value.contains("build_api_compatibility_check.sh")
 			assert it.value.contains("<projects>github-webhook-pipeline-test-env-deploy</projects>")
-			assert !it.value.contains("<projects>github-webhook-pipeline-build-api-check</projects>")
 			assert !it.value.contains("au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger")
 			return it
 		}

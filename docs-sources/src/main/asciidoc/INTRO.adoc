@@ -437,6 +437,10 @@ will treat the `foo` directory as the root of the `foo` project.
 [[how-do-the-scripts-work]]
 == How do the scripts work?
 
+In this section you'll find description of how the scripts and jobs correspond to each other.
+If you need to see a detailed documentation of the Bash scripts, you can go to the
+code repository and check it out at `common/src/main/bash/README.adoc`.
+
 [[build-and-deployment]]
 === Build and deployment
 
