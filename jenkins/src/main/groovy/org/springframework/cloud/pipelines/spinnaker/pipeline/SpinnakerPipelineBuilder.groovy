@@ -231,7 +231,7 @@ class SpinnakerPipelineBuilder {
 			application: "${alphaNumericOnly(this.repository.name)}",
 			artifact: new Artifact(
 				account: "jenkins",
-				pattern: "${this.repository.name}.*.jar",
+				pattern: "^${this.repository.name}.*VERSION.jar\$",
 				type: "trigger"
 			),
 			capacity: new Capacity(

@@ -37,7 +37,7 @@
 					"application": "githubwebhook",
 					"artifact": {
 						"account": "jenkins",
-						"pattern": "github-webhook.*.jar",
+						"pattern": "^github-webhook.*VERSION.jar$",
 						"type": "trigger"
 					},
 					"cloudProvider": "cloudfoundry",
@@ -106,7 +106,7 @@
 					"application": "githubwebhook",
 					"artifact": {
 						"account": "jenkins",
-						"pattern": "github-webhook.*.jar",
+						"pattern": "^github-webhook.*VERSION.jar$",
 						"type": "trigger"
 					},
 					"cloudProvider": "cloudfoundry",
@@ -139,7 +139,7 @@
 					"application": "githubwebhook",
 					"artifact": {
 						"account": "jenkins",
-						"pattern": "github-webhook.*.jar",
+						"pattern": "^github-webhook.*VERSION.jar$",
 						"type": "trigger"
 					},
 					"cloudProvider": "cloudfoundry",
