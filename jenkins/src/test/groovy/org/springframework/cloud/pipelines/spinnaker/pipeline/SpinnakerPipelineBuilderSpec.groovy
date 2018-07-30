@@ -1,6 +1,8 @@
 package org.springframework.cloud.pipelines.spinnaker.pipeline
 
 import groovy.json.JsonSlurper
+import org.junit.Rule
+import org.junit.rules.TestName
 import org.skyscreamer.jsonassert.JSONAssert
 import spock.lang.Specification
 
@@ -12,6 +14,14 @@ import org.springframework.cloud.projectcrawler.Repository
  * @author Marcin Grzejszczak
  */
 class SpinnakerPipelineBuilderSpec extends Specification {
+
+	@Rule TestName testName = new TestName()
+
+	void storeJsonWithPipeline(String name, String json) {
+		File file = new File("build/spinnaker-pipeline")
+		file.mkdirs()
+		new File(file, "${name}.json").text = json
+	}
 
 	def expectedPipeline = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline.json').text
 	String descriptorYaml = """
@@ -62,6 +72,7 @@ stage:
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:
+			storeJsonWithPipeline("pipeline", pipeline)
 			assertThatJsonsAreEqual(expectedPipeline, pipeline)
 	}
 
@@ -96,6 +107,7 @@ test:
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:
+			storeJsonWithPipeline("pipeline_no_stage_services", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutStageServices, pipeline)
 	}
 
@@ -129,6 +141,7 @@ stage:
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:
+			storeJsonWithPipeline("pipeline_no_test_services", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutTestServices, pipeline)
 	}
 
@@ -178,6 +191,7 @@ stage:
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:
+			storeJsonWithPipeline("pipeline_auto_stage", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithAutoStage, pipeline)
 	}
 
@@ -227,6 +241,7 @@ stage:
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:
+			storeJsonWithPipeline("pipeline_auto_prod", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithAutoProd, pipeline)
 	}
 
@@ -276,6 +291,7 @@ stage:
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:
+			storeJsonWithPipeline("pipeline_no_rollback_step", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutRollback, pipeline)
 	}
 
@@ -325,6 +341,7 @@ stage:
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:
+			storeJsonWithPipeline("pipeline_no_stage_step", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutStage, pipeline)
 	}
 
@@ -374,6 +391,7 @@ stage:
 		when:
 			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
 		then:
+			storeJsonWithPipeline("pipeline_no_test_step", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutTest, pipeline)
 	}
 

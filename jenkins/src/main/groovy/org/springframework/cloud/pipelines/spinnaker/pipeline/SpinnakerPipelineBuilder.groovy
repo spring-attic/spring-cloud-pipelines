@@ -72,14 +72,23 @@ class SpinnakerPipelineBuilder {
 		Tuple2<Integer, Stage> e2eTests = runEndToEndTests(prepareForE2e, stages)
 		Tuple2<Integer, Stage> approveProd = approveProduction(e2eTests, stages)
 		Tuple2<Integer, Stage> deployToProd = deployToProd(approveProd, stages)
-		rollback(approveProd, deployToProd, stages)
+		Tuple2<Integer, Stage> rollback = rollback(approveProd, deployToProd, stages)
+		removeTag(rollback, stages)
 		return stages.findAll { it }
 	}
 
-	private void rollback(Tuple2<Integer, Stage> approveProd, Tuple2<Integer, Stage> deployToProd, List<Stage> stages) {
+	private Tuple2<Integer, Stage> removeTag(Tuple2<Integer, Stage> rollback, List<Stage> stages) {
+		Tuple2<Integer, Stage> stage =
+			callJenkins("Remove prod tag", "prod-env-remove-tag", rollback.first)
+		stages.add(stage.second)
+		return stage
+	}
+
+	private Tuple2<Integer, Stage> rollback(Tuple2<Integer, Stage> approveProd, Tuple2<Integer, Stage> deployToProd, List<Stage> stages) {
 		Tuple2<Integer, Stage> rollback =
 			prodDeployment("Rollback", approveProd.first, deployToProd.first)
 		stages.add(rollback.second)
+		return rollback
 	}
 
 	private Tuple2<Integer, Stage> deployToProd(Tuple2<Integer, Stage> approveProd, List<Stage> stages) {
@@ -373,6 +382,25 @@ class SpinnakerPipelineBuilder {
 				"${firstRefId}".toString()
 			],
 			type: "manualJudgment"
+		)
+		return new Tuple2(refId, stage)
+	}
+
+	private Tuple2<Integer, Stage> callJenkins(String text, String jobName, int firstRefId) {
+		int refId = firstRefId + 1
+		Stage stage = new Stage(
+			continuePipeline: false,
+			failPipeline: true,
+			job: "${SpinnakerDefaults.projectName(repository.name)}-${jobName}",
+			master: defaults.spinnakerJenkinsMaster(),
+			name: "${text}",
+			parameters: [:],
+			refId: "${refId}",
+			requisiteStageRefIds: [
+				"${firstRefId}".toString()
+			],
+			waitForCompletion: true,
+			type: "jenkins"
 		)
 		return new Tuple2(refId, stage)
 	}
