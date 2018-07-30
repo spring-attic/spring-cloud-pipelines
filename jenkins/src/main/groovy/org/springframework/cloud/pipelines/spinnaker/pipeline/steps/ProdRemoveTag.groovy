@@ -63,11 +63,8 @@ class ProdRemoveTag implements Step {
 				set -o pipefail
 				
 				${bashFunctions.setupGitCredentials(fullGitRepo)}
-				
-				export ENVIRONMENT=prod
-				source \${WORKSPACE}/.git/tools/common/src/main/bash/pipeline.sh
-				removeProdTag
-""")
+
+""" + commonSteps.readScript("prod_remove_prod_tag.sh"))
 			}
 			publishers {
 				commonSteps.defaultPublishers(delegate as PublisherContext)

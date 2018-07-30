@@ -13,7 +13,7 @@ import org.springframework.cloud.projectcrawler.Repository
  */
 class SpinnakerPipelineBuilderSpec extends Specification {
 
-	def expectedPipeline = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline.json').text
+	def expectedPipeline = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline.json').text
 	String descriptorYaml = """
 # This file describes which services are required by this application
 # in order for the smoke tests on the TEST environment and end to end tests
@@ -65,7 +65,7 @@ stage:
 			assertThatJsonsAreEqual(expectedPipeline, pipeline)
 	}
 
-	def expectedPipelineWithoutStageServices = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline_no_stage_services.json').text
+	def expectedPipelineWithoutStageServices = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_stage_services.json').text
 	String descriptorYamlWithoutStageServices = """
 # This file describes which services are required by this application
 # in order for the smoke tests on the TEST environment and end to end tests
@@ -99,7 +99,7 @@ test:
 			assertThatJsonsAreEqual(expectedPipelineWithoutStageServices, pipeline)
 	}
 
-	def expectedPipelineWithoutTestServices = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline_no_test_services.json').text
+	def expectedPipelineWithoutTestServices = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_test_services.json').text
 	String descriptorYamlWithoutTestServices = """
 # This file describes which services are required by this application
 # in order for the smoke tests on the TEST environment and end to end tests
@@ -132,7 +132,7 @@ stage:
 			assertThatJsonsAreEqual(expectedPipelineWithoutTestServices, pipeline)
 	}
 
-	def expectedPipelineWithAutoStage = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline_auto_stage.json').text
+	def expectedPipelineWithAutoStage = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_auto_stage.json').text
 	String descriptorYamlWithAutoStage = """
 # This file describes which services are required by this application
 # in order for the smoke tests on the TEST environment and end to end tests
@@ -181,7 +181,7 @@ stage:
 			assertThatJsonsAreEqual(expectedPipelineWithAutoStage, pipeline)
 	}
 
-	def expectedPipelineWithAutoProd = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline_auto_prod.json').text
+	def expectedPipelineWithAutoProd = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_auto_prod.json').text
 	String descriptorYamlWithAutoProd = """
 # This file describes which services are required by this application
 # in order for the smoke tests on the TEST environment and end to end tests
@@ -230,7 +230,7 @@ stage:
 			assertThatJsonsAreEqual(expectedPipelineWithAutoProd, pipeline)
 	}
 
-	def expectedPipelineWithoutRollback = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline_no_rollback_step.json').text
+	def expectedPipelineWithoutRollback = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_rollback_step.json').text
 	String descriptorYamlWithoutRollback = """
 # This file describes which services are required by this application
 # in order for the smoke tests on the TEST environment and end to end tests
@@ -279,7 +279,7 @@ stage:
 			assertThatJsonsAreEqual(expectedPipelineWithoutRollback, pipeline)
 	}
 
-	def expectedPipelineWithoutStage = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline_no_stage_step.json').text
+	def expectedPipelineWithoutStage = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_stage_step.json').text
 	String descriptorYamlWithoutStage = """
 # This file describes which services are required by this application
 # in order for the smoke tests on the TEST environment and end to end testsx
@@ -328,7 +328,7 @@ stage:
 			assertThatJsonsAreEqual(expectedPipelineWithoutStage, pipeline)
 	}
 
-	def expectedPipelineWithoutTest = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline_no_test_step.json').text
+	def expectedPipelineWithoutTest = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_test_step.json').text
 	String descriptorYamlWithoutTest = """
 # This file describes which services are required by this application
 # in order for the smoke tests on the TEST environment and end to end testsx

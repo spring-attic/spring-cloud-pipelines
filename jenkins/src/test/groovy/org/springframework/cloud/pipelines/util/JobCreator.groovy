@@ -20,9 +20,13 @@ trait JobCreator {
 		return jp
 	}
 
+	String folderName() {
+		return "default_pipeline"
+	}
+
 	void storeJobsAndViews(MemoryJobManagement jm) {
-		File jobs = new File("build/jobs/")
-		File views = new File("build/views/")
+		File jobs = new File("build/${folderName()}/jobs/")
+		File views = new File("build/${folderName()}/views/")
 		jobs.mkdirs()
 		views.mkdirs()
 		jm.savedConfigs.each {

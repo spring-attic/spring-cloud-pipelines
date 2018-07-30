@@ -7,6 +7,7 @@ import groovy.transform.CompileStatic
  */
 import groovy.xml.XmlUtil
 import javaposse.jobdsl.dsl.Item
+import javaposse.jobdsl.dsl.MemoryJobManagement
 import org.xmlunit.builder.DiffBuilder
 import org.xmlunit.diff.DefaultNodeMatcher
 import org.xmlunit.diff.Diff
@@ -15,12 +16,25 @@ import org.xmlunit.diff.ElementSelectors
 @CompileStatic
 trait XmlComparator {
 
+	void assertJobsAndViews(MemoryJobManagement jm) {
+		jm.savedConfigs.each {
+			assertThatJobIsOk(it.key, it.value)
+		}
+		jm.savedViews.each {
+			assertThatViewIsOk(it.key, it.value)
+		}
+	}
+
+	String folderName() {
+		return "default_pipeline"
+	}
+
 	void assertThatJobIsOk(String name, String value) {
-		compareXmls("/default_pipeline/jobs/${name}.xml", value)
+		compareXmls("/${folderName()}/jobs/${name}.xml", value)
 	}
 
 	void assertThatViewIsOk(String name, String value) {
-		compareXmls("/default_pipeline/views/${name}.xml", value)
+		compareXmls("/${folderName()}/views/${name}.xml", value)
 	}
 
 	void compareXmls(String file, String nodeToCompare) {

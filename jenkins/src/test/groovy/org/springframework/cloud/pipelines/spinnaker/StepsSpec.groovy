@@ -3,19 +3,30 @@ package org.springframework.cloud.pipelines.spinnaker
 import groovy.io.FileType
 import javaposse.jobdsl.dsl.DslScriptLoader
 import javaposse.jobdsl.dsl.GeneratedItems
+import javaposse.jobdsl.dsl.JobParent
 import javaposse.jobdsl.dsl.MemoryJobManagement
 import javaposse.jobdsl.dsl.ScriptRequest
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import org.springframework.cloud.pipelines.util.JobCreator
+import org.springframework.cloud.pipelines.util.XmlComparator
+
 /**
  * Tests that all Spinnaker dsl scripts work fine.
  */
-class StepsSpec extends Specification {
+class StepsSpec extends Specification  implements JobCreator, XmlComparator {
 
-	def 'should automatically run api compatibility by default'() {
+	JobParent jobParent = createJobParent()
+	MemoryJobManagement jm = jobParent.jm
+
+	@Override
+	String folderName() {
+		return "spinnaker-jobs"
+	}
+
+	def 'should build all jobs'() {
 		given:
-			MemoryJobManagement jm = new MemoryJobManagement()
 			jm.parameters << [
 				SCRIPTS_DIR    : 'foo',
 				JENKINSFILE_DIR: 'foo',
@@ -31,16 +42,19 @@ class StepsSpec extends Specification {
 			noExceptionThrown()
 
 		and:
-			def jobs = ['build', "test-env-test", "test-env-rollback-test", "stage-env-test"].collect {
+			def jobs = ['build', "test-env-test", "test-env-rollback-test", "stage-env-test", 'prod-env-remove-tag'].collect {
 				"spinnaker-foo-pipeline-${it}".toString()
 			}
-			scripts.jobs.collect { it.jobName }.any { jobs.contains(it) }
+			jobs - scripts.jobs.collect { it.jobName } == []
 		and:
 			jm.savedConfigs.find { it.key == "spinnaker-foo-pipeline-build" }.with {
 				assert it.value.contains("build_api_compatibility_check.sh")
 				assert it.value.contains("build_and_upload.sh")
 				return it
 			}
+		and:
+			storeJobsAndViews(jm)
+			assertJobsAndViews(jm)
 	}
 
 	def 'should not run api compatibility when descriptor disables it'() {

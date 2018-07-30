@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hudson.plugins.nested__view.NestedView>
+    <filterExecutors>false</filterExecutors>
+    <filterQueue>false</filterQueue>
+    <properties class="hudson.model.View$PropertyList"/>
+    <views>
+        <hudson.model.ListView>
+            <filterExecutors>false</filterExecutors>
+            <filterQueue>false</filterQueue>
+            <properties class="hudson.model.View$PropertyList"/>
+            <jobNames class="tree-set">
+                <comparator class="hudson.util.CaseInsensitiveComparator"/>
+            </jobNames>
+            <jobFilters/>
+            <columns>
+                <hudson.views.StatusColumn/>
+                <hudson.views.JobColumn/>
+                <hudson.views.LastSuccessColumn/>
+                <hudson.views.LastFailureColumn/>
+                <jenkins.plugins.extracolumns.LastBuildConsoleColumn/>
+                <hudson.views.BuildButtonColumn/>
+            </columns>
+            <includeRegex>spinnaker-foo-pipeline.*</includeRegex>
+            <name>spinnaker-foo</name>
+            <owner reference="../../.." class="hudson.plugins.nested_view.NestedView"/>
+        </hudson.model.ListView>
+    </views>
+</hudson.plugins.nested__view.NestedView>

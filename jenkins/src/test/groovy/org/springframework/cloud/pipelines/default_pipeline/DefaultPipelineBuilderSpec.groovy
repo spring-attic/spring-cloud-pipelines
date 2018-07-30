@@ -27,6 +27,11 @@ class DefaultPipelineBuilderSpec extends Specification implements JobCreator, Xm
 		TestJobCustomizer.EXECUTED_PROD = false
 	}
 
+	@Override
+	String folderName() {
+		return "default-pipeline"
+	}
+
 	def 'should create the whole pipeline'() {
 		given:
 			jm.parameters << [
@@ -45,12 +50,7 @@ class DefaultPipelineBuilderSpec extends Specification implements JobCreator, Xm
 
 		and:
 			storeJobsAndViews(jm)
-			jm.savedConfigs.each {
-				assertThatJobIsOk(it.key, it.value)
-			}
-			jm.savedViews.each {
-				assertThatViewIsOk(it.key, it.value)
-			}
+			assertJobsAndViews(jm)
 		and:
 			TestJobCustomizer.EXECUTED_ALL
 			TestJobCustomizer.EXECUTED_BUILD
