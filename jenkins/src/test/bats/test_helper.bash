@@ -1,0 +1,9 @@
+#!/bin/bash
+
+FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures"
+SOURCE_DIR="${BATS_TEST_DIRNAME}/../../.."
+STEPS_DIR="${SOURCE_DIR}/src/main/bash/steps"
+PROJECT_ROOT_DIR="${BATS_TEST_DIRNAME}/../../../../"
+COMMON_DIR="${BATS_TEST_DIRNAME}/../../../../common/src/main/bash"
+
+export FIXTURES_DIR SOURCE_DIR STEPS_DIR PROJECT_ROOT_DIR COMMON_DIR

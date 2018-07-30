@@ -424,3 +424,17 @@ teardown() {
 	assert_output --partial "I am executing a custom build function"
 	assert_success
 }
+
+function stubbed_git() {
+	echo "git $*"
+}
+
+@test "should delete prod tag" {
+	export GIT_BIN="stubbed_git"
+	source "${SOURCE_DIR}/pipeline.sh"
+	export PIPELINE_VERSION="1.0.0"
+	export PROJECT_NAME="foo"
+
+	run removeProdTag
+	assert_output --partial "git push --delete origin prod/${PROJECT_NAME}/${PIPELINE_VERSION}"
+}

@@ -1,4 +1,4 @@
-package org.springframework.cloud.pipelines.steps
+package org.springframework.cloud.pipelines.spinnaker.pipeline.steps
 
 import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
@@ -13,22 +13,24 @@ import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.EnvironmentVariables
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
-import org.springframework.cloud.pipelines.common.StepEnabledChecker
+import org.springframework.cloud.pipelines.steps.CommonSteps
+import org.springframework.cloud.pipelines.steps.CreatedJob
+import org.springframework.cloud.pipelines.steps.Step
 
 /**
- * Deploys to stage
+ * Removes the production tag
  *
  * @author Marcin Grzejszczak
  * @since 1.0.0
  */
 @CompileStatic
-class StageDeploy implements Step {
+class ProdRemoveTag implements Step {
 	private final DslFactory dsl
 	private final PipelineDefaults pipelineDefaults
 	private final BashFunctions bashFunctions
 	private final CommonSteps commonSteps
 
-	StageDeploy(DslFactory dsl, PipelineDefaults pipelineDefaults) {
+	ProdRemoveTag(DslFactory dsl, PipelineDefaults pipelineDefaults) {
 		this.dsl = dsl
 		this.pipelineDefaults = pipelineDefaults
 		this.bashFunctions = pipelineDefaults.bashFunctions()
@@ -37,33 +39,16 @@ class StageDeploy implements Step {
 
 	@Override
 	CreatedJob step(String projectName, Coordinates coordinates, PipelineDescriptor descriptor) {
-		StepEnabledChecker checker = new StepEnabledChecker(descriptor, pipelineDefaults)
-		if (checker.stageStepMissing()) {
-			return null
-		}
 		String gitRepoName = coordinates.gitRepoName
 		String fullGitRepo = coordinates.fullGitRepo
-		Job job = dsl.job("${projectName}-stage-env-deploy") {
-			deliveryPipelineConfiguration('Stage', 'Deploy to stage')
+		Job job = dsl.job("${projectName}-prod-env-remove-tag") {
 			environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
 			wrappers {
 				commonSteps.defaultWrappers(delegate as WrapperContext)
-				commonSteps.deliveryPipelineVersion(delegate as WrapperContext)
 				credentialsBinding {
-					// remove::start[CF]
-					if (pipelineDefaults.cfStageCredentialId()) usernamePassword(
-						EnvironmentVariables.PAAS_STAGE_USERNAME_ENV_VAR,
-						EnvironmentVariables.PAAS_STAGE_PASSWORD_ENV_VAR,
-						pipelineDefaults.cfStageCredentialId())
-					// remove::end[CF]
-					// remove::start[K8S]
-					if (pipelineDefaults.mySqlCredential()) string(EnvironmentVariables.MYSQL_USER_ENV_VAR,
-						pipelineDefaults.mySqlCredential())
-					if (pipelineDefaults.mySqlRootCredential()) string(EnvironmentVariables.MYSQL_ROOT_USER_ENV_VAR,
-						pipelineDefaults.mySqlRootCredential())
-					if (pipelineDefaults.k8sStageTokenCredentialId()) string(EnvironmentVariables.TOKEN_ENV_VAR,
-						pipelineDefaults.k8sStageTokenCredentialId())
-					// remove::end[K8S]
+					if (!pipelineDefaults.gitUseSshKey()) usernamePassword(EnvironmentVariables.GIT_USERNAME_ENV_VAR,
+						EnvironmentVariables.GIT_PASSWORD_ENV_VAR,
+						pipelineDefaults.gitCredentials())
 				}
 			}
 			scm {
@@ -72,7 +57,17 @@ class StageDeploy implements Step {
 			}
 			steps {
 				commonSteps.downloadTools(delegate as StepContext, fullGitRepo)
-				commonSteps.runStep(delegate as StepContext, "stage_deploy.sh")
+				shell("""#!/bin/bash
+				set -o errexit
+				set -o errtrace
+				set -o pipefail
+				
+				${bashFunctions.setupGitCredentials(fullGitRepo)}
+				
+				export ENVIRONMENT=prod
+				source \${WORKSPACE}/.git/tools/common/src/main/bash/pipeline.sh
+				removeProdTag
+""")
 			}
 			publishers {
 				commonSteps.defaultPublishers(delegate as PublisherContext)
@@ -81,8 +76,8 @@ class StageDeploy implements Step {
 		}
 		commonSteps.customizers().each {
 			it.customizeAll(job)
-			it.customizeStage(job)
+			it.customizeProd(job)
 		}
-		return new CreatedJob(job, checker.autoStageSet())
+		return new CreatedJob(job, false)
 	}
 }

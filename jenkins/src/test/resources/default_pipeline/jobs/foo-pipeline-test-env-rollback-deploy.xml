@@ -40,10 +40,13 @@
         </hudson.tasks.Shell>
         <hudson.tasks.Shell>
             <command>#!/bin/bash
-		set -o errexit
-		set -o errtrace
-		set -o pipefail
-		${WORKSPACE}/.git/tools/common/src/main/bash/test_rollback_deploy.sh</command>
+set -o errexit
+set -o errtrace
+set -o pipefail
+
+# shellcheck source=/dev/null
+"${WORKSPACE}"/.git/tools/common/src/main/bash/test_rollback_deploy.sh
+</command>
         </hudson.tasks.Shell>
     </builders>
     <publishers>

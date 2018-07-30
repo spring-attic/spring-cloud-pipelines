@@ -316,6 +316,16 @@ function extractVersionFromProdTag() {
 	echo "${tag#prod/}"
 } # }}}
 
+# FUNCTION: removeProdTag {{{
+# Removes production tag.
+# Uses [PROJECT_NAME] and [PIPELINE_VERSION]
+function removeProdTag() {
+	local tagName
+	tagName="prod/${PROJECT_NAME}/${PIPELINE_VERSION}"
+	echo "Deleting production tag [${tagName}]"
+	"${GIT_BIN}" push --delete origin "${tagName}"
+} # }}}
+
 # FUNCTION: parsePipelineDescriptor {{{
 # Sets the [PARSED_YAML] environment variable with contents of the parsed pipeline
 # descriptor assuming that the file described by the [PIPELINE_DESCRIPTOR] env variable

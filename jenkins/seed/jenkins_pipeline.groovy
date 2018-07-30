@@ -231,7 +231,7 @@ factory.job('jenkins-pipeline-cf-crawler-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
+				'jenkins/src/main/groovy', 'jenkins/src/main/bash', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
@@ -303,7 +303,7 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
+				'jenkins/src/main/groovy', 'jenkins/src/main/bash', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}

@@ -8,6 +8,7 @@ import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.common.PipelineJobsFactory
 import org.springframework.cloud.pipelines.spinnaker.pipeline.SpinnakerPipelineBuilder
+import org.springframework.cloud.pipelines.spinnaker.pipeline.steps.ProdRemoveTag
 import org.springframework.cloud.pipelines.steps.Build
 import org.springframework.cloud.pipelines.steps.TestRollbackTest
 import org.springframework.cloud.pipelines.steps.StageTest
@@ -45,6 +46,7 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 		new TestTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
 		new TestRollbackTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
 		new StageTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
+		new ProdRemoveTag(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
 		println "Dumping the json with pipeline"
 		dumpJsonToFile(descriptor, repository)
 	}

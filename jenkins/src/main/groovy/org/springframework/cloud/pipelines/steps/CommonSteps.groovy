@@ -18,7 +18,6 @@ import org.springframework.cloud.projectcrawler.RepositoryManagementBuilder
  * @author Marcin Grzejszczak
  */
 @CompileStatic
-@PackageScope
 class CommonSteps {
 
 	private static final ServiceLoader<JobCustomizer> LOADED = ServiceLoader
@@ -30,6 +29,10 @@ class CommonSteps {
 	CommonSteps(PipelineDefaults defaults, BashFunctions bashFunctions) {
 		this.defaults = defaults
 		this.bashFunctions = bashFunctions ?: new BashFunctions(defaults)
+	}
+
+	String readScript(String scriptName) {
+		return CommonSteps.getResource("/steps/${scriptName}").text
 	}
 
 	void deliveryPipelineVersion(WrapperContext wrapperContext) {
@@ -100,11 +103,7 @@ class CommonSteps {
 	}
 
 	void runStep(StepContext stepContext, String stepName) {
-		stepContext.shell('''#!/bin/bash
-		set -o errexit
-		set -o errtrace
-		set -o pipefail
-		${WORKSPACE}/.git/tools/common/src/main/bash/''' + stepName)
+		stepContext.shell(readScript(stepName))
 	}
 
 	void configureScm(ScmContext context, String repoId, String branchId) {
