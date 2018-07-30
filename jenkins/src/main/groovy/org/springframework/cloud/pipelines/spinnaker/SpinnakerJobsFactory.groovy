@@ -2,8 +2,10 @@ package org.springframework.cloud.pipelines.spinnaker
 
 import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
+import javaposse.jobdsl.dsl.jobs.FreeStyleJob
 
 import org.springframework.cloud.pipelines.common.Coordinates
+import org.springframework.cloud.pipelines.common.EnvironmentVariables
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.common.PipelineJobsFactory
@@ -43,12 +45,47 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 		pipelineDefaults.addEnvVar("PROJECT_NAME", gitRepoName)
 		println "Creating jobs and views for [${projectName}]"
 		new Build(dsl, pipelineDefaults, pipelineVersion).step(projectName, coordinates, descriptor)
-		new TestTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
-		new TestRollbackTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
-		new StageTest(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
+		new TestTest(dsl, pipelineDefaults) {
+			@Override
+			void customize(FreeStyleJob job) {
+				setTestEnvVars(job, gitRepoName)
+				super.customize(job)
+			}
+		}.step(projectName, coordinates, descriptor)
+		new TestRollbackTest(dsl, pipelineDefaults) {
+			@Override
+			void customize(FreeStyleJob job) {
+				setStageEnvVars(job, gitRepoName)
+				super.customize(job)
+			}
+		}.step(projectName, coordinates, descriptor)
+		new StageTest(dsl, pipelineDefaults) {
+			@Override
+			void customize(FreeStyleJob job) {
+				setStageEnvVars(job, gitRepoName)
+				super.customize(job)
+			}
+		}.step(projectName, coordinates, descriptor)
 		new ProdRemoveTag(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
 		println "Dumping the json with pipeline"
 		dumpJsonToFile(descriptor, repository)
+	}
+
+	protected void setTestEnvVars(FreeStyleJob job, String projectName) {
+		job.wrappers {
+			environmentVariables {
+				env(EnvironmentVariables.APPLICATION_URL_ENV_VAR, "${projectName}.${pipelineDefaults.spinnakerTestHostname()}")
+				env(EnvironmentVariables.STUBRUNNER_URL_ENV_VAR, "stubrunner.${pipelineDefaults.spinnakerTestHostname()}")
+			}
+		}
+	}
+
+	protected void setStageEnvVars(FreeStyleJob job, String projectName) {
+		job.wrappers {
+			environmentVariables {
+				env(EnvironmentVariables.APPLICATION_URL_ENV_VAR, "${projectName}.${pipelineDefaults.spinnakerStageHostname()}")
+			}
+		}
 	}
 
 	void dumpJsonToFile(PipelineDescriptor pipeline, Repository repo) {

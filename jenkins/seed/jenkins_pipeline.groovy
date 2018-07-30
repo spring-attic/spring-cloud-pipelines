@@ -281,7 +281,9 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 			// Spinnaker
 			stringParam('SPINNAKER_JENKINS_MASTER', '', "The name of Jenkins master used by Spinnaker")
-			stringParam('SPINNAKER_HOSTNAME', '', "The hostname appended to the routes")
+			stringParam('SPINNAKER_TEST_HOSTNAME', '', "The hostname appended to the test routes")
+			stringParam('SPINNAKER_STAGE_HOSTNAME', '', "The hostname appended to the stage routes")
+			stringParam('SPINNAKER_PROD_HOSTNAME', '', "The hostname appended to the prod routes")
 			stringParam('SPINNAKER_TEST_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
 			stringParam('SPINNAKER_STAGE_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
 			stringParam('SPINNAKER_PROD_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")

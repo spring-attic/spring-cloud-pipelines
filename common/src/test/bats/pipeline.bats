@@ -438,3 +438,13 @@ function stubbed_git() {
 	run removeProdTag
 	assert_output --partial "git push --delete origin prod/${PROJECT_NAME}/${PIPELINE_VERSION}"
 }
+
+@test "should delete explicit prod tag" {
+	export GIT_BIN="stubbed_git"
+	source "${SOURCE_DIR}/pipeline.sh"
+	export PIPELINE_VERSION="1.0.0"
+	export PROJECT_NAME="foo"
+
+	run removeProdTag "prod/bar/2.0.0"
+	assert_output --partial "git push --delete origin prod/bar/2.0.0"
+}

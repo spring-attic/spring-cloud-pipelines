@@ -37,7 +37,10 @@ class DefaultPipelineBuilderSpec extends Specification implements JobCreator, Xm
 			jm.parameters << [
 				SCRIPTS_DIR    : 'foo',
 				JENKINSFILE_DIR: 'foo',
-				TEST_MODE_DESCRIPTOR: ''
+				TEST_MODE_DESCRIPTOR: '',
+				SPINNAKER_TEST_HOSTNAME: 'apps.foo.com',
+				SPINNAKER_STAGE_HOSTNAME: 'apps.foo.com',
+				SPINNAKER_PROD_HOSTNAME: 'apps.foo.com',
 			]
 			DslScriptLoader loader = new DslScriptLoader(jm)
 

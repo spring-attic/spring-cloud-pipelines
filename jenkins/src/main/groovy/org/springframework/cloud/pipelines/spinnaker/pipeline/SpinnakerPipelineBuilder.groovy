@@ -288,7 +288,7 @@ class SpinnakerPipelineBuilder {
 			clusters: [
 				cluster(defaults.spinnakerTestDeploymentAccount(),
 					defaults.cfTestOrg(), testSpaceName(),
-					route(testSpaceName()),
+					route(testSpaceName(), defaults.spinnakerTestHostname()),
 				"highlander")
 			]
 		)
@@ -314,7 +314,7 @@ class SpinnakerPipelineBuilder {
 			clusters: [
 				cluster(defaults.spinnakerStageDeploymentAccount(),
 					defaults.cfStageOrg(), defaults.cfStageSpace(),
-					route(defaults.cfStageSpace()),
+					route(defaults.cfStageSpace(), defaults.spinnakerStageHostname()),
 				"highlander")
 			]
 		)
@@ -333,15 +333,15 @@ class SpinnakerPipelineBuilder {
 			clusters: [
 				cluster(defaults.spinnakerProdDeploymentAccount(),
 					defaults.cfProdOrg(), defaults.cfProdSpace(),
-					route(defaults.cfProdSpace()),
+					route(defaults.cfProdSpace(), defaults.spinnakerProdHostname()),
 				pipelineDescriptor.prod.deployment_strategy ?: "highlander")
 			]
 		)
 		return new Tuple2(refId, stage)
 	}
 
-	private String route(String space) {
-		return space + "." + defaults.spinnakerHostname()
+	private String route(String space, String hostname) {
+		return space + "." + hostname
 	}
 
 	private Tuple2<Integer, Stage> rollbackDeploymentStage(String text, int firstRefId, boolean present) {
@@ -359,7 +359,7 @@ class SpinnakerPipelineBuilder {
 			clusters: [
 				cluster(defaults.spinnakerProdDeploymentAccount(),
 					defaults.cfTestOrg(), testSpaceName(),
-					route(testSpaceName()),
+					route(testSpaceName(), defaults.spinnakerTestHostname()),
 					pipelineDescriptor.prod.deployment_strategy ?: "highlander")
 			]
 		)

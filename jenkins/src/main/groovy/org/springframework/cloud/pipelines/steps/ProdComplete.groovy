@@ -7,10 +7,12 @@ import javaposse.jobdsl.dsl.helpers.ScmContext
 import javaposse.jobdsl.dsl.helpers.publisher.PublisherContext
 import javaposse.jobdsl.dsl.helpers.step.StepContext
 import javaposse.jobdsl.dsl.helpers.wrapper.WrapperContext
+import javaposse.jobdsl.dsl.jobs.FreeStyleJob
 
 import org.springframework.cloud.pipelines.common.BashFunctions
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.EnvironmentVariables
+import org.springframework.cloud.pipelines.common.JobCustomizer
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 
@@ -21,7 +23,7 @@ import org.springframework.cloud.pipelines.common.PipelineDescriptor
  * @since 1.0.0
  */
 @CompileStatic
-class ProdComplete implements Step {
+class ProdComplete implements Step<FreeStyleJob> {
 	private final DslFactory dsl
 	private final PipelineDefaults pipelineDefaults
 	private final BashFunctions bashFunctions
@@ -73,10 +75,14 @@ class ProdComplete implements Step {
 				commonSteps.deployPublishers(delegate as PublisherContext)
 			}
 		}
+		customize(job)
+		return new CreatedJob(job, false)
+	}
+
+	@Override void customize(FreeStyleJob job) {
 		commonSteps.customizers().each {
 			it.customizeAll(job)
 			it.customizeProd(job)
 		}
-		return new CreatedJob(job, false)
 	}
 }

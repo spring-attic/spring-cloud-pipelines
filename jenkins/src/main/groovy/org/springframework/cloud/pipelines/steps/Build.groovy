@@ -13,6 +13,7 @@ import javaposse.jobdsl.dsl.jobs.FreeStyleJob
 import org.springframework.cloud.pipelines.common.BashFunctions
 import org.springframework.cloud.pipelines.common.Coordinates
 import org.springframework.cloud.pipelines.common.EnvironmentVariables
+import org.springframework.cloud.pipelines.common.JobCustomizer
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.common.StepEnabledChecker
@@ -24,7 +25,7 @@ import org.springframework.cloud.pipelines.common.StepEnabledChecker
  * @since 1.0.0
  */
 @CompileStatic
-class Build implements Step {
+class Build implements Step<FreeStyleJob> {
 	private final DslFactory dsl
 	private final PipelineDefaults pipelineDefaults
 	private final BashFunctions bashFunctions
@@ -116,11 +117,15 @@ class Build implements Step {
 				}
 			}
 		}
+		customize(job)
+		return new CreatedJob(job, autoNextJob(checker))
+	}
+
+	@Override void customize(FreeStyleJob job) {
 		commonSteps.customizers().each {
 			it.customizeAll(job)
 			it.customizeBuild(job)
 		}
-		return new CreatedJob(job, autoNextJob(checker))
 	}
 
 	private boolean autoNextJob(StepEnabledChecker checker) {

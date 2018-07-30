@@ -37,7 +37,7 @@
         "memory" : "1024M",
         "services" : [ ],
         "type" : "direct",
-        "routes" : [ "sc-pipelines-test-github-webhook.apps.foo.com" ]
+        "routes" : [ "sc-pipelines-test-github-webhook.test.foo.com" ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-test-github-webhook",
@@ -82,7 +82,7 @@
         "memory" : "1024M",
         "services" : [ ],
         "type" : "direct",
-        "routes" : [ "sc-pipelines-test-github-webhook.apps.foo.com" ]
+        "routes" : [ "sc-pipelines-test-github-webhook.test.foo.com" ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-test-github-webhook",
@@ -147,7 +147,7 @@
         "memory" : "1024M",
         "services" : [ ],
         "type" : "direct",
-        "routes" : [ "sc-pipelines-stage.apps.foo.com" ]
+        "routes" : [ "sc-pipelines-stage.stage.foo.com" ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-stage",
@@ -208,7 +208,7 @@
         "memory" : "1024M",
         "services" : [ ],
         "type" : "direct",
-        "routes" : [ "sc-pipelines-prod.apps.foo.com" ]
+        "routes" : [ "sc-pipelines-prod.prod.foo.com" ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-prod",
@@ -242,7 +242,7 @@
         "memory" : "1024M",
         "services" : [ ],
         "type" : "direct",
-        "routes" : [ "sc-pipelines-prod.apps.foo.com" ]
+        "routes" : [ "sc-pipelines-prod.prod.foo.com" ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-prod",

@@ -82,6 +82,12 @@ set -o pipefail
         <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
             <bindings/>
         </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+        <EnvInjectBuildWrapper>
+            <info>
+                <propertiesContent>APPLICATION_URL=foo.foo.com</propertiesContent>
+                <loadFilesFromMaster>false</loadFilesFromMaster>
+            </info>
+        </EnvInjectBuildWrapper>
     </buildWrappers>
     <scm class="hudson.plugins.git.GitSCM">
         <userRemoteConfigs>

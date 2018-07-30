@@ -15,6 +15,7 @@ import org.springframework.cloud.pipelines.common.PipelineDescriptor
  * @since 1.0.0
  */
 @CompileStatic
-interface Step {
+interface Step<T> {
 	CreatedJob step(String projectName, Coordinates coordinates, PipelineDescriptor descriptor)
+	void customize(T step)
 }

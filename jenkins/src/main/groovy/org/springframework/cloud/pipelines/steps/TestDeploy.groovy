@@ -7,6 +7,7 @@ import javaposse.jobdsl.dsl.helpers.ScmContext
 import javaposse.jobdsl.dsl.helpers.publisher.PublisherContext
 import javaposse.jobdsl.dsl.helpers.step.StepContext
 import javaposse.jobdsl.dsl.helpers.wrapper.WrapperContext
+import javaposse.jobdsl.dsl.jobs.FreeStyleJob
 
 import org.springframework.cloud.pipelines.common.BashFunctions
 import org.springframework.cloud.pipelines.common.Coordinates
@@ -22,7 +23,7 @@ import org.springframework.cloud.pipelines.common.StepEnabledChecker
  * @since 1.0.0
  */
 @CompileStatic
-class TestDeploy implements Step {
+class TestDeploy implements Step<FreeStyleJob> {
 	private final DslFactory dsl
 	private final PipelineDefaults pipelineDefaults
 	private final BashFunctions bashFunctions
@@ -79,10 +80,14 @@ class TestDeploy implements Step {
 				commonSteps.deployPublishers(delegate as PublisherContext)
 			}
 		}
+		customize(job)
+		return new CreatedJob(job, true)
+	}
+
+	@Override void customize(FreeStyleJob job) {
 		commonSteps.customizers().each {
 			it.customizeAll(job)
 			it.customizeTest(job)
 		}
-		return new CreatedJob(job, true)
 	}
 }

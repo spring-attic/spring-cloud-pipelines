@@ -319,9 +319,10 @@ function extractVersionFromProdTag() {
 # FUNCTION: removeProdTag {{{
 # Removes production tag.
 # Uses [PROJECT_NAME] and [PIPELINE_VERSION]
+
 function removeProdTag() {
 	local tagName
-	tagName="prod/${PROJECT_NAME}/${PIPELINE_VERSION}"
+	tagName="${1:-prod/${PROJECT_NAME}/${PIPELINE_VERSION}}"
 	echo "Deleting production tag [${tagName}]"
 	"${GIT_BIN}" push --delete origin "${tagName}"
 } # }}}

@@ -183,6 +183,20 @@ final class EnvironmentVariables {
 	 */
 	public static final String TEST_MODE_DESCRIPTOR_ENV_VAR = "TEST_MODE_DESCRIPTOR"
 
+	// Tests
+
+	/**
+	 * {@code APPLICATION_URL} - used in integration tests. URL of the deployed application
+	 */
+	public static final String APPLICATION_URL_ENV_VAR = "APPLICATION_URL"
+
+
+	/**
+	 * {@code STUBRUNNER_URL} - used in integration tests. URL of the deployed
+	 * Stub Runner application
+	 */
+	public static final String STUBRUNNER_URL_ENV_VAR = "STUBRUNNER_URL"
+
 	// Project crawler
 
 	/**
@@ -533,9 +547,19 @@ final class EnvironmentVariables {
 	public static final String SPINNAKER_JENKINS_MASTER_ENV_VAR = "SPINNAKER_JENKINS_MASTER"
 
 	/**
-	 * {@code SPINNAKER_HOSTNAME} - the hostname appended to the routes
+	 * {@code SPINNAKER_TEST_HOSTNAME} - the hostname appended to the routes for test envs
 	 */
-	public static final String SPINNAKER_HOSTNAME_ENV_VAR = "SPINNAKER_HOSTNAME"
+	public static final String SPINNAKER_TEST_HOSTNAME_ENV_VAR = "SPINNAKER_TEST_HOSTNAME"
+
+	/**
+	 * {@code SPINNAKER_STAGE_HOSTNAME} - the hostname appended to the routes for test envs
+	 */
+	public static final String SPINNAKER_STAGE_HOSTNAME_ENV_VAR = "SPINNAKER_STAGE_HOSTNAME"
+
+	/**
+	 * {@code SPINNAKER_PROD_HOSTNAME} - the hostname appended to the routes for test envs
+	 */
+	public static final String SPINNAKER_PROD_HOSTNAME_ENV_VAR = "SPINNAKER_PROD_HOSTNAME"
 	// remove::end[SPINNAKER]
 
 	// end::envs[]
