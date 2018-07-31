@@ -7,6 +7,14 @@ import org.springframework.cloud.projectcrawler.Repositories
 import org.springframework.cloud.projectcrawler.Repository
 import org.springframework.cloud.projectcrawler.ProjectCrawler
 
+/**
+ *  This script contains logic that
+ *
+ *  - doesn't reference any code other than what you have in this script
+ *  - for every project defined in REPOS env vars, generates a Jekins Job DSL pipeline
+ */
+
+
 DslFactory dsl = this
 
 // These will be taken either from seed or global variables

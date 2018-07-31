@@ -92,7 +92,11 @@
     "name" : "Deploy to test latest prod version",
     "refId" : "5",
     "requisiteStageRefIds" : [ "4" ],
-    "type" : "deploy"
+    "type" : "deploy",
+    "stageEnabled" : {
+      "expression" : "trigger.properties['LATEST_PROD_VERSION']",
+      "type" : "expression"
+    }
   }, {
     "failPipeline" : true,
     "name" : "Run rollback tests on test",
@@ -211,6 +215,17 @@
     "refId" : "13",
     "requisiteStageRefIds" : [ "12" ],
     "type" : "deploy"
+  }, {
+    "failPipeline" : true,
+    "name" : "Push prod tag",
+    "refId" : "14",
+    "requisiteStageRefIds" : [ "13" ],
+    "type" : "jenkins",
+    "waitForCompletion" : true,
+    "parameters" : { },
+    "master" : "Spinnaker-Jenkins",
+    "job" : "spinnaker-github-webhook-pipeline-prod-tag-repo",
+    "continuePipeline" : false
   }, {
     "clusters" : [ {
       "account" : "calabasasaccount",

@@ -21,4 +21,5 @@ class Stage {
 	List<String> notifications
 	Boolean continuePipeline
 	Integer waitTime
+	StageEnabled stageEnabled
 }

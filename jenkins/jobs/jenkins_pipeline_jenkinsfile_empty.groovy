@@ -1,5 +1,11 @@
 import javaposse.jobdsl.dsl.DslFactory
 
+/**
+ *  This script contains a simple example of a Jenkinsfile approach that does nothing
+ *  but echos output. You can use this file as a simple template to build sth custom
+ */
+
+
 DslFactory dsl = this
 
 dsl.pipelineJob('jenkins-pipeline-jenkinsfile-empty') {

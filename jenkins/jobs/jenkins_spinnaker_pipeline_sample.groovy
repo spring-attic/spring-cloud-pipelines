@@ -11,6 +11,17 @@ import org.springframework.cloud.projectcrawler.OptionsBuilder
 import org.springframework.cloud.projectcrawler.Repository
 import org.springframework.cloud.projectcrawler.ProjectCrawler
 
+/**
+ *  This script contains logic that
+ *
+ *  - uses the Project Crawler to crawl repos from an organization
+ *  - for each repo picks the sc-pipelines.yml descriptor
+ *  - basing on the contents of that repo generates proper Spinnaker deployment pipeline JSON
+ *  - generates Jenkins jobs required by Spinnaker
+ *  - generates views for all projects
+ */
+
+
 DslFactory dsl = this
 
 // These will be taken either from seed or global variables

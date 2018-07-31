@@ -99,6 +99,10 @@ class Build implements Step<FreeStyleJob> {
 				}
 		echo "Running the build and upload script"
 		\${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
+
+		echo "Output current build properties to output"
+		echo "LATEST_PROD_VERSION=\${LATEST_PROD_VERSION}" >> "\${OUTPUT_FOLDER}/trigger.properties"
+		echo "PIPELINE_VERSION=\${PIPELINE_VERSION}" >> "\${OUTPUT_FOLDER}/trigger.properties"
 		""")
 			}
 			publishers {
@@ -112,7 +116,9 @@ class Build implements Step<FreeStyleJob> {
 				}
 				archiveArtifacts {
 					pattern("**/build/libs/*.jar")
+					pattern("**/build/trigger.properties")
 					pattern("**/target/*.jar")
+					pattern("**/target/trigger.properties")
 					allowEmpty()
 				}
 			}

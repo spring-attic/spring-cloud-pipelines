@@ -197,6 +197,13 @@ final class EnvironmentVariables {
 	 */
 	public static final String STUBRUNNER_URL_ENV_VAR = "STUBRUNNER_URL"
 
+
+	/**
+	 * {@code LATEST_PROD_VERSION} - used in rollback tests deployment and tests. Latest
+	 * production version of the application.
+	 */
+	public static final String LATEST_PROD_VERSION_ENV_VAR = "LATEST_PROD_VERSION"
+
 	// Project crawler
 
 	/**

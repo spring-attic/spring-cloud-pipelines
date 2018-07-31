@@ -1,5 +1,11 @@
 import javaposse.jobdsl.dsl.DslFactory
 
+/**
+ *  This script contains empty steps using Jenkins Job DSL that you can copy
+ *  to generate your own deployment pipeline
+ */
+
+
 DslFactory dsl = this
 
 String projectName = 'jenkins-pipeline-empty'

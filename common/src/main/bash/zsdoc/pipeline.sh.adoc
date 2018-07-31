@@ -106,7 +106,7 @@ ____
  # structure [dev/appName/version] or [prod/appName/version].
 ____
 
-Has 11 line(s). Calls functions:
+Has 13 line(s). Calls functions:
 
  apiCompatibilityCheck
  `-- executeApiCompatibilityCheck
@@ -115,7 +115,7 @@ Called by:
 
  build_api_compatibility_check.sh/Script-Body
 
-_Environment variables used:_ PROJECT_NAME [big]*//* LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
+_Environment variables used:_ OUTPUT_FOLDER [big]*//* PROJECT_NAME [big]*//* LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
 
 build
 ~~~~~

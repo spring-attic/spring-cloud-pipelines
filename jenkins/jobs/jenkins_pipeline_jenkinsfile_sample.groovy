@@ -1,5 +1,12 @@
 import javaposse.jobdsl.dsl.DslFactory
 
+/**
+ *  This script contains logic that
+ *
+ *  - for each project from the REPOS env variable generates a Jenkinsfile deployment pipeline
+ */
+
+
 DslFactory dsl = this
 
 // Git credentials to use

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import groovy.transform.CompileStatic
 
+import org.springframework.cloud.pipelines.common.EnvironmentVariables
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.common.StepEnabledChecker
@@ -15,6 +16,7 @@ import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Cluster
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Manifest
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Root
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Stage
+import org.springframework.cloud.pipelines.spinnaker.pipeline.model.StageEnabled
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Trigger
 import org.springframework.cloud.projectcrawler.Repository
 
@@ -72,14 +74,22 @@ class SpinnakerPipelineBuilder {
 		Tuple2<Integer, Stage> e2eTests = runEndToEndTests(prepareForE2e, stages)
 		Tuple2<Integer, Stage> approveProd = approveProduction(e2eTests, stages)
 		Tuple2<Integer, Stage> deployToProd = deployToProd(approveProd, stages)
+		pushTag(deployToProd, stages)
 		Tuple2<Integer, Stage> rollback = rollback(approveProd, deployToProd, stages)
 		removeTag(rollback, stages)
 		return stages.findAll { it }
 	}
 
-	private Tuple2<Integer, Stage> removeTag(Tuple2<Integer, Stage> rollback, List<Stage> stages) {
+	private Tuple2<Integer, Stage> pushTag(Tuple2<Integer, Stage> previous, List<Stage> stages) {
 		Tuple2<Integer, Stage> stage =
-			callJenkins("Remove prod tag", "prod-env-remove-tag", rollback.first)
+			callJenkins("Push prod tag", "prod-tag-repo", previous.first)
+		stages.add(stage.second)
+		return stage
+	}
+
+	private Tuple2<Integer, Stage> removeTag(Tuple2<Integer, Stage> previous, List<Stage> stages) {
+		Tuple2<Integer, Stage> stage =
+			callJenkins("Remove prod tag", "prod-env-remove-tag", previous.first)
 		stages.add(stage.second)
 		return stage
 	}
@@ -156,7 +166,8 @@ class SpinnakerPipelineBuilder {
 
 	private Tuple2<Integer, Stage> testOnTestLatestProdVersion(Tuple2<Integer, Stage> testDeploymentRollback, List<Stage> stages) {
 		Tuple2<Integer, Stage> rollbackTests = runTests("test", "Run rollback tests on test",
-			"rollback-test", testDeploymentRollback.first, stepEnabledChecker.rollbackStepSet())
+			"rollback-test", testDeploymentRollback.first, stepEnabledChecker.rollbackStepSet(),
+			latestProdEnvVarPresent())
 		stages.add(rollbackTests.second)
 		rollbackTests
 	}
@@ -361,9 +372,19 @@ class SpinnakerPipelineBuilder {
 					defaults.cfTestOrg(), testSpaceName(),
 					route(testSpaceName(), defaults.spinnakerTestHostname()),
 					pipelineDescriptor.prod.deployment_strategy ?: "highlander")
-			]
+			],
+			stageEnabled: new StageEnabled(
+				type: "expression",
+				expression: latestProdEnvVarPresent()
+			)
 		)
 		return new Tuple2(refId, stage)
+	}
+
+	private String latestProdEnvVarPresent() {
+		return """trigger.properties['${
+			EnvironmentVariables.LATEST_PROD_VERSION_ENV_VAR
+		}']"""
 	}
 
 	private Tuple2<Integer, Stage> manualJudgement(boolean skip,
@@ -406,7 +427,8 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> runTests(String env, String text, String testName,
-											int firstRefId, boolean present = true) {
+											int firstRefId, boolean present = true,
+											String stageEnabledExpression = "") {
 		if (!present) {
 			return new Tuple2(firstRefId, null)
 		}
@@ -425,6 +447,12 @@ class SpinnakerPipelineBuilder {
 			waitForCompletion: true,
 			type: "jenkins"
 		)
+		if (stageEnabledExpression) {
+			stage.stageEnabled = new StageEnabled(
+				type: "expression",
+				expression: stageEnabledExpression
+			)
+		}
 		return new Tuple2(refId, stage)
 	}
 

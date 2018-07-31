@@ -1,5 +1,12 @@
 import javaposse.jobdsl.dsl.DslFactory
 
+/**
+ *  This script contains logic that
+ *
+ *  - generates views for each deployment pipeline from the REPOS env var
+ */
+
+
 DslFactory dsl = this
 
 // we're parsing the REPOS parameter to retrieve list of repos to build

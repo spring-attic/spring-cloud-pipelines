@@ -73,10 +73,12 @@ function apiCompatibilityCheck() {
 		LATEST_PROD_VERSION=${prodTag#"prod/${PROJECT_NAME}/"}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		executeApiCompatibilityCheck "${LATEST_PROD_VERSION}"
+		mkdir -p "${OUTPUT_FOLDER}"
+		echo "LATEST_PROD_VERSION=${LATEST_PROD_VERSION}" >> "${OUTPUT_FOLDER}/trigger.properties"
 	fi
 } # }}}
 
-# FUNCTION: apiCompatibilityCheck {{{
+# FUNCTION: executeApiCompatibilityCheck {{{
 # Execute api compatibility check step for the given latest production version $1
 #
 # $1 - retrieved latest production version

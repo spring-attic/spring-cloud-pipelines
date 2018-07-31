@@ -175,6 +175,17 @@
     "requisiteStageRefIds" : [ "11" ],
     "type" : "deploy"
   }, {
+    "failPipeline" : true,
+    "name" : "Push prod tag",
+    "refId" : "13",
+    "requisiteStageRefIds" : [ "12" ],
+    "type" : "jenkins",
+    "waitForCompletion" : true,
+    "parameters" : { },
+    "master" : "Spinnaker-Jenkins",
+    "job" : "spinnaker-github-webhook-pipeline-prod-tag-repo",
+    "continuePipeline" : false
+  }, {
     "clusters" : [ {
       "account" : "calabasasaccount",
       "application" : "githubwebhook",
