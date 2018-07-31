@@ -69,12 +69,18 @@ function apiCompatibilityCheck() {
 	if [[ -z "${prodTag}" ]]; then
 		echo "No prod release took place - skipping this step"
 	else
+		export LATEST_PROD_TAG PASSED_LATEST_PROD_TAG
+		LATEST_PROD_TAG="${prodTag}"
+		PASSED_LATEST_PROD_TAG="${prodTag}"
 		PROJECT_NAME=${PROJECT_NAME?PROJECT_NAME must be set!}
 		LATEST_PROD_VERSION=${prodTag#"prod/${PROJECT_NAME}/"}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		executeApiCompatibilityCheck "${LATEST_PROD_VERSION}"
 		mkdir -p "${OUTPUT_FOLDER}"
+		# TODO: Write tests for this:
 		echo "LATEST_PROD_VERSION=${LATEST_PROD_VERSION}" >> "${OUTPUT_FOLDER}/trigger.properties"
+		echo "LATEST_PROD_TAG=${prodTag}" >> "${OUTPUT_FOLDER}/trigger.properties"
+		echo "PASSED_LATEST_PROD_TAG=${prodTag}" >> "${OUTPUT_FOLDER}/trigger.properties"
 	fi
 } # }}}
 
