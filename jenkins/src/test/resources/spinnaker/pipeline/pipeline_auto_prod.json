@@ -286,6 +286,7 @@
     "enabled" : true,
     "job" : "spinnaker-github-webhook-pipeline-build",
     "master" : "Spinnaker-Jenkins",
-    "type" : "jenkins"
+    "type" : "jenkins",
+    "propertyFile" : "trigger.properties"
   } ]
 }

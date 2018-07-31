@@ -471,7 +471,8 @@ class SpinnakerPipelineBuilder {
 			enabled: true,
 			job: "spinnaker-${repository.name}-pipeline-build",
 			master: defaults.spinnakerJenkinsMaster(),
-			type: "jenkins"
+			type: "jenkins",
+			propertyFile: "trigger.properties"
 		)
 	}
 }

@@ -16,4 +16,5 @@ class Trigger {
 	String slug
 	String source
 	String type
+	String propertyFile
 }
