@@ -69,7 +69,7 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 		new TestRollbackTest(dsl, pipelineDefaults) {
 			@Override
 			void customize(FreeStyleJob job) {
-				setStageEnvVars(job, gitRepoName)
+				setTestRollbackEnvVars(job, gitRepoName)
 				super.customize(job)
 			}
 		}.step(projectName, coordinates, descriptor)
@@ -95,6 +95,13 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 		}
 		job.parameters {
 			stringParam(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR, "", "Version of the project to run the tests against")
+		}
+	}
+
+	protected void setTestRollbackEnvVars(FreeStyleJob job, String projectName) {
+		setTestEnvVars(job, projectName)
+		job.parameters {
+			stringParam(EnvironmentVariables.LATEST_PROD_VERSION_ENV_VAR, "", "Version of the project to run the tests against")
 		}
 	}
 

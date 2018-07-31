@@ -95,7 +95,8 @@
     "type" : "jenkins",
     "waitForCompletion" : true,
     "parameters" : {
-      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
+      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}",
+      "PASSED_LATEST_PROD_TAG" : "${trigger.properties['PASSED_LATEST_PROD_TAG']}"
     },
     "master" : "Spinnaker-Jenkins",
     "job" : "spinnaker-github-webhook-pipeline-test-env-rollback-test",

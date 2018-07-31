@@ -197,12 +197,24 @@ final class EnvironmentVariables {
 	 */
 	public static final String STUBRUNNER_URL_ENV_VAR = "STUBRUNNER_URL"
 
-
 	/**
 	 * {@code LATEST_PROD_VERSION} - used in rollback tests deployment and tests. Latest
 	 * production version of the application.
 	 */
 	public static final String LATEST_PROD_VERSION_ENV_VAR = "LATEST_PROD_VERSION"
+
+	/**
+	 * {@code LATEST_PROD_TAG} - used in rollback tests deployment and tests. Latest
+	 * production tag of the application.
+	 */
+	public static final String LATEST_PROD_TAG_ENV_VAR = "LATEST_PROD_TAG"
+
+	/**
+	 * {@code PASSED_LATEST_PROD_TAG} - used in rollback tests deployment and tests. Latest
+	 * production tag of the application. Certain CI tools (e.g. Concourse)
+	 * add the PASSED_ prefix before the env var.
+	 */
+	public static final String PASSED_LATEST_PROD_TAG_ENV_VAR = "PASSED_LATEST_PROD_TAG"
 
 	// Project crawler
 

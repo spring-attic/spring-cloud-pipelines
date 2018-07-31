@@ -168,8 +168,15 @@ class SpinnakerPipelineBuilder {
 		Tuple2<Integer, Stage> rollbackTests = runTests("test", "Run rollback tests on test",
 			"rollback-test", testDeploymentRollback.first, stepEnabledChecker.rollbackStepSet(),
 			latestProdEnvVarPresent())
+		if (rollbackTests.second) {
+			if (!rollbackTests.second.parameters) {
+				rollbackTests.second.parameters = [:]
+			}
+			rollbackTests.second.parameters.put(EnvironmentVariables.PASSED_LATEST_PROD_TAG_ENV_VAR,
+				propertyFromTrigger(EnvironmentVariables.PASSED_LATEST_PROD_TAG_ENV_VAR))
+		}
 		stages.add(rollbackTests.second)
-		rollbackTests
+		return rollbackTests
 	}
 
 	private Tuple2<Integer, Stage> deployToTestLatestProdVersion(Tuple2<Integer, Stage> testsOnTest, List<Stage> stages) {
@@ -382,10 +389,14 @@ class SpinnakerPipelineBuilder {
 		return new Tuple2(refId, stage)
 	}
 
-	private String latestProdEnvVarPresent() {
+	private String propertyFromTrigger(String key) {
 		return """\${trigger.properties['${
-			EnvironmentVariables.LATEST_PROD_VERSION_ENV_VAR
+			key
 		}']}"""
+	}
+
+	private String latestProdEnvVarPresent() {
+		return propertyFromTrigger(EnvironmentVariables.LATEST_PROD_VERSION_ENV_VAR)
 	}
 
 	private Tuple2<Integer, Stage> manualJudgement(boolean skip,
@@ -442,7 +453,7 @@ class SpinnakerPipelineBuilder {
 			name: "${text}",
 			parameters: [
 				(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR) :
-					"\${trigger.properties['${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}']}".toString()
+					propertyFromTrigger(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR)
 			],
 			refId: "${refId}",
 			requisiteStageRefIds: [

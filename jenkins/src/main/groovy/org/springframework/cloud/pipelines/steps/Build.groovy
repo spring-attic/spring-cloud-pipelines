@@ -103,6 +103,8 @@ class Build implements Step<FreeStyleJob> {
 		echo "Output current build properties to output"
 		echo "LATEST_PROD_VERSION=\${LATEST_PROD_VERSION}" >> "\${OUTPUT_FOLDER}/trigger.properties"
 		echo "PIPELINE_VERSION=\${PIPELINE_VERSION}" >> "\${OUTPUT_FOLDER}/trigger.properties"
+		echo "LATEST_PROD_TAG=\${LATEST_PROD_TAG}"  >> "\${OUTPUT_FOLDER}/trigger.properties"
+		echo "PASSED_LATEST_PROD_TAG=\${PASSED_LATEST_PROD_TAG}"  >> "\${OUTPUT_FOLDER}/trigger.properties"
 		""")
 			}
 			publishers {
