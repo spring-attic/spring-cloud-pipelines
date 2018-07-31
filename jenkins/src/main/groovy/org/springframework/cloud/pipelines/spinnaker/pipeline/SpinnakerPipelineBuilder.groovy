@@ -3,7 +3,6 @@ package org.springframework.cloud.pipelines.spinnaker.pipeline
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.sun.tools.doclint.Env
 import groovy.transform.CompileStatic
 
 import org.springframework.cloud.pipelines.common.EnvironmentVariables
