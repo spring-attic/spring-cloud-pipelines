@@ -48,8 +48,8 @@ function logInToPaas() {
 function testCleanup() {
 	# TODO: Clean up space without relying on plug-ins???
 	#TODO: offline mode for when there is no internet connection
-	cf install-plugin do-all -r "CF-Community" -f
-	cf do-all delete {} -r -f
+	"${CF_BIN}" install-plugin do-all -r "CF-Community" -f
+	"${CF_BIN}" do-all delete {} -r -f
 } # }}}
 
 # FUNCTION: deleteService {{{
