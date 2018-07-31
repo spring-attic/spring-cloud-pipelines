@@ -269,14 +269,14 @@
       "strategy" : "highlander"
     } ],
     "name" : "Rollback",
-    "refId" : "15",
+    "refId" : "16",
     "requisiteStageRefIds" : [ "13" ],
     "type" : "deploy"
   }, {
     "failPipeline" : true,
     "name" : "Remove prod tag",
-    "refId" : "16",
-    "requisiteStageRefIds" : [ "15" ],
+    "refId" : "17",
+    "requisiteStageRefIds" : [ "16" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
     "parameters" : { },

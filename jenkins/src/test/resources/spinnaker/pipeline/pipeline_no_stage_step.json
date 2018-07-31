@@ -107,7 +107,11 @@
     "parameters" : { },
     "master" : "Spinnaker-Jenkins",
     "job" : "spinnaker-github-webhook-pipeline-test-env-rollback-test",
-    "continuePipeline" : false
+    "continuePipeline" : false,
+    "stageEnabled" : {
+      "expression" : "trigger.properties['LATEST_PROD_VERSION']",
+      "type" : "expression"
+    }
   }, {
     "failPipeline" : true,
     "name" : "Approve production",
@@ -192,14 +196,14 @@
       "strategy" : "highlander"
     } ],
     "name" : "Rollback",
-    "refId" : "9",
+    "refId" : "10",
     "requisiteStageRefIds" : [ "7" ],
     "type" : "deploy"
   }, {
     "failPipeline" : true,
     "name" : "Remove prod tag",
-    "refId" : "10",
-    "requisiteStageRefIds" : [ "9" ],
+    "refId" : "11",
+    "requisiteStageRefIds" : [ "10" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
     "parameters" : { },

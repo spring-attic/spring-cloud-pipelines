@@ -74,8 +74,8 @@ class SpinnakerPipelineBuilder {
 		Tuple2<Integer, Stage> e2eTests = runEndToEndTests(prepareForE2e, stages)
 		Tuple2<Integer, Stage> approveProd = approveProduction(e2eTests, stages)
 		Tuple2<Integer, Stage> deployToProd = deployToProd(approveProd, stages)
-		pushTag(deployToProd, stages)
-		Tuple2<Integer, Stage> rollback = rollback(approveProd, deployToProd, stages)
+		Tuple2<Integer, Stage> pushTag = pushTag(deployToProd, stages)
+		Tuple2<Integer, Stage> rollback = rollback(approveProd, pushTag, stages)
 		removeTag(rollback, stages)
 		return stages.findAll { it }
 	}
@@ -94,9 +94,9 @@ class SpinnakerPipelineBuilder {
 		return stage
 	}
 
-	private Tuple2<Integer, Stage> rollback(Tuple2<Integer, Stage> approveProd, Tuple2<Integer, Stage> deployToProd, List<Stage> stages) {
+	private Tuple2<Integer, Stage> rollback(Tuple2<Integer, Stage> idToReference, Tuple2<Integer, Stage> lastRefId, List<Stage> stages) {
 		Tuple2<Integer, Stage> rollback =
-			prodDeployment("Rollback", approveProd.first, deployToProd.first)
+			prodDeployment("Rollback", idToReference.first, lastRefId.first)
 		stages.add(rollback.second)
 		return rollback
 	}
