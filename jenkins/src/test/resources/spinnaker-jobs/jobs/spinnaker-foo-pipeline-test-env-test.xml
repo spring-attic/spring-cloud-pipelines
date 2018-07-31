@@ -19,6 +19,15 @@
             <overrideBuildParameters>false</overrideBuildParameters>
             <contributors/>
         </EnvInjectJobProperty>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.model.StringParameterDefinition>
+                    <name>PIPELINE_VERSION</name>
+                    <defaultValue/>
+                    <description>Version of the project to run the tests against</description>
+                </hudson.model.StringParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
     </properties>
     <canRoam>true</canRoam>
     <disabled>false</disabled>

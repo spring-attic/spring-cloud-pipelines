@@ -93,6 +93,9 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 				env(EnvironmentVariables.STUBRUNNER_URL_ENV_VAR, "stubrunner.${pipelineDefaults.spinnakerTestHostname()}")
 			}
 		}
+		job.parameters {
+			stringParam(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR, "", "Version of the project to run the tests against")
+		}
 	}
 
 	protected void setStageEnvVars(FreeStyleJob job, String projectName) {
