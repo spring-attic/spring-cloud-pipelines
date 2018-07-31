@@ -245,13 +245,13 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Cluster cluster(String account, String org, String space, String route,
-							String deploymentStrategy) {
+							String deploymentStrategy, String artifactPattern = "^${this.repository.name}.*VERSION.jar\$") {
 		return new Cluster(
 			account: account,
 			application: "${alphaNumericOnly(this.repository.name)}",
 			artifact: new Artifact(
 				account: "jenkins",
-				pattern: "^${this.repository.name}.*VERSION.jar\$",
+				pattern: artifactPattern,
 				type: "trigger"
 			),
 			capacity: new Capacity(
@@ -371,7 +371,8 @@ class SpinnakerPipelineBuilder {
 				cluster(defaults.spinnakerProdDeploymentAccount(),
 					defaults.cfTestOrg(), testSpaceName(),
 					route(testSpaceName(), defaults.spinnakerTestHostname()),
-					pipelineDescriptor.prod.deployment_strategy ?: "highlander")
+					pipelineDescriptor.prod.deployment_strategy ?: "highlander",
+					"^${this.repository.name}.*VERSION-latestprodversion.jar\$")
 			],
 			stageEnabled: new StageEnabled(
 				type: "expression",

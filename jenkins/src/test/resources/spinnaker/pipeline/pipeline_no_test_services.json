@@ -53,7 +53,7 @@
       "application" : "githubwebhook",
       "artifact" : {
         "account" : "jenkins",
-        "pattern" : "^github-webhook.*VERSION.jar$",
+        "pattern" : "^github-webhook.*VERSION-latestprodversion.jar$",
         "type" : "trigger"
       },
       "capacity" : {
