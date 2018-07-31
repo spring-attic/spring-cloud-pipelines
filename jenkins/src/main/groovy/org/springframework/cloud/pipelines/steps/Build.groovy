@@ -92,13 +92,13 @@ class Build implements Step<FreeStyleJob> {
 					if (checker.apiCompatibilityStepSet()) {
 						return '''\
 		echo "First running api compatibility check, so that what we commit and upload at the end is just built project"
-		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
+		. ${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
 		'''
 					}
 					return ''
 				}
 		echo "Running the build and upload script"
-		\${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
+		. \${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 
 		echo "Output current build properties to output"
 		echo "LATEST_PROD_VERSION=\${LATEST_PROD_VERSION}" >> "\${OUTPUT_FOLDER}/trigger.properties"
