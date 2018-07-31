@@ -14,7 +14,7 @@ class Stage {
 	String scriptPath
 	String user
 	Boolean waitForCompletion
-	Map parameters
+	Map<String, String> parameters
 	String master
 	String job
 	List<String> judgmentInputs

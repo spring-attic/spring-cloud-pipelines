@@ -3,6 +3,7 @@ package org.springframework.cloud.pipelines.spinnaker.pipeline
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.sun.tools.doclint.Env
 import groovy.transform.CompileStatic
 
 import org.springframework.cloud.pipelines.common.EnvironmentVariables
@@ -383,9 +384,9 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private String latestProdEnvVarPresent() {
-		return """trigger.properties['${
+		return """\${trigger.properties['${
 			EnvironmentVariables.LATEST_PROD_VERSION_ENV_VAR
-		}']"""
+		}']}"""
 	}
 
 	private Tuple2<Integer, Stage> manualJudgement(boolean skip,
@@ -440,7 +441,10 @@ class SpinnakerPipelineBuilder {
 			job: "${SpinnakerDefaults.projectName(repository.name)}-${env}-env-${testName}",
 			master: defaults.spinnakerJenkinsMaster(),
 			name: "${text}",
-			parameters: [:],
+			parameters: [
+				(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR) :
+					"trigger.properties['${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}']".toString()
+			],
 			refId: "${refId}",
 			requisiteStageRefIds: [
 				"${firstRefId}".toString()

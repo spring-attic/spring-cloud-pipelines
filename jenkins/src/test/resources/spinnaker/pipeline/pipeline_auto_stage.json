@@ -55,7 +55,9 @@
     "requisiteStageRefIds" : [ "3" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
-    "parameters" : { },
+    "parameters" : {
+      "PIPELINE_VERSION" : "trigger.properties['PIPELINE_VERSION']"
+    },
     "master" : "Spinnaker-Jenkins",
     "job" : "spinnaker-github-webhook-pipeline-test-env-test",
     "continuePipeline" : false
@@ -94,7 +96,7 @@
     "requisiteStageRefIds" : [ "4" ],
     "type" : "deploy",
     "stageEnabled" : {
-      "expression" : "trigger.properties['LATEST_PROD_VERSION']",
+      "expression" : "${trigger.properties['LATEST_PROD_VERSION']}",
       "type" : "expression"
     }
   }, {
@@ -104,12 +106,14 @@
     "requisiteStageRefIds" : [ "5" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
-    "parameters" : { },
+    "parameters" : {
+      "PIPELINE_VERSION" : "trigger.properties['PIPELINE_VERSION']"
+    },
     "master" : "Spinnaker-Jenkins",
     "job" : "spinnaker-github-webhook-pipeline-test-env-rollback-test",
     "continuePipeline" : false,
     "stageEnabled" : {
-      "expression" : "trigger.properties['LATEST_PROD_VERSION']",
+      "expression" : "${trigger.properties['LATEST_PROD_VERSION']}",
       "type" : "expression"
     }
   }, {
@@ -165,7 +169,9 @@
     "requisiteStageRefIds" : [ "9" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
-    "parameters" : { },
+    "parameters" : {
+      "PIPELINE_VERSION" : "trigger.properties['PIPELINE_VERSION']"
+    },
     "master" : "Spinnaker-Jenkins",
     "job" : "spinnaker-github-webhook-pipeline-stage-env-e2e",
     "continuePipeline" : false

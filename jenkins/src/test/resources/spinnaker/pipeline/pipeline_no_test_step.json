@@ -71,7 +71,9 @@
     "requisiteStageRefIds" : [ "5" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
-    "parameters" : { },
+    "parameters" : {
+      "PIPELINE_VERSION" : "trigger.properties['PIPELINE_VERSION']"
+    },
     "master" : "Spinnaker-Jenkins",
     "job" : "spinnaker-github-webhook-pipeline-stage-env-e2e",
     "continuePipeline" : false
