@@ -566,8 +566,8 @@ echo "Path to custom script is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
 [[ -f "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ]] && source "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ||  \
  echo "No ${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME} found"
 
-export OUTPUT_FOLDER="$(outputFolder)"
-export TEST_REPORTS_FOLDER="$(testResultsAntPattern)"
+OUTPUT_FOLDER="$(outputFolder)"
+TEST_REPORTS_FOLDER="$(testResultsAntPattern)"
 
 echo "Output folder [${OUTPUT_FOLDER}]"
 echo "Test reports folder [${TEST_REPORTS_FOLDER}]"
