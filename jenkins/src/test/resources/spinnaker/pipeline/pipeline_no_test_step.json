@@ -72,7 +72,7 @@
     "type" : "jenkins",
     "waitForCompletion" : true,
     "parameters" : {
-      "PIPELINE_VERSION" : "trigger.properties['PIPELINE_VERSION']"
+      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
     },
     "master" : "Spinnaker-Jenkins",
     "job" : "spinnaker-github-webhook-pipeline-stage-env-e2e",

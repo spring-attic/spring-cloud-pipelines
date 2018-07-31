@@ -442,7 +442,7 @@ class SpinnakerPipelineBuilder {
 			name: "${text}",
 			parameters: [
 				(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR) :
-					"trigger.properties['${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}']".toString()
+					"\${trigger.properties['${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}']}".toString()
 			],
 			refId: "${refId}",
 			requisiteStageRefIds: [
