@@ -277,15 +277,13 @@ class SpinnakerPipelineBuilder {
 			cloudProvider: "cloudfoundry",
 			detail: "",
 			manifest: new Manifest(
-				diskQuota: "1024M",
-				env: [],
-				instances: 1,
-				memory: "1024M",
 				routes: [
 					route
 				],
-				services: [],
-				type: "direct"
+				account: defaults.spinnakerJenkinsAccount(),
+				type: "artifact",
+				reference: "${defaults.spinnakerJenkinsRootUrl()}/job/${triggerJobName()}/lastBuild/artifact/manifest.yml",
+				services: []
 			),
 			provider: "cloudfoundry",
 			region: "${org} > ${space}",
@@ -491,10 +489,14 @@ class SpinnakerPipelineBuilder {
 	private Trigger trigger() {
 		return new Trigger(
 			enabled: true,
-			job: "spinnaker-${repository.name}-pipeline-build",
+			job: triggerJobName(),
 			master: defaults.spinnakerJenkinsMaster(),
 			type: "jenkins",
 			propertyFile: "trigger.properties"
 		)
+	}
+
+	protected String triggerJobName() {
+		return "${SpinnakerDefaults.projectName(repository.name)}-build"
 	}
 }

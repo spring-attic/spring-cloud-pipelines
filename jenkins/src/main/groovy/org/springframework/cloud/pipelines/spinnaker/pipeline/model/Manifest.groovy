@@ -13,4 +13,6 @@ class Manifest {
 	List<String> services = []
 	String type
 	List<String> routes
+	String account
+	String reference
 }

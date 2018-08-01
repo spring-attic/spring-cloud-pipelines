@@ -350,6 +350,14 @@ class PipelineDefaults {
 		return prop(EnvironmentVariables.SPINNAKER_PROD_DEPLOYMENT_ACCOUNT_ENV_VAR, "")
 	}
 
+	String spinnakerJenkinsRootUrl() {
+		return prop(EnvironmentVariables.SPINNAKER_JENKINS_ROOT_URL_ENV_VAR, "")
+	}
+
+	String spinnakerJenkinsAccount() {
+		return prop(EnvironmentVariables.SPINNAKER_JENKINS_ACCOUNT_ENV_VAR, "")
+	}
+
 	String spinnakerJenkinsMaster() {
 		return prop(EnvironmentVariables.SPINNAKER_JENKINS_MASTER_ENV_VAR, "")
 	}

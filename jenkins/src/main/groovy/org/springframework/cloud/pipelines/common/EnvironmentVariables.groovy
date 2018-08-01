@@ -580,6 +580,16 @@ final class EnvironmentVariables {
 	public static final String SPINNAKER_PROD_DEPLOYMENT_ACCOUNT_ENV_VAR = "SPINNAKER_PROD_DEPLOYMENT_ACCOUNT"
 
 	/**
+	 * {@code SPINNAKER_JENKINS_ROOT_URL} - name of the Jenkins host used by Spinnaker
+	 */
+	public static final String SPINNAKER_JENKINS_ROOT_URL_ENV_VAR = "SPINNAKER_JENKINS_ROOT_URL"
+
+	/**
+	 * {@code SPINNAKER_JENKINS_ACCOUNT} - name of the Jenkins account used by Spinnaker
+	 */
+	public static final String SPINNAKER_JENKINS_ACCOUNT_ENV_VAR = "SPINNAKER_JENKINS_ACCOUNT"
+
+	/**
 	 * {@code SPINNAKER_JENKINS_MASTER} - name of the Jenkins master installation
 	 */
 	public static final String SPINNAKER_JENKINS_MASTER_ENV_VAR = "SPINNAKER_JENKINS_MASTER"
