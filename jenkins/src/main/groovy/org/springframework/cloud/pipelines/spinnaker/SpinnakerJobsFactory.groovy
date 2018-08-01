@@ -13,6 +13,8 @@ import org.springframework.cloud.pipelines.common.PipelineJobsFactory
 import org.springframework.cloud.pipelines.spinnaker.pipeline.SpinnakerPipelineBuilder
 import org.springframework.cloud.pipelines.spinnaker.pipeline.steps.ProdRemoveTag
 import org.springframework.cloud.pipelines.spinnaker.pipeline.steps.ProdSetTag
+import org.springframework.cloud.pipelines.spinnaker.pipeline.steps.StagePrepare
+import org.springframework.cloud.pipelines.spinnaker.pipeline.steps.TestPrepare
 import org.springframework.cloud.pipelines.steps.Build
 import org.springframework.cloud.pipelines.steps.CommonSteps
 import org.springframework.cloud.pipelines.steps.TestRollbackTest
@@ -59,6 +61,7 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 				super.customize(job)
 			}
 		}.step(projectName, coordinates, descriptor)
+		new TestPrepare(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
 		new TestTest(dsl, pipelineDefaults) {
 			@Override
 			void customize(FreeStyleJob job) {
@@ -73,6 +76,7 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 				super.customize(job)
 			}
 		}.step(projectName, coordinates, descriptor)
+		new StagePrepare(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
 		new StageTest(dsl, pipelineDefaults) {
 			@Override
 			void customize(FreeStyleJob job) {

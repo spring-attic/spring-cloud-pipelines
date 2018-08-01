@@ -254,6 +254,10 @@ factory.job('jenkins-spinnaker-cf-seed') {
 	}
 	wrappers {
 		credentialsBinding {
+			usernamePassword("PAAS_TEST_USERNAME", "PAAS_TEST_PASSWORD",
+				binding.variables["PAAS_TEST_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_STAGE_USERNAME", "PAAS_STAGE_PASSWORD",
+				binding.variables["PAAS_STAGE_CREDENTIAL_ID"] as String)
 			if (Boolean.parseBoolean(binding.variables["GIT_TOKEN"] as String)) {
 				string("GIT_TOKEN", binding.variables["GIT_TOKEN_ID"] as String)
 			} else {
@@ -294,6 +298,8 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			stringParam('PAAS_STAGE_SPACE', 'sc-pipelines-stage', 'Name of the CF space for stage env')
 			stringParam('PAAS_PROD_ORG', 'pcfdev-org', 'Name of the CF organization for prod env')
 			stringParam('PAAS_PROD_SPACE', 'sc-pipelines-prod', 'Name of the CF space for prod env')
+			stringParam('PAAS_TEST_CREDENTIAL_ID', 'cf-test', 'ID of the CF credentials for test environment')
+			stringParam('PAAS_STAGE_CREDENTIAL_ID', 'cf-stage', 'ID of the CF credentials for stage environment')
 		}
 	}
 	steps {

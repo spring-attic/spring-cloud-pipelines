@@ -64,6 +64,13 @@ set -o pipefail
             <fingerprint>false</fingerprint>
             <onlyIfSuccessful>false</onlyIfSuccessful>
         </hudson.tasks.ArtifactArchiver>
+        <hudson.tasks.ArtifactArchiver>
+            <artifacts>manifest.yml</artifacts>
+            <allowEmptyArchive>true</allowEmptyArchive>
+            <defaultExcludes>true</defaultExcludes>
+            <fingerprint>false</fingerprint>
+            <onlyIfSuccessful>false</onlyIfSuccessful>
+        </hudson.tasks.ArtifactArchiver>
         <hudson.plugins.parameterizedtrigger.BuildTrigger>
             <configs>
                 <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>

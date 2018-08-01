@@ -76,6 +76,13 @@ removeProdTag
             <fingerprint>false</fingerprint>
             <onlyIfSuccessful>false</onlyIfSuccessful>
         </hudson.tasks.ArtifactArchiver>
+        <hudson.tasks.ArtifactArchiver>
+            <artifacts>manifest.yml</artifacts>
+            <allowEmptyArchive>true</allowEmptyArchive>
+            <defaultExcludes>true</defaultExcludes>
+            <fingerprint>false</fingerprint>
+            <onlyIfSuccessful>false</onlyIfSuccessful>
+        </hudson.tasks.ArtifactArchiver>
     </publishers>
     <buildWrappers>
         <hudson.plugins.timestamper.TimestamperBuildWrapper/>

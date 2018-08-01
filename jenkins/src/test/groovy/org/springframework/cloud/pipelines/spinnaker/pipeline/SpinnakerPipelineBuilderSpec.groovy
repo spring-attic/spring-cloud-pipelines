@@ -76,6 +76,8 @@ stage:
 		then:
 			storeJsonWithPipeline("pipeline", pipeline)
 			assertThatJsonsAreEqual(expectedPipeline, pipeline)
+		and:
+			refIdsAreUniqe(pipeline)
 	}
 
 	def expectedPipelineWithoutStageServices = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_stage_services.json').text
@@ -111,6 +113,8 @@ test:
 		then:
 			storeJsonWithPipeline("pipeline_no_stage_services", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutStageServices, pipeline)
+		and:
+			refIdsAreUniqe(pipeline)
 	}
 
 	def expectedPipelineWithoutTestServices = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_test_services.json').text
@@ -145,6 +149,8 @@ stage:
 		then:
 			storeJsonWithPipeline("pipeline_no_test_services", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutTestServices, pipeline)
+		and:
+			refIdsAreUniqe(pipeline)
 	}
 
 	def expectedPipelineWithAutoStage = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_auto_stage.json').text
@@ -195,6 +201,8 @@ stage:
 		then:
 			storeJsonWithPipeline("pipeline_auto_stage", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithAutoStage, pipeline)
+		and:
+			refIdsAreUniqe(pipeline)
 	}
 
 	def expectedPipelineWithAutoProd = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_auto_prod.json').text
@@ -245,6 +253,8 @@ stage:
 		then:
 			storeJsonWithPipeline("pipeline_auto_prod", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithAutoProd, pipeline)
+		and:
+			refIdsAreUniqe(pipeline)
 	}
 
 	def expectedPipelineWithoutRollback = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_rollback_step.json').text
@@ -295,6 +305,13 @@ stage:
 		then:
 			storeJsonWithPipeline("pipeline_no_rollback_step", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutRollback, pipeline)
+		and:
+			refIdsAreUniqe(pipeline)
+	}
+
+	void refIdsAreUniqe(String pipeline) {
+		List<String> refIds = new JsonSlurper().parseText(pipeline).stages.collect { it.refId }
+		assert (refIds.clone() as List).unique().size() == refIds.size()
 	}
 
 	def expectedPipelineWithoutStage = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_stage_step.json').text
@@ -345,6 +362,8 @@ stage:
 		then:
 			storeJsonWithPipeline("pipeline_no_stage_step", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutStage, pipeline)
+		and:
+			refIdsAreUniqe(pipeline)
 	}
 
 	def expectedPipelineWithoutTest = SpinnakerPipelineBuilderSpec.getResource('/spinnaker/pipeline/pipeline_no_test_step.json').text
@@ -395,6 +414,8 @@ stage:
 		then:
 			storeJsonWithPipeline("pipeline_no_test_step", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutTest, pipeline)
+		and:
+			refIdsAreUniqe(pipeline)
 	}
 
 	void setupEnvVars(PipelineDefaults defaults) {

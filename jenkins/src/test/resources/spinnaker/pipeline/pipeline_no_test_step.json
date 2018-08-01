@@ -11,17 +11,18 @@
     "judgmentInputs" : [ ],
     "notifications" : [ ]
   }, {
-    "name" : "Create stage service [0]",
+    "failPipeline" : true,
+    "name" : "Prepare stage environment",
     "refId" : "2",
     "requisiteStageRefIds" : [ "1" ],
-    "type" : "wait",
-    "waitTime" : 1
-  }, {
-    "name" : "Create stage service [1]",
-    "refId" : "3",
-    "requisiteStageRefIds" : [ "1" ],
-    "type" : "wait",
-    "waitTime" : 1
+    "type" : "jenkins",
+    "waitForCompletion" : true,
+    "parameters" : {
+      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
+    },
+    "master" : "Spinnaker-Jenkins",
+    "job" : "spinnaker-github-webhook-pipeline-stage-prepare",
+    "continuePipeline" : false
   }, {
     "clusters" : [ {
       "account" : "calabasasaccount",
@@ -53,22 +54,22 @@
       "strategy" : "highlander"
     } ],
     "name" : "Deploy to stage",
-    "refId" : "4",
-    "requisiteStageRefIds" : [ "2", "3" ],
+    "refId" : "3",
+    "requisiteStageRefIds" : [ "2" ],
     "type" : "deploy"
   }, {
     "failPipeline" : true,
     "name" : "Prepare for end to end tests",
-    "refId" : "5",
-    "requisiteStageRefIds" : [ "4" ],
+    "refId" : "4",
+    "requisiteStageRefIds" : [ "3" ],
     "type" : "manualJudgment",
     "judgmentInputs" : [ ],
     "notifications" : [ ]
   }, {
     "failPipeline" : true,
     "name" : "End to end tests on stage",
-    "refId" : "6",
-    "requisiteStageRefIds" : [ "5" ],
+    "refId" : "5",
+    "requisiteStageRefIds" : [ "4" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
     "parameters" : {
@@ -80,8 +81,8 @@
   }, {
     "failPipeline" : true,
     "name" : "Approve production",
-    "refId" : "7",
-    "requisiteStageRefIds" : [ "6" ],
+    "refId" : "6",
+    "requisiteStageRefIds" : [ "5" ],
     "type" : "manualJudgment",
     "judgmentInputs" : [ ],
     "notifications" : [ ]
@@ -116,17 +117,19 @@
       "strategy" : "highlander"
     } ],
     "name" : "Deploy to prod",
-    "refId" : "8",
-    "requisiteStageRefIds" : [ "7" ],
+    "refId" : "7",
+    "requisiteStageRefIds" : [ "6" ],
     "type" : "deploy"
   }, {
     "failPipeline" : true,
     "name" : "Push prod tag",
-    "refId" : "9",
-    "requisiteStageRefIds" : [ "8" ],
+    "refId" : "8",
+    "requisiteStageRefIds" : [ "7" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
-    "parameters" : { },
+    "parameters" : {
+      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
+    },
     "master" : "Spinnaker-Jenkins",
     "job" : "spinnaker-github-webhook-pipeline-prod-tag-repo",
     "continuePipeline" : false
@@ -161,17 +164,19 @@
       "strategy" : "highlander"
     } ],
     "name" : "Rollback",
-    "refId" : "10",
-    "requisiteStageRefIds" : [ "7" ],
+    "refId" : "9",
+    "requisiteStageRefIds" : [ "6" ],
     "type" : "deploy"
   }, {
     "failPipeline" : true,
     "name" : "Remove prod tag",
-    "refId" : "11",
-    "requisiteStageRefIds" : [ "10" ],
+    "refId" : "10",
+    "requisiteStageRefIds" : [ "9" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
-    "parameters" : { },
+    "parameters" : {
+      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
+    },
     "master" : "Spinnaker-Jenkins",
     "job" : "spinnaker-github-webhook-pipeline-prod-env-remove-tag",
     "continuePipeline" : false

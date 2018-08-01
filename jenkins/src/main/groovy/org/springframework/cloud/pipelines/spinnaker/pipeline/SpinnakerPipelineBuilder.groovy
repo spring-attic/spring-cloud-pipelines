@@ -62,13 +62,13 @@ class SpinnakerPipelineBuilder {
 		List<Stage> stages = []
 		int firstRefId = 0
 		// each tuple represents the id of the job and list / single stage
-		Tuple2<Integer, List<Stage>> testServices = createTestServices(firstRefId, stages)
+		Tuple2<Integer, Stage> testServices = createTestServices(firstRefId, stages)
 		Tuple2<Integer, Stage> testDeployment = deployToTest(testServices, stages)
 		Tuple2<Integer, Stage> testsOnTest = testsOnTest(testDeployment, stages)
 		Tuple2<Integer, Stage> testDeploymentRollback = deployToTestLatestProdVersion(testsOnTest, stages)
 		Tuple2<Integer, Stage> rollbackTests = testOnTestLatestProdVersion(testDeploymentRollback, stages)
 		Tuple2<Integer, Stage> waitingForStage = waitForStage(rollbackTests, stages)
-		Tuple2<Integer, List<Stage>> stageServices = createStageServices(waitingForStage, stages)
+		Tuple2<Integer, Stage> stageServices = createStageServices(waitingForStage, stages)
 		Tuple2<Integer, Stage> stageDeployment = deployToStage(waitingForStage, stageServices, stages)
 		Tuple2<Integer, Stage> prepareForE2e = prepareForEndToEndTests(stageDeployment, stages)
 		Tuple2<Integer, Stage> e2eTests = runEndToEndTests(prepareForE2e, stages)
@@ -142,7 +142,7 @@ class SpinnakerPipelineBuilder {
 		return prepareForE2e
 	}
 
-	private Tuple2<Integer, Stage> deployToStage(Tuple2<Integer, Stage> waitingForStage, Tuple2<Integer, List<Stage>> stageServices, List<Stage> stages) {
+	private Tuple2<Integer, Stage> deployToStage(Tuple2<Integer, Stage> waitingForStage, Tuple2<Integer, Stage> stageServices, List<Stage> stages) {
 		Tuple2<Integer, Stage> stageDeployment =
 			deploymentStage("Deploy to stage", waitingForStage.first,
 				stageServices.first, stageSet())
@@ -150,11 +150,15 @@ class SpinnakerPipelineBuilder {
 		return stageDeployment
 	}
 
-	private Tuple2<Integer, List<Stage>> createStageServices(Tuple2<Integer, Stage> waitingForStage, List<Stage> stages) {
-		Tuple2<Integer, List<Stage>> stageServices = createStageServices("stage",
-			waitingForStage.first, pipelineDescriptor.stage.services)
-		stages.addAll(stageServices.second)
-		return stageServices
+	private Tuple2<Integer, Stage> createStageServices(Tuple2<Integer, Stage> waitingForStage, List<Stage> stages) {
+		List<PipelineDescriptor.Service> pipeServices = pipelineDescriptor.stage.services
+		if (!pipeServices || stepEnabledChecker.stageStepMissing()) {
+			return new Tuple2(waitingForStage.first, null)
+		}
+		Tuple2<Integer, Stage> stage =
+			callJenkins("Prepare stage environment", "stage-prepare", waitingForStage.first)
+		stages.addAll(stage.second)
+		return stage
 	}
 
 	private Tuple2<Integer, Stage> waitForStage(Tuple2<Integer, Stage> rollbackTests, List<Stage> stages) {
@@ -194,21 +198,25 @@ class SpinnakerPipelineBuilder {
 		return testsOnTest
 	}
 
-	private Tuple2<Integer, Stage> deployToTest(Tuple2<Integer, List<Stage>> testServices, List<Stage> stages) {
-		Tuple2<Integer, Stage> testDeployment = testDeploymentStage(testServices.first)
+	private Tuple2<Integer, Stage> deployToTest(Tuple2<Integer, Stage> testService, List<Stage> stages) {
+		Tuple2<Integer, Stage> testDeployment = testDeploymentStage(testService.first)
 		stages.add(testDeployment.second)
 		return testDeployment
 	}
 
-	private Tuple2<Integer, List<Stage>> createTestServices(int firstRefId, List<Stage> stages) {
-		Tuple2<Integer, List<Stage>> testServices =
-			createTestServices("test", firstRefId, pipelineDescriptor.test.services)
-		stages.addAll(testServices.second)
-		return testServices
+	private Tuple2<Integer, Stage> createTestServices(int firstRefId, List<Stage> stages) {
+		List<PipelineDescriptor.Service> pipeServices = pipelineDescriptor.test.services
+		if (!pipeServices || stepEnabledChecker.testStepMissing()) {
+			return new Tuple2(firstRefId, null)
+		}
+		Tuple2<Integer, Stage> stage =
+			callJenkins("Prepare test environment", "test-prepare", firstRefId)
+		stages.addAll(stage.second)
+		return stage
 	}
 
-	private Tuple2<Integer, List<Stage>> createTestServices(String env, int firstId,
-															List<PipelineDescriptor.Service> pipeServices) {
+	private Tuple2<Integer, List<Stage>> createTestServices(String env, int firstId) {
+		List<PipelineDescriptor.Service> pipeServices = pipelineDescriptor.test.services
 		if (!pipeServices || stepEnabledChecker.testStepMissing()) {
 			return new Tuple2(firstId, [])
 		}
@@ -427,7 +435,10 @@ class SpinnakerPipelineBuilder {
 			job: "${SpinnakerDefaults.projectName(repository.name)}-${jobName}",
 			master: defaults.spinnakerJenkinsMaster(),
 			name: "${text}",
-			parameters: [:],
+			parameters: [
+				(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR) :
+					propertyFromTrigger(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR)
+			],
 			refId: "${refId}",
 			requisiteStageRefIds: [
 				"${firstRefId}".toString()
