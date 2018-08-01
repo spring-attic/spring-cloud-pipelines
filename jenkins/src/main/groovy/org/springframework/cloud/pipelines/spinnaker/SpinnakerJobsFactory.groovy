@@ -91,6 +91,7 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 			environmentVariables {
 				env(EnvironmentVariables.APPLICATION_URL_ENV_VAR, "${projectName}.${pipelineDefaults.spinnakerTestHostname()}")
 				env(EnvironmentVariables.STUBRUNNER_URL_ENV_VAR, "stubrunner.${pipelineDefaults.spinnakerTestHostname()}")
+				env(EnvironmentVariables.CF_SKIP_PREPARE_FOR_TESTS_ENV_VAR, "true")
 			}
 		}
 		job.parameters {

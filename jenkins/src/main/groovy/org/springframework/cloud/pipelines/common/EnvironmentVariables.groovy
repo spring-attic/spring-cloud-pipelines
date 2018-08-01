@@ -350,6 +350,12 @@ final class EnvironmentVariables {
 	 */
 	public static final String CF_CLI_URL_ENV_VAR = "CF_CLI_URL"
 
+	/**
+	 * {@code CF_SKIP_PREPARE_FOR_TESTS} - if true, will not connect to CF to fetch
+	 * info about app host
+	 */
+	public static final String CF_SKIP_PREPARE_FOR_TESTS_ENV_VAR = "CF_SKIP_PREPARE_FOR_TESTS"
+
 
 	// remove::end[CF]
 

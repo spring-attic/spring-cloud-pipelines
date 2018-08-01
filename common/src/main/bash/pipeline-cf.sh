@@ -662,8 +662,13 @@ function bindService() {
 } # }}}
 
 # FUNCTION: prepareForSmokeTests {{{
-# CF implementation of prepare for smoke tests
+# CF implementation of prepare for smoke tests, can log in to PAAS to retrieve info about
+# the app. You can skip that via [CF_SKIP_PREPARE_FOR_TESTS] set to [true]
 function prepareForSmokeTests() {
+	if [[ "${CF_SKIP_PREPARE_FOR_TESTS}" == "true" ]]; then
+		echo "Skipping host retrieval, continuing with tests"
+		return 0
+	fi
 	echo "Retrieving group and artifact id - it can take a while..."
 	local appName
 	appName="$(retrieveAppName)"
@@ -680,7 +685,12 @@ function prepareForSmokeTests() {
 
 # FUNCTION: prepareForE2eTests {{{
 # CF implementation of prepare for e2e tests
+# You can skip that via [CF_SKIP_PREPARE_FOR_TESTS] set to [true]
 function prepareForE2eTests() {
+	if [[ "${CF_SKIP_PREPARE_FOR_TESTS}" == "true" ]]; then
+		echo "Skipping host retrieval, continuing with tests"
+		return 0
+	fi
 	logInToPaas
 
 	export APPLICATION_URL

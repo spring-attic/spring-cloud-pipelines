@@ -94,7 +94,8 @@ set -o pipefail
         <EnvInjectBuildWrapper>
             <info>
                 <propertiesContent>APPLICATION_URL=foo.foo.com
-STUBRUNNER_URL=stubrunner.foo.com</propertiesContent>
+STUBRUNNER_URL=stubrunner.foo.com
+CF_SKIP_PREPARE_FOR_TESTS=true</propertiesContent>
                 <loadFilesFromMaster>false</loadFilesFromMaster>
             </info>
         </EnvInjectBuildWrapper>
