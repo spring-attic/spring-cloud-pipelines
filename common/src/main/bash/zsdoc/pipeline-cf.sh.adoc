@@ -62,11 +62,11 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 9 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+Has 11 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 Uses feature(s): _export_
 
-_Exports (environment):_ CF_BIN [big]*//* RETRIEVE_STUBRUNNER_IDS_FUNCTION
+_Exports (environment):_ CF_BIN [big]*//* CF_CLI_URL [big]*//* RETRIEVE_STUBRUNNER_IDS_FUNCTION
 
 addMultiplePortsSupport
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -475,10 +475,17 @@ logInToPaas
 ~~~~~~~~~~~
 
 ____
- # Implementation of the CF log in
+ # Implementation of the CF log in. Will work in the following way:
+ #
+ # * Will use CF if one is present (good for envs that are fully offline)
+ # * You can disable the redownload CF with [CF_REDOWNLOAD_CLI] env set to [false]
+ # * You can provide the URL from which to fetch the CLI via [CF_CLI_URL]
+ #
+ # Also [CF_TEST_MODE] is used for tests and all the combinations of
+ # [PAAS_..._USERNAME/PASSWORD/ORG/SPACE/API_URL] to log in to PAAS
 ____
 
-Has 28 line(s). Doesn't call other functions.
+Has 38 line(s). Doesn't call other functions.
 
 Called by:
 
@@ -492,7 +499,7 @@ Called by:
  testDeploy
  testRollbackDeploy
 
-_Environment variables used:_ CF_BIN [big]*//* pipeline.sh -> LOWERCASE_ENV [big]*//* test_smoke.sh -> ENVIRONMENT
+_Environment variables used:_ CF_BIN [big]*//* CF_CLI_URL [big]*//* pipeline.sh -> LOWERCASE_ENV [big]*//* test_smoke.sh -> ENVIRONMENT
 
 parseManifest
 ~~~~~~~~~~~~~
@@ -825,6 +832,8 @@ Has 2 line(s). Doesn't call other functions.
 Called by:
 
  testDeploy
+
+_Environment variables used:_ CF_BIN
 
 testDeploy
 ~~~~~~~~~~

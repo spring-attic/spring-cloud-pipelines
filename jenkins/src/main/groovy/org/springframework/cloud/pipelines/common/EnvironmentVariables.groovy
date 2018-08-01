@@ -338,6 +338,19 @@ final class EnvironmentVariables {
 	 * That's why you can use this env var to prepend additional value to the hostname
 	 */
 	public static final String PAAS_HOSTNAME_UUID_ENV_VAR = "PAAS_HOSTNAME_UUID"
+
+	/**
+	 * {@code CF_REDOWNLOAD_CLI} - defaults to true, forces to redownload CLI
+	 * regardless of whether it's already downloaded or not
+	 */
+	public static final String CF_REDOWNLOAD_CLI_ENV_VAR = "CF_REDOWNLOAD_CLI"
+
+	/**
+	 * {@code CF_CLI_URL} - URL from which CF should be downloaded
+	 */
+	public static final String CF_CLI_URL_ENV_VAR = "CF_CLI_URL"
+
+
 	// remove::end[CF]
 
 	// remove::start[K8S]

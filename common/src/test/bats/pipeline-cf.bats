@@ -20,6 +20,7 @@ setup() {
 	export PAAS_TEST_SPACE_PREFIX="test-space"
 	export PAAS_TEST_API_URL="test-api"
 	export RETRIEVE_STUBRUNNER_IDS_FUNCTION="fakeRetrieveStubRunnerIds"
+	export CF_TEST_MODE="true"
 
 	export PAAS_STAGE_USERNAME="stage-username"
 	export PAAS_STAGE_PASSWORD="stage-password"
@@ -73,7 +74,7 @@ function php {
 }
 
 function tar {
-	touch "${CF_BIN}"
+	cp "${FIXTURES_DIR}/fake_cf.sh" "${CF_BIN}"
 	echo "tar $*"
 }
 
@@ -196,6 +197,25 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "Downloading Cloud Foundry CLI"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_success
+}
+
+@test "should download cf and connect to cluster and CF_BIN should point to downloaded CF CLI [CF]" {
+	export CF_BIN="cf"
+	export CF_TEST_MODE=""
+	export LANGUAGE_TYPE="dummy"
+	env="test"
+	cd "${TEMP_DIR}/maven/empty_project"
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	# to store output
+	run logInToPaas
+	# to store env vars
+	logInToPaas
+
+	assert_output --partial "Downloading Cloud Foundry CLI"
+	assert_output --partial "fake_cf api --skip-ssl-validation ${env}-api"
+	assert_equal "${CF_BIN}" "${TEMP_DIR}/maven/empty_project/cf"
 	assert_success
 }
 

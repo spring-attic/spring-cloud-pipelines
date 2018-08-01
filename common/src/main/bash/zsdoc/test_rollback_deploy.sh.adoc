@@ -23,7 +23,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 20 line(s). Calls functions:
+Has 19 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/testRollbackDeploy

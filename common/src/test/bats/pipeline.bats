@@ -412,6 +412,23 @@ teardown() {
 	assert_success
 }
 
+@test "should store versions in a file for apiCompatibilityCheck" {
+	export BUILD_OPTIONS="invalid option"
+	export PASSED_LATEST_PROD_TAG="prod/foo/1.0.0.RELEASE"
+	export PROJECT_NAME=foo
+	cd "${TEMP_DIR}/gradle/build_project"
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	run apiCompatibilityCheck
+
+	refute_output --partial "No prod release took place - skipping this step"
+	assert_success
+	trigger="$( cat "target/trigger.properties" )"
+	assert_equal "$( echo "${trigger}" | grep -w "LATEST_PROD_VERSION=1.0.0.RELEASE")" "LATEST_PROD_VERSION=1.0.0.RELEASE"
+	assert_equal "$( echo "${trigger}" | grep -w "LATEST_PROD_TAG=prod/foo/1.0.0.RELEASE")" "LATEST_PROD_TAG=prod/foo/1.0.0.RELEASE"
+	assert_equal "$( echo "${trigger}" | grep -w "PASSED_LATEST_PROD_TAG=prod/foo/1.0.0.RELEASE")" "PASSED_LATEST_PROD_TAG=prod/foo/1.0.0.RELEASE"
+}
+
 @test "should source a custom script if present" {
 	export PAAS_TYPE=cf
 	cd "${TEMP_DIR}/gradle/build_project"

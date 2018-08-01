@@ -77,10 +77,11 @@ function apiCompatibilityCheck() {
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		executeApiCompatibilityCheck "${LATEST_PROD_VERSION}"
 		mkdir -p "${OUTPUT_FOLDER}"
-		# TODO: Write tests for this:
-		echo "LATEST_PROD_VERSION=${LATEST_PROD_VERSION}" >> "${OUTPUT_FOLDER}/trigger.properties"
-		echo "LATEST_PROD_TAG=${prodTag}" >> "${OUTPUT_FOLDER}/trigger.properties"
-		echo "PASSED_LATEST_PROD_TAG=${prodTag}" >> "${OUTPUT_FOLDER}/trigger.properties"
+		{
+			echo "LATEST_PROD_VERSION=${LATEST_PROD_VERSION}";
+			echo "LATEST_PROD_TAG=${prodTag}";
+			echo "PASSED_LATEST_PROD_TAG=${prodTag}";
+		} >> "${OUTPUT_FOLDER}/trigger.properties"
 	fi
 } # }}}
 

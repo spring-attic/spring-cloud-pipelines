@@ -9,7 +9,14 @@ set -o pipefail
 # }}}
 
 # FUNCTION: logInToPaas {{{
-# Implementation of the CF log in
+# Implementation of the CF log in. Will work in the following way:
+#
+# * Will use CF if one is present (good for envs that are fully offline)
+# * You can disable the redownload CF with [CF_REDOWNLOAD_CLI] env set to [false]
+# * You can provide the URL from which to fetch the CLI via [CF_CLI_URL]
+#
+# Also [CF_TEST_MODE] is used for tests and all the combinations of
+# [PAAS_..._USERNAME/PASSWORD/ORG/SPACE/API_URL] to log in to PAAS
 function logInToPaas() {
 	local user="PAAS_${ENVIRONMENT}_USERNAME"
 	local cfUsername="${!user}"
@@ -28,12 +35,21 @@ function logInToPaas() {
 	fi
 	local api="PAAS_${ENVIRONMENT}_API_URL"
 	local apiUrl="${!api:-api.run.pivotal.io}"
+	local cfToDownload="${CF_REDOWNLOAD_CLI:-true}"
+	local cfPresent
+	cfPresent="$( "${CF_BIN}" --version && echo "true" || echo "false" )"
 
-	echo "Downloading Cloud Foundry CLI"
-	#TODO: is there a way to get this from PCF rather than the latest release? Like fly... Would ensure parity with foundation version...
-	#TODO: offline mode for when there is no internet connection
-	curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" --fail | tar -zx
-	chmod +x cf
+	echo "CF CLI present? [${cfPresent}] and force to redownload was set? [${cfToDownload}]"
+
+	if [[ "${cfToDownload}" != "false" || "${cfPresent}" == "false" ]]; then
+		echo "Downloading Cloud Foundry CLI"
+		curl -L "${CF_CLI_URL}" --fail | tar -zx
+		# used by tests
+		if [[ "${CF_TEST_MODE}" != "true" ]]; then
+			CF_BIN="$(pwd)/cf"
+			chmod +x "${CF_BIN}"
+		fi
+	fi
 
 	echo "Cloud Foundry CLI version"
 	"${CF_BIN}" --version
@@ -876,3 +892,5 @@ function waitForServicesToInitialize() {
 
 export CF_BIN
 CF_BIN="${CF_BIN:-cf}"
+export CF_CLI_URL
+CF_CLI_URL="${CF_CLI_URL:-https://cli.run.pivotal.io/stable?release=linux64-binary&source=github}"
