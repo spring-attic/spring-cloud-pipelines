@@ -284,7 +284,7 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
 			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 			// Spinnaker
-			stringParam('SPINNAKER_JENKINS_ROOT_URL', '', "The root url of Jenkins. E.g. http://1.2.3.4:8080")
+			stringParam('SPINNAKER_JENKINS_ROOT_URL', binding.variables["JENKINS_URL"] as String ?: '', "The root url of Jenkins. E.g. http://1.2.3.4:8080")
 			stringParam('SPINNAKER_JENKINS_MASTER', '', "The name of Jenkins master used by Spinnaker")
 			stringParam('SPINNAKER_TEST_HOSTNAME', '', "The hostname appended to the test routes")
 			stringParam('SPINNAKER_STAGE_HOSTNAME', '', "The hostname appended to the stage routes")
