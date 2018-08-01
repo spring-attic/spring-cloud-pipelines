@@ -10,7 +10,8 @@
         </se.diabol.jenkins.pipeline.PipelineProperty>
         <EnvInjectJobProperty>
             <info>
-                <propertiesContent>PROJECT_NAME=foo</propertiesContent>
+                <propertiesContent>PROJECT_NAME=foo
+PAAS_TEST_SPACE_PREFIX=sc-pipelines-test</propertiesContent>
                 <loadFilesFromMaster>false</loadFilesFromMaster>
             </info>
             <on>true</on>
@@ -93,8 +94,8 @@ set -o pipefail
         </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
         <EnvInjectBuildWrapper>
             <info>
-                <propertiesContent>APPLICATION_URL=foo.foo.com
-STUBRUNNER_URL=stubrunner.foo.com
+                <propertiesContent>APPLICATION_URL=sc-pipelines-test-foo.foo.com
+STUBRUNNER_URL=sc-pipelines-test-stubrunner.foo.com
 CF_SKIP_PREPARE_FOR_TESTS=true</propertiesContent>
                 <loadFilesFromMaster>false</loadFilesFromMaster>
             </info>

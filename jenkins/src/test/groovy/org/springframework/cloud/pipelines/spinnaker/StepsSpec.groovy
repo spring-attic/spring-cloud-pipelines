@@ -31,6 +31,7 @@ class StepsSpec extends Specification  implements JobCreator, XmlComparator {
 				SCRIPTS_DIR    : 'foo',
 				JENKINSFILE_DIR: 'foo',
 				TEST_MODE_DESCRIPTOR: '',
+				PAAS_TEST_SPACE_PREFIX: 'sc-pipelines-test',
 				SPINNAKER_TEST_HOSTNAME: 'foo.com',
 				SPINNAKER_STAGE_HOSTNAME: 'foo.com',
 				SPINNAKER_PROD_HOSTNAME: 'foo.com',
