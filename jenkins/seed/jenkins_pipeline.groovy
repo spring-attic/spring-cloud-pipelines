@@ -302,6 +302,9 @@ factory.job('jenkins-spinnaker-cf-seed') {
 			stringParam('PAAS_PROD_SPACE', 'sc-pipelines-prod', 'Name of the CF space for prod env')
 			stringParam('PAAS_TEST_CREDENTIAL_ID', 'cf-test', 'ID of the CF credentials for test environment')
 			stringParam('PAAS_STAGE_CREDENTIAL_ID', 'cf-stage', 'ID of the CF credentials for stage environment')
+			stringParam('PAAS_TEST_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for test env')
+			stringParam('PAAS_STAGE_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for stage env')
+			stringParam('PAAS_PROD_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for prod env')
 		}
 	}
 	steps {
