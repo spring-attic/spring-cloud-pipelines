@@ -49,6 +49,9 @@ class TestPrepare implements Step<FreeStyleJob> {
 		String fullGitRepo = coordinates.fullGitRepo
 		Job job = dsl.job("${projectName}-test-prepare") {
 			environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
+			parameters {
+				stringParam(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR, "", "Version of the project to run the tests against")
+			}
 			wrappers {
 				commonSteps.defaultWrappers(delegate as WrapperContext)
 				credentialsBinding {
