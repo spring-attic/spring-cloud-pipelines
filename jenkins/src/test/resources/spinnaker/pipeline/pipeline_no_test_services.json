@@ -25,7 +25,7 @@
         "type" : "artifact",
         "routes" : [ "sc-pipelines-test-github-webhook." ],
         "account" : "",
-        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastBuild/artifact/manifest.yml"
+        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastSuccessfulBuild/artifact/manifest.yml"
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-test-github-webhook",
@@ -72,7 +72,7 @@
         "type" : "artifact",
         "routes" : [ "sc-pipelines-test-github-webhook." ],
         "account" : "",
-        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastBuild/artifact/manifest.yml"
+        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastSuccessfulBuild/artifact/manifest.yml"
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-test-github-webhook",
@@ -149,7 +149,7 @@
         "type" : "artifact",
         "routes" : [ "sc-pipelines-stage." ],
         "account" : "",
-        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastBuild/artifact/manifest.yml"
+        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastSuccessfulBuild/artifact/manifest.yml"
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-stage",
@@ -212,7 +212,7 @@
         "type" : "artifact",
         "routes" : [ "sc-pipelines-prod." ],
         "account" : "",
-        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastBuild/artifact/manifest.yml"
+        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastSuccessfulBuild/artifact/manifest.yml"
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-prod",
@@ -259,7 +259,7 @@
         "type" : "artifact",
         "routes" : [ "sc-pipelines-prod." ],
         "account" : "",
-        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastBuild/artifact/manifest.yml"
+        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastSuccessfulBuild/artifact/manifest.yml"
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-prod",

@@ -282,7 +282,7 @@ class SpinnakerPipelineBuilder {
 				],
 				account: defaults.spinnakerJenkinsAccount(),
 				type: "artifact",
-				reference: "${defaults.spinnakerJenkinsRootUrl()}/job/${triggerJobName()}/lastBuild/artifact/manifest.yml",
+				reference: "${defaults.spinnakerJenkinsRootUrl()}/job/${triggerJobName()}/lastSuccessfulBuild/artifact/manifest.yml",
 				services: []
 			),
 			provider: "cloudfoundry",

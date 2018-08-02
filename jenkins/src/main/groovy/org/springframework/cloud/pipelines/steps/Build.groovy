@@ -97,11 +97,17 @@ class Build implements Step<FreeStyleJob> {
 					}
 					return ''
 				}
+		
+		tmpDir="\$(mktemp -d 2>/dev/null || mktemp -d -t 'build')"
+		trap "{ rm -rf \$tmpDir; }" EXIT
+		echo "Creating a trigger.properties file in [\${tmpDir}]
+		cp \${OUTPUT_FOLDER}/trigger.properties \$tmpDir || echo "Failed to copy the trigger.properties file. Continuing with the script"
+		
 		echo "Running the build and upload script"
 		. \${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 
 		echo "Output current build properties to output"
-		cat \${OUTPUT_FOLDER}/trigger.properties
+		co \$tmpDir/trigger.properties \${OUTPUT_FOLDER}/trigger.properties
 		echo "PIPELINE_VERSION=\${PIPELINE_VERSION}" >> "\${OUTPUT_FOLDER}/trigger.properties"
 		""")
 			}
