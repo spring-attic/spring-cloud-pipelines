@@ -22,6 +22,7 @@ source "${WORKSPACE}"/.git/tools/common/src/main/bash/pipeline.sh
 
 # Find latest prod version
 readTestPropertiesFromFile "${OUTPUT_FOLDER}/trigger.properties"
+cat "${OUTPUT_FOLDER}/trigger.properties"
 if [[ -z "${LATEST_PROD_VERSION}" ]]; then
 	echo "No prod release took place - skipping this step"
 else
