@@ -63,16 +63,16 @@ PAAS_TEST_SPACE_PREFIX=sc-pipelines-test</propertiesContent>
 		. ${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
 		
 		
-		tmpDir="$(mktemp -d 2&gt;/dev/null || mktemp -d -t 'build')"
+		tmpDir="$(mktemp -d)"
 		trap "{ rm -rf $tmpDir; }" EXIT
-		echo "Creating a trigger.properties file in [${tmpDir}]
+		echo "Creating a trigger.properties file in [${tmpDir}]"
 		cp ${OUTPUT_FOLDER}/trigger.properties $tmpDir || echo "Failed to copy the trigger.properties file. Continuing with the script"
 		
 		echo "Running the build and upload script"
 		. ${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 
 		echo "Output current build properties to output"
-		co $tmpDir/trigger.properties ${OUTPUT_FOLDER}/trigger.properties
+		cp $tmpDir/trigger.properties ${OUTPUT_FOLDER}/trigger.properties
 		echo "PIPELINE_VERSION=${PIPELINE_VERSION}" &gt;&gt; "${OUTPUT_FOLDER}/trigger.properties"
 		</command>
         </hudson.tasks.Shell>
