@@ -106,6 +106,7 @@ class Build implements Step<FreeStyleJob> {
 			}
 			publishers {
 				commonSteps.defaultPublishers(delegate as PublisherContext)
+				commonSteps.deployPublishers(delegate as PublisherContext)
 				git {
 					pushOnlyIfSuccess()
 					tag('origin', "dev/${gitRepoName}/\${${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}}") {

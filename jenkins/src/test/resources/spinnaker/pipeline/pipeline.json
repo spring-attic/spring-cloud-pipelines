@@ -6,7 +6,7 @@
     "failPipeline" : true,
     "name" : "Prepare test environment",
     "refId" : "1",
-    "requisiteStageRefIds" : [ "0" ],
+    "requisiteStageRefIds" : [ ],
     "type" : "jenkins",
     "waitForCompletion" : true,
     "parameters" : {

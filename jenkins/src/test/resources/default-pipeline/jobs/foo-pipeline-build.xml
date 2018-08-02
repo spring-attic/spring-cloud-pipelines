@@ -77,6 +77,20 @@
             <allowEmptyResults>true</allowEmptyResults>
             <healthScaleFactor>1.0</healthScaleFactor>
         </hudson.tasks.junit.JUnitResultArchiver>
+        <hudson.tasks.ArtifactArchiver>
+            <artifacts>**/build/**/k8s/*.yml,**/target/**/k8s/*.yml</artifacts>
+            <allowEmptyArchive>true</allowEmptyArchive>
+            <defaultExcludes>true</defaultExcludes>
+            <fingerprint>false</fingerprint>
+            <onlyIfSuccessful>false</onlyIfSuccessful>
+        </hudson.tasks.ArtifactArchiver>
+        <hudson.tasks.ArtifactArchiver>
+            <artifacts>manifest.yml</artifacts>
+            <allowEmptyArchive>true</allowEmptyArchive>
+            <defaultExcludes>true</defaultExcludes>
+            <fingerprint>false</fingerprint>
+            <onlyIfSuccessful>false</onlyIfSuccessful>
+        </hudson.tasks.ArtifactArchiver>
         <hudson.plugins.git.GitPublisher>
             <configVersion>2</configVersion>
             <pushMerge>false</pushMerge>

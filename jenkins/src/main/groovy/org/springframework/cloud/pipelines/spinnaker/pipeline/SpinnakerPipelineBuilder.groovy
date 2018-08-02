@@ -438,12 +438,14 @@ class SpinnakerPipelineBuilder {
 					propertyFromTrigger(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR)
 			],
 			refId: "${refId}",
-			requisiteStageRefIds: [
-				"${firstRefId}".toString()
-			],
 			waitForCompletion: true,
 			type: "jenkins"
 		)
+		if (firstRefId > 0) {
+			stage.requisiteStageRefIds = [
+				"${firstRefId}".toString()
+			]
+		}
 		return new Tuple2(refId, stage)
 	}
 
