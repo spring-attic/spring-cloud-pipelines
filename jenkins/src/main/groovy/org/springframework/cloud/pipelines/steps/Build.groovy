@@ -101,6 +101,7 @@ class Build implements Step<FreeStyleJob> {
 		. \${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 
 		echo "Output current build properties to output"
+		cat \${OUTPUT_FOLDER}/trigger.properties
 		echo "PIPELINE_VERSION=\${PIPELINE_VERSION}" >> "\${OUTPUT_FOLDER}/trigger.properties"
 		""")
 			}
