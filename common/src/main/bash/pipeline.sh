@@ -82,6 +82,8 @@ function apiCompatibilityCheck() {
 			echo "LATEST_PROD_TAG=${prodTag}";
 			echo "PASSED_LATEST_PROD_TAG=${prodTag}";
 		} >> "${OUTPUT_FOLDER}/trigger.properties"
+		echo "Stored the following trigger properties"
+		cat "${OUTPUT_FOLDER}/trigger.properties"
 	fi
 } # }}}
 
