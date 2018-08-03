@@ -11,7 +11,6 @@ import groovy.transform.CompileStatic
 @CompileStatic
 final class EnvironmentVariables {
 
-	// tag::envs[]
 	/**
 	 * {@code GIT_CREDENTIAL_ID} - ID of credentials used for GIT interaction
 	 */
@@ -609,6 +608,4 @@ final class EnvironmentVariables {
 	 */
 	public static final String SPINNAKER_PROD_HOSTNAME_ENV_VAR = "SPINNAKER_PROD_HOSTNAME"
 	// remove::end[SPINNAKER]
-
-	// end::envs[]
 }

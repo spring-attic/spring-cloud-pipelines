@@ -68,6 +68,7 @@ FUNCTIONS
  prepareForSmokeTests
  prodDeploy
  projectType
+ removeProdTag
  retrieveAppName
  retrieveGroupId
  retrieveStubRunnerIds
@@ -113,16 +114,20 @@ ____
  # structure [dev/appName/version] or [prod/appName/version].
 ____
 
-Has 11 line(s). Calls functions:
+Has 20 line(s). Calls functions:
 
  apiCompatibilityCheck
  `-- executeApiCompatibilityCheck
+
+Uses feature(s): _export_
 
 Called by:
 
  build_api_compatibility_check.sh/Script-Body
 
-_Environment variables used:_ PROJECT_NAME [big]*//* LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
+_List of exports (to environment):_ LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
+
+_Environment variables used:_ OUTPUT_FOLDER [big]*//* PROJECT_NAME [big]*//* LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
 
 build
 ~~~~~
@@ -415,6 +420,22 @@ ____
 Has 3 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+removeProdTag
+~~~~~~~~~~~~~
+
+____
+ # Removes production tag.
+ # Uses [PROJECT_NAME] and [PIPELINE_VERSION]
+____
+
+Has 4 line(s). Doesn't call other functions.
+
+Called by:
+
+ prod_rollback.sh/Script-Body
+
+_Environment variables used:_ GIT_BIN [big]*//* PROJECT_NAME
 
 retrieveAppName
 ~~~~~~~~~~~~~~~
@@ -1716,11 +1737,11 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 9 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+Has 11 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 Uses feature(s): _export_
 
-_Exports (environment):_ CF_BIN [big]*//* RETRIEVE_STUBRUNNER_IDS_FUNCTION
+_Exports (environment):_ CF_BIN [big]*//* CF_CLI_URL [big]*//* RETRIEVE_STUBRUNNER_IDS_FUNCTION
 
 addMultiplePortsSupport
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -2129,10 +2150,17 @@ logInToPaas
 ~~~~~~~~~~~
 
 ____
- # Implementation of the CF log in
+ # Implementation of the CF log in. Will work in the following way:
+ #
+ # * Will use CF if one is present (good for envs that are fully offline)
+ # * You can disable the redownload CF with [CF_REDOWNLOAD_CLI] env set to [false]
+ # * You can provide the URL from which to fetch the CLI via [CF_CLI_URL]
+ #
+ # Also [CF_TEST_MODE] is used for tests and all the combinations of
+ # [PAAS_..._USERNAME/PASSWORD/ORG/SPACE/API_URL] to log in to PAAS
 ____
 
-Has 28 line(s). Doesn't call other functions.
+Has 38 line(s). Doesn't call other functions.
 
 Called by:
 
@@ -2146,7 +2174,7 @@ Called by:
  testDeploy
  testRollbackDeploy
 
-_Environment variables used:_ CF_BIN [big]*//* pipeline.sh -> LOWERCASE_ENV [big]*//* test_smoke.sh -> ENVIRONMENT
+_Environment variables used:_ CF_BIN [big]*//* CF_CLI_URL [big]*//* pipeline.sh -> LOWERCASE_ENV [big]*//* test_smoke.sh -> ENVIRONMENT
 
 parseManifest
 ~~~~~~~~~~~~~
@@ -2227,9 +2255,10 @@ prepareForE2eTests
 
 ____
  # CF implementation of prepare for e2e tests
+ # You can skip that via [CF_SKIP_PREPARE_FOR_TESTS] set to [true]
 ____
 
-Has 5 line(s). Calls functions:
+Has 9 line(s). Calls functions:
 
  prepareForE2eTests
  `-- logInToPaas
@@ -2248,10 +2277,11 @@ prepareForSmokeTests
 ~~~~~~~~~~~~~~~~~~~~
 
 ____
- # CF implementation of prepare for smoke tests
+ # CF implementation of prepare for smoke tests, can log in to PAAS to retrieve info about
+ # the app. You can skip that via [CF_SKIP_PREPARE_FOR_TESTS] set to [true]
 ____
 
-Has 11 line(s). Calls functions:
+Has 15 line(s). Calls functions:
 
  prepareForSmokeTests
  |-- logInToPaas
@@ -2479,6 +2509,8 @@ Has 2 line(s). Doesn't call other functions.
 Called by:
 
  testDeploy
+
+_Environment variables used:_ CF_BIN
 
 testDeploy
 ~~~~~~~~~~
@@ -2769,7 +2801,7 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 20 line(s). Calls functions:
+Has 19 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/testRollbackDeploy
@@ -2983,10 +3015,11 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 21 line(s). Calls functions:
+Has 19 line(s). Calls functions:
 
  Script-Body
  |-- pipeline-cf.sh/rollbackToPreviousVersion
+ |-- pipeline.sh/removeProdTag
  `-- pipeline.sh/rollbackToPreviousVersion
 
 Uses feature(s): _export_, _source_
