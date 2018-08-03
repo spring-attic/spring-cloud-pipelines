@@ -192,7 +192,7 @@
       "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
     },
     "master" : "Spinnaker-Jenkins",
-    "job" : "spinnaker-github-webhook-pipeline-stage-env-e2e",
+    "job" : "spinnaker-github-webhook-pipeline-stage-env-test",
     "continuePipeline" : false
   }, {
     "failPipeline" : true,
@@ -250,12 +250,20 @@
     "job" : "spinnaker-github-webhook-pipeline-prod-tag-repo",
     "continuePipeline" : false
   }, {
+    "failPipeline" : true,
+    "name" : "Approve rollback",
+    "refId" : "14",
+    "requisiteStageRefIds" : [ "12" ],
+    "type" : "manualJudgment",
+    "judgmentInputs" : [ ],
+    "notifications" : [ ]
+  }, {
     "clusters" : [ {
       "account" : "calabasasaccount",
       "application" : "githubwebhook",
       "artifact" : {
         "account" : "jenkins",
-        "pattern" : "^github-webhook.*VERSION.jar$",
+        "pattern" : "^github-webhook.*VERSION-latestprodversion.jar$",
         "type" : "trigger"
       },
       "capacity" : {
@@ -280,14 +288,14 @@
       "strategy" : "highlander"
     } ],
     "name" : "Rollback",
-    "refId" : "14",
-    "requisiteStageRefIds" : [ "11" ],
+    "refId" : "15",
+    "requisiteStageRefIds" : [ "14" ],
     "type" : "deploy"
   }, {
     "failPipeline" : true,
     "name" : "Remove prod tag",
-    "refId" : "15",
-    "requisiteStageRefIds" : [ "14" ],
+    "refId" : "16",
+    "requisiteStageRefIds" : [ "15" ],
     "type" : "jenkins",
     "waitForCompletion" : true,
     "parameters" : {

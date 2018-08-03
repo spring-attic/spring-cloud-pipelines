@@ -94,7 +94,8 @@ class SpinnakerPipelineBuilder {
 		Tuple2<Integer, Stage> approveProd = approveProduction(e2eTests, stages)
 		Tuple2<Integer, Stage> deployToProd = deployToProd(approveProd, stages)
 		Tuple2<Integer, Stage> pushTag = pushTag(deployToProd, stages)
-		Tuple2<Integer, Stage> rollback = rollback(approveProd, pushTag, stages)
+		Tuple2<Integer, Stage> approveRollback = approveRollback(deployToProd, pushTag, stages)
+		Tuple2<Integer, Stage> rollback = rollback(approveRollback, stages)
 		removeTag(rollback, stages)
 		return stages.findAll { it }
 	}
@@ -113,16 +114,17 @@ class SpinnakerPipelineBuilder {
 		return stage
 	}
 
-	private Tuple2<Integer, Stage> rollback(Tuple2<Integer, Stage> idToReference, Tuple2<Integer, Stage> lastRefId, List<Stage> stages) {
+	private Tuple2<Integer, Stage> rollback(Tuple2<Integer, Stage> idToReference, List<Stage> stages) {
 		Tuple2<Integer, Stage> rollback =
-			prodDeployment("Rollback", idToReference.first, lastRefId.first)
+			prodDeployment("Rollback", idToReference.first, idToReference.first,
+				latestProdVersionArtifactPattern())
 		stages.add(rollback.second)
 		return rollback
 	}
 
 	private Tuple2<Integer, Stage> deployToProd(Tuple2<Integer, Stage> approveProd, List<Stage> stages) {
 		Tuple2<Integer, Stage> deployToProd =
-			prodDeployment("Deploy to prod", approveProd.first, approveProd.first)
+			prodDeployment("Deploy to prod", approveProd.first, approveProd.first, defaultArtifactPattern())
 		stages.add(deployToProd.second)
 		return deployToProd
 	}
@@ -134,9 +136,15 @@ class SpinnakerPipelineBuilder {
 		return approveProd
 	}
 
+	private Tuple2<Integer, Stage> approveRollback(Tuple2<Integer, Stage> previous, Tuple2<Integer, Stage> current, List<Stage> stages) {
+		Tuple2<Integer, Stage> approve = manualJudgement(false, "Approve rollback", previous.first, current.first + 1)
+		stages.add(approve.second)
+		return approve
+	}
+
 	private Tuple2<Integer, Stage> runEndToEndTests(Tuple2<Integer, Stage> prepareForE2e, List<Stage> stages) {
 		Tuple2<Integer, Stage> e2eTests = runTests("stage", "End to end tests on stage",
-			"e2e", prepareForE2e.first, stageSet())
+			"test", prepareForE2e.first, stageSet())
 		stages.add(e2eTests.second)
 		return e2eTests
 	}
@@ -279,7 +287,7 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Cluster cluster(String account, String org, String space, String route,
-							String deploymentStrategy, String artifactPattern = "^${this.repository.name}.*VERSION.jar\$") {
+							String deploymentStrategy, String artifactPattern) {
 		return new Cluster(
 			account: account,
 			application: "${alphaNumericOnly(this.repository.name)}",
@@ -313,6 +321,10 @@ class SpinnakerPipelineBuilder {
 		)
 	}
 
+	protected String defaultArtifactPattern() {
+		return "^${this.repository.name}.*VERSION.jar\$"
+	}
+
 	private String alphaNumericOnly(String string) {
 		return string.replace("_", "")
 					.replace("-", "")
@@ -333,8 +345,8 @@ class SpinnakerPipelineBuilder {
 			clusters: [
 				cluster(defaults.spinnakerTestDeploymentAccount(),
 					defaults.cfTestOrg(), testSpaceName(),
-					route(testSpaceName(), defaults.spinnakerTestHostname()),
-				"highlander")
+					route(testSpaceName(), defaults.spinnakerTestHostname()), "highlander",
+				defaultArtifactPattern())
 			]
 		)
 		return new Tuple2(refId, stage)
@@ -359,14 +371,15 @@ class SpinnakerPipelineBuilder {
 			clusters: [
 				cluster(defaults.spinnakerStageDeploymentAccount(),
 					defaults.cfStageOrg(), defaults.cfStageSpace(),
-					route(defaults.cfStageSpace(), defaults.spinnakerStageHostname()),
-				"highlander")
+					route(defaults.cfStageSpace(), defaults.spinnakerStageHostname()), "highlander",
+					defaultArtifactPattern())
 			]
 		)
 		return new Tuple2(refId, stage)
 	}
 
-	private Tuple2<Integer, Stage> prodDeployment(String text, int idToReference, int lastRefId) {
+	private Tuple2<Integer, Stage> prodDeployment(String text, int idToReference, int lastRefId,
+												  String artifactPattern) {
 		int refId = lastRefId + 1
 		Stage stage = new Stage(
 			name: text,
@@ -379,7 +392,8 @@ class SpinnakerPipelineBuilder {
 				cluster(defaults.spinnakerProdDeploymentAccount(),
 					defaults.cfProdOrg(), defaults.cfProdSpace(),
 					route(defaults.cfProdSpace(), defaults.spinnakerProdHostname()),
-				pipelineDescriptor.prod.deployment_strategy ?: "highlander")
+				pipelineDescriptor.prod.deployment_strategy ?: "highlander",
+					artifactPattern)
 			]
 		)
 		return new Tuple2(refId, stage)
@@ -406,7 +420,7 @@ class SpinnakerPipelineBuilder {
 					defaults.cfTestOrg(), testSpaceName(),
 					route(testSpaceName(), defaults.spinnakerTestHostname()),
 					pipelineDescriptor.prod.deployment_strategy ?: "highlander",
-					"^${this.repository.name}.*VERSION-latestprodversion.jar\$")
+					latestProdVersionArtifactPattern())
 			],
 			stageEnabled: new StageEnabled(
 				type: "expression",
@@ -414,6 +428,10 @@ class SpinnakerPipelineBuilder {
 			)
 		)
 		return new Tuple2(refId, stage)
+	}
+
+	protected String latestProdVersionArtifactPattern() {
+		return "^${this.repository.name}.*VERSION-latestprodversion.jar\$"
 	}
 
 	private String propertyFromTrigger(String key) {
@@ -427,11 +445,11 @@ class SpinnakerPipelineBuilder {
 	}
 
 	private Tuple2<Integer, Stage> manualJudgement(boolean skip,
-												   String text, int firstRefId) {
+												   String text, int firstRefId, Integer current = null) {
 		if (skip) {
 			return new Tuple2(firstRefId, null)
 		}
-		int refId = firstRefId + 1
+		int refId = current != null ? current : firstRefId + 1
 		Stage stage = new Stage(
 			failPipeline: true,
 			judgmentInputs: [],
