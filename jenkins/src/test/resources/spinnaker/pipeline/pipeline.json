@@ -225,7 +225,7 @@
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
         "type" : "direct",
-        "routes" : [ "sc-pipelines-prod.prod.foo.com" ]
+        "routes" : [ "github-webhook.prod.foo.com" ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-prod",
@@ -280,7 +280,7 @@
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
         "type" : "direct",
-        "routes" : [ "sc-pipelines-prod.prod.foo.com" ]
+        "routes" : [ "github-webhook.prod.foo.com" ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-prod",

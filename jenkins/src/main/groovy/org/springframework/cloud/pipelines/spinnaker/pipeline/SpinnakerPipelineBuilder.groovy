@@ -153,10 +153,6 @@ class SpinnakerPipelineBuilder {
 		return stepEnabledChecker.stageStepSet()
 	}
 
-	private boolean stageMissing() {
-		return stepEnabledChecker.stageStepMissing()
-	}
-
 	private boolean shouldSkipManualJudgementForStage() {
 		// there's no stage or stage is automatic
 		return stepEnabledChecker.stageStepMissing() || stepEnabledChecker.autoStageSet()
@@ -242,51 +238,7 @@ class SpinnakerPipelineBuilder {
 		return stage
 	}
 
-	private Tuple2<Integer, List<Stage>> createTestServices(String env, int firstId) {
-		List<PipelineDescriptor.Service> pipeServices = pipelineDescriptor.test.services
-		if (!pipeServices || stepEnabledChecker.testStepMissing()) {
-			return new Tuple2(firstId, [])
-		}
-		firstId = firstId + 1
-		List<Stage> testServices = []
-		List<PipelineDescriptor.Service> services = pipeServices
-		int refId = 1
-		for (int i = 0; i < services.size(); i++) {
-			refId = i + firstId
-			testServices.add(new Stage(
-				name: "Create ${env} service [${i}]",
-				refId: "${refId}",
-				type: "wait",
-				waitTime: 1
-			))
-		}
-		return new Tuple2(refId, testServices)
-	}
-
-	private Tuple2<Integer, List<Stage>> createStageServices(String env, int firstId,
-															 List<PipelineDescriptor.Service> pipeServices) {
-		if (!pipeServices || stageMissing()) {
-			return new Tuple2(firstId, [])
-		}
-		List<Stage> testServices = []
-		List<PipelineDescriptor.Service> services = pipeServices
-		int refId = 1
-		for (int i = 0; i < services.size(); i++) {
-			refId = i + 1 + firstId
-			testServices.add(new Stage(
-				name: "Create ${env} service [${i}]",
-				refId: "${refId}",
-				requisiteStageRefIds: [
-					"${firstId}".toString()
-				],
-				type: "wait",
-				waitTime: 1
-			))
-		}
-		return new Tuple2(refId, testServices)
-	}
-
-	private Cluster cluster(String account, String org, String space, String route,
+	private Cluster cluster(String account, String org, String space, List<String> routes,
 							String deploymentStrategy, String artifactPattern) {
 		return new Cluster(
 			account: account,
@@ -308,9 +260,7 @@ class SpinnakerPipelineBuilder {
 				//env: manifest.env ?: [:] as Map<String, String>,
 				instances: 1,
 				memory: manifest.memory ?: "1024M",
-				routes: [
-					route
-				],
+				routes: routes,
 				services: manifest.services,
 				type: "direct",
 			),
@@ -395,7 +345,7 @@ class SpinnakerPipelineBuilder {
 			clusters: [
 				cluster(defaults.spinnakerProdDeploymentAccount(),
 					defaults.cfProdOrg(), defaults.cfProdSpace(),
-					route(defaults.cfProdSpace(), defaults.spinnakerProdHostname()),
+					manifest.routes ?: route(repository.name, defaults.spinnakerProdHostname()),
 				pipelineDescriptor.prod.deployment_strategy ?: "highlander",
 					artifactPattern)
 			]
@@ -403,8 +353,8 @@ class SpinnakerPipelineBuilder {
 		return new Tuple2(refId, stage)
 	}
 
-	private String route(String space, String hostname) {
-		return space + "." + hostname
+	private List<String> route(String name, String hostname) {
+		return [name + "." + hostname]
 	}
 
 	private Tuple2<Integer, Stage> rollbackDeploymentStage(String text, int firstRefId, boolean present) {
