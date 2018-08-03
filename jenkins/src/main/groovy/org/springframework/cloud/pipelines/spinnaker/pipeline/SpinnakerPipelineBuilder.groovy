@@ -111,6 +111,10 @@ class SpinnakerPipelineBuilder {
 		Tuple2<Integer, Stage> stage =
 			callJenkins("Remove prod tag", "prod-env-remove-tag", previous.first)
 		stages.add(stage.second)
+		stage.second.stageEnabled = new StageEnabled(
+			type: "expression",
+			expression: latestProdEnvVarPresent()
+		)
 		return stage
 	}
 
@@ -413,7 +417,11 @@ class SpinnakerPipelineBuilder {
 			requisiteStageRefIds: firstRefId == 0 ? [] as List<String> : [
 				"${firstRefId}".toString()
 			],
-			type: "manualJudgment"
+			type: "manualJudgment",
+			stageEnabled: new StageEnabled(
+				type: "expression",
+				expression: latestProdEnvVarPresent()
+			)
 		)
 		return new Tuple2(refId, stage)
 	}
