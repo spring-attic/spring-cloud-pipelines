@@ -371,11 +371,15 @@ class SpinnakerPipelineBuilder {
 			clusters: [
 				cluster(defaults.spinnakerStageDeploymentAccount(),
 					defaults.cfStageOrg(), defaults.cfStageSpace(),
-					route(defaults.cfStageSpace(), defaults.spinnakerStageHostname()), "highlander",
+					route(stageSpaceName(), defaults.spinnakerStageHostname()), "highlander",
 					defaultArtifactPattern())
 			]
 		)
 		return new Tuple2(refId, stage)
+	}
+
+	private String stageSpaceName() {
+		return repository.name + "-" + defaults.cfStageSpace()
 	}
 
 	private Tuple2<Integer, Stage> prodDeployment(String text, int idToReference, int lastRefId,

@@ -162,7 +162,7 @@
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
         "type" : "direct",
-        "routes" : [ "sc-pipelines-stage." ]
+        "routes" : [ "github-webhook-sc-pipelines-stage." ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-stage",
