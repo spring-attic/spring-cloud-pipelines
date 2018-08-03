@@ -1,0 +1,180 @@
+pipeline-ansible.sh(1)
+======================
+:compat-mode!:
+
+NAME
+----
+pipeline-ansible.sh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+ __ansible_inventory
+ __ansible_playbook
+ completeSwitchOver
+ logInToPaas
+ prepareForE2eTests
+ prepareForSmokeTests
+ prodDeploy
+ rollbackToPreviousVersion
+ stageDeploy
+ testDeploy
+ testRollbackDeploy
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 10 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+__ansible_inventory
+~~~~~~~~~~~~~~~~~~~
+
+Has 8 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ test_smoke.sh -> ENVIRONMENT
+
+__ansible_playbook
+~~~~~~~~~~~~~~~~~~
+
+Has 19 line(s). Doesn't call other functions.
+
+Called by:
+
+ completeSwitchOver
+ prodDeploy
+ rollbackToPreviousVersion
+ stageDeploy
+ testDeploy
+ testRollbackDeploy
+
+_Environment variables used:_ test_smoke.sh -> ENVIRONMENT
+
+completeSwitchOver
+~~~~~~~~~~~~~~~~~~
+
+Has 5 line(s). Calls functions:
+
+ completeSwitchOver
+ `-- __ansible_playbook
+
+Called by:
+
+ prod_complete.sh/Script-Body
+
+_Environment variables used:_ pipeline.sh -> LANGUAGE_TYPE
+
+logInToPaas
+~~~~~~~~~~~
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+prepareForE2eTests
+~~~~~~~~~~~~~~~~~~
+
+Has 9 line(s). Doesn't call other functions.
+
+Uses feature(s): _export_
+
+Called by:
+
+ stage_e2e.sh/Script-Body
+
+_List of exports (to environment):_ APPLICATION_URL
+
+prepareForSmokeTests
+~~~~~~~~~~~~~~~~~~~~
+
+Has 14 line(s). Doesn't call other functions.
+
+Uses feature(s): _export_
+
+Called by:
+
+ testRollbackDeploy
+ test_rollback_smoke.sh/Script-Body
+ test_smoke.sh/Script-Body
+
+_List of exports (to environment):_ APPLICATION_URL [big]*//* STUBRUNNER_URL
+
+prodDeploy
+~~~~~~~~~~
+
+Has 7 line(s). Calls functions:
+
+ prodDeploy
+ `-- __ansible_playbook
+
+Called by:
+
+ prod_deploy.sh/Script-Body
+
+_Environment variables used:_ pipeline.sh -> LANGUAGE_TYPE
+
+rollbackToPreviousVersion
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Has 4 line(s). Calls functions:
+
+ rollbackToPreviousVersion
+ `-- __ansible_playbook
+
+Called by:
+
+ prod_rollback.sh/Script-Body
+
+_Environment variables used:_ pipeline.sh -> LANGUAGE_TYPE
+
+stageDeploy
+~~~~~~~~~~~
+
+Has 6 line(s). Calls functions:
+
+ stageDeploy
+ `-- __ansible_playbook
+
+Called by:
+
+ stage_deploy.sh/Script-Body
+
+_Environment variables used:_ pipeline.sh -> LANGUAGE_TYPE
+
+testDeploy
+~~~~~~~~~~
+
+Has 15 line(s). Calls functions:
+
+ testDeploy
+ `-- __ansible_playbook
+
+Called by:
+
+ test_deploy.sh/Script-Body
+
+_Environment variables used:_ pipeline.sh -> LANGUAGE_TYPE
+
+testRollbackDeploy
+~~~~~~~~~~~~~~~~~~
+
+Has 21 line(s). Calls functions:
+
+ testRollbackDeploy
+ |-- __ansible_playbook
+ `-- prepareForSmokeTests
+
+Called by:
+
+ test_rollback_deploy.sh/Script-Body
+
+_Environment variables used:_ pipeline-cf.sh -> APPLICATION_URL [big]*//* pipeline-cf.sh -> STUBRUNNER_URL [big]*//* pipeline.sh -> LANGUAGE_TYPE [big]*//* pipeline.sh -> OUTPUT_FOLDER
+

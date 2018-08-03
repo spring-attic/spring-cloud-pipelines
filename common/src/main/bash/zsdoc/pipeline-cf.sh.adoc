@@ -580,9 +580,10 @@ prepareForE2eTests
 
 ____
  # CF implementation of prepare for e2e tests
+ # You can skip that via [CF_SKIP_PREPARE_FOR_TESTS] set to [true]
 ____
 
-Has 5 line(s). Calls functions:
+Has 9 line(s). Calls functions:
 
  prepareForE2eTests
  `-- logInToPaas
@@ -601,10 +602,11 @@ prepareForSmokeTests
 ~~~~~~~~~~~~~~~~~~~~
 
 ____
- # CF implementation of prepare for smoke tests
+ # CF implementation of prepare for smoke tests, can log in to PAAS to retrieve info about
+ # the app. You can skip that via [CF_SKIP_PREPARE_FOR_TESTS] set to [true]
 ____
 
-Has 11 line(s). Calls functions:
+Has 15 line(s). Calls functions:
 
  prepareForSmokeTests
  |-- logInToPaas
