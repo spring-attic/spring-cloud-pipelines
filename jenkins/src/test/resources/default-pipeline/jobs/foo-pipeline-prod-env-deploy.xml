@@ -143,8 +143,8 @@ set -o pipefail
                 <trackingSubmodules>false</trackingSubmodules>
             </hudson.plugins.git.extensions.impl.SubmoduleOption>
             <hudson.plugins.git.extensions.impl.UserIdentity>
-                <email>gitEmail</email>
-                <name>gitName</name>
+                <email>Pivo Tal</email>
+                <name>pivo@tal.com</name>
             </hudson.plugins.git.extensions.impl.UserIdentity>
         </extensions>
     </scm>

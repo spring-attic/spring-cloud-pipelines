@@ -42,8 +42,8 @@ class CommonSteps {
 		job.configure { def project ->
 			// Adding user email and name here instead of global settings
 			project / 'scm' / 'extensions' << 'hudson.plugins.git.extensions.impl.UserIdentity' {
-				'email'(gitEmail)
-				'name'(gitName)
+				'email'(defaults.gitName())
+				'name'(defaults.gitEmail())
 			}
 		}
 	}
