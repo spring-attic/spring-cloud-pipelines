@@ -18,6 +18,8 @@ include::zsdoc/pipeline-cf.sh.adoc[]
 
 include::zsdoc/pipeline-k8s.sh.adoc[]
 
+include::zsdoc/pipeline-ansible.sh.adoc[]
+
 include::zsdoc/build_and_upload.sh.adoc[]
 
 include::zsdoc/test_deploy.sh.adoc[]
