@@ -94,7 +94,7 @@ set -o pipefail
         </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
         <EnvInjectBuildWrapper>
             <info>
-                <propertiesContent>APPLICATION_URL=foo.foo.com
+                <propertiesContent>APPLICATION_URL=foo-.foo.com
 CF_SKIP_PREPARE_FOR_TESTS=true</propertiesContent>
                 <loadFilesFromMaster>false</loadFilesFromMaster>
             </info>

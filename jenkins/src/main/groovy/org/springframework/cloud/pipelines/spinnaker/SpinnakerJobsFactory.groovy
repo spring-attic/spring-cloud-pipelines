@@ -113,7 +113,7 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 	protected void setStageEnvVars(FreeStyleJob job, String projectName) {
 		job.wrappers {
 			environmentVariables {
-				env(EnvironmentVariables.APPLICATION_URL_ENV_VAR, "${projectName}.${pipelineDefaults.spinnakerStageHostname()}")
+				env(EnvironmentVariables.APPLICATION_URL_ENV_VAR, "${projectName}-${pipelineDefaults.cfStageSpace()}.${pipelineDefaults.spinnakerStageHostname()}")
 				env(EnvironmentVariables.CF_SKIP_PREPARE_FOR_TESTS_ENV_VAR, "true")
 			}
 		}
