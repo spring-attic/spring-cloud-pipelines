@@ -63,7 +63,7 @@ new DslScriptLoader(jobManagement).with {
 println "Creating the credentials for CF"
 ['cf-test', 'cf-stage', 'cf-prod'].each { String id ->
 	boolean credsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
-		it.getDescriptor().getId() == id
+		it.getId() == id
 	}.empty
 	if (credsMissing) {
 		println "Credential [${id}] is missing - will create it"
@@ -78,7 +78,7 @@ println "Creating the credentials for CF"
 println "Adding credentials to deploy to the repo with jars"
 String repoWithJarsId = "repo-with-binaries"
 boolean repoWithJarCredsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
-	it.getDescriptor().getId() == repoWithJarsId
+	it.getId() == repoWithJarsId
 }.empty
 if (repoWithJarCredsMissing) {
 	println "Credential [${repoWithJarsId}] is missing - will create it"
@@ -121,7 +121,7 @@ String gitUser = new File('/usr/share/jenkins/gituser')?.text ?: "changeme"
 String gitPass = new File('/usr/share/jenkins/gitpass')?.text ?: "changeme"
 
 boolean gitCredsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
-	it.getDescriptor().getId() == 'git'
+	it.getId() == 'git'
 }.empty
 
 if (gitCredsMissing) {
@@ -165,7 +165,7 @@ gradleProperties.text = gradleProperties.text
 
 println "Adding MySQL credentials"
 boolean mySqlCredsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
-	it.getDescriptor().getId().startsWith('mysql')
+	it.getId().startsWith('mysql')
 }.empty
 
 String mySqlRootPass = new File('/usr/share/jenkins/mySqlRootPass')?.text ?: "rootpassword"
