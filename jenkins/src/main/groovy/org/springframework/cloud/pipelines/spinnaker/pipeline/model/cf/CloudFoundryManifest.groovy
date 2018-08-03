@@ -18,7 +18,3 @@ class CloudFoundryManifest {
 	List<String> services = []
 }
 
-@CompileStatic
-class ListOfCloudFoundryManifest {
-	List<CloudFoundryManifest> applications
-}
