@@ -60,6 +60,7 @@ class ProdRemoveTag implements Step<FreeStyleJob> {
 				commonSteps.configureScm(delegate as ScmContext, fullGitRepo,
 					"dev/${gitRepoName}/\${${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}}")
 			}
+			commonSteps.gitEmail(delegate as Job)
 			steps {
 				commonSteps.downloadTools(delegate as StepContext, fullGitRepo)
 				shell("""#!/bin/bash

@@ -80,7 +80,7 @@ class Build implements Step<FreeStyleJob> {
 			scm {
 				this.commonSteps.configureScm(delegate as ScmContext, fullGitRepo, branchName)
 			}
-			email(delegate as Job)
+			commonSteps.gitEmail(delegate as Job)
 			steps {
 				commonSteps.downloadTools(delegate as StepContext, fullGitRepo)
 				shell("""#!/bin/bash 
@@ -150,16 +150,5 @@ class Build implements Step<FreeStyleJob> {
 			return checker.autoStageSet()
 		}
 		return checker.autoProdSet()
-	}
-
-	@CompileDynamic
-	protected email(Job job) {
-		job.configure { def project ->
-			// Adding user email and name here instead of global settings
-			project / 'scm' / 'extensions' << 'hudson.plugins.git.extensions.impl.UserIdentity' {
-				'email'(gitEmail)
-				'name'(gitName)
-			}
-		}
 	}
 }

@@ -1,7 +1,9 @@
 package org.springframework.cloud.pipelines.steps
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
+import javaposse.jobdsl.dsl.Job
 import javaposse.jobdsl.dsl.helpers.ScmContext
 import javaposse.jobdsl.dsl.helpers.publisher.PublisherContext
 import javaposse.jobdsl.dsl.helpers.step.StepContext
@@ -33,6 +35,17 @@ class CommonSteps {
 
 	String readScript(String scriptName) {
 		return CommonSteps.getResource("/steps/${scriptName}").text
+	}
+
+	@CompileDynamic
+	void gitEmail(Job job) {
+		job.configure { def project ->
+			// Adding user email and name here instead of global settings
+			project / 'scm' / 'extensions' << 'hudson.plugins.git.extensions.impl.UserIdentity' {
+				'email'(gitEmail)
+				'name'(gitName)
+			}
+		}
 	}
 
 	void deliveryPipelineVersion(WrapperContext wrapperContext) {
@@ -78,31 +91,6 @@ class CommonSteps {
 				allowEmpty()
 			}
 			// remove::end[CF]
-		}
-	}
-
-	void runNextJob(PublisherContext publisherContext, String nextJob, boolean automatic) {
-		if (automatic) {
-			publisherContext.with {
-				downstreamParameterized {
-					trigger(nextJob) {
-						parameters {
-							currentBuild()
-							propertiesFile('${' + EnvironmentVariables.OUTPUT_FOLDER_ENV_VAR + '}/test.properties', false)
-						}
-						triggerWithNoParameters()
-					}
-				}
-			}
-		} else {
-			publisherContext.with {
-				buildPipelineTrigger(nextJob) {
-					parameters {
-						propertiesFile('${' + EnvironmentVariables.OUTPUT_FOLDER_ENV_VAR + '}/test.properties', false)
-						currentBuild()
-					}
-				}
-			}
 		}
 	}
 

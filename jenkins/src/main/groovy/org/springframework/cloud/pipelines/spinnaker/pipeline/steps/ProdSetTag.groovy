@@ -56,6 +56,7 @@ class ProdSetTag implements Step<FreeStyleJob> {
 				commonSteps.configureScm(delegate as ScmContext, fullGitRepo,
 					"dev/${gitRepoName}/\${${EnvironmentVariables.PIPELINE_VERSION_ENV_VAR}}")
 			}
+			commonSteps.gitEmail(delegate as Job)
 			publishers {
 				git {
 					forcePush(true)

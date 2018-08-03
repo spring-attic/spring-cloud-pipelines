@@ -66,6 +66,7 @@ class ProdDeploy implements Step<FreeStyleJob> {
 				commonSteps.downloadTools(delegate as StepContext, fullGitRepo)
 				commonSteps.runStep(delegate as StepContext, "prod_deploy.sh")
 			}
+			commonSteps.gitEmail(delegate as Job)
 			publishers {
 				commonSteps.defaultPublishers(delegate as PublisherContext)
 				commonSteps.deployPublishers(delegate as PublisherContext)

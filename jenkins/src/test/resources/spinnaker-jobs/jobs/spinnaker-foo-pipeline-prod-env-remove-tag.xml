@@ -147,6 +147,10 @@ removeProdTag
                 <recursiveSubmodules>true</recursiveSubmodules>
                 <trackingSubmodules>false</trackingSubmodules>
             </hudson.plugins.git.extensions.impl.SubmoduleOption>
+            <hudson.plugins.git.extensions.impl.UserIdentity>
+                <email>gitEmail</email>
+                <name>gitName</name>
+            </hudson.plugins.git.extensions.impl.UserIdentity>
         </extensions>
     </scm>
 </project>
