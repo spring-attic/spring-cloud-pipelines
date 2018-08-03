@@ -15,7 +15,7 @@ def jobManagement = new JenkinsJobManagement(System.out, [:], new File('.'))
 String jenkinsHome = '/root'
 Closure setCredsIfMissing = { String id, String descr, String user, String pass ->
 	boolean credsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
-		it.getDescriptor().getId() == id
+		it.getId() == id
 	}.empty
 	if (credsMissing && pass) {
 		println "Credential [${id}] is missing - will create it"
@@ -27,7 +27,7 @@ Closure setCredsIfMissing = { String id, String descr, String user, String pass 
 }
 Closure setSshCredsIfMissing = { String id, String descr, String gitUser, String gitSshKey ->
 	boolean credsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
-		it.getDescriptor().getId() == id
+		it.getId() == id
 	}.empty
 	if (credsMissing) {
 		println "Credential [${id}] is missing - will create it"
@@ -141,7 +141,7 @@ setCredsIfMissing(dockerCredId, "Docker Registry credentials", dockerRegistryUse
 
 println "Adding MySQL credentials"
 boolean mySqlCredsMissing = SystemCredentialsProvider.getInstance().getCredentials().findAll {
-	it.getDescriptor().getId().startsWith('mysql')
+	it.getId().startsWith('mysql')
 }.empty
 
 String mySqlRootPass = new File('/usr/share/jenkins/mySqlRootPass')?.text ?: "rootpassword"
