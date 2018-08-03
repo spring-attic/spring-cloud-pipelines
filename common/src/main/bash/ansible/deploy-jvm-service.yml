@@ -1,0 +1,75 @@
+---
+
+- hosts: "{{ target | default('app_server') }}"
+  any_errors_fatal: true
+  become: true
+  vars:
+    maven_repository_url: "{{ lookup('env', 'REPO_WITH_BINARIES') }}"
+    app_port: "{{ hostvars[inventory_hostname][app_name + '_port'] }}"
+    app_healt_url: "http://localhost:{{ app_port }}/health"
+  tasks:
+    - name: ensure required arguments were passed
+      assert:
+        that:
+          - "app_name is defined"
+          - "app_group_id is defined"
+          - "app_version is defined"
+
+    - name: ensure service directory exists
+      file:
+        dest: /srv/{{ app_name }}
+        state: directory
+        owner: deploy
+
+    - name: ensure the artifact is downloaded
+      maven_artifact:
+        dest: "/srv/{{ app_name }}/{{ app_name }}-new.jar"
+        group_id: "{{ app_group_id }}"
+        artifact_id: "{{ app_name }}"
+        version: "{{ app_version }}"
+        repository_url: "{{ maven_repository_url }}"
+
+    - name: ensure systemd service is configured
+      copy:
+        dest: "/etc/systemd/system/{{ app_name }}.service"
+        content: |
+          [Unit]
+          Description={{ app_name }} service
+
+          [Service]
+          {% for v in hostvars[inventory_hostname] %}
+          {% if v.startswith(app_name) %}
+          Environment={{ v.replace(app_name + '_', '') | upper }}={{ hostvars[inventory_hostname][v] }}
+          {% endif %}
+          {% endfor %}
+          ExecStart=/usr/bin/java -jar /srv/{{ app_name }}/{{ app_name }}.jar
+          User=deploy
+          Type=simple
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: ensure application is stopped
+      systemd:
+        name: "{{ app_name }}"
+        state: stopped
+        daemon_reload: true
+
+    - name: ensure the new version is deployed
+      copy:
+        src: "/srv/{{ app_name }}/{{ app_name }}-new.jar"
+        dest: "/srv/{{ app_name }}/{{ app_name }}.jar"
+        remote_src: true
+
+    - name: ensure application is started
+      systemd:
+        name: "{{ app_name }}"
+        state: started
+
+    - name: wait for application to start
+      uri:
+        url: "{{ app_healt_url }}"
+      register: result
+      until: result.status == 200
+      retries: 30
+      delay: 3

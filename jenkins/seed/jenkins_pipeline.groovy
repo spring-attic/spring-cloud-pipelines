@@ -400,3 +400,136 @@ factory.job('jenkins-pipeline-k8s-declarative-seed') {
 	}
 }
 // remove::end[K8S]
+// remove::start[ANSIBLE]
+factory.job('jenkins-pipeline-ansible-seed') {
+	scm {
+		git {
+			remote {
+				github('spring-cloud/spring-cloud-pipelines')
+			}
+			branch('${TOOLS_BRANCH}')
+			extensions {
+				submoduleOptions {
+					recursive()
+				}
+			}
+		}
+	}
+	wrappers {
+		parameters {
+			// Common
+			stringParam('REPOS', repos,
+				"Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
+					"first provide the name and separate the url with \$ sign")
+			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
+			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
+			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
+			stringParam('JDK_VERSION', 'jdk8', 'ID of Git installation')
+			stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
+			stringParam('REPO_WITH_BINARIES', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs for downloading")
+			stringParam('REPO_WITH_BINARIES_FOR_UPLOAD', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs for uploading")
+			stringParam('REPO_WITH_BINARIES_CREDENTIAL_ID', 'repo-with-binaries', "Credential ID of repo with binaries")
+			stringParam('GIT_EMAIL', 'email@example.com', "Email used to tag the repo")
+			stringParam('GIT_NAME', 'Pivo Tal', "Name used to tag the repo")
+			stringParam('TOOLS_REPOSITORY', 'https://github.com/spring-cloud/spring-cloud-pipelines', "The URL containing pipeline functions repository")
+			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
+			booleanParam('AUTO_DEPLOY_TO_STAGE', false, 'Should deployment to stage be automatic')
+			booleanParam('AUTO_DEPLOY_TO_PROD', false, 'Should deployment to prod be automatic')
+			booleanParam('API_COMPATIBILITY_STEP_REQUIRED', true, 'Should api compatibility step be present')
+			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
+			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
+			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
+			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
+			stringParam('ANSIBLE_INVENTORY_DIR', '', "Directory where the Ansible inventory files will be stored")
+			textParam('ANSIBLE_TEST_INVENTORY', '', "Content of the Ansible static inventory for TEST environment")
+			textParam('ANSIBLE_STAGE_INVENTORY', '', "Content of the Ansible static inventory for STAGE ebvironment")
+			textParam('ANSIBLE_PROD_INVENTORY', '', "Content of the Ansible static inventory for PROD environment")
+		}
+	}
+	steps {
+		gradle("clean build")
+		dsl {
+			external('jenkins/jobs/jenkins_pipeline_sample*.groovy')
+			removeAction('DISABLE')
+			removeViewAction('DELETE')
+			ignoreExisting(false)
+			lookupStrategy('SEED_JOB')
+			additionalClasspath([
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources'
+			].join("\n"))
+		}
+		['TEST', 'STAGE', 'PROD'].each {
+			shell("""
+			cat <<-EOF > \${ANSIBLE_INVENTORY_DIR}/${it.toLowerCase()}
+			\${ANSIBLE_${it}_INVENTORY}
+			EOF
+			""".stripIndent())
+		}
+	}
+}
+factory.job('jenkins-pipeline-ansible-declarative-seed') {
+	scm {
+		git {
+			remote {
+				github('spring-cloud/spring-cloud-pipelines')
+			}
+			branch('${TOOLS_BRANCH}')
+			extensions {
+				submoduleOptions {
+					recursive()
+				}
+			}
+		}
+	}
+	wrappers {
+		parameters {
+			// Common
+			stringParam('REPOS', repos,
+				"Provide a comma separated list of repos. If you want the project name to be different then repo name, " +
+					"first provide the name and separate the url with \$ sign")
+			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
+			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
+			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
+			stringParam('JDK_VERSION', 'jdk8', 'ID of Git installation')
+			stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
+			stringParam('REPO_WITH_BINARIES_FOR_UPLOAD', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs")
+			stringParam('REPO_WITH_BINARIES_CREDENTIAL_ID', 'repo-with-binaries', "Credential ID of repo with binaries")
+			stringParam('GIT_EMAIL', 'email@example.com', "Email used to tag the repo")
+			stringParam('GIT_NAME', 'Pivo Tal', "Name used to tag the repo")
+			stringParam('TOOLS_REPOSITORY', 'https://github.com/spring-cloud/spring-cloud-pipelines', "The URL containing pipeline functions repository")
+			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
+			booleanParam('AUTO_DEPLOY_TO_STAGE', false, 'Should deployment to stage be automatic')
+			booleanParam('AUTO_DEPLOY_TO_PROD', false, 'Should deployment to prod be automatic')
+			booleanParam('API_COMPATIBILITY_STEP_REQUIRED', true, 'Should api compatibility step be present')
+			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
+			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
+			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
+			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
+			stringParam('ANSIBLE_INVENTORY_DIR', '', "Directory where the Ansible inventory files will be stored")
+			textParam('ANSIBLE_TEST_INVENTORY', '', "Content of the Ansible static inventory for TEST environment")
+			textParam('ANSIBLE_STAGE_INVENTORY', '', "Content of the Ansible static inventory for STAGE ebvironment")
+			textParam('ANSIBLE_PROD_INVENTORY', '', "Content of the Ansible static inventory for PROD environment")
+		}
+	}
+	steps {
+		gradle("clean build")
+		dsl {
+			external('jenkins/jobs/jenkins_pipeline_jenkinsfile_sample.groovy')
+			removeAction('DISABLE')
+			removeViewAction('DELETE')
+			ignoreExisting(false)
+			lookupStrategy('SEED_JOB')
+			additionalClasspath([
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources'
+			].join("\n"))
+		}
+		['TEST', 'STAGE', 'PROD'].each {
+			shell("""
+			cat <<-EOF > \${ANSIBLE_INVENTORY_DIR}/${it.toLowerCase()}
+			\${ANSIBLE_${it}_INVENTORY}
+			EOF
+			""".stripIndent())
+		}
+	}
+}
+// remove::end[ANSIBLE]
