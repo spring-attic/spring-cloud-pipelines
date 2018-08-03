@@ -43,33 +43,36 @@ class PipelineFactory {
 		Map<String, Exception> errors = [:]
 		// for every repo
 		repositories.each { Repository repo ->
-			// fetch the descriptor (or pick one for tests form env var)
-			String descriptor = pipelineDescriptor(repo)
-			// fetch additional files
-			Map<String, String> additionalFiles = additionalFiles(repo, org)
-			// parse it
-			PipelineDescriptor pipeline = PipelineDescriptor.from(descriptor)
-			PipelineDefaults pipelineDefaults = new PipelineDefaults(defaults.variables)
-			pipelineDefaults.updateFromPipeline(pipeline)
-			if (pipeline.hasMonoRepoProjects()) {
-				// for monorepos treat the single repo as multiple ones
-				pipeline.pipeline.project_names.each { String monoRepo ->
-					Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
-					repositoriesForViews.add(monoRepository)
-					errors.putAll(allJobs(pipeline, monoRepository, pipelineVersion, additionalFiles))
+			try {
+				// fetch the descriptor (or pick one for tests form env var)
+				String descriptor = pipelineDescriptor(org, repo)
+				// fetch additional files
+				Map<String, String> additionalFiles = additionalFiles(repo, org)
+				// parse it
+				PipelineDescriptor pipeline = PipelineDescriptor.from(descriptor)
+				PipelineDefaults pipelineDefaults = new PipelineDefaults(defaults.variables)
+				pipelineDefaults.updateFromPipeline(pipeline)
+				if (pipeline.hasMonoRepoProjects()) {
+					// for monorepos treat the single repo as multiple ones
+					pipeline.pipeline.project_names.each { String monoRepo ->
+						Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
+						repositoriesForViews.add(monoRepository)
+						errors.putAll(allJobs(pipeline, monoRepository, pipelineVersion, additionalFiles))
+					}
+				} else {
+					// for any other repo build a single pipeline
+					repositoriesForViews.add(repo)
+					errors.putAll(allJobs(pipeline, repo, pipelineVersion, additionalFiles))
 				}
-			} else {
-				// for any other repo build a single pipeline
-				repositoriesForViews.add(repo)
-				errors.putAll(allJobs(pipeline, repo, pipelineVersion, additionalFiles))
+			} catch (Exception e) {
+				errors.put(repo.name, e)
+				return
 			}
-			// fetch additional files
 		}
 		return new GeneratedJobs(repositoriesForViews, errors)
 	}
 
-	protected String pipelineDescriptor(Repository repo) {
-		String org
+	protected String pipelineDescriptor(String org, Repository repo) {
 		String descriptor = defaults.testModeDescriptor() != null ?
 			defaults.testModeDescriptor() as String :
 			projectCrawler.fileContent(org,
