@@ -33,10 +33,7 @@
       "detail" : "",
       "manifest" : {
         "diskQuota" : "1024M",
-        "env" : {
-          "SPRING_PROFILES_ACTIVE" : "cloud",
-          "DEBUG" : "true"
-        },
+        "env" : [ ],
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
@@ -83,10 +80,7 @@
       "detail" : "",
       "manifest" : {
         "diskQuota" : "1024M",
-        "env" : {
-          "SPRING_PROFILES_ACTIVE" : "cloud",
-          "DEBUG" : "true"
-        },
+        "env" : [ ],
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
@@ -155,10 +149,7 @@
       "detail" : "",
       "manifest" : {
         "diskQuota" : "1024M",
-        "env" : {
-          "SPRING_PROFILES_ACTIVE" : "cloud",
-          "DEBUG" : "true"
-        },
+        "env" : [ ],
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
@@ -213,10 +204,7 @@
       "detail" : "",
       "manifest" : {
         "diskQuota" : "1024M",
-        "env" : {
-          "SPRING_PROFILES_ACTIVE" : "cloud",
-          "DEBUG" : "true"
-        },
+        "env" : [ ],
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
@@ -263,10 +251,7 @@
       "detail" : "",
       "manifest" : {
         "diskQuota" : "1024M",
-        "env" : {
-          "SPRING_PROFILES_ACTIVE" : "cloud",
-          "DEBUG" : "true"
-        },
+        "env" : [ ],
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],

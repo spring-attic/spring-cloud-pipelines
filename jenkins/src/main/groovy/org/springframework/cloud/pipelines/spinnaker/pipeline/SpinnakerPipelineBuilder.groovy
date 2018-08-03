@@ -297,7 +297,7 @@ class SpinnakerPipelineBuilder {
 			detail: "",
 			manifest: new Manifest(
 				diskQuota: "1024M",
-				env: manifest.env ?: [:] as Map<String, String>,
+				//env: manifest.env ?: [:] as Map<String, String>,
 				instances: 1,
 				memory: manifest.memory ?: "1024M",
 				routes: [

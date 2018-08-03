@@ -5,7 +5,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class Manifest {
 	String diskQuota
-	Map<String, String> env = [:]
+	List<Map<String, String>> env = []
 	int instances
 	String memory
 	List<String> services = []
