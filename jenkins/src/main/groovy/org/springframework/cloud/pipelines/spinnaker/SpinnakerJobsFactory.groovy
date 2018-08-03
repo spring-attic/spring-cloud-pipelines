@@ -116,6 +116,9 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 				env(EnvironmentVariables.APPLICATION_URL_ENV_VAR, "${projectName}.${pipelineDefaults.spinnakerStageHostname()}")
 			}
 		}
+		job.parameters {
+			stringParam(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR, "", "Version of the project to run the tests against")
+		}
 	}
 
 	void dumpJsonToFile(PipelineDescriptor pipeline, Repository repo, Map<String, String> additionalFiles) {

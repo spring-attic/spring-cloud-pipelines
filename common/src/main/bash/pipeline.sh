@@ -328,7 +328,6 @@ function extractVersionFromProdTag() {
 # FUNCTION: removeProdTag {{{
 # Removes production tag.
 # Uses [PROJECT_NAME] and [PIPELINE_VERSION]
-
 function removeProdTag() {
 	local tagName
 	tagName="${1:-prod/${PROJECT_NAME}/${PIPELINE_VERSION}}"
