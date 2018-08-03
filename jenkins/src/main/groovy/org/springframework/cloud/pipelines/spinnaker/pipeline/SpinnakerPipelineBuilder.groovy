@@ -304,7 +304,7 @@ class SpinnakerPipelineBuilder {
 					route
 				],
 				services: manifest.services,
-				type: "artifact",
+				type: "direct",
 			),
 			provider: "cloudfoundry",
 			region: "${org} > ${space}",

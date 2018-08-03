@@ -40,7 +40,7 @@
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
-        "type" : "artifact",
+        "type" : "direct",
         "routes" : [ "sc-pipelines-test-github-webhook.test.foo.com" ]
       },
       "provider" : "cloudfoundry",
@@ -90,7 +90,7 @@
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
-        "type" : "artifact",
+        "type" : "direct",
         "routes" : [ "sc-pipelines-test-github-webhook.test.foo.com" ]
       },
       "provider" : "cloudfoundry",
@@ -170,7 +170,7 @@
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
-        "type" : "artifact",
+        "type" : "direct",
         "routes" : [ "sc-pipelines-stage.stage.foo.com" ]
       },
       "provider" : "cloudfoundry",
@@ -236,7 +236,7 @@
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
-        "type" : "artifact",
+        "type" : "direct",
         "routes" : [ "sc-pipelines-prod.prod.foo.com" ]
       },
       "provider" : "cloudfoundry",
@@ -286,7 +286,7 @@
         "instances" : 1,
         "memory" : "1024M",
         "services" : [ "github-rabbitmq", "github-eureka" ],
-        "type" : "artifact",
+        "type" : "direct",
         "routes" : [ "sc-pipelines-prod.prod.foo.com" ]
       },
       "provider" : "cloudfoundry",

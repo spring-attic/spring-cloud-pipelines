@@ -57,12 +57,12 @@ class PipelineFactory {
 					pipeline.pipeline.project_names.each { String monoRepo ->
 						Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
 						repositoriesForViews.add(monoRepository)
-						errors.putAll(allJobs(pipeline, monoRepository, pipelineVersion, additionalFiles))
+						allJobs(pipeline, monoRepository, pipelineVersion, additionalFiles)
 					}
 				} else {
 					// for any other repo build a single pipeline
 					repositoriesForViews.add(repo)
-					errors.putAll(allJobs(pipeline, repo, pipelineVersion, additionalFiles))
+					allJobs(pipeline, repo, pipelineVersion, additionalFiles)
 				}
 			} catch (Exception e) {
 				errors.put(repo.name, e)
@@ -105,16 +105,11 @@ applications:
 		return additionalFiles
 	}
 
-	private Map<String, Exception> allJobs(PipelineDescriptor pipeline,
+	private void allJobs(PipelineDescriptor pipeline,
 										   Repository repo, String pipelineVersion,
 										   Map<String, String> additionalFiles) {
-		try {
-			factory.get(defaults, dsl, pipeline, repo).allJobs(Coordinates.fromRepo(repo, defaults),
-				pipelineVersion, additionalFiles)
-			return [:]
-		} catch (Exception t) {
-			return [(repo.name): t]
-		}
+		factory.get(defaults, dsl, pipeline, repo).allJobs(Coordinates.fromRepo(repo, defaults),
+			pipelineVersion, additionalFiles)
 	}
 }
 
