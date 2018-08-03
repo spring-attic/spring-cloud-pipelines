@@ -44,11 +44,9 @@ class PipelineFactory {
 		// for every repo
 		repositories.each { Repository repo ->
 			// fetch the descriptor (or pick one for tests form env var)
-			String descriptor = defaults.testModeDescriptor() != null ?
-				defaults.testModeDescriptor() as String :
-				projectCrawler.fileContent(org,
-					repo.name, repo.requestedBranch,
-					defaults.pipelineDescriptor())
+			String descriptor = pipelineDescriptor(repo)
+			// fetch additional files
+			Map<String, String> additionalFiles = additionalFiles(repo, org)
 			// parse it
 			PipelineDescriptor pipeline = PipelineDescriptor.from(descriptor)
 			PipelineDefaults pipelineDefaults = new PipelineDefaults(defaults.variables)
@@ -58,21 +56,58 @@ class PipelineFactory {
 				pipeline.pipeline.project_names.each { String monoRepo ->
 					Repository monoRepository = new Repository(monoRepo, repo.ssh_url, repo.clone_url, repo.requestedBranch)
 					repositoriesForViews.add(monoRepository)
-					errors.putAll(allJobs(pipeline, monoRepository, pipelineVersion))
+					errors.putAll(allJobs(pipeline, monoRepository, pipelineVersion, additionalFiles))
 				}
 			} else {
 				// for any other repo build a single pipeline
 				repositoriesForViews.add(repo)
-				errors.putAll(allJobs(pipeline, repo, pipelineVersion))
+				errors.putAll(allJobs(pipeline, repo, pipelineVersion, additionalFiles))
 			}
+			// fetch additional files
 		}
 		return new GeneratedJobs(repositoriesForViews, errors)
 	}
 
+	protected String pipelineDescriptor(Repository repo) {
+		String org
+		String descriptor = defaults.testModeDescriptor() != null ?
+			defaults.testModeDescriptor() as String :
+			projectCrawler.fileContent(org,
+				repo.name, repo.requestedBranch,
+				defaults.pipelineDescriptor())
+		return descriptor
+	}
+
+	protected Map<String, String> additionalFiles(Repository repo, String org) {
+		Map<String, String> additionalFiles =
+			defaults.testModeDescriptor() != null ? [
+				"manifest.yml": """
+applications:
+- name: github-webhook
+  services:
+    - github-rabbitmq
+    - github-eureka
+  disk_quota: 2000M
+  memory: 3000M
+  env:
+    SPRING_PROFILES_ACTIVE: cloud
+    DEBUG: "true"
+"""
+			]  : factory.additionalFiles().collectEntries {
+				String fileContent = projectCrawler.fileContent(org, repo.name,
+					repo.requestedBranch, it)
+				if (fileContent) return [(it): fileContent]
+				return [:]
+			} as Map<String, String>
+		return additionalFiles
+	}
+
 	private Map<String, Exception> allJobs(PipelineDescriptor pipeline,
-										   Repository repo, String pipelineVersion) {
+										   Repository repo, String pipelineVersion,
+										   Map<String, String> additionalFiles) {
 		try {
-			factory.get(defaults, dsl, pipeline, repo).allJobs(Coordinates.fromRepo(repo, defaults), pipelineVersion)
+			factory.get(defaults, dsl, pipeline, repo).allJobs(Coordinates.fromRepo(repo, defaults),
+				pipelineVersion, additionalFiles)
 			return [:]
 		} catch (Exception t) {
 			return [(repo.name): t]
@@ -81,8 +116,16 @@ class PipelineFactory {
 }
 
 interface PipelineJobsFactoryProvider {
+	/**
+	 * Gets the concrete jobs factory
+	 */
 	PipelineJobsFactory get(PipelineDefaults pipelineDefaults,
 							DslFactory dsl,
 							PipelineDescriptor descriptor,
 							Repository repository)
+
+	/**
+	 * List of additional files that should be parsed
+	 */
+	List<String> additionalFiles()
 }

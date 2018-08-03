@@ -4,6 +4,8 @@ import org.springframework.cloud.pipelines.common.GeneratedJobs
 import org.springframework.cloud.pipelines.common.PipelineDefaults
 import org.springframework.cloud.pipelines.common.PipelineDescriptor
 import org.springframework.cloud.pipelines.common.PipelineFactory
+import org.springframework.cloud.pipelines.common.PipelineJobsFactory
+import org.springframework.cloud.pipelines.common.PipelineJobsFactoryProvider
 import org.springframework.cloud.pipelines.spinnaker.SpinnakerDefaultView
 import org.springframework.cloud.pipelines.spinnaker.SpinnakerJobsFactory
 import org.springframework.cloud.pipelines.test.TestUtils
@@ -45,11 +47,17 @@ List<Repository> repositories = defaults.testModeDescriptor() != null ?
 	TestUtils.TEST_REPO : crawler.repositories(org)
 
 // generate jobs and store errors
-GeneratedJobs generatedJobs = new PipelineFactory({ PipelineDefaults pipelineDefaults,
-													DslFactory dslFactory, PipelineDescriptor descriptor,
-													Repository repository ->
-	return new SpinnakerJobsFactory(pipelineDefaults, descriptor, dslFactory, repository)
-}, defaults, crawler, dsl).generate(repositories, org, pipelineVersion)
+GeneratedJobs generatedJobs = new PipelineFactory(
+	new PipelineJobsFactoryProvider() {
+		@Override
+		PipelineJobsFactory get(PipelineDefaults pipelineDefaults, DslFactory dslFactory, PipelineDescriptor descriptor, Repository repository) {
+			return new SpinnakerJobsFactory(pipelineDefaults, descriptor, dslFactory, repository)
+		}
+		@Override
+		List<String> additionalFiles() {
+			return ["manifest.yml"]
+		}
+	}, defaults, crawler, dsl).generate(repositories, org, pipelineVersion)
 
 if (generatedJobs.hasErrors()) {
 	println "\n\n\nWARNING, THERE WERE ERRORS WHILE TRYING TO BUILD PROJECTS\n\n\n"

@@ -34,14 +34,14 @@ class DefaultPipelineJobsFactory implements PipelineJobsFactory {
 	private final DslFactory dsl
 	private final PipelineDescriptor descriptor
 
-	DefaultPipelineJobsFactory(PipelineDescriptor descriptor, PipelineDefaults pipelineDefaults, DslFactory dsl) {
+	DefaultPipelineJobsFactory(PipelineDefaults pipelineDefaults, PipelineDescriptor descriptor, DslFactory dsl) {
 		this.pipelineDefaults = pipelineDefaults
 		this.dsl = dsl
 		this.descriptor = descriptor
 	}
 
 	@Override
-	void allJobs(Coordinates coordinates, String pipelineVersion) {
+	void allJobs(Coordinates coordinates, String pipelineVersion, Map<String, String> additionalFiles) {
 		String gitRepoName = coordinates.gitRepoName
 		String projectName = DefaultPipelineDefaults.projectName(gitRepoName)
 		pipelineDefaults.addEnvVar("PROJECT_NAME", gitRepoName)

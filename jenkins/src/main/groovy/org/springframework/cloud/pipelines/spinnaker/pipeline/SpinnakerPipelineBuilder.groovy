@@ -1,8 +1,10 @@
 package org.springframework.cloud.pipelines.spinnaker.pipeline
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import groovy.transform.CompileStatic
 
 import org.springframework.cloud.pipelines.common.EnvironmentVariables
@@ -18,6 +20,8 @@ import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Root
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Stage
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.StageEnabled
 import org.springframework.cloud.pipelines.spinnaker.pipeline.model.Trigger
+import org.springframework.cloud.pipelines.spinnaker.pipeline.model.cf.CloudFoundryManifest
+import org.springframework.cloud.pipelines.spinnaker.pipeline.model.cf.ListOfCloudFoundryManifest
 import org.springframework.cloud.projectcrawler.Repository
 
 /**
@@ -34,17 +38,32 @@ class SpinnakerPipelineBuilder {
 	private final Repository repository
 	private final PipelineDefaults defaults
 	private final ObjectMapper objectMapper = new ObjectMapper()
+	private final ObjectMapper yamlObjectMapper = new ObjectMapper(new YAMLFactory())
 	private final StepEnabledChecker stepEnabledChecker
+	private final CloudFoundryManifest manifest
 
 	SpinnakerPipelineBuilder(PipelineDescriptor pipelineDescriptor, Repository repository,
-							 PipelineDefaults defaults) {
+							 PipelineDefaults defaults, Map<String, String> additionalFiles) {
 		this.pipelineDescriptor = pipelineDescriptor
 		this.repository = repository
 		this.defaults = defaults
 		this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
-		this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+		this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
 		this.objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+		this.yamlObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 		this.stepEnabledChecker = new StepEnabledChecker(pipelineDescriptor, defaults)
+		this.manifest = manifest(additionalFiles)
+	}
+
+	CloudFoundryManifest manifest(Map<String, String> additionalFiles) {
+		String manifest = additionalFiles.get("manifest.yaml") ?:
+			additionalFiles.get("manifest.yml")
+		if (!manifest) {
+			return new CloudFoundryManifest()
+		}
+		ListOfCloudFoundryManifest list = yamlObjectMapper.readerFor(ListOfCloudFoundryManifest)
+			 .readValue(manifest) as ListOfCloudFoundryManifest
+		return list.applications.isEmpty() ? new CloudFoundryManifest() : list.applications.get(0)
 	}
 
 	String spinnakerPipeline() {
@@ -277,13 +296,15 @@ class SpinnakerPipelineBuilder {
 			cloudProvider: "cloudfoundry",
 			detail: "",
 			manifest: new Manifest(
+				diskQuota: "1024M",
+				env: manifest.env ?: [:] as Map<String, String>,
+				instances: 1,
+				memory: manifest.memory ?: "1024M",
 				routes: [
 					route
 				],
-				account: defaults.spinnakerJenkinsAccount(),
+				services: manifest.services,
 				type: "artifact",
-				reference: "${defaults.spinnakerJenkinsRootUrl()}/job/${triggerJobName()}/lastSuccessfulBuild/artifact/manifest.yml",
-				services: []
 			),
 			provider: "cloudfoundry",
 			region: "${org} > ${space}",

@@ -40,13 +40,16 @@
       "cloudProvider" : "cloudfoundry",
       "detail" : "",
       "manifest" : {
-        "env" : [ ],
-        "instances" : 0,
-        "services" : [ ],
+        "diskQuota" : "1024M",
+        "env" : {
+          "SPRING_PROFILES_ACTIVE" : "cloud",
+          "DEBUG" : "true"
+        },
+        "instances" : 1,
+        "memory" : "1024M",
+        "services" : [ "github-rabbitmq", "github-eureka" ],
         "type" : "artifact",
-        "routes" : [ "sc-pipelines-stage." ],
-        "account" : "",
-        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastSuccessfulBuild/artifact/manifest.yml"
+        "routes" : [ "sc-pipelines-stage." ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-stage",
@@ -103,13 +106,16 @@
       "cloudProvider" : "cloudfoundry",
       "detail" : "",
       "manifest" : {
-        "env" : [ ],
-        "instances" : 0,
-        "services" : [ ],
+        "diskQuota" : "1024M",
+        "env" : {
+          "SPRING_PROFILES_ACTIVE" : "cloud",
+          "DEBUG" : "true"
+        },
+        "instances" : 1,
+        "memory" : "1024M",
+        "services" : [ "github-rabbitmq", "github-eureka" ],
         "type" : "artifact",
-        "routes" : [ "sc-pipelines-prod." ],
-        "account" : "",
-        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastSuccessfulBuild/artifact/manifest.yml"
+        "routes" : [ "sc-pipelines-prod." ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-prod",
@@ -150,13 +156,16 @@
       "cloudProvider" : "cloudfoundry",
       "detail" : "",
       "manifest" : {
-        "env" : [ ],
-        "instances" : 0,
-        "services" : [ ],
+        "diskQuota" : "1024M",
+        "env" : {
+          "SPRING_PROFILES_ACTIVE" : "cloud",
+          "DEBUG" : "true"
+        },
+        "instances" : 1,
+        "memory" : "1024M",
+        "services" : [ "github-rabbitmq", "github-eureka" ],
         "type" : "artifact",
-        "routes" : [ "sc-pipelines-prod." ],
-        "account" : "",
-        "reference" : "/job/spinnaker-github-webhook-pipeline-build/lastSuccessfulBuild/artifact/manifest.yml"
+        "routes" : [ "sc-pipelines-prod." ]
       },
       "provider" : "cloudfoundry",
       "region" : "scpipelines > sc-pipelines-prod",

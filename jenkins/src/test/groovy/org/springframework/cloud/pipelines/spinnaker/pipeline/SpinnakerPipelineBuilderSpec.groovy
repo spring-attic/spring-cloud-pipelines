@@ -17,6 +17,23 @@ class SpinnakerPipelineBuilderSpec extends Specification {
 
 	@Rule TestName testName = new TestName()
 
+	Map<String, String> additionalFiles = ["manifest.yml" : """
+---
+applications:
+  - name: github-webhook
+    instances: 1
+    disk_quota: 2048M
+    memory: 1024M
+    domain: foo.com
+    path: /a/b/c
+    env: 
+      SPRING_PROFILES_ACTIVE: cloud
+      DEBUG: "true"
+    services:
+      - github-rabbitmq
+      - github-eureka
+"""]
+
 	void storeJsonWithPipeline(String name, String json) {
 		File file = new File("build/spinnaker-pipeline")
 		file.mkdirs()
@@ -72,7 +89,7 @@ stage:
 			defaults.addEnvVar("SPINNAKER_STAGE_HOSTNAME", "stage.foo.com")
 			defaults.addEnvVar("SPINNAKER_PROD_HOSTNAME", "prod.foo.com")
 		when:
-			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
+			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults, additionalFiles).spinnakerPipeline()
 		then:
 			storeJsonWithPipeline("pipeline", pipeline)
 			assertThatJsonsAreEqual(expectedPipeline, pipeline)
@@ -109,7 +126,7 @@ test:
 		and:
 			setupEnvVars(defaults)
 		when:
-			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
+			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults, additionalFiles).spinnakerPipeline()
 		then:
 			storeJsonWithPipeline("pipeline_no_stage_services", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutStageServices, pipeline)
@@ -145,7 +162,7 @@ stage:
 		and:
 			setupEnvVars(defaults)
 		when:
-			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
+			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults, additionalFiles).spinnakerPipeline()
 		then:
 			storeJsonWithPipeline("pipeline_no_test_services", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutTestServices, pipeline)
@@ -197,7 +214,7 @@ stage:
 		and:
 			setupEnvVars(defaults)
 		when:
-			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
+			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults, additionalFiles).spinnakerPipeline()
 		then:
 			storeJsonWithPipeline("pipeline_auto_stage", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithAutoStage, pipeline)
@@ -249,7 +266,7 @@ stage:
 		and:
 			setupEnvVars(defaults)
 		when:
-			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
+			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults, additionalFiles).spinnakerPipeline()
 		then:
 			storeJsonWithPipeline("pipeline_auto_prod", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithAutoProd, pipeline)
@@ -301,7 +318,7 @@ stage:
 		and:
 			setupEnvVars(defaults)
 		when:
-			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
+			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults, additionalFiles).spinnakerPipeline()
 		then:
 			storeJsonWithPipeline("pipeline_no_rollback_step", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutRollback, pipeline)
@@ -358,7 +375,7 @@ stage:
 		and:
 			setupEnvVars(defaults)
 		when:
-			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
+			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults, additionalFiles).spinnakerPipeline()
 		then:
 			storeJsonWithPipeline("pipeline_no_stage_step", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutStage, pipeline)
@@ -410,7 +427,7 @@ stage:
 		and:
 			setupEnvVars(defaults)
 		when:
-			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults).spinnakerPipeline()
+			String pipeline = new SpinnakerPipelineBuilder(descriptor, repository, defaults, additionalFiles).spinnakerPipeline()
 		then:
 			storeJsonWithPipeline("pipeline_no_test_step", pipeline)
 			assertThatJsonsAreEqual(expectedPipelineWithoutTest, pipeline)

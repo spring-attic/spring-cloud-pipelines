@@ -46,7 +46,7 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 	}
 
 	@Override
-	void allJobs(Coordinates coordinates, String pipelineVersion) {
+	void allJobs(Coordinates coordinates, String pipelineVersion, Map<String, String> additionalFiles) {
 		String gitRepoName = coordinates.gitRepoName
 		String projectName = SpinnakerDefaults.projectName(gitRepoName)
 		pipelineDefaults.addEnvVar("PROJECT_NAME", gitRepoName)
@@ -87,7 +87,7 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 		new ProdRemoveTag(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
 		new ProdSetTag(dsl, pipelineDefaults).step(projectName, coordinates, descriptor)
 		println "Dumping the json with pipeline"
-		dumpJsonToFile(descriptor, repository)
+		dumpJsonToFile(descriptor, repository, additionalFiles)
 	}
 
 	protected void setTestEnvVars(FreeStyleJob job, String projectName) {
@@ -118,8 +118,8 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 		}
 	}
 
-	void dumpJsonToFile(PipelineDescriptor pipeline, Repository repo) {
-		String json = new SpinnakerPipelineBuilder(pipeline, repo, pipelineDefaults)
+	void dumpJsonToFile(PipelineDescriptor pipeline, Repository repo, Map<String, String> additionalFiles) {
+		String json = new SpinnakerPipelineBuilder(pipeline, repo, pipelineDefaults, additionalFiles)
 						.spinnakerPipeline()
 		File pipelineJson = new File("${pipelineDefaults.workspace()}/build", repo.name + "_pipeline.json")
 		pipelineJson.createNewFile()
