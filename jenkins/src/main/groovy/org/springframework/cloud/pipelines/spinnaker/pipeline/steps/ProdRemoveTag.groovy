@@ -43,7 +43,11 @@ class ProdRemoveTag implements Step<FreeStyleJob> {
 		String gitRepoName = coordinates.gitRepoName
 		String fullGitRepo = coordinates.fullGitRepo
 		Job job = dsl.job("${projectName}-prod-env-remove-tag") {
+			deliveryPipelineConfiguration('Prod', 'Remove the prod tag')
 			environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
+			parameters {
+				stringParam(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR, "", "Version of the project to run the tests against")
+			}
 			wrappers {
 				commonSteps.defaultWrappers(delegate as WrapperContext)
 				credentialsBinding {

@@ -45,6 +45,9 @@ class ProdSetTag implements Step<FreeStyleJob> {
 		Job job = dsl.job("${projectName}-prod-tag-repo") {
 			deliveryPipelineConfiguration('Prod', 'Tag the repo')
 			environmentVariables(pipelineDefaults.defaultEnvVars as Map<Object, Object>)
+			parameters {
+				stringParam(EnvironmentVariables.PIPELINE_VERSION_ENV_VAR, "", "Version of the project to run the tests against")
+			}
 			wrappers {
 				commonSteps.defaultWrappers(delegate as WrapperContext)
 				commonSteps.deliveryPipelineVersion(delegate as WrapperContext)
