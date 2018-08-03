@@ -284,33 +284,6 @@ The general view behind this deployment pipeline is to:
 Obviously the pipeline could have been split to more steps but it seems that all of the aforementioned
  actions comprise nicely in our opinionated proposal.
 
-=== CI Server worker prerequisites
-
-Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
-that needs to be installed on a CI server worker for the build to pass.
-
-TIP: In the demo setup all of these libraries are already installed.
-
-[source,bash]
-----
- apt-get -y install \
-    bash \
-    git \
-    tar \
-    zip \
-    curl \
-    ruby \
-    wget \
-    unzip \
-    python \
-    jq
-----
-
-IMPORTANT: In the Jenkins case you will also need `bats` and `shellcheck`. They are not
-presented in the list since the installed versions by Linux distributions might be old.
-That's why this project's Gradle tasks will download latest versions of both libraries
-for you.
-
 === Pipeline descriptor
 
 Each application can contain a file called `sc-pipelines.yml` with the following structure:
@@ -318,24 +291,47 @@ Each application can contain a file called `sc-pipelines.yml` with the following
 [source,yaml]
 ----
 language_type: jvm
-build:
-  main_module: foo/bar
+pipeline:
+	# used for multi module projects
+	main_module: foo/bar
+	# used for multi projects
+	project_names:
+		- monoRepoA
+		- monoRepoB
+	# should deploy to stage automatically and run e2e tests
+	auto_stage: true
+	# should deploy to production automatically
+	auto_prod: true
+	# should the api compatibility check be there
+	api_compatibility_step: true
+	# should the test rollback step be there
+	rollback_step: true
+	# should the stage step be there
+	stage_step: true
+	# should the test step (including rollback) be there
+	test_step: true
 lowercaseEnvironmentName1:
-    services:
-        - type: service1Type
-          name: service1Name
-          coordinates: value
-        - type: service2Type
-          name: service2Name
-          key: value
+	# used by spinnaker
+	deployment_strategy: HIGHlANDER
+	# list of services to be deployed
+	services:
+		- type: service1Type
+		  name: service1Name
+		  coordinates: value
+		- type: service2Type
+		  name: service2Name
+		  key: value
 lowercaseEnvironmentName2:
-    services:
-        - type: service3Type
-          name: service3Name
-          coordinates: value
-        - type: service4Type
-          name: service4Name
-          key: value
+	# used by spinnaker
+	deployment_strategy: HIGHlANDER
+	# list of services to be deployed
+	services:
+		- type: service3Type
+		  name: service3Name
+		  coordinates: value
+		- type: service4Type
+		  name: service4Name
+		  key: value
 ----
 
 If you have a multi-module project, you should point to the folder, where your
@@ -470,6 +466,13 @@ will treat the `foo` directory as the root of the `foo` project.
 [[how-do-the-scripts-work]]
 == How do the scripts work?
 
+In this section you'll find description of how the scripts and jobs correspond to each other.
+If you need to see a detailed documentation of the Bash scripts, you can go to the
+code repository and check it out at `common/src/main/bash/README.adoc`.
+
+[[build-and-deployment]]
+=== Build and deployment
+
 The high overview looks like this (created via https://textart.io/sequence[textart.io])
 
 ```
@@ -586,12 +589,178 @@ will source `projectType/pipeline-projectType.sh`
 * `projectType/pipeline-projectType.sh` contains logic to decide on what the language is
 ** verify if a repo contains files corresponding to given languages (e.g. `mvnw`, `composer.json`)
 ** verify if there's a concrete framework that we support (e.g. `maven` or `gradle`)
-* once we know what the project type is we can deal with PAAS. Dependending on the environment
+* once we know what the project type is we can deal with PAAS. Depending on the environment
 variable `PAAS_TYPE` we can source proper PAAS functions. E.g. `pipeline-cf.sh` for Cloud Foundry.
 * we've got the functions loaded, now we can see if we can do some further customization
 ** we will search for a file called `${sc-pipelines-root}/common/src/main/bash/custom/build_and_upload.sh`
 to override any functions you want
 * now we can run the `build` function from `build_and_upload.sh`
+
+[[project-crawler]]
+=== Project Crawler
+
+In Jenkins, you can generate the deployment pipelines by passing an environment variable with a comma
+separated list of repositories. This however doesn't scale. We would like to automatically fetch
+a list of all repositories from a given organization / team.
+
+That's why we're using the https://github.com/spring-cloud/project-crawler[Project Crawler]
+library, that is able to:
+
+* fetch all projects for a given organization
+* fetch contents of a file for a given repository
+
+The following diagram depicts this situation:
+
+```
++---------+                                                  +-------+                                                                           +-------------+ +---------+
+| Jenkins |                                                  | Seed  |                                                                           | SCPipelines | | Github  |
++---------+                                                  +-------+                                                                           +-------------+ +---------+
+     |                                                           |                                                                                      |             |
+     | Copy the seed job from the repo                           |                                                                                      |             |
+     |------------------------------------------------------------------------------------------------------------------------------------------------->|             |
+     |                                                           |                                                                                      |             |
+     | Run seed job to generate Spinnaker pipelines and jobs     |                                                                                      |             |
+     |---------------------------------------------------------->|                                                                                      |             |
+     |                                                           |                                                                                      |             |
+     |                                                           | Crawl org [foo] and fetch all repositories                                           |             |
+     |                                                           |--------------------------------------------------------------------------------------------------->|
+     |                                                           |                                                                                      |             |
+     |                                                           |                                                                   In org [foo] there [a,b,c] repos |
+     |                                                           |<---------------------------------------------------------------------------------------------------|
+     |                                                           |                                                                                      |             |
+     |                                                           | For each repo fetch pipeline descriptor                                              |             |
+     |                                                           |--------------------------------------------------------------------------------------------------->|
+     |                                                           |                                                                                      |             |
+     |                                                           |                      There you go. [a] wants no [test] env, [b] no [stage] env, [c] wants all envs |
+     |                                                           |<---------------------------------------------------------------------------------------------------|
+     |                                                           |                                                                                      |             |
+     |                                                           | Build pipelines. For [a] without [test], for [b] without [stage]. All for [c]        |             |
+     |                                                           |------------------------------------------------------------------------------        |             |
+     |                                                           |                                                                             |        |             |
+     |                                                           |<-----------------------------------------------------------------------------        |             |
+     |                             ----------------------------\ |                                                                                      |             |
+     |                             | By having descriptors,    |-|                                                                                      |             |
+     |                             | we can tune the pipelines | |                                                                                      |             |
+     |                             | as the app wanted it to.  | |                                                                                      |             |
+     |                             |---------------------------| | Build jobs / pipelines for [a,b,c] repos                                             |             |
+     |                                                           |-----------------------------------------                                             |             |
+     |                                                           |                                        |                                             |             |
+     |                                                           |<----------------------------------------                                             |             |
+     |                                                           |                                                                                      |             |
+```
+
+Thanks to the Project Crawler you can run the seed job and automatically all the new repositories
+will be picked and pipelines will be created for them. Project Crawler supports repositories
+stored at Github, Gitlab, Bitbucket. You can also register your own implementation. Please check the
+https://github.com/spring-cloud/project-crawler[Project Crawler] repository for more information.
+
+
+[[how-do-the-scripts-work-with-spinanker]]
+=== How do the scripts work with Spinnaker?
+
+With Spinnaker, the deployment pipeline lays inside of Spinnaker. No longer do we treat
+Jenkins or Concourse as a tool that does deployments too. In Jenkins we will only create
+the CI jobs (i.e. build, test) and prepare the JSON definitions of Spinnaker pipelines.
+
+The diagram below shows how Jenkins, the seed job for Spinnaker and Spinnaker as such cooperate.
+
+```
++---------+                                                  +-------+                                                                           +-------------+                          +---------+ +-----------+
+| Jenkins |                                                  | Seed  |                                                                           | SCPipelines |                          | Github  | | Spinnaker |
++---------+                                                  +-------+                                                                           +-------------+                          +---------+ +-----------+
+     |                                                           |                                                                                      |                                      |            |
+     | Copy the seed job from the repo                           |                                                                                      |                                      |            |
+     |------------------------------------------------------------------------------------------------------------------------------------------------->|                                      |            |
+     |                                                           |                                                                                      |                                      |            |
+     | Run seed job to generate Spinnaker pipelines and jobs     |                                                                                      |                                      |            |
+     |---------------------------------------------------------->|                                                                                      |                                      |            |
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           | Crawl org [foo] and fetch all repositories                                           |                                      |            |
+     |                                                           |---------------------------------------------------------------------------------------------------------------------------->|            |
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           |                                                                                      |     In org [foo] there [a,b,c] repos |            |
+     |                                                           |<----------------------------------------------------------------------------------------------------------------------------|            |
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           | For each repo fetch pipeline descriptor                                              |                                      |            |
+     |                                                           |---------------------------------------------------------------------------------------------------------------------------->|            |
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           |                                                            There you go. [a] wants no [test], [b] no [stage], [c] wants all |            |
+     |                                                           |<----------------------------------------------------------------------------------------------------------------------------|            |
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           | Build pipelines. For [a] without [test], for [b] without [stage]. All for [c]        |                                      |            |
+     |                                                           |------------------------------------------------------------------------------        |                                      |            |
+     |                                                           |                                                                             |        |                                      |            |
+     |                                                           |<-----------------------------------------------------------------------------        |                                      |            |
+     |                             ----------------------------\ |                                                                                      |                                      |            |
+     |                             | By having descriptors,    |-|                                                                                      |                                      |            |
+     |                             | we can tune the pipelines | |                                                                                      |                                      |            |
+     |                             | as the app wanted it to.  | |                                                                                      |                                      |            |
+     |                             |---------------------------| | Build CI jobs for [a,b,c] repos                                                      |                                      |            |
+     |                                                           |--------------------------------                                                      |                                      |            |
+     |                                                           |                               |                                                      |                                      |            |
+     |                                                           |<-------------------------------                                                      |                                      |            |
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           | Build Spinnaker pipelines JSON definitions                                           |                                      |            |
+     |                                                           |-------------------------------------------                                           |                                      |            |
+     |                                                           |                                          |                                           |                                      |            |
+     |                                                           |<------------------------------------------                                           |                                      |            |
+     |                                                           |                                                                                      |                                      |            |
+     |                                             Seed job done |                                                                                      |                                      |            |
+     |<----------------------------------------------------------|                                                                                      |                                      |            |
+     |                                                           |                                                                                      |                                      |            |
+     | Upload JSON pipelines to Spinnaker                        |                                                                                      |                                      |            |
+     |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->|
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           |                                                                                      |                                      |            | The pipelines for [a,b,c] successfully created
+     |                                                           |                                                                                      |                                      |            |-----------------------------------------------
+     |                                                           |                                                                                      |                                      |            |                                              |
+     |                                                           |                                                                                      |                                      |            |<----------------------------------------------
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           |                                                                                Waiting for [spinnaker-a-build] build to start & complete |
+     |<-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+     |                                                           |                                                                                      |                                      |            |
+     | New commit! Running a build [spinnaker-a-build]           |                                                                                      |                                      |            |
+     |------------------------------------------------           |                                                                                      |                                      |            |
+     |                                               |           |                                                                                      |                                      |            |
+     |<-----------------------------------------------           |                                                                                      |                                      |            |
+     |                                                           |                                                                                      |                                      |            |
+     | Run the [build_and_upload.sh] script                      |                                                                                      |                                      |            |
+     |------------------------------------------------------------------------------------------------------------------------------------------------->|                                      |            |
+     |                                                           |                                                                                      | --------------------------------\    |            |
+     |                                                           |                                                                                      |-| Proceed with all the sourcing |    |            |
+     |                                                           |                                                                                      | | depending on language etc.    |    |            |
+     |                                                           |                                                                                      | |-------------------------------|    |            |
+     |                                                           |                                                                     Build completed! |                                      |            |
+     |<-------------------------------------------------------------------------------------------------------------------------------------------------|                                      |            |
+     |                                                           |                                                                                      |                                      |            |
+     | [spinnaker-a-build] started and completed                 |                                                                                      |                                      |            |
+     |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->|
+     |                                                           |                                                                                      |                                      |            | ------------------------------------\
+     |                                                           |                                                                                      |                                      |            |-| Running the rest of the pipeline! |
+     |                                                           |                                                                                      |                                      |            | |-----------------------------------|
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           |                                                                                      |                                      |            | Pipeline for [a] in progress. Deploy [a] to test env
+     |                                                           |                                                                                      |                                      |            |-----------------------------------------------------
+     |                                                           |                                                                                      |                                      |            |                                                    |
+     |                                                           |                                                                                      |                                      |            |<----------------------------------------------------
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           |                                                                                   Calling [spinnaker-a-test-on-test] to run test on test |
+     |<-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+     |                                                           |                                                                                      |                                      |            |
+     | [spinnaker-a-test-on-test] started and completed          |                                                                                      |                                      |            |
+     |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->|
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           |                                                                                      |                                      |            | ... we continue like this throughout the pipeline ...
+     |                                                           |                                                                                      |                                      |            |------------------------------------------------------
+     |                                                           |                                                                                      |                                      |            |                                                     |
+     |                                                           |                                                                                      |                                      |            |<-----------------------------------------------------
+     |                                                           |                                                                                      |                                      |            |
+     |                                                           |                                                                                      |                                      |            | ... and the pipeline is done
+     |                                                           |                                                                                      |                                      |            |-----------------------------
+     |                                                           |                                                                                      |                                      |            |                            |
+     |                                                           |                                                                                      |                                      |            |<----------------------------
+     |                                                           |                                                                                      |                                      |            |
+```
 
 == Opinionated implementation
 
@@ -891,8 +1060,42 @@ text.
 
 === Overriding pipelines
 
-Currently the best way for extension of Concourse and Jenkins pipelines is to make
+Currently the best way for extension of Concourse and Jenkins Jenkinsfile pipelines is to make
 a copy of the Concourse pipeline `yaml`s and Jenkins seed / pipeline jobs.
+
+==== Overriding Jenkins Job DSL pipelines
+
+We're providing an interface `org.springframework.cloud.pipelines.common.JobCustomizer`
+that allows you to provide customization for
+
+* all jobs
+* build jobs
+* test jobs
+* stage jobs
+* prod jobs
+
+We're using the JDK's `java.util.ServiceLoader` mechanism to achieve extensibility.
+
+It's enough for you to write an implementation of that interface (e.g. `com.example.MyJubCustomizer`)
+and create a `META-INF/org.springframework.cloud.pipelines.common.JobCustomizer` file in which you put the
+`com.example.MyJubCustomizer` line.
+
+If you create a JAR with your class (e.g. `com.example:my-customizer:1.0.0`) just put it to the build classpath
+
+[source,groovy]
+----
+dependencies {
+    // ...
+    libs "com.example:my-customizer:1.0.0"
+    // ...
+}
+----
+
+Another option is to just create an implementation in the sources under `src/main/resources/META-INF`
+if you don't want to create a separate library.
+
+Regardless of what you chose, your implementation will be executed for each job. You can add notifications
+or any other customizations of your choosing.
 
 === Leaving what's necessary
 
@@ -1409,7 +1612,7 @@ For both `greeting-ui` and `fortune-service`, add a `profiles` section to the `p
 ** For unit and integration tests. Note that this profile includes all tests except those that will explicitly be called by the smoke and e2e profiles.
 ** Tests matching this profile will be executed during the build-and-upload job
 * apicompatibility
-** For ensuring backward compatibility in case of API changes. Note that this is not effective until Stage 3, when we will add contracts. However, we add this profile now to ensure the api-compatibility-check job does not execute other tests.
+** For ensuring backward compatibility in case of API changes. Note that this is not effective until Stage 3, when we will add contracts. However, we add this profile now to ensure the api compatibility check during the `build-and-upload` job does not execute other tests.
 * smoke
 ** For tests to be run against the app deployed in the test space.
 * e2e
@@ -2081,7 +2284,7 @@ image::{cf-migration-root-docs}/fortune_service_generated_tests.png[title="Gener
 
 ===== 3.4 Enable backward compatibility API check
 
-To enable Spring Cloud Pipelines to catch any breaking API changes during the `build-api-compatibility-check` job, we add the Spring Cloud Contract maven plugin to the `apicompatibility` profile as well.
+To enable Spring Cloud Pipelines to catch any breaking API changes during the the api compatibility check during the `build-and-upload` job, we add the Spring Cloud Contract maven plugin to the `apicompatibility` profile as well.
 
 In this case, we want the plugin to generate tests based on contracts outside of the project (the ones from the latest prod version), so we configure the plugin to download the latest prod stub jar, which contains the old contract. The plugin will use the old contract and the specified base class, which in our example is the same as the one in the previous step, to generate contract tests. These tests are run against the new code to validate that it is still compatible with consumers complying with the prior contract. This ensures backward compatibility for the API.
 
@@ -2092,7 +2295,7 @@ In short, we edit the apicompatibility profile in the `fortune-service` `pom.xml
 * Configure it to use our base class (`io.pivotal.fortune.BaseClass`) to generate tests (we are using the same one as in the prior step)
 * Configure it to place auto-generated tests in the test package `io.pivotal.fortune.contracttests`
 
-Note that the package of the contracttests matches the `include` filter in the `apicompatibility` profile, so these tests will be run against the app during the `build-api-compatibility-check` job. For `fortune-service`, this serves to validate that the app conforms to the old contract.
+Note that the package of the contracttests matches the `include` filter in the `apicompatibility` profile, so these tests will be run against the app during the the api compatibility check during the `build-and-upload` job. For `fortune-service`, this serves to validate that the app conforms to the old contract.
 
 Here is the complete profile:
 
@@ -2155,7 +2358,7 @@ You will also see output in the `build-and-upload` job showing the execution of 
 
 Additionally, you will see the stub jar uploaded to Bintray along with the usual app jar.
 
-Finally, as you run through the pipeline a second time, you will see the contract tests from the latest prod version run against the new code in the output of the `build-api-compatibility-check` job. In this case there is no API change, but nonetheless the tests confirm that the latest prod version of the API can be used with the current code base.
+Finally, as you run through the pipeline a second time, you will see the contract tests from the latest prod version run against the new code in the output of the the api compatibility check during the `build-and-upload` job. In this case there is no API change, but nonetheless the tests confirm that the latest prod version of the API can be used with the current code base.
 
 ===== 3.7 Enable stubs for integration tests
 
@@ -2330,7 +2533,7 @@ To accomplish this, we put stub and port configuration information into the prop
 Spring Cloud Pipelines will use this information in two ways:
 
 . It will provide this information to the stub runner app via the app's environment variables
-- Spring Cloud Pipelines will aslo provide the `$REPO_WITH_BINARIES` as an env var for the stub runner app
+- Spring Cloud Pipelines will also provide the `$REPO_WITH_BINARIES` as an env var for the stub runner app
 - The stub runner app will use this information to download the stub from Bintray and expose it on the specified port
 . It will open the additional port specified on the stub runner app and map a new route to it
 - The format for each route will be `<stub-runner-app-name>-<hostname-uuid>-<env>-<app-name>-<port>.<domain>`
@@ -2634,7 +2837,6 @@ Below you can see what environment variables are required by the scripts. To the
 |REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |PAAS_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
-|JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v4.12
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
@@ -3503,7 +3705,6 @@ The env vars that are used in all of the jobs are as follows:
 |API_COMPATIBILITY_STEP_REQUIRED | Should api compatibility step be required | true
 |DB_ROLLBACK_STEP_REQUIRED | Should DB rollback step be present | true
 |DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
-|JAVA_BUILDPACK_URL | The URL to the Java buildpack to be used by CF | https://github.com/cloudfoundry/java-buildpack.git#v4.12
 |BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
 |BINARY_EXTENSION | Extension of the binary uploaded to Artifactory / Nexus. Example: change this to `war` for WAR artifacts | jar
 |======================
@@ -5259,6 +5460,33 @@ $ docker login
 $ docker build -t springcloud/spring-cloud-pipeline-jenkins:<version> ./jenkins
 $ docker push springcloud/spring-cloud-pipeline-jenkins:<version>
 ----
+
+== CI Server worker prerequisites
+
+Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
+that needs to be installed on a CI server worker for the build to pass.
+
+TIP: In the demo setup all of these libraries are already installed.
+
+[source,bash]
+----
+ apt-get -y install \
+    bash \
+    git \
+    tar \
+    zip \
+    curl \
+    ruby \
+    wget \
+    unzip \
+    python \
+    jq
+----
+
+IMPORTANT: In the Jenkins case you will also need `bats` and `shellcheck`. They are not
+presented in the list since the installed versions by Linux distributions might be old.
+That's why this project's Gradle tasks will download latest versions of both libraries
+for you.
 
 // remove::start[CONCOURSE]
 [[concourse-faq]]

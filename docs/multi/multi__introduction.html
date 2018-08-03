@@ -100,39 +100,48 @@ disappear. There is no need to start and setup infrastructure required by the de
 microservices. That way the testing setup looks like this:</p><div class="figure"><a name="d0e304" href="#d0e304"></a><p class="title"><b>Figure&nbsp;1.7.&nbsp;We&#8217;re testing microservices in isolation</b></p><div class="figure-contents"><div class="mediaobject"><img src="https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/master/docs-sources/src/main/asciidoc/images/intro/stubbed_dependencies.png" alt="stubbed dependencies"></div></div></div><br class="figure-break"><p>Such an approach to testing and deployment gives the following benefits
 (thanks to the usage of <a class="link" href="http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html" target="_top">Spring Cloud Contract</a>):</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">No need to deploy dependant services</li><li class="listitem">The stubs used for the tests ran on a deployed microservice are the same as those used during integration tests</li><li class="listitem">Those stubs have been tested against the application that produces them (check <a class="link" href="http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html" target="_top">Spring Cloud Contract</a> for more information)</li><li class="listitem">We don&#8217;t have many slow tests running on a deployed application - thus the pipeline gets executed much faster</li><li class="listitem">We don&#8217;t have to queue deployments - we&#8217;re testing in isolation thus pipelines don&#8217;t interfere with each other</li><li class="listitem">We don&#8217;t have to spawn virtual machines each time for deployment purposes</li></ul></div><p>It brings however the following challenges:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">No end to end tests before production - you don&#8217;t have the full certainty that a feature is working</li><li class="listitem">First time the applications will talk in a real way will be on production</li></ul></div><p>Like every solution it has its benefits and drawbacks. The opinionated pipeline
  allows you to configure whether you want to follow this flow or not.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="_general_view" href="#_general_view"></a>1.5.2&nbsp;General view</h3></div></div></div><p>The general view behind this deployment pipeline is to:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">test the application in isolation</li><li class="listitem">test the backwards compatibility of the application in order to roll it back if necessary</li><li class="listitem">allow testing of the packaged app in a deployed environment</li><li class="listitem">allow user acceptance tests / performance tests in a deployed environment</li><li class="listitem">allow deployment to production</li></ul></div><p>Obviously the pipeline could have been split to more steps but it seems that all of the aforementioned
- actions comprise nicely in our opinionated proposal.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_ci_server_worker_prerequisites" href="#_ci_server_worker_prerequisites"></a>1.6&nbsp;CI Server worker prerequisites</h2></div></div></div><p>Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
-that needs to be installed on a CI server worker for the build to pass.</p><div class="tip" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Tip"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="images/tip.png"></td><th align="left">Tip</th></tr><tr><td align="left" valign="top"><p>In the demo setup all of these libraries are already installed.</p></td></tr></table></div><pre class="programlisting"> apt-get -y install \
-    bash \
-    git \
-    tar \
-    zip \
-    curl \
-    ruby \
-    wget \
-    unzip \
-    python \
-    jq</pre><div class="important" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images/important.png"></td><th align="left">Important</th></tr><tr><td align="left" valign="top"><p>In the Jenkins case you will also need <code class="literal">bats</code> and <code class="literal">shellcheck</code>. They are not
-presented in the list since the installed versions by Linux distributions might be old.
-That&#8217;s why this project&#8217;s Gradle tasks will download latest versions of both libraries
-for you.</p></td></tr></table></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_pipeline_descriptor" href="#_pipeline_descriptor"></a>1.7&nbsp;Pipeline descriptor</h2></div></div></div><p>Each application can contain a file called <code class="literal">sc-pipelines.yml</code> with the following structure:</p><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">language_type</span>: jvm
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">build</span>:
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">  main_module</span>: foo/bar
+ actions comprise nicely in our opinionated proposal.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_pipeline_descriptor" href="#_pipeline_descriptor"></a>1.6&nbsp;Pipeline descriptor</h2></div></div></div><p>Each application can contain a file called <code class="literal">sc-pipelines.yml</code> with the following structure:</p><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">language_type</span>: jvm
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">pipeline</span>:
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># used for multi module projects</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	main_module</span>: foo/bar
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># used for multi projects</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	project_names</span>:
+		- monoRepoA
+		- monoRepoB
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># should deploy to stage automatically and run e2e tests</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	auto_stage</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># should deploy to production automatically</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	auto_prod</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># should the api compatibility check be there</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	api_compatibility_step</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># should the test rollback step be there</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	rollback_step</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># should the stage step be there</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	stage_step</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># should the test step (including rollback) be there</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	test_step</span>: <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">true</span>
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">lowercaseEnvironmentName1</span>:
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    services</span>:
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">        - type</span>: service1Type
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          name</span>: service1Name
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          coordinates</span>: value
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">        - type</span>: service2Type
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          name</span>: service2Name
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          key</span>: value
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># used by spinnaker</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	deployment_strategy</span>: HIGHlANDER
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># list of services to be deployed</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	services</span>:
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		- type</span>: service1Type
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		  name</span>: service1Name
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		  coordinates</span>: value
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		- type</span>: service2Type
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		  name</span>: service2Name
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		  key</span>: value
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">lowercaseEnvironmentName2</span>:
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">    services</span>:
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">        - type</span>: service3Type
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          name</span>: service3Name
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          coordinates</span>: value
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">        - type</span>: service4Type
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          name</span>: service4Name
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">          key</span>: value</pre><p>If you have a multi-module project, you should point to the folder, where your
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># used by spinnaker</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	deployment_strategy</span>: HIGHlANDER
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># list of services to be deployed</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">	services</span>:
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		- type</span>: service3Type
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		  name</span>: service3Name
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		  coordinates</span>: value
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		- type</span>: service4Type
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		  name</span>: service4Name
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">		  key</span>: value</pre><p>If you have a multi-module project, you should point to the folder, where your
 module that produces the fat jar lays. In the aforementioned example that module
 would be present under the <code class="literal">foo/bar</code> folder. If you have a single module project,
 then you don&#8217;t have to create this section.</p><p>For a given environment we declare a list of infrastructure services that we
@@ -140,7 +149,7 @@ want to have deployed. Services have</p><div class="itemizedlist"><ul class="ite
 then applied to the <code class="literal">deployService</code> Bash function</li><li class="listitem"><span class="strong"><strong>[KUBERNETES]</strong></span> for <code class="literal">mysql</code> you can pass the database name via the <code class="literal">database</code>
 property</li><li class="listitem"><code class="literal">name</code> - name of the service to get deployed</li><li class="listitem"><code class="literal">coordinates</code> - coordinate that allows you to fetch the binary of the service.
 Examples: It can be a maven coordinate <code class="literal">groupid:artifactid:version</code>,
- docker image <code class="literal">organization/nameOfImage</code>, etc.</li><li class="listitem">arbitrary key value pairs - you can customize the services as you wish</li></ul></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="_pipeline_descriptor_for_cloud_foundry" href="#_pipeline_descriptor_for_cloud_foundry"></a>1.7.1&nbsp;Pipeline descriptor for Cloud Foundry</h3></div></div></div><p>When deploying to Cloud Foundry you can provide services
+ docker image <code class="literal">organization/nameOfImage</code>, etc.</li><li class="listitem">arbitrary key value pairs - you can customize the services as you wish</li></ul></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="_pipeline_descriptor_for_cloud_foundry" href="#_pipeline_descriptor_for_cloud_foundry"></a>1.6.1&nbsp;Pipeline descriptor for Cloud Foundry</h3></div></div></div><p>When deploying to Cloud Foundry you can provide services
 of the following types:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara"><code class="literal">type: broker</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">broker</code> - name of the CF broker</li><li class="listitem"><code class="literal">plan</code> - name of the plan</li><li class="listitem"><code class="literal">params</code> - additional parameters that will be converted to JSON</li><li class="listitem"><code class="literal">useExisting</code> - should use existing one or
 create a new one (defaults to <code class="literal">false</code>)</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: app</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">coordinates</code> - maven coordinates of the stub runner jar</li><li class="listitem"><code class="literal">manifestPath</code> - path to the manifest for the stub runner jar</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: cups</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">params</code> - additional parameters that will be converted to JSON</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: cupsSyslog</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">url</code> - URL to the syslog drain</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: cupsRoute</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">url</code> - URL to the route service</li></ul></div></li><li class="listitem"><p class="simpara"><code class="literal">type: stubrunner</code></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><code class="literal">coordinates</code> - maven coordinates of the stub runner jar</li><li class="listitem"><code class="literal">manifestPath</code> - path to the manifest for the stub runner jar</li></ul></div></li></ul></div><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># This file describes which services are required by this application</span>
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment"># in order for the smoke tests on the TEST environment and end to end tests</span>
@@ -200,7 +209,7 @@ create a new one (defaults to <code class="literal">false</code>)</li></ul></div
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      broker</span>: p-circuit-breaker-dashboard
 <span xmlns:d="http://docbook.org/ns/docbook" class="hl-attribute">      plan</span>: standard</pre><p>Another CF specific property is <code class="literal">artifact_type</code>. It can be either <code class="literal">binary</code> or <code class="literal">source</code>.
 Certain languages require a binary to get uploaded (e.g. JAVA) but with others
-you have to push the sources (e.g. PHP). The default value is <code class="literal">binary</code>.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_project_setup" href="#_project_setup"></a>1.8&nbsp;Project Setup</h2></div></div></div><p>Spring Cloud Pipelines supports three main types of project setup
+you have to push the sources (e.g. PHP). The default value is <code class="literal">binary</code>.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_project_setup" href="#_project_setup"></a>1.7&nbsp;Project Setup</h2></div></div></div><p>Spring Cloud Pipelines supports three main types of project setup
 - <code class="literal">Single Project</code>
 - <code class="literal">Multi Module</code>
 - <code class="literal">Multi Project</code> (aka mono repo)</p><p>A <code class="literal">Single Project</code> is a project that contains a single module that gets

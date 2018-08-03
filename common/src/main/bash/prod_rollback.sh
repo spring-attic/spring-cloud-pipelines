@@ -17,9 +17,7 @@ export ENVIRONMENT=PROD
  echo "No pipeline.sh found"
 
 if rollbackToPreviousVersion; then
-	echo "Deleting production tag"
-	tagName="prod/${PROJECT_NAME}/${PIPELINE_VERSION}"
-	"${GIT_BIN}" push --delete origin "${tagName}"
+	removeProdTag
 	exit 0
 else
 	echo "Failed to rollback to previous version"

@@ -43,8 +43,8 @@ class ProjectCustomizerSpec extends Specification {
 			customizer.customize()
 		then:
 			String logs = capture.toString()
-			logs.contains("Doing nothing since you've picked the BOTH PaaS option")
-			logs.contains("Doing nothing since you've picked the BOTH CI tools option")
+			logs.contains("Doing nothing since you've picked the ALL PaaS option")
+			logs.contains("Doing nothing since you've picked the ALL CI tools option")
 			!logs.contains("Removing files")
 			!logs.contains("Removing lines")
 	}

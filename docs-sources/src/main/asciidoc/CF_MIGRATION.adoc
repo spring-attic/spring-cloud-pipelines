@@ -477,7 +477,7 @@ For both `greeting-ui` and `fortune-service`, add a `profiles` section to the `p
 ** For unit and integration tests. Note that this profile includes all tests except those that will explicitly be called by the smoke and e2e profiles.
 ** Tests matching this profile will be executed during the build-and-upload job
 * apicompatibility
-** For ensuring backward compatibility in case of API changes. Note that this is not effective until Stage 3, when we will add contracts. However, we add this profile now to ensure the api-compatibility-check job does not execute other tests.
+** For ensuring backward compatibility in case of API changes. Note that this is not effective until Stage 3, when we will add contracts. However, we add this profile now to ensure the api compatibility check during the `build-and-upload` job does not execute other tests.
 * smoke
 ** For tests to be run against the app deployed in the test space.
 * e2e
@@ -1149,7 +1149,7 @@ image::{cf-migration-root-docs}/fortune_service_generated_tests.png[title="Gener
 
 ===== 3.4 Enable backward compatibility API check
 
-To enable Spring Cloud Pipelines to catch any breaking API changes during the `build-api-compatibility-check` job, we add the Spring Cloud Contract maven plugin to the `apicompatibility` profile as well.
+To enable Spring Cloud Pipelines to catch any breaking API changes during the the api compatibility check during the `build-and-upload` job, we add the Spring Cloud Contract maven plugin to the `apicompatibility` profile as well.
 
 In this case, we want the plugin to generate tests based on contracts outside of the project (the ones from the latest prod version), so we configure the plugin to download the latest prod stub jar, which contains the old contract. The plugin will use the old contract and the specified base class, which in our example is the same as the one in the previous step, to generate contract tests. These tests are run against the new code to validate that it is still compatible with consumers complying with the prior contract. This ensures backward compatibility for the API.
 
@@ -1160,7 +1160,7 @@ In short, we edit the apicompatibility profile in the `fortune-service` `pom.xml
 * Configure it to use our base class (`io.pivotal.fortune.BaseClass`) to generate tests (we are using the same one as in the prior step)
 * Configure it to place auto-generated tests in the test package `io.pivotal.fortune.contracttests`
 
-Note that the package of the contracttests matches the `include` filter in the `apicompatibility` profile, so these tests will be run against the app during the `build-api-compatibility-check` job. For `fortune-service`, this serves to validate that the app conforms to the old contract.
+Note that the package of the contracttests matches the `include` filter in the `apicompatibility` profile, so these tests will be run against the app during the the api compatibility check during the `build-and-upload` job. For `fortune-service`, this serves to validate that the app conforms to the old contract.
 
 Here is the complete profile:
 
@@ -1223,7 +1223,7 @@ You will also see output in the `build-and-upload` job showing the execution of 
 
 Additionally, you will see the stub jar uploaded to Bintray along with the usual app jar.
 
-Finally, as you run through the pipeline a second time, you will see the contract tests from the latest prod version run against the new code in the output of the `build-api-compatibility-check` job. In this case there is no API change, but nonetheless the tests confirm that the latest prod version of the API can be used with the current code base.
+Finally, as you run through the pipeline a second time, you will see the contract tests from the latest prod version run against the new code in the output of the the api compatibility check during the `build-and-upload` job. In this case there is no API change, but nonetheless the tests confirm that the latest prod version of the API can be used with the current code base.
 
 ===== 3.7 Enable stubs for integration tests
 
@@ -1398,7 +1398,7 @@ To accomplish this, we put stub and port configuration information into the prop
 Spring Cloud Pipelines will use this information in two ways:
 
 . It will provide this information to the stub runner app via the app's environment variables
-- Spring Cloud Pipelines will aslo provide the `$REPO_WITH_BINARIES` as an env var for the stub runner app
+- Spring Cloud Pipelines will also provide the `$REPO_WITH_BINARIES` as an env var for the stub runner app
 - The stub runner app will use this information to download the stub from Bintray and expose it on the specified port
 . It will open the additional port specified on the stub runner app and map a new route to it
 - The format for each route will be `<stub-runner-app-name>-<hostname-uuid>-<env>-<app-name>-<port>.<domain>`

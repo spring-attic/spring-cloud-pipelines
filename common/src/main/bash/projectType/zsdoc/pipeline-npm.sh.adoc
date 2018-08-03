@@ -39,6 +39,8 @@ Has 15 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_
 
+_Exports (environment):_ ARTIFACT_TYPE [big]*//* NODE_BIN [big]*//* NPM_BIN
+
 build
 ~~~~~
 
@@ -55,6 +57,8 @@ Has 3 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~
 
@@ -65,6 +69,8 @@ ____
 Has 2 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ NPM_BIN
 
 downloadNpmIfMissing
 ~~~~~~~~~~~~~~~~~~~~
@@ -88,6 +94,8 @@ Called by:
  runE2eTests
  runSmokeTests
 
+_Environment variables used:_ NPM_BIN
+
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -103,6 +111,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 installNodeIfMissing
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -117,6 +127,10 @@ Uses feature(s): _export_
 Called by:
 
  downloadNpmIfMissing
+
+_List of exports (to environment):_ LANG
+
+_Environment variables used:_ NODE_BIN
 
 outputFolder
 ~~~~~~~~~~~~
@@ -155,6 +169,8 @@ Has 6 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 retrieveGroupId
 ~~~~~~~~~~~~~~~
 
@@ -169,6 +185,8 @@ Has 2 line(s). Calls functions:
      `-- installNodeIfMissing
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ NPM_BIN
 
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
@@ -185,6 +203,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 runE2eTests
 ~~~~~~~~~~~
 
@@ -200,6 +220,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ NPM_BIN
+
 runSmokeTests
 ~~~~~~~~~~~~~
 
@@ -214,6 +236,8 @@ Has 2 line(s). Calls functions:
      `-- installNodeIfMissing
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ NPM_BIN
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~

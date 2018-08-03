@@ -33,8 +33,42 @@ text.
 
 === Overriding pipelines
 
-Currently the best way for extension of Concourse and Jenkins pipelines is to make
+Currently the best way for extension of Concourse and Jenkins Jenkinsfile pipelines is to make
 a copy of the Concourse pipeline `yaml`s and Jenkins seed / pipeline jobs.
+
+==== Overriding Jenkins Job DSL pipelines
+
+We're providing an interface `org.springframework.cloud.pipelines.common.JobCustomizer`
+that allows you to provide customization for
+
+* all jobs
+* build jobs
+* test jobs
+* stage jobs
+* prod jobs
+
+We're using the JDK's `java.util.ServiceLoader` mechanism to achieve extensibility.
+
+It's enough for you to write an implementation of that interface (e.g. `com.example.MyJubCustomizer`)
+and create a `META-INF/org.springframework.cloud.pipelines.common.JobCustomizer` file in which you put the
+`com.example.MyJubCustomizer` line.
+
+If you create a JAR with your class (e.g. `com.example:my-customizer:1.0.0`) just put it to the build classpath
+
+[source,groovy]
+----
+dependencies {
+    // ...
+    libs "com.example:my-customizer:1.0.0"
+    // ...
+}
+----
+
+Another option is to just create an implementation in the sources under `src/main/resources/META-INF`
+if you don't want to create a separate library.
+
+Regardless of what you chose, your implementation will be executed for each job. You can add notifications
+or any other customizations of your choosing.
 
 === Leaving what's necessary
 

@@ -1,0 +1,199 @@
+{
+  "appConfig" : { },
+  "keepWaitingPipelines" : false,
+  "limitConcurrent" : true,
+  "stages" : [ {
+    "failPipeline" : true,
+    "name" : "Wait for stage env",
+    "refId" : "1",
+    "requisiteStageRefIds" : [ ],
+    "type" : "manualJudgment",
+    "judgmentInputs" : [ ],
+    "notifications" : [ ]
+  }, {
+    "failPipeline" : true,
+    "name" : "Prepare stage environment",
+    "refId" : "2",
+    "requisiteStageRefIds" : [ "1" ],
+    "type" : "jenkins",
+    "waitForCompletion" : true,
+    "parameters" : {
+      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
+    },
+    "master" : "Spinnaker-Jenkins",
+    "job" : "spinnaker-github-webhook-pipeline-stage-prepare",
+    "continuePipeline" : false
+  }, {
+    "clusters" : [ {
+      "account" : "calabasasaccount",
+      "application" : "githubwebhook",
+      "artifact" : {
+        "account" : "jenkins",
+        "pattern" : "^github-webhook.*VERSION.jar$",
+        "type" : "trigger"
+      },
+      "capacity" : {
+        "desired" : "1",
+        "max" : "1",
+        "min" : "1"
+      },
+      "cloudProvider" : "cloudfoundry",
+      "detail" : "",
+      "manifest" : {
+        "diskQuota" : "1024M",
+        "env" : [ ],
+        "instances" : 1,
+        "memory" : "1024M",
+        "services" : [ "github-rabbitmq", "github-eureka" ],
+        "type" : "direct",
+        "routes" : [ "github-webhook-sc-pipelines-stage." ]
+      },
+      "provider" : "cloudfoundry",
+      "region" : "scpipelines > sc-pipelines-stage",
+      "stack" : "",
+      "strategy" : "highlander"
+    } ],
+    "name" : "Deploy to stage",
+    "refId" : "3",
+    "requisiteStageRefIds" : [ "2" ],
+    "type" : "deploy"
+  }, {
+    "failPipeline" : true,
+    "name" : "Prepare for end to end tests",
+    "refId" : "4",
+    "requisiteStageRefIds" : [ "3" ],
+    "type" : "manualJudgment",
+    "judgmentInputs" : [ ],
+    "notifications" : [ ]
+  }, {
+    "failPipeline" : true,
+    "name" : "End to end tests on stage",
+    "refId" : "5",
+    "requisiteStageRefIds" : [ "4" ],
+    "type" : "jenkins",
+    "waitForCompletion" : true,
+    "parameters" : {
+      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
+    },
+    "master" : "Spinnaker-Jenkins",
+    "job" : "spinnaker-github-webhook-pipeline-stage-env-test",
+    "continuePipeline" : false
+  }, {
+    "failPipeline" : true,
+    "name" : "Approve production",
+    "refId" : "6",
+    "requisiteStageRefIds" : [ "5" ],
+    "type" : "manualJudgment",
+    "judgmentInputs" : [ ],
+    "notifications" : [ ]
+  }, {
+    "clusters" : [ {
+      "account" : "calabasasaccount",
+      "application" : "githubwebhook",
+      "artifact" : {
+        "account" : "jenkins",
+        "pattern" : "^github-webhook.*VERSION.jar$",
+        "type" : "trigger"
+      },
+      "capacity" : {
+        "desired" : "1",
+        "max" : "1",
+        "min" : "1"
+      },
+      "cloudProvider" : "cloudfoundry",
+      "detail" : "",
+      "manifest" : {
+        "diskQuota" : "1024M",
+        "env" : [ ],
+        "instances" : 1,
+        "memory" : "1024M",
+        "services" : [ "github-rabbitmq", "github-eureka" ],
+        "type" : "direct",
+        "routes" : [ "github-webhook." ]
+      },
+      "provider" : "cloudfoundry",
+      "region" : "scpipelines > sc-pipelines-prod",
+      "stack" : "",
+      "strategy" : "highlander"
+    } ],
+    "name" : "Deploy to prod",
+    "refId" : "7",
+    "requisiteStageRefIds" : [ "6" ],
+    "type" : "deploy"
+  }, {
+    "failPipeline" : true,
+    "name" : "Push prod tag",
+    "refId" : "8",
+    "requisiteStageRefIds" : [ "7" ],
+    "type" : "jenkins",
+    "waitForCompletion" : true,
+    "parameters" : {
+      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
+    },
+    "master" : "Spinnaker-Jenkins",
+    "job" : "spinnaker-github-webhook-pipeline-prod-tag-repo",
+    "continuePipeline" : false
+  }, {
+    "failPipeline" : true,
+    "name" : "Approve rollback",
+    "refId" : "9",
+    "requisiteStageRefIds" : [ "7" ],
+    "type" : "manualJudgment",
+    "judgmentInputs" : [ ],
+    "notifications" : [ ]
+  }, {
+    "clusters" : [ {
+      "account" : "calabasasaccount",
+      "application" : "githubwebhook",
+      "artifact" : {
+        "account" : "jenkins",
+        "pattern" : "^github-webhook.*VERSION-latestprodversion.jar$",
+        "type" : "trigger"
+      },
+      "capacity" : {
+        "desired" : "1",
+        "max" : "1",
+        "min" : "1"
+      },
+      "cloudProvider" : "cloudfoundry",
+      "detail" : "",
+      "manifest" : {
+        "diskQuota" : "1024M",
+        "env" : [ ],
+        "instances" : 1,
+        "memory" : "1024M",
+        "services" : [ "github-rabbitmq", "github-eureka" ],
+        "type" : "direct",
+        "routes" : [ "github-webhook." ]
+      },
+      "provider" : "cloudfoundry",
+      "region" : "scpipelines > sc-pipelines-prod",
+      "stack" : "",
+      "strategy" : "highlander"
+    } ],
+    "name" : "Rollback",
+    "refId" : "10",
+    "requisiteStageRefIds" : [ "9" ],
+    "type" : "deploy"
+  }, {
+    "failPipeline" : true,
+    "name" : "Remove prod tag",
+    "refId" : "11",
+    "requisiteStageRefIds" : [ "10" ],
+    "type" : "jenkins",
+    "waitForCompletion" : true,
+    "parameters" : {
+      "PIPELINE_VERSION" : "${trigger.properties['PIPELINE_VERSION']}"
+    },
+    "master" : "Spinnaker-Jenkins",
+    "job" : "spinnaker-github-webhook-pipeline-prod-env-remove-tag",
+    "continuePipeline" : false
+  } ],
+  "triggers" : [ {
+    "enabled" : true,
+    "job" : "spinnaker-github-webhook-pipeline-build",
+    "master" : "Spinnaker-Jenkins",
+    "type" : "jenkins",
+    "propertyFile" : "trigger.properties"
+  } ]
+}

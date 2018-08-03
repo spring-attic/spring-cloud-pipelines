@@ -60,6 +60,7 @@ FUNCTIONS
  prepareForSmokeTests
  prodDeploy
  projectType
+ removeProdTag
  retrieveAppName
  retrieveGroupId
  retrieveStubRunnerIds
@@ -90,6 +91,8 @@ Has 49 line(s). Calls functions:
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ BINARY_ARTIFACT_TYPE_NAME [big]*//* CUSTOM_SCRIPT_IDENTIFIER [big]*//* DEFAULT_PROJECT_NAME [big]*//* DOWNLOADABLE_SOURCES [big]*//* GIT_BIN [big]*//* LANGUAGE_TYPE [big]*//* LOWERCASE_ENV [big]*//* OUTPUT_FOLDER [big]*//* PAAS_TYPE [big]*//* PIPELINE_DESCRIPTOR [big]*//* PROJECT_NAME [big]*//* PROJECT_SETUP [big]*//* ROOT_PROJECT_DIR [big]*//* SOURCE_ARTIFACT_TYPE_NAME [big]*//* TEST_REPORTS_FOLDER
+
 apiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -103,14 +106,20 @@ ____
  # structure [dev/appName/version] or [prod/appName/version].
 ____
 
-Has 11 line(s). Calls functions:
+Has 20 line(s). Calls functions:
 
  apiCompatibilityCheck
  `-- executeApiCompatibilityCheck
 
+Uses feature(s): _export_
+
 Called by:
 
  build_api_compatibility_check.sh/Script-Body
+
+_List of exports (to environment):_ LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
+
+_Environment variables used:_ OUTPUT_FOLDER [big]*//* PROJECT_NAME [big]*//* LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
 
 build
 ~~~~~
@@ -156,6 +165,8 @@ Has 32 line(s). Calls functions:
 Called by:
 
  Script-Body
+
+_Environment variables used:_ PROJECT_NAME [big]*//* PROJECT_SETUP [big]*//* PIPELINE_DESCRIPTOR_PRESENT
 
 deleteService
 ~~~~~~~~~~~~~
@@ -215,6 +226,8 @@ Called by:
  pipeline-cf.sh/testDeploy
  pipeline-k8s.sh/testDeploy
 
+_Environment variables used:_ LOWERCASE_ENV [big]*//* PARSED_YAML [big]*//* test_smoke.sh -> ENVIRONMENT
+
 envNodeExists
 ~~~~~~~~~~~~~
 
@@ -231,6 +244,8 @@ Called by:
 
  deployServices
  pipeline-cf.sh/propagatePropertiesForTests
+
+_Environment variables used:_ PARSED_YAML
 
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -275,6 +290,10 @@ Uses feature(s): _export_
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_List of exports (to environment):_ LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
+
+_Environment variables used:_ LATEST_PROD_TAG [big]*//* PASSED_LATEST_PROD_TAG
+
 getMainModulePath
 ~~~~~~~~~~~~~~~~~
 
@@ -287,6 +306,8 @@ Has 10 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ PARSED_YAML
+
 latestProdTagFromGit
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -297,6 +318,8 @@ ____
 Has 3 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ GIT_BIN [big]*//* PROJECT_NAME
 
 outputFolder
 ~~~~~~~~~~~~
@@ -332,6 +355,10 @@ Called by:
  pipeline-cf.sh/prepareForSmokeTests
  pipeline-cf.sh/testRollbackDeploy
  pipeline-k8s.sh/testRollbackDeploy
+
+_List of exports (to environment):_ PARSED_YAML [big]*//* PIPELINE_DESCRIPTOR_PRESENT
+
+_Environment variables used:_ PIPELINE_DESCRIPTOR [big]*//* PARSED_YAML
 
 prepareForE2eTests
 ~~~~~~~~~~~~~~~~~~
@@ -385,6 +412,22 @@ ____
 Has 3 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+removeProdTag
+~~~~~~~~~~~~~
+
+____
+ # Removes production tag.
+ # Uses [PROJECT_NAME] and [PIPELINE_VERSION]
+____
+
+Has 4 line(s). Doesn't call other functions.
+
+Called by:
+
+ prod_rollback.sh/Script-Body
+
+_Environment variables used:_ GIT_BIN [big]*//* PROJECT_NAME
 
 retrieveAppName
 ~~~~~~~~~~~~~~~

@@ -39,6 +39,8 @@ Has 20 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_
 
+_Exports (environment):_ ARTIFACT_TYPE [big]*//* COMPOSER_BIN [big]*//* DOWNLOADABLE_SOURCES [big]*//* PHP_BIN
+
 build
 ~~~~~
 
@@ -57,6 +59,8 @@ Uses feature(s): _trap_
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ pipeline-jvm.sh -> BINARY_EXTENSION [big]*//* COMPOSER_BIN
+
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~
 
@@ -72,6 +76,8 @@ ____
 Has 26 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ pipeline-jvm.sh -> BINARY_EXTENSION
 
 downloadComposerIfMissing
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,6 +101,8 @@ Called by:
  runE2eTests
  runSmokeTests
 
+_Environment variables used:_ COMPOSER_BIN [big]*//* PHP_BIN
+
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -110,6 +118,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ COMPOSER_BIN
+
 installPhpIfMissing
 ~~~~~~~~~~~~~~~~~~~
 
@@ -124,6 +134,10 @@ Uses feature(s): _export_
 Called by:
 
  downloadComposerIfMissing
+
+_List of exports (to environment):_ LANG
+
+_Environment variables used:_ PHP_BIN
 
 outputFolder
 ~~~~~~~~~~~~
@@ -162,6 +176,8 @@ Has 6 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ COMPOSER_BIN
+
 retrieveGroupId
 ~~~~~~~~~~~~~~~
 
@@ -176,6 +192,8 @@ Has 2 line(s). Calls functions:
      `-- installPhpIfMissing
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ COMPOSER_BIN
 
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
@@ -192,6 +210,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ COMPOSER_BIN
+
 runE2eTests
 ~~~~~~~~~~~
 
@@ -207,6 +227,8 @@ Has 2 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ COMPOSER_BIN
+
 runSmokeTests
 ~~~~~~~~~~~~~
 
@@ -221,6 +243,8 @@ Has 2 line(s). Calls functions:
      `-- installPhpIfMissing
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ COMPOSER_BIN
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~

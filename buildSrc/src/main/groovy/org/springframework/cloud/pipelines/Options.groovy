@@ -15,11 +15,12 @@ class Options {
 	/**
 	 * Used PAAS. Not the one that should be deleted
 	 */
-	PaasType paasType = PaasType.BOTH
+	PaasType paasType = PaasType.ALL
+
 	/**
 	 * Used CI tool. Not the one that should be deleted
 	 */
-	CiTool ciTool = CiTool.BOTH
+	CiTool ciTool = CiTool.ALL
 
 	List<String> asKeywordsToDelete() {
 		List<String> paases = passes()
@@ -28,24 +29,24 @@ class Options {
 	}
 
 	private List<String> passes() {
-		if (!paasType || paasType == PaasType.BOTH) {
+		if (!paasType || paasType == PaasType.ALL) {
 			return []
 		}
-		return (PaasType.values() - paasType - PaasType.BOTH).collect { it.toString() }
+		return (PaasType.values() - paasType - PaasType.ALL).collect { it.toString() }
 	}
 
 	private List<String> cis() {
-		if (!ciTool || ciTool == CiTool.BOTH) {
+		if (!ciTool || ciTool == CiTool.ALL) {
 			return []
 		}
-		return (CiTool.values() - ciTool - CiTool.BOTH).collect { it.toString() }
+		return (CiTool.values() - ciTool - CiTool.ALL).collect { it.toString() }
 	}
 
 	enum PaasType {
-		CF, K8S, BOTH
+		CF, K8S, SPINNAKER, ALL
 	}
 
 	enum CiTool {
-		JENKINS, CONCOURSE, BOTH
+		JENKINS, CONCOURSE, ALL
 	}
 }

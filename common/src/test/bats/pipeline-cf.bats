@@ -20,6 +20,7 @@ setup() {
 	export PAAS_TEST_SPACE_PREFIX="test-space"
 	export PAAS_TEST_API_URL="test-api"
 	export RETRIEVE_STUBRUNNER_IDS_FUNCTION="fakeRetrieveStubRunnerIds"
+	export CF_TEST_MODE="true"
 
 	export PAAS_STAGE_USERNAME="stage-username"
 	export PAAS_STAGE_PASSWORD="stage-password"
@@ -73,7 +74,7 @@ function php {
 }
 
 function tar {
-	touch "${CF_BIN}"
+	cp "${FIXTURES_DIR}/fake_cf.sh" "${CF_BIN}"
 	echo "tar $*"
 }
 
@@ -196,6 +197,25 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "Downloading Cloud Foundry CLI"
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_success
+}
+
+@test "should download cf and connect to cluster and CF_BIN should point to downloaded CF CLI [CF]" {
+	export CF_BIN="cf"
+	export CF_TEST_MODE=""
+	export LANGUAGE_TYPE="dummy"
+	env="test"
+	cd "${TEMP_DIR}/maven/empty_project"
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	# to store output
+	run logInToPaas
+	# to store env vars
+	logInToPaas
+
+	assert_output --partial "Downloading Cloud Foundry CLI"
+	assert_output --partial "fake_cf api --skip-ssl-validation ${env}-api"
+	assert_equal "${CF_BIN}" "${TEMP_DIR}/maven/empty_project/cf"
 	assert_success
 }
 
@@ -408,6 +428,25 @@ export -f fakeRetrieveStubRunnerIds
 	assert_success
 }
 
+@test "should not login to PAAS for smoke tests if skip flag is set [CF][Maven]" {
+	export CF_BIN="cf"
+	export CF_SKIP_PREPARE_FOR_TESTS="true"
+	export APPLICATION_URL=my-project-sc-pipelines.demo.io
+	export STUBRUNNER_URL=foo.io
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	env="test"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+
+	run "${SOURCE_DIR}/test_smoke.sh"
+
+	# logged in
+	refute_output --partial "cf api --skip-ssl-validation ${env}-api"
+	refute_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
+	assert_output --partial "mvnw clean test -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url=foo.io -Djava.security.egd=file:///dev/urandom"
+	assert_success
+}
+
 @test "should prepare and execute smoke tests [CF][Maven]" {
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="maven"
@@ -439,6 +478,26 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-${projectName}"
 	assert_output --partial "gradlew artifactId -q"
 	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url= -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
+	assert_success
+}
+
+@test "should not login to PAAS for smoke tests if skip flag is set [CF][Gradle]" {
+	export CF_BIN="cf"
+	export CF_SKIP_PREPARE_FOR_TESTS="true"
+	export APPLICATION_URL=my-project-sc-pipelines.demo.io
+	export STUBRUNNER_URL=foo.io
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	env="test"
+	projectName="gradlew artifactId -q"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+
+	run "${SOURCE_DIR}/test_smoke.sh"
+
+	# logged in
+	refute_output --partial "cf api --skip-ssl-validation ${env}-api"
+	refute_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
+	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url=foo.io -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
 
@@ -566,6 +625,27 @@ export -f fakeRetrieveStubRunnerIds
 	assert_success
 }
 
+@test "should not login to PAAS for rollback tests if skip flag is set [CF][Maven]" {
+	export CF_BIN="cf"
+	export CF_SKIP_PREPARE_FOR_TESTS="true"
+	export APPLICATION_URL=my-project-sc-pipelines.demo.io
+	export STUBRUNNER_URL=foo.io
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/1.0.0.FOO"
+	env="test"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+
+	run "${SOURCE_DIR}/test_rollback_smoke.sh"
+
+	# logged in
+	refute_output --partial "cf api --skip-ssl-validation ${env}-api"
+	refute_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
+	assert_output --partial "mvnw clean test -Psmoke -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url=foo.io -Djava.security.egd=file:///dev/urandom"
+	assert_success
+}
+
 @test "should prepare and execute rollback tests [CF][Gradle]" {
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
@@ -584,6 +664,28 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-${projectNameUppercase}"
 	assert_output --partial "gradlew artifactId -q"
 	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url= -Dstubrunner.url= -Djava.security.egd=file:///dev/urandom"
+	assert_success
+}
+
+@test "should not login to PAAS for rollback tests if skip flag is set [CF][Gradle]" {
+	export CF_BIN="cf"
+	export CF_SKIP_PREPARE_FOR_TESTS="true"
+	export APPLICATION_URL=my-project-sc-pipelines.demo.io
+	export STUBRUNNER_URL=foo.io
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	export PROJECT_NAME="build_project"
+	export LATEST_PROD_TAG="prod/${PROJECT_NAME}/1.0.0.FOO"
+	env="test"
+	projectNameUppercase="gradlew artifactId -q"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+
+	run "${SOURCE_DIR}/test_smoke.sh"
+
+	# logged in
+	refute_output --partial "cf api --skip-ssl-validation ${env}-api"
+	refute_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
+	assert_output --partial "gradlew smoke -PnewVersion= -Dapplication.url=my-project-sc-pipelines.demo.io -Dstubrunner.url=foo.io -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
 
@@ -729,6 +831,24 @@ export -f fakeRetrieveStubRunnerIds
 	assert_success
 }
 
+@test "should not login to PAAS when switch is set and then prepare and execute e2e tests [CF][Maven]" {
+	export CF_BIN="cf"
+	export CF_SKIP_PREPARE_FOR_TESTS="true"
+	export APPLICATION_URL=my-project-sc-pipelines.demo.io
+	export BUILD_PROJECT_TYPE="maven"
+	export OUTPUT_DIR="target"
+	env="stage"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+
+	run "${SOURCE_DIR}/stage_e2e.sh"
+
+	# logged in
+	refute_output --partial "cf api --skip-ssl-validation ${env}-api"
+	refute_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "mvnw clean test -Pe2e -Dapplication.url=my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
+	assert_success
+}
+
 @test "should prepare and execute e2e tests [CF][Gradle]" {
 	export CF_BIN="cf"
 	export BUILD_PROJECT_TYPE="gradle"
@@ -742,6 +862,24 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf api --skip-ssl-validation ${env}-api"
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
 	assert_output --partial "gradlew e2e -PnewVersion= -Dapplication.url= -Djava.security.egd=file:///dev/urandom"
+	assert_success
+}
+
+@test "should not login to PAAS when switch is set and then prepare and execute e2e tests [CF][Gradle]" {
+	export CF_BIN="cf"
+	export BUILD_PROJECT_TYPE="gradle"
+	export CF_SKIP_PREPARE_FOR_TESTS="true"
+	export APPLICATION_URL=my-project-sc-pipelines.demo.io
+	export OUTPUT_DIR="build/libs"
+	env="stage"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/build_project"
+
+	run "${SOURCE_DIR}/stage_e2e.sh"
+
+	# logged in
+	refute_output --partial "cf api --skip-ssl-validation ${env}-api"
+	refute_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space"
+	assert_output --partial "gradlew e2e -PnewVersion= -Dapplication.url=my-project-sc-pipelines.demo.io -Djava.security.egd=file:///dev/urandom"
 	assert_success
 }
 

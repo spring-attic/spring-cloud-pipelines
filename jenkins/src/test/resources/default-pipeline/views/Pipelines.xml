@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hudson.plugins.nested__view.NestedView>
+    <filterExecutors>false</filterExecutors>
+    <filterQueue>false</filterQueue>
+    <properties class="hudson.model.View$PropertyList"/>
+    <views>
+        <se.diabol.jenkins.pipeline.DeliveryPipelineView>
+            <filterExecutors>false</filterExecutors>
+            <filterQueue>false</filterQueue>
+            <properties class="hudson.model.View$PropertyList"/>
+            <noOfPipelines>5</noOfPipelines>
+            <showAggregatedPipeline>false</showAggregatedPipeline>
+            <noOfColumns>1</noOfColumns>
+            <sorting>none</sorting>
+            <showAvatars>true</showAvatars>
+            <updateInterval>5</updateInterval>
+            <showChanges>true</showChanges>
+            <allowManualTriggers>true</allowManualTriggers>
+            <allowPipelineStart>true</allowPipelineStart>
+            <componentSpecs>
+                <se.diabol.jenkins.pipeline.DeliveryPipelineView_-ComponentSpec>
+                    <name>Deploy foo to production</name>
+                    <firstJob>foo-pipeline-build</firstJob>
+                </se.diabol.jenkins.pipeline.DeliveryPipelineView_-ComponentSpec>
+            </componentSpecs>
+            <allowRebuild>true</allowRebuild>
+            <showDescription>true</showDescription>
+            <showPromotions>true</showPromotions>
+            <showTotalBuildTime>true</showTotalBuildTime>
+            <showTestResults>true</showTestResults>
+            <pagingEnabled>true</pagingEnabled>
+            <name>foo</name>
+            <owner reference="../../.." class="hudson.plugins.nested_view.NestedView"/>
+        </se.diabol.jenkins.pipeline.DeliveryPipelineView>
+    </views>
+</hudson.plugins.nested__view.NestedView>

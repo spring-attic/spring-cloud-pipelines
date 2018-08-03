@@ -37,6 +37,8 @@ Has 24 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_
 
+_Exports (environment):_ BUILD_OPTIONS [big]*//* MAVENW_BIN [big]*//* build [big]*//* executeApiCompatibilityCheck [big]*//* outputFolder [big]*//* retrieveAppName [big]*//* retrieveGroupId [big]*//* runE2eTests [big]*//* runSmokeTests [big]*//* testResultsAntPattern
+
 build
 ~~~~~
 
@@ -52,6 +54,8 @@ Has 8 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ BUILD_OPTIONS [big]*//* MAVENW_BIN
+
 executeApiCompatibilityCheck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -65,6 +69,8 @@ Has 6 line(s). Calls functions:
  `-- printTestResults
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ BUILD_OPTIONS [big]*//* MAVENW_BIN
 
 extractMavenProperty
 ~~~~~~~~~~~~~~~~~~~~
@@ -80,6 +86,8 @@ Has 12 line(s). Doesn't call other functions.
 Called by:
 
  retrieveStubRunnerIds
+
+_Environment variables used:_ MAVENW_BIN
 
 outputFolder
 ~~~~~~~~~~~~
@@ -123,6 +131,8 @@ Has 14 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ MAVENW_BIN
+
 retrieveGroupId
 ~~~~~~~~~~~~~~~
 
@@ -136,6 +146,8 @@ ____
 Has 8 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ MAVENW_BIN
 
 retrieveStubRunnerIds
 ~~~~~~~~~~~~~~~~~~~~~
@@ -165,6 +177,8 @@ Has 8 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
+_Environment variables used:_ BUILD_OPTIONS [big]*//* MAVENW_BIN
+
 runSmokeTests
 ~~~~~~~~~~~~~
 
@@ -178,6 +192,8 @@ Has 9 line(s). Calls functions:
  `-- printTestResults
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ BUILD_OPTIONS [big]*//* MAVENW_BIN
 
 testResultsAntPattern
 ~~~~~~~~~~~~~~~~~~~~~

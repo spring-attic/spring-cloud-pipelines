@@ -41,8 +41,12 @@ class ProjectCustomizer {
 				filesToRemove.addAll(
 					paasFiles(Options.PaasType.CF.name()))
 				break
-			case Options.PaasType.BOTH:
-				inputReader.println("Doing nothing since you've picked the BOTH PaaS option")
+			case Options.PaasType.SPINNAKER:
+				filesToRemove.addAll(
+					paasFiles(Options.PaasType.K8S.name()))
+				break
+			case Options.PaasType.ALL:
+				inputReader.println("Doing nothing since you've picked the ALL PaaS option")
 		}
 	}
 
@@ -54,8 +58,8 @@ class ProjectCustomizer {
 			case Options.CiTool.CONCOURSE:
 				filesToRemove.addAll(jenkinsFiles())
 				break
-			case Options.CiTool.BOTH:
-				inputReader.println("Doing nothing since you've picked the BOTH CI tools option")
+			case Options.CiTool.ALL:
+				inputReader.println("Doing nothing since you've picked the ALL CI tools option")
 		}
 	}
 

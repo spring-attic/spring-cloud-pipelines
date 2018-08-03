@@ -69,14 +69,23 @@ function apiCompatibilityCheck() {
 	if [[ -z "${prodTag}" ]]; then
 		echo "No prod release took place - skipping this step"
 	else
+		export LATEST_PROD_TAG PASSED_LATEST_PROD_TAG
+		LATEST_PROD_TAG="${prodTag}"
+		PASSED_LATEST_PROD_TAG="${prodTag}"
 		PROJECT_NAME=${PROJECT_NAME?PROJECT_NAME must be set!}
 		LATEST_PROD_VERSION=${prodTag#"prod/${PROJECT_NAME}/"}
 		echo "Last prod version equals [${LATEST_PROD_VERSION}]"
 		executeApiCompatibilityCheck "${LATEST_PROD_VERSION}"
+		mkdir -p "${OUTPUT_FOLDER}"
+		{
+			echo "LATEST_PROD_VERSION=${LATEST_PROD_VERSION}";
+			echo "LATEST_PROD_TAG=${prodTag}";
+			echo "PASSED_LATEST_PROD_TAG=${prodTag}";
+		} >> "${OUTPUT_FOLDER}/trigger.properties"
 	fi
 } # }}}
 
-# FUNCTION: apiCompatibilityCheck {{{
+# FUNCTION: executeApiCompatibilityCheck {{{
 # Execute api compatibility check step for the given latest production version $1
 #
 # $1 - retrieved latest production version
@@ -314,6 +323,16 @@ function trimRefsTag() {
 function extractVersionFromProdTag() {
 	local tag="${1}"
 	echo "${tag#prod/}"
+} # }}}
+
+# FUNCTION: removeProdTag {{{
+# Removes production tag.
+# Uses [PROJECT_NAME] and [PIPELINE_VERSION]
+function removeProdTag() {
+	local tagName
+	tagName="${1:-prod/${PROJECT_NAME}/${PIPELINE_VERSION}}"
+	echo "Deleting production tag [${tagName}]"
+	"${GIT_BIN}" push --delete origin "${tagName}"
 } # }}}
 
 # FUNCTION: parsePipelineDescriptor {{{

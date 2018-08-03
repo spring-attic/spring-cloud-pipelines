@@ -22,14 +22,14 @@ class OptionsReader {
 			inputReader.println("Which PAAS type do you want to use? Options: ${Options.PaasType.values()}")
 			String paasType = textOrDefault(
 				inputReader.readLine(),
-				Options.PaasType.BOTH.toString()
+				Options.PaasType.ALL.toString()
 			)
 			inputReader.println("\nYou chose [${Options.PaasType.valueOf(paasType.toUpperCase())}]\n\n")
 			inputReader.println("=== CI TOOL ===")
 			inputReader.println("Which CI tool do you want to use? Options: ${Options.CiTool.values()}")
 			String ciTool = textOrDefault(
 				inputReader.readLine(),
-				Options.CiTool.BOTH.toString()
+				Options.CiTool.ALL.toString()
 			)
 			inputReader.println("\nYou chose [${Options.CiTool.valueOf(ciTool.toUpperCase())}]\n\n")
 			Options.PaasType paasTypeEnum = Options.PaasType.valueOf(paasType.toUpperCase())

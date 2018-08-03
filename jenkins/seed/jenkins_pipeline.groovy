@@ -34,13 +34,17 @@ factory.job('meta-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
 	wrappers {
 		parameters {
 			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
+			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
+			stringParam('PAAS_TEST_CREDENTIAL_ID', 'cf-test', 'ID of the CF credentials for test environment')
+			stringParam('PAAS_STAGE_CREDENTIAL_ID', 'cf-stage', 'ID of the CF credentials for stage environment')
+			stringParam('PAAS_PROD_CREDENTIAL_ID', 'cf-prod', 'ID of the CF credentials for prod environment')
 		}
 	}
 }
@@ -86,6 +90,15 @@ factory.job('jenkins-pipeline-cf-seed') {
 		}
 	}
 	wrappers {
+		credentialsBinding {
+			usernamePassword("PAAS_TEST_USERNAME", "PAAS_TEST_PASSWORD",
+				binding.variables["PAAS_TEST_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_STAGE_USERNAME", "PAAS_STAGE_PASSWORD",
+				binding.variables["PAAS_STAGE_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_PROD_USERNAME", "PAAS_PROD_PASSWORD",
+				binding.variables["PAAS_PROD_CREDENTIAL_ID"] as String)
+		}
+
 		parameters {
 			// Common
 			stringParam('REPOS', repos,
@@ -120,7 +133,6 @@ factory.job('jenkins-pipeline-cf-seed') {
 			stringParam('PAAS_STAGE_SPACE', 'sc-pipelines-stage', 'Name of the CF space for stage env')
 			stringParam('PAAS_PROD_ORG', 'pcfdev-org', 'Name of the CF organization for prod env')
 			stringParam('PAAS_PROD_SPACE', 'sc-pipelines-prod', 'Name of the CF space for prod env')
-			stringParam('JAVA_BUILDPACK_URL', 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1', "The URL to the Java buildpack to be used by CF")
 			stringParam('PAAS_TEST_CREDENTIAL_ID', 'cf-test', 'ID of the CF credentials for test environment')
 			stringParam('PAAS_STAGE_CREDENTIAL_ID', 'cf-stage', 'ID of the CF credentials for stage environment')
 			stringParam('PAAS_PROD_CREDENTIAL_ID', 'cf-prod', 'ID of the CF credentials for prod environment')
@@ -136,11 +148,184 @@ factory.job('jenkins-pipeline-cf-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
 }
+
+factory.job('jenkins-pipeline-cf-crawler-seed') {
+	scm {
+		git {
+			remote {
+				github('spring-cloud/spring-cloud-pipelines')
+			}
+			branch('${TOOLS_BRANCH}')
+			extensions {
+				submoduleOptions {
+					recursive()
+				}
+			}
+		}
+	}
+	wrappers {
+		credentialsBinding {
+			usernamePassword("PAAS_TEST_USERNAME", "PAAS_TEST_PASSWORD",
+				binding.variables["PAAS_TEST_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_STAGE_USERNAME", "PAAS_STAGE_PASSWORD",
+				binding.variables["PAAS_STAGE_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_PROD_USERNAME", "PAAS_PROD_PASSWORD",
+				binding.variables["PAAS_PROD_CREDENTIAL_ID"] as String)
+			if (Boolean.parseBoolean(binding.variables["GIT_TOKEN"] as String)) {
+				string("GIT_TOKEN", binding.variables["GIT_TOKEN_ID"] as String)
+			} else {
+				usernamePassword("GIT_USERNAME", "GIT_PASSWORD",
+					binding.variables["GIT_CREDENTIAL_ID"] as String)
+			}
+		}
+		parameters {
+			// Common
+			stringParam('REPO_ORGANIZATION', "sc-pipelines", "Pass the name of the organization for which you want to generate the pipeline")
+			stringParam('REPO_PROJECTS_EXCLUDE_PATTERN', "", "Regex pattern used to exclude projects from pipeline generation")
+			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
+			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
+			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
+			stringParam('JDK_VERSION', 'jdk8', 'ID of Git installation')
+			stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
+			stringParam('REPO_WITH_BINARIES', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs for downloading")
+			stringParam('REPO_WITH_BINARIES_FOR_UPLOAD', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs for uploading")
+			stringParam('REPO_WITH_BINARIES_CREDENTIAL_ID', 'repo-with-binaries', "Credential ID of repo with binaries")
+			stringParam('GIT_EMAIL', 'email@example.com', "Email used to tag the repo")
+			stringParam('GIT_NAME', 'Pivo Tal', "Name used to tag the repo")
+			stringParam('TOOLS_REPOSITORY', 'https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.tar.gz', "The URL to tarball or URL to git repository containing pipeline functions repository. Has to end either with .tar.gz or .git ")
+			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
+			booleanParam('AUTO_DEPLOY_TO_STAGE', true, 'Should deployment to stage be automatic')
+			booleanParam('AUTO_DEPLOY_TO_PROD', true, 'Should deployment to prod be automatic')
+			booleanParam('API_COMPATIBILITY_STEP_REQUIRED', true, 'Should api compatibility step be present')
+			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
+			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
+			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
+			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
+
+			stringParam('PAAS_TEST_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for test env')
+			stringParam('PAAS_STAGE_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for stage env')
+			stringParam('PAAS_PROD_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for prod env')
+			stringParam('PAAS_TEST_ORG', 'pcfdev-org', 'Name of the CF organization for test env')
+			stringParam('PAAS_TEST_SPACE_PREFIX', 'sc-pipelines-test', 'Prefix of the name of the CF space for the test env to which the app name will be appended')
+			stringParam('PAAS_STAGE_ORG', 'pcfdev-org', 'Name of the CF organization for stage env')
+			stringParam('PAAS_STAGE_SPACE', 'sc-pipelines-stage', 'Name of the CF space for stage env')
+			stringParam('PAAS_PROD_ORG', 'pcfdev-org', 'Name of the CF organization for prod env')
+			stringParam('PAAS_PROD_SPACE', 'sc-pipelines-prod', 'Name of the CF space for prod env')
+			stringParam('PAAS_TEST_CREDENTIAL_ID', 'cf-test', 'ID of the CF credentials for test environment')
+			stringParam('PAAS_STAGE_CREDENTIAL_ID', 'cf-stage', 'ID of the CF credentials for stage environment')
+			stringParam('PAAS_PROD_CREDENTIAL_ID', 'cf-prod', 'ID of the CF credentials for prod environment')
+			stringParam('PAAS_HOSTNAME_UUID', '', "Additional suffix for the route. In a shared environment the default routes can be already taken")
+		}
+	}
+	steps {
+		gradle("clean build -x test")
+		dsl {
+			external('jenkins/jobs/jenkins_pipeline_crawler_sample.groovy')
+			removeAction('DISABLE')
+			removeViewAction('DELETE')
+			ignoreExisting(false)
+			lookupStrategy('SEED_JOB')
+			additionalClasspath([
+				'jenkins/src/main/groovy', 'jenkins/src/main/bash', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
+			].join("\n"))
+		}
+	}
+}
+
+// remove::start[SPINNAKER]
+factory.job('jenkins-spinnaker-cf-seed') {
+	scm {
+		git {
+			remote {
+				github('spring-cloud/spring-cloud-pipelines')
+			}
+			branch('${TOOLS_BRANCH}')
+			extensions {
+				submoduleOptions {
+					recursive()
+				}
+			}
+		}
+	}
+	wrappers {
+		credentialsBinding {
+			usernamePassword("PAAS_TEST_USERNAME", "PAAS_TEST_PASSWORD",
+				binding.variables["PAAS_TEST_CREDENTIAL_ID"] as String)
+			usernamePassword("PAAS_STAGE_USERNAME", "PAAS_STAGE_PASSWORD",
+				binding.variables["PAAS_STAGE_CREDENTIAL_ID"] as String)
+			if (Boolean.parseBoolean(binding.variables["GIT_TOKEN"] as String)) {
+				string("GIT_TOKEN", binding.variables["GIT_TOKEN_ID"] as String)
+			} else {
+				usernamePassword("GIT_USERNAME", "GIT_PASSWORD",
+					binding.variables["GIT_CREDENTIAL_ID"] as String)
+			}
+		}
+		parameters {
+			// Common
+			stringParam('REPO_ORGANIZATION', "sc-pipelines", "Pass the name of the organization for which you want to generate the pipeline")
+			stringParam('REPO_PROJECTS_EXCLUDE_PATTERN', "", "Regex pattern used to exclude projects from pipeline generation")
+			stringParam('GIT_CREDENTIAL_ID', 'git', 'ID of the credentials used to push tags to git repo')
+			stringParam('GIT_SSH_CREDENTIAL_ID', 'gitSsh', 'ID of the ssh credentials used to push tags to git repo')
+			booleanParam('GIT_USE_SSH_KEY', false, 'Should ssh key be used for git')
+			stringParam('JDK_VERSION', 'jdk8', 'ID of Git installation')
+			stringParam('M2_SETTINGS_REPO_ID', 'artifactory-local', "Name of the server ID in Maven's settings.xml")
+			stringParam('REPO_WITH_BINARIES', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs for downloading")
+			stringParam('REPO_WITH_BINARIES_FOR_UPLOAD', 'http://artifactory:8081/artifactory/libs-release-local', "Address to hosted JARs for uploading")
+			stringParam('REPO_WITH_BINARIES_CREDENTIAL_ID', 'repo-with-binaries', "Credential ID of repo with binaries")
+			stringParam('GIT_EMAIL', 'email@example.com', "Email used to tag the repo")
+			stringParam('GIT_NAME', 'Pivo Tal', "Name used to tag the repo")
+			stringParam('TOOLS_REPOSITORY', 'https://github.com/spring-cloud/spring-cloud-pipelines/archive/master.tar.gz', "The URL to tarball or URL to git repository containing pipeline functions repository. Has to end either with .tar.gz or .git ")
+			stringParam('TOOLS_BRANCH', 'master', "The branch with pipeline functions")
+			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
+			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
+			// Spinnaker
+			stringParam('SPINNAKER_JENKINS_MASTER', '', "The name of Jenkins master used by Spinnaker")
+			stringParam('SPINNAKER_TEST_HOSTNAME', '', "The hostname appended to the test routes")
+			stringParam('SPINNAKER_STAGE_HOSTNAME', '', "The hostname appended to the stage routes")
+			stringParam('SPINNAKER_PROD_HOSTNAME', '', "The hostname appended to the prod routes")
+			stringParam('SPINNAKER_TEST_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
+			stringParam('SPINNAKER_STAGE_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
+			stringParam('SPINNAKER_PROD_DEPLOYMENT_ACCOUNT', '', "The name of account used by Spinnaker for deployment")
+			// PAAS
+			stringParam('PAAS_TEST_ORG', 'pcfdev-org', 'Name of the CF organization for test env')
+			stringParam('PAAS_TEST_SPACE_PREFIX', 'sc-pipelines-test', 'Prefix of the name of the CF space for the test env to which the app name will be appended')
+			stringParam('PAAS_STAGE_ORG', 'pcfdev-org', 'Name of the CF organization for stage env')
+			stringParam('PAAS_STAGE_SPACE', 'sc-pipelines-stage', 'Name of the CF space for stage env')
+			stringParam('PAAS_PROD_ORG', 'pcfdev-org', 'Name of the CF organization for prod env')
+			stringParam('PAAS_PROD_SPACE', 'sc-pipelines-prod', 'Name of the CF space for prod env')
+			stringParam('PAAS_TEST_CREDENTIAL_ID', 'cf-test', 'ID of the CF credentials for test environment')
+			stringParam('PAAS_STAGE_CREDENTIAL_ID', 'cf-stage', 'ID of the CF credentials for stage environment')
+			stringParam('PAAS_TEST_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for test env')
+			stringParam('PAAS_STAGE_API_URL', 'api.local.pcfdev.io', 'URL to CF Api for stage env')
+		}
+	}
+	steps {
+		gradle("clean build -x test --refresh-dependencies")
+		dsl {
+			external('jenkins/jobs/jenkins_spinnaker_pipeline_sample*.groovy')
+			removeAction('DISABLE')
+			removeViewAction('DELETE')
+			ignoreExisting(false)
+			lookupStrategy('SEED_JOB')
+			additionalClasspath([
+				'jenkins/src/main/groovy', 'jenkins/src/main/bash', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
+			].join("\n"))
+		}
+	}
+	publishers {
+		archiveArtifacts {
+			allowEmpty(false)
+			pattern("**/build/*_pipeline.json")
+		}
+	}
+}
+// remove::end[SPINNAKER]
+
 factory.job('jenkins-pipeline-cf-declarative-seed') {
 	scm {
 		git {
@@ -189,7 +374,6 @@ factory.job('jenkins-pipeline-cf-declarative-seed') {
 			stringParam('PAAS_STAGE_SPACE', 'sc-pipelines-stage', 'Name of the CF space for stage env')
 			stringParam('PAAS_PROD_ORG', 'pcfdev-org', 'Name of the CF organization for prod env')
 			stringParam('PAAS_PROD_SPACE', 'sc-pipelines-prod', 'Name of the CF space for prod env')
-			stringParam('JAVA_BUILDPACK_URL', 'https://github.com/cloudfoundry/java-buildpack.git#v3.8.1', "The URL to the Java buildpack to be used by CF")
 			stringParam('PAAS_TEST_CREDENTIAL_ID', 'cf-test', 'ID of the CF credentials for test environment')
 			stringParam('PAAS_STAGE_CREDENTIAL_ID', 'cf-stage', 'ID of the CF credentials for stage environment')
 			stringParam('PAAS_PROD_CREDENTIAL_ID', 'cf-prod', 'ID of the CF credentials for prod environment')
@@ -205,7 +389,7 @@ factory.job('jenkins-pipeline-cf-declarative-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
@@ -300,7 +484,7 @@ factory.job('jenkins-pipeline-k8s-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}
@@ -394,7 +578,7 @@ factory.job('jenkins-pipeline-k8s-declarative-seed') {
 			ignoreExisting(false)
 			lookupStrategy('SEED_JOB')
 			additionalClasspath([
-				'jenkins/src/main/groovy', 'jenkins/src/main/resources'
+				'jenkins/src/main/groovy', 'jenkins/src/main/resources', 'jenkins/build/lib/*.*'
 			].join("\n"))
 		}
 	}

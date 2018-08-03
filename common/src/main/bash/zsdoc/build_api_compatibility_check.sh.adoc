@@ -29,3 +29,5 @@ Has 13 line(s). Calls functions:
 
 Uses feature(s): _export_, _source_
 
+_Exports (environment):_ ENVIRONMENT
+

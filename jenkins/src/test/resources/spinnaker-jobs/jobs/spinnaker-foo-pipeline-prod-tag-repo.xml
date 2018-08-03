@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <actions/>
+    <description/>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <se.diabol.jenkins.pipeline.PipelineProperty>
+            <taskName>Tag the repo</taskName>
+            <stageName>Prod</stageName>
+        </se.diabol.jenkins.pipeline.PipelineProperty>
+        <EnvInjectJobProperty>
+            <info>
+                <propertiesContent>PROJECT_NAME=foo
+PAAS_TEST_SPACE_PREFIX=sc-pipelines-test</propertiesContent>
+                <loadFilesFromMaster>false</loadFilesFromMaster>
+            </info>
+            <on>true</on>
+            <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+            <keepBuildVariables>true</keepBuildVariables>
+            <overrideBuildParameters>false</overrideBuildParameters>
+            <contributors/>
+        </EnvInjectJobProperty>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.model.StringParameterDefinition>
+                    <name>PIPELINE_VERSION</name>
+                    <defaultValue/>
+                    <description>Version of the project to run the tests against</description>
+                </hudson.model.StringParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+    </properties>
+    <canRoam>true</canRoam>
+    <disabled>false</disabled>
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <triggers/>
+    <concurrentBuild>false</concurrentBuild>
+    <builders/>
+    <publishers>
+        <hudson.plugins.git.GitPublisher>
+            <configVersion>2</configVersion>
+            <pushMerge>false</pushMerge>
+            <pushOnlyIfSuccess>true</pushOnlyIfSuccess>
+            <forcePush>true</forcePush>
+            <tagsToPush>
+                <hudson.plugins.git.GitPublisher_-TagToPush>
+                    <targetRepoName>origin</targetRepoName>
+                    <tagName>prod/foo/${PIPELINE_VERSION}</tagName>
+                    <tagMessage/>
+                    <createTag>true</createTag>
+                    <updateTag>true</updateTag>
+                </hudson.plugins.git.GitPublisher_-TagToPush>
+            </tagsToPush>
+            <branchesToPush/>
+        </hudson.plugins.git.GitPublisher>
+    </publishers>
+    <buildWrappers>
+        <hudson.plugins.timestamper.TimestamperBuildWrapper/>
+        <hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+            <colorMapName>xterm</colorMapName>
+        </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+        <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper/>
+        <hudson.plugins.build__timeout.BuildTimeoutWrapper>
+            <strategy class="hudson.plugins.build_timeout.impl.NoActivityTimeOutStrategy">
+                <timeout>300000</timeout>
+            </strategy>
+            <operationList>
+                <hudson.plugins.build__timeout.operations.FailOperation/>
+                <hudson.plugins.build__timeout.operations.WriteDescriptionOperation>
+                    <description>Build failed due to timeout after {0} minutes of inactivity</description>
+                </hudson.plugins.build__timeout.operations.WriteDescriptionOperation>
+            </operationList>
+        </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+        <se.diabol.jenkins.pipeline.PipelineVersionContributor>
+            <versionTemplate>${ENV,var="PIPELINE_VERSION"}</versionTemplate>
+            <updateDisplayName>true</updateDisplayName>
+        </se.diabol.jenkins.pipeline.PipelineVersionContributor>
+    </buildWrappers>
+    <scm class="hudson.plugins.git.GitSCM">
+        <userRemoteConfigs>
+            <hudson.plugins.git.UserRemoteConfig>
+                <name>origin</name>
+                <url>http://bar.com/baz/foo.git</url>
+                <credentialsId>git</credentialsId>
+            </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+            <hudson.plugins.git.BranchSpec>
+                <name>dev/foo/${PIPELINE_VERSION}</name>
+            </hudson.plugins.git.BranchSpec>
+        </branches>
+        <configVersion>2</configVersion>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <gitTool>Default</gitTool>
+        <extensions>
+            <hudson.plugins.git.extensions.impl.WipeWorkspace/>
+            <hudson.plugins.git.extensions.impl.SubmoduleOption>
+                <disableSubmodules>false</disableSubmodules>
+                <recursiveSubmodules>true</recursiveSubmodules>
+                <trackingSubmodules>false</trackingSubmodules>
+            </hudson.plugins.git.extensions.impl.SubmoduleOption>
+            <hudson.plugins.git.extensions.impl.UserIdentity>
+                <email>Pivo Tal</email>
+                <name>pivo@tal.com</name>
+            </hudson.plugins.git.extensions.impl.UserIdentity>
+        </extensions>
+    </scm>
+</project>

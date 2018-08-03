@@ -33,7 +33,7 @@ class LinesRemover {
 															  '**/*.gradle',
 															  '**/*.yml',
 															  '**/*.properties']) {
-		if (options.ciTool == Options.CiTool.BOTH && options.paasType == Options.PaasType.BOTH) {
+		if (options.ciTool == Options.CiTool.ALL && options.paasType == Options.PaasType.ALL) {
 			return
 		}
 		FileTree tree = project.fileTree(dir: dirName, include: includes, excludes: ignored)

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <actions/>
+    <description/>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <se.diabol.jenkins.pipeline.PipelineProperty>
+            <taskName>Tests on stage</taskName>
+            <stageName>Stage</stageName>
+        </se.diabol.jenkins.pipeline.PipelineProperty>
+        <EnvInjectJobProperty>
+            <info>
+                <propertiesContent>PROJECT_NAME=foo
+PAAS_TEST_SPACE_PREFIX=sc-pipelines-test</propertiesContent>
+                <loadFilesFromMaster>false</loadFilesFromMaster>
+            </info>
+            <on>true</on>
+            <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+            <keepBuildVariables>true</keepBuildVariables>
+            <overrideBuildParameters>false</overrideBuildParameters>
+            <contributors/>
+        </EnvInjectJobProperty>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.model.StringParameterDefinition>
+                    <name>PIPELINE_VERSION</name>
+                    <defaultValue/>
+                    <description>Version of the project to run the tests against</description>
+                </hudson.model.StringParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+    </properties>
+    <canRoam>true</canRoam>
+    <disabled>false</disabled>
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <triggers/>
+    <concurrentBuild>false</concurrentBuild>
+    <builders>
+        <hudson.tasks.Shell>
+            <command>#!/bin/bash
+				set +x
+				tmpDir="$(mktemp -d)"
+				trap "{ rm -rf ${tmpDir}; }" EXIT
+				git config user.name "Pivo Tal"
+				git config user.email "pivo@tal.com"
+				git config credential.helper "store --file=${tmpDir}/gitcredentials"
+				echo "https://$GIT_USERNAME:$GIT_PASSWORD@bar.com" &gt; ${tmpDir}/gitcredentials
+			rm -rf .git/tools &amp;&amp; mkdir -p .git/tools &amp;&amp; pushd .git/tools &amp;&amp; curl -Lk "https://github.com/spring-cloud/spring-cloud-pipelines/raw/master/dist/spring-cloud-pipelines.tar.gz" -o pipelines.tar.gz &amp;&amp; tar xf pipelines.tar.gz --strip-components 1 &amp;&amp; popd</command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Shell>
+            <command>#!/bin/bash
+set -o errexit
+set -o errtrace
+set -o pipefail
+
+# shellcheck source=/dev/null
+"${WORKSPACE}"/.git/tools/common/src/main/bash/stage_e2e.sh
+</command>
+        </hudson.tasks.Shell>
+    </builders>
+    <publishers>
+        <hudson.tasks.junit.JUnitResultArchiver>
+            <testResults>**/surefire-reports/*.xml,**/test-results/**/*.xml</testResults>
+            <keepLongStdio>false</keepLongStdio>
+            <testDataPublishers/>
+            <allowEmptyResults>true</allowEmptyResults>
+            <healthScaleFactor>1.0</healthScaleFactor>
+        </hudson.tasks.junit.JUnitResultArchiver>
+    </publishers>
+    <buildWrappers>
+        <hudson.plugins.timestamper.TimestamperBuildWrapper/>
+        <hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+            <colorMapName>xterm</colorMapName>
+        </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+        <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper/>
+        <hudson.plugins.build__timeout.BuildTimeoutWrapper>
+            <strategy class="hudson.plugins.build_timeout.impl.NoActivityTimeOutStrategy">
+                <timeout>300000</timeout>
+            </strategy>
+            <operationList>
+                <hudson.plugins.build__timeout.operations.FailOperation/>
+                <hudson.plugins.build__timeout.operations.WriteDescriptionOperation>
+                    <description>Build failed due to timeout after {0} minutes of inactivity</description>
+                </hudson.plugins.build__timeout.operations.WriteDescriptionOperation>
+            </operationList>
+        </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+        <se.diabol.jenkins.pipeline.PipelineVersionContributor>
+            <versionTemplate>${ENV,var="PIPELINE_VERSION"}</versionTemplate>
+            <updateDisplayName>true</updateDisplayName>
+        </se.diabol.jenkins.pipeline.PipelineVersionContributor>
+        <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+            <bindings/>
+        </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+        <EnvInjectBuildWrapper>
+            <info>
+                <propertiesContent>APPLICATION_URL=foo-.foo.com
+CF_SKIP_PREPARE_FOR_TESTS=true</propertiesContent>
+                <loadFilesFromMaster>false</loadFilesFromMaster>
+            </info>
+        </EnvInjectBuildWrapper>
+    </buildWrappers>
+    <scm class="hudson.plugins.git.GitSCM">
+        <userRemoteConfigs>
+            <hudson.plugins.git.UserRemoteConfig>
+                <name>origin</name>
+                <url>http://bar.com/baz/foo.git</url>
+                <credentialsId>git</credentialsId>
+            </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+            <hudson.plugins.git.BranchSpec>
+                <name>dev/foo/${PIPELINE_VERSION}</name>
+            </hudson.plugins.git.BranchSpec>
+        </branches>
+        <configVersion>2</configVersion>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <gitTool>Default</gitTool>
+        <extensions>
+            <hudson.plugins.git.extensions.impl.WipeWorkspace/>
+            <hudson.plugins.git.extensions.impl.SubmoduleOption>
+                <disableSubmodules>false</disableSubmodules>
+                <recursiveSubmodules>true</recursiveSubmodules>
+                <trackingSubmodules>false</trackingSubmodules>
+            </hudson.plugins.git.extensions.impl.SubmoduleOption>
+        </extensions>
+    </scm>
+</project>

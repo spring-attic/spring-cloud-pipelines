@@ -2,6 +2,19 @@ import groovy.transform.CompileStatic
 import javaposse.jobdsl.dsl.DslFactory
 import javaposse.jobdsl.dsl.helpers.ScmContext
 
+import org.springframework.cloud.projectcrawler.OptionsBuilder
+import org.springframework.cloud.projectcrawler.Repositories
+import org.springframework.cloud.projectcrawler.Repository
+import org.springframework.cloud.projectcrawler.ProjectCrawler
+
+/**
+ *  This script contains logic that
+ *
+ *  - doesn't reference any code other than what you have in this script
+ *  - for every project defined in REPOS env vars, generates a Jekins Job DSL pipeline
+ */
+
+
 DslFactory dsl = this
 
 // These will be taken either from seed or global variables
@@ -153,6 +166,15 @@ parsedRepos.each {
 			shell(downloadTools(fullGitRepo))
 			shell("""#!/bin/bash 
 		${bashFunctions.setupGitCredentials(fullGitRepo)}
+		${if (apiCompatibilityStep) {
+			return '''\
+				echo "First running api compatibility check, so that what we commit and upload at the end is just built project"
+				${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
+				'''
+			}
+			return ''
+		}
+		echo "Running the build and upload script"
 		\${WORKSPACE}/.git/tools/common/src/main/bash/build_and_upload.sh
 		""")
 		}
@@ -160,9 +182,7 @@ parsedRepos.each {
 			archiveJunit(testReports) {
 				allowEmptyResults()
 			}
-			String nextProject = apiCompatibilityStep ?
-				"${projectName}-build-api-check" :
-				"${projectName}-test-env-deploy"
+			String nextProject = "${projectName}-test-env-deploy"
 			downstreamParameterized {
 				trigger(nextProject) {
 					triggerWithNoParameters()
@@ -176,54 +196,6 @@ parsedRepos.each {
 				tag('origin', "dev/${gitRepoName}/\${PIPELINE_VERSION}") {
 					create()
 					update()
-				}
-			}
-		}
-	}
-
-	if (apiCompatibilityStep) {
-
-		dsl.job("${projectName}-build-api-check") {
-			deliveryPipelineConfiguration('Build', 'API compatibility check')
-			triggers {
-				cron(cronValue)
-				githubPush()
-			}
-			wrappers {
-				deliveryPipelineVersion('${ENV,var="PIPELINE_VERSION"}', true)
-				environmentVariables(defaults.defaultEnvVars)
-				timestamps()
-				colorizeOutput()
-				maskPasswords()
-				if (gitUseSshKey) sshAgent(gitSshCredentials)
-				timeout {
-					noActivity(300)
-					failBuild()
-					writeDescription('Build failed due to timeout after {0} minutes of inactivity')
-				}
-			}
-			jdk(jdkVersion)
-			scm {
-				configureScm(delegate as ScmContext, fullGitRepo, "dev/${gitRepoName}/\${PIPELINE_VERSION}")
-			}
-			steps {
-				shell(downloadTools(fullGitRepo))
-				shell('''#!/bin/bash
-		${WORKSPACE}/.git/tools/common/src/main/bash/build_api_compatibility_check.sh
-		''')
-			}
-			publishers {
-				archiveJunit(testReports) {
-					allowEmptyResults()
-				}
-				downstreamParameterized {
-					trigger("${projectName}-test-env-deploy") {
-						triggerWithNoParameters()
-						parameters {
-							currentBuild()
-							propertiesFile('${OUTPUT_FOLDER}/test.properties', false)
-						}
-					}
 				}
 			}
 		}
@@ -777,7 +749,6 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "PAAS_PROD_ORG")
 		setIfPresent(envs, variables, "PAAS_PROD_SPACE")
 		setIfPresent(envs, variables, "PAAS_HOSTNAME_UUID")
-		setIfPresent(envs, variables, "JAVA_BUILDPACK_URL")
 		// remove::end[CF]
 		// remove::start[K8S]
 		setIfPresent(envs, variables, "DOCKER_REGISTRY_URL")
@@ -814,7 +785,7 @@ class PipelineDefaults {
 		setIfPresent(envs, variables, "PAAS_PROD_NAMESPACE")
 		setIfPresent(envs, variables, "KUBERNETES_MINIKUBE")
 		// remove::end[K8S]
-		println "Will analyze the following variables psased to the seed job \n\n${variables}"
+		println "Will analyze the following variables passed to the seed job \n\n${variables}"
 		println "Will set the following env vars to the generated jobs \n\n${envs}"
 		return envs
 	}
