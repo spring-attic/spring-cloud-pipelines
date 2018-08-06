@@ -61,7 +61,11 @@ GeneratedJobs generatedJobs = new PipelineFactory(
 
 if (generatedJobs.hasErrors()) {
 	println "\n\n\nWARNING, THERE WERE ERRORS WHILE TRYING TO BUILD PROJECTS\n\n\n"
-	println generatedJobs.errors
+	generatedJobs.errors.each { String key, Exception error ->
+		println "Exception for project [${key}], [${error}]"
+		println "Stacktrace:"
+		error.printStackTrace()
+	}
 }
 
 // build the views

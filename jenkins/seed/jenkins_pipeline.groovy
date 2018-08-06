@@ -235,6 +235,17 @@ factory.job('jenkins-pipeline-cf-crawler-seed') {
 			].join("\n"))
 		}
 	}
+	publishers {
+		groovyPostBuild {
+			script('''
+if(manager.logContains("THERE WERE ERRORS")) {
+    manager.addWarningBadge("Some pipelines failed to be built")
+    manager.createSummary("warning.gif").appendText("<h1>Failed to build some pipelines!</h1>", false, false, false, "red")
+    manager.buildUnstable()
+}
+''')
+		}
+	}
 }
 
 // remove::start[SPINNAKER]
@@ -321,6 +332,15 @@ factory.job('jenkins-spinnaker-cf-seed') {
 		archiveArtifacts {
 			allowEmpty(false)
 			pattern("**/build/*_pipeline.json")
+		}
+		groovyPostBuild {
+			script('''
+if(manager.logContains("THERE WERE ERRORS")) {
+    manager.addWarningBadge("Some pipelines failed to be built")
+    manager.createSummary("warning.gif").appendText("<h1>Failed to build some pipelines!</h1>", false, false, false, "red")
+    manager.buildUnstable()
+}
+''')
 		}
 	}
 }
