@@ -73,6 +73,7 @@ github:1.29.2
 gradle:1.28
 greenballs:1.15
 groovy:2.0
+groovy-postbuild:2.4.1
 handlebars:1.1.1
 handy-uri-templates-2-api:2.1.6-1.0
 heavy-job:1.1
