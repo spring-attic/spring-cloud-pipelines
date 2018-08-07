@@ -94,7 +94,7 @@ class SpinnakerJobsFactory implements PipelineJobsFactory {
 		job.wrappers {
 			environmentVariables {
 				env(EnvironmentVariables.APPLICATION_URL_ENV_VAR, "${pipelineDefaults.cfTestSpacePrefix()}-${projectName}.${pipelineDefaults.spinnakerTestHostname()}")
-				env(EnvironmentVariables.STUBRUNNER_URL_ENV_VAR, "${pipelineDefaults.cfTestSpacePrefix()}-stubrunner.${pipelineDefaults.spinnakerTestHostname()}")
+				env(EnvironmentVariables.STUBRUNNER_URL_ENV_VAR, "stubrunner-test-${projectName}.${pipelineDefaults.spinnakerTestHostname()}")
 				env(EnvironmentVariables.CF_SKIP_PREPARE_FOR_TESTS_ENV_VAR, "true")
 			}
 		}
