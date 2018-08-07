@@ -115,7 +115,7 @@
             <branchesToPush/>
         </hudson.plugins.git.GitPublisher>
         <hudson.tasks.ArtifactArchiver>
-            <artifacts>**/build/libs/*.jar,**/build/trigger.properties,**/target/*.jar,**/target/trigger.properties</artifacts>
+            <artifacts>**/build/libs/*.jar,**/build/libs/trigger.properties,**/target/*.jar,**/target/trigger.properties</artifacts>
             <allowEmptyArchive>true</allowEmptyArchive>
             <defaultExcludes>true</defaultExcludes>
             <fingerprint>false</fingerprint>

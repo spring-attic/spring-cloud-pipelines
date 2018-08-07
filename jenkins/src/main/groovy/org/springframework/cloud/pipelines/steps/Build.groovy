@@ -123,7 +123,7 @@ class Build implements Step<FreeStyleJob> {
 				}
 				archiveArtifacts {
 					pattern("**/build/libs/*.jar")
-					pattern("**/build/trigger.properties")
+					pattern("**/build/libs/trigger.properties")
 					pattern("**/target/*.jar")
 					pattern("**/target/trigger.properties")
 					allowEmpty()
