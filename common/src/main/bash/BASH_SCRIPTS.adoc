@@ -14,6 +14,8 @@ include::projectType/zsdoc/pipeline-php.sh.adoc[]
 
 include::projectType/zsdoc/pipeline-npm.sh.adoc[]
 
+include::projectType/zsdoc/pipeline-dotnet.sh.adoc[]
+
 include::zsdoc/pipeline-cf.sh.adoc[]
 
 include::zsdoc/pipeline-k8s.sh.adoc[]
