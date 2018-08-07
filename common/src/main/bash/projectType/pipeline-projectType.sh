@@ -35,6 +35,8 @@ function guessLanguageType() {
 		echo "php"
 	elif [ -f "package.json" ]; then
 		echo "npm"
+	elif ( ls ./*.sln 2>/dev/null 1>&2 ); then
+		echo "dotnet"
 	else
 		echo ""
 	fi

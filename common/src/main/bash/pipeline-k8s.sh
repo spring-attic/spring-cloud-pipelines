@@ -322,7 +322,7 @@ function deployAndRestartAppWithName() {
 	local appName="${1}"
 	local jarName="${2}"
 	local env="${LOWERCASE_ENV}"
-	echo "Deploying and restarting app with name [${appName}] and jar name [${jarName}]"
+	echo "Deploying and restarting app with name [${appName}] and binary name [${jarName}]"
 	deployAppWithName "${appName}" "${jarName}" "${env}" 'true'
 	restartApp "${appName}"
 }
@@ -343,6 +343,7 @@ function deployAndRestartAppWithNameForSmokeTests() {
 	local deploymentFile="${outputDirectory}/deployment.yml"
 	local serviceFile="${outputDirectory}/service.yml"
 	local systemProps
+	# TODO: SPRING SPECIFIC
 	systemProps="-Dspring.profiles.active=${profiles} $(appSystemProps)"
 	substituteVariables "dockerOrg" "${DOCKER_REGISTRY_ORGANIZATION}" "${deploymentFile}"
 	substituteVariables "version" "${version}" "${deploymentFile}"

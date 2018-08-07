@@ -668,7 +668,7 @@ ____
  # Tries to guess the language type basing on the contents of the repository
 ____
 
-Has 9 line(s). Doesn't call other functions.
+Has 11 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
@@ -1338,7 +1338,7 @@ Has 6 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
-_Environment variables used:_ COMPOSER_BIN
+_Environment variables used:_ pipeline-dotnet.sh -> PROJECT_NAME [big]*//* COMPOSER_BIN
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -1591,7 +1591,7 @@ Has 6 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
-_Environment variables used:_ NPM_BIN
+_Environment variables used:_ pipeline-dotnet.sh -> PROJECT_NAME [big]*//* NPM_BIN
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~
@@ -1921,7 +1921,7 @@ ____
  # $5 - host name suffix
 ____
 
-Has 35 line(s). Calls functions:
+Has 37 line(s). Calls functions:
 
  deployAppNoStart
  `-- setEnvVar
@@ -2617,7 +2617,7 @@ Has 5 line(s). No functions are called (may set up e.g. a hook, a Zle widget bou
 deployService
 ~~~~~~~~~~~~~
 
-Has 680 line(s). Doesn't call other functions.
+Has 681 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 

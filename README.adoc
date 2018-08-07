@@ -654,7 +654,6 @@ will be picked and pipelines will be created for them. Project Crawler supports 
 stored at Github, Gitlab, Bitbucket. You can also register your own implementation. Please check the
 https://github.com/spring-cloud/project-crawler[Project Crawler] repository for more information.
 
-
 [[how-do-the-scripts-work-with-spinanker]]
 === How do the scripts work with Spinnaker?
 
@@ -761,6 +760,46 @@ The diagram below shows how Jenkins, the seed job for Spinnaker and Spinnaker as
      |                                                           |                                                                                      |                                      |            |<----------------------------
      |                                                           |                                                                                      |                                      |            |
 ```
+
+[[deployment-languages-compatibility-matrix]]
+=== Deployment & languages compatibility matrix
+
+In the following table we present which language is supported by which deployment
+mechanism.
+
+.Deployment & languages compatibility matrix
+|===
+|Language | CF | K8S | Ansible
+
+| JVM with Gradle
+| ✅
+| ✅
+| ✅
+
+| JVM with Maven
+| ✅
+| ✅
+| ✅
+
+| PHP with Composer
+| ✅
+| ✅
+| ❌
+
+| NodeJS with NPM
+| ✅
+| ✅
+| ❌
+
+| Dotnet core
+| ✅
+| ✅
+| ❌
+
+|===
+
+TIP: For K8S, a deployment unit is a docker image so any language and framework
+can be used.
 
 == Opinionated implementation
 
@@ -971,6 +1010,20 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
     * `npm run test-apicompatibility` npm task that is executed for api compatibility tests
     * `npm run test-smoke` npm task that is executed for smoke testing
     * `npm run test-e2e` npm task that is executed for end to end testing
+    * `target` is assumed to be the output folder. Put it to `.gitignore`
+- For .Net (https://github.com/spring-cloud-samples/AspNetCoreExample[example project]):
+    * usage of https://www.microsoft.com/net/core[ASP.NET core]
+    * `dotnet build` is called to build the project
+    * `dotnet msbuild /nologo /t:CFPUnitTests` is called to run unit tests
+    * `dotnet msbuild /nologo /t:CFPIntegrationTests` is called to run integration tests
+    * `dotnet msbuild /nologo /t:CFPPublish /p:Configuration=Release` is called to publish
+    ZIP with self contained DLL, together with all manifests and deployment files
+    * `dotnet msbuild /nologo /t:CFPGroupId` npm task that echos the group id
+    * `dotnet msbuild /nologo /t:CFPAppName` npm task that echos application name
+    * `dotnet msbuild /nologo /t:CFPStubIds` npm task that echos stub runner ids
+    * `dotnet msbuild /nologo /t:CFPApiCompatibilityTest` is executed for api compatibility tests
+    * `dotnet msbuild /nologo /t:CFPSmokeTests` is executed for smoke testing
+    * `dotnet msbuild /nologo /t:CFPE2eTests` is executed for end to end testing
     * `target` is assumed to be the output folder. Put it to `.gitignore`
 
 === Kubernetes project opinions

@@ -77,7 +77,7 @@ function downloadAppBinary() {
 	mkdir -p "${OUTPUT_FOLDER}"
 	echo "Current folder is [$(pwd)]; Downloading binary from [${pathToArtifact}] to [${destination}]"
 	local success="false"
-	curl -u "${M2_SETTINGS_REPO_USERNAME}:${M2_SETTINGS_REPO_PASSWORD}" "${pathToArtifact}" -o "${destination}" --fail && success="true"
+	"${CURL_BIN}" -u "${M2_SETTINGS_REPO_USERNAME}:${M2_SETTINGS_REPO_PASSWORD}" "${pathToArtifact}" -o "${destination}" --fail && success="true"
 	local outputDir
 	outputDir="${OUTPUT_FOLDER}/${SOURCE_ARTIFACT_TYPE_NAME}"
 	mkdir -p "${outputDir}"

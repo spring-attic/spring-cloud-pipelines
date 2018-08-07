@@ -169,7 +169,7 @@ Has 6 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
-_Environment variables used:_ NPM_BIN
+_Environment variables used:_ pipeline-dotnet.sh -> PROJECT_NAME [big]*//* NPM_BIN
 
 retrieveGroupId
 ~~~~~~~~~~~~~~~

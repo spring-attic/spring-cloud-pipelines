@@ -42,6 +42,7 @@ teardown() {
 }
 
 @test "should return empty when no language is present in parsed descriptor" {
+	cd "${TEMP_DIR}"
 	PARSED_YAML='{"foo":"foo"}'
 
 	run "${SOURCE_DIR}/projectType/pipeline-projectType.sh"
@@ -93,6 +94,17 @@ teardown() {
 
 	assert_equal "jvm" "${result}"
 	assert_equal "jvm" "${LANGUAGE_TYPE}"
+}
+
+@test "should return dotnet if a .sln file is found" {
+	touch "${TEMP_DIR}/foo.sln"
+	cd "${TEMP_DIR}"
+	source "${SOURCE_DIR}/projectType/pipeline-projectType.sh"
+
+	result="$(guessLanguageType)"
+
+	assert_equal "dotnet" "${result}"
+	assert_equal "dotnet" "${LANGUAGE_TYPE}"
 }
 
 @test "should fail if no supported language is found" {

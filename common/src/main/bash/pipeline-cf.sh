@@ -217,7 +217,7 @@ function deployAndRestartAppWithName() {
 	if [[ ! -z "${manifestProfiles}" && "${manifestProfiles}" != "null" ]]; then
 		profiles="${profiles},${manifestProfiles}"
 	fi
-	echo "Deploying and restarting app with name [${appName}] and jar name [${binaryName}] and env [${ENVIRONMENT}]"
+	echo "Deploying and restarting app with name [${appName}] and binary name [${binaryName}] and env [${ENVIRONMENT}]"
 	deployAppNoStart "${appName}" "${binaryName}" "${ENVIRONMENT}" "" ""
 	setEnvVar "${lowerCaseAppName}" 'SPRING_PROFILES_ACTIVE' "${profiles}"
 	restartApp "${appName}"
@@ -324,8 +324,10 @@ function deployAppNoStart() {
 	if [[ ${env} == "TEST" || -z "${instances}" || "${instances}" == "null" ]]; then
 		instances=1
 	fi
-	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}] with manifest file [${pathToManifest}]"
-	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "$( pathToPushToCf "${artifactName}" )" -n "${hostname}" -i "${instances}" --no-start
+	local pathToPush
+	pathToPush="$( pathToPushToCf "${artifactName}" )"
+	echo "Deploying app with name [${lowerCaseAppName}], env [${env}] and host [${hostname}] with manifest file [${pathToManifest}] and path to push [${pathToPush}]. The sources should be downloadable [${DOWNLOADABLE_SOURCES}]"
+	"${CF_BIN}" push "${lowerCaseAppName}" -f "${pathToManifest}" -p "${pathToPush}" -n "${hostname}" -i "${instances}" --no-start
 	setEnvVar "${lowerCaseAppName}" 'APP_BINARY' "${artifactName}.${BINARY_EXTENSION}"
 	if [[ "${artifactType}" == "${SOURCE_ARTIFACT_TYPE_NAME}" && "${DOWNLOADABLE_SOURCES}" == "true" ]]; then
 		popd
@@ -473,7 +475,7 @@ function deployAppAsService() {
 	local binaryName="${1}"
 	local appName="${2}"
 	local pathToManifest="${3}"
-	echo "Deploying app as service. Options - jar name [${binaryName}], app name [${appName}], env [${ENVIRONMENT}], path to manifest [${pathToManifest}]"
+	echo "Deploying app as service. Options - binary name [${binaryName}], app name [${appName}], env [${ENVIRONMENT}], path to manifest [${pathToManifest}]"
 	local suffix=""
 	if [[ "${LOWERCASE_ENV}" == "test" ]]; then
 		suffix="$(retrieveAppName)"
@@ -570,7 +572,7 @@ function deployStubRunnerBoot() {
 	local pathToManifest="${3}"
 	local suffix
 	suffix="$(retrieveAppName)"
-	echo "Deploying Stub Runner. Options jar name [${jarName}], app name [${stubRunnerName}], manifest [${pathToManifest}], suffix [${suffix}]"
+	echo "Deploying Stub Runner. Options binary name [${jarName}], app name [${stubRunnerName}], manifest [${pathToManifest}], suffix [${suffix}]"
 	deployAppNoStart "${stubRunnerName}" "${jarName}" "${ENVIRONMENT}" "${pathToManifest}" "${suffix}"
 	local prop
 	prop="$(${RETRIEVE_STUBRUNNER_IDS_FUNCTION})"

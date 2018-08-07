@@ -1,0 +1,191 @@
+pipeline-dotnet.sh(1)
+=====================
+:compat-mode!:
+
+NAME
+----
+pipeline-dotnet.sh - a shell script
+
+SYNOPSIS
+--------
+
+Contains all PHP related build functions
+
+
+FUNCTIONS
+---------
+
+ build
+ downloadAppBinary
+ executeApiCompatibilityCheck
+ outputFolder
+ projectType
+ retrieveAppName
+ retrieveGroupId
+ retrieveStubRunnerIds
+ runE2eTests
+ runSmokeTests
+ testResultsAntPattern
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 20 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+Uses feature(s): _export_
+
+_Exports (environment):_ ARTIFACT_TYPE [big]*//* DOTNET_BIN [big]*//* DOWNLOADABLE_SOURCES
+
+build
+~~~~~
+
+____
+ # Dotnet implementation of the build function.
+____
+
+Has 12 line(s). Doesn't call other functions.
+
+Uses feature(s): _export_
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_List of exports (to environment):_ PROJECT_GROUP [big]*//* PROJECT_NAME [big]*//* PROJECT_VERSION
+
+_Environment variables used:_ DOTNET_BIN
+
+downloadAppBinary
+~~~~~~~~~~~~~~~~~
+
+____
+ # Fetches DotNet publication from a binary storage
+ #
+ # $1 - URL to repo with binaries
+ # $2 - group id of the packaged sources
+ # $3 - artifact id of the packaged sources
+ # $4 - version of the packaged sources
+____
+
+Has 26 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ pipeline-jvm.sh -> BINARY_EXTENSION
+
+executeApiCompatibilityCheck
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Dotnet implementation of the execute API compatibility check
+____
+
+Has 11 line(s). Doesn't call other functions.
+
+Uses feature(s): _export_
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_List of exports (to environment):_ EXTERNAL_CONTRACTS_ARTIFACT_ID [big]*//* EXTERNAL_CONTRACTS_CLASSIFIER [big]*//* EXTERNAL_CONTRACTS_GROUP_ID [big]*//* EXTERNAL_CONTRACTS_PATH [big]*//* EXTERNAL_CONTRACTS_VERSION [big]*//* LATEST_PROD_VERSION
+
+_Environment variables used:_ DOTNET_BIN
+
+outputFolder
+~~~~~~~~~~~~
+
+____
+ # Dotnet implementation of the output folder
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+projectType
+~~~~~~~~~~~
+
+____
+ # Dotnet implementation of the project type
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+retrieveAppName
+~~~~~~~~~~~~~~~
+
+____
+ # Dotnet implementation of the retrieve application name
+____
+
+Has 5 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ DOTNET_BIN [big]*//* PROJECT_NAME
+
+retrieveGroupId
+~~~~~~~~~~~~~~~
+
+____
+ # Dotnet implementation of the retrieve group id
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ DOTNET_BIN
+
+retrieveStubRunnerIds
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Dotnet implementation of the retrieve stub runner ids
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ DOTNET_BIN
+
+runE2eTests
+~~~~~~~~~~~
+
+____
+ # Dotnet implementation of the run e2e tests
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ DOTNET_BIN
+
+runSmokeTests
+~~~~~~~~~~~~~
+
+____
+ # Dotnet implementation of the run smoke tests
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+_Environment variables used:_ DOTNET_BIN
+
+testResultsAntPattern
+~~~~~~~~~~~~~~~~~~~~~
+
+____
+ # Dotnet implementation of the test results ant pattern
+____
+
+Has 1 line(s). Doesn't call other functions.
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+

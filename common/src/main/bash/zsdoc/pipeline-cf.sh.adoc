@@ -246,7 +246,7 @@ ____
  # $5 - host name suffix
 ____
 
-Has 35 line(s). Calls functions:
+Has 37 line(s). Calls functions:
 
  deployAppNoStart
  `-- setEnvVar

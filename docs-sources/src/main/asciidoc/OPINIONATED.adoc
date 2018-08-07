@@ -208,6 +208,20 @@ We've taken the following opinionated decisions for a Cloud Foundry based projec
     * `npm run test-smoke` npm task that is executed for smoke testing
     * `npm run test-e2e` npm task that is executed for end to end testing
     * `target` is assumed to be the output folder. Put it to `.gitignore`
+- For .Net (https://github.com/spring-cloud-samples/AspNetCoreExample[example project]):
+    * usage of https://www.microsoft.com/net/core[ASP.NET core]
+    * `dotnet build` is called to build the project
+    * `dotnet msbuild /nologo /t:CFPUnitTests` is called to run unit tests
+    * `dotnet msbuild /nologo /t:CFPIntegrationTests` is called to run integration tests
+    * `dotnet msbuild /nologo /t:CFPPublish /p:Configuration=Release` is called to publish
+    ZIP with self contained DLL, together with all manifests and deployment files
+    * `dotnet msbuild /nologo /t:CFPGroupId` npm task that echos the group id
+    * `dotnet msbuild /nologo /t:CFPAppName` npm task that echos application name
+    * `dotnet msbuild /nologo /t:CFPStubIds` npm task that echos stub runner ids
+    * `dotnet msbuild /nologo /t:CFPApiCompatibilityTest` is executed for api compatibility tests
+    * `dotnet msbuild /nologo /t:CFPSmokeTests` is executed for smoke testing
+    * `dotnet msbuild /nologo /t:CFPE2eTests` is executed for end to end testing
+    * `target` is assumed to be the output folder. Put it to `.gitignore`
 
 === Kubernetes project opinions
 

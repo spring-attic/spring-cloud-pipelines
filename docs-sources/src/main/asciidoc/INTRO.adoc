@@ -625,7 +625,6 @@ will be picked and pipelines will be created for them. Project Crawler supports 
 stored at Github, Gitlab, Bitbucket. You can also register your own implementation. Please check the
 https://github.com/spring-cloud/project-crawler[Project Crawler] repository for more information.
 
-
 [[how-do-the-scripts-work-with-spinanker]]
 === How do the scripts work with Spinnaker?
 
@@ -732,3 +731,43 @@ The diagram below shows how Jenkins, the seed job for Spinnaker and Spinnaker as
      |                                                           |                                                                                      |                                      |            |<----------------------------
      |                                                           |                                                                                      |                                      |            |
 ```
+
+[[deployment-languages-compatibility-matrix]]
+=== Deployment & languages compatibility matrix
+
+In the following table we present which language is supported by which deployment
+mechanism.
+
+.Deployment & languages compatibility matrix
+|===
+|Language | CF | K8S | Ansible
+
+| JVM with Gradle
+| ✅
+| ✅
+| ✅
+
+| JVM with Maven
+| ✅
+| ✅
+| ✅
+
+| PHP with Composer
+| ✅
+| ✅
+| ❌
+
+| NodeJS with NPM
+| ✅
+| ✅
+| ❌
+
+| Dotnet core
+| ✅
+| ✅
+| ❌
+
+|===
+
+TIP: For K8S, a deployment unit is a docker image so any language and framework
+can be used.

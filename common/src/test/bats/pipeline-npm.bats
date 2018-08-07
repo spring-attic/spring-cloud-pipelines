@@ -70,6 +70,7 @@ function curl {
 	# We don't want exception on jq parsing
 	refute_output --partial "Cannot iterate over null (null)"
 	assert_success
+	assert_equal "${DOWNLOADABLE_SOURCES}" ""
 }
 
 @test "should return fixed project name if differs from the default one [Npm]" {
