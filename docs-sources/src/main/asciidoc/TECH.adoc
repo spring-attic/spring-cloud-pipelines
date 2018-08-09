@@ -1,7 +1,21 @@
-== Building the project
+== Building the Project
 
-=== Project setup
+This section covers how to build the project. It covers:
 
+* <<building-project-setup>>
+* <<building-prerequisites>>
+* <<building-bats-submodules>>
+* <<building-build-and-test>>
+* <<building-generate-documentation>>
+* <<building-distributions>>
+* <<building-making-a-release>>
+
+[[building-project-setup]]
+=== Project Setup
+
+The following diagram shows the folder structure of Spring Cloud Pipelines:
+
+====
 [source,bash]
 ----
 .
@@ -12,36 +26,40 @@
 ├── docs-sources
 └── jenkins
 ----
+====
 
-In the `common` folder you can find all the Bash scripts containing the pipeline logic. These
-scripts are reused by both Concourse and Jenkins pipelines.
+In the `common` folder, you can find all the Bash scripts that contain the pipeline logic. These
+scripts are reused by both the Concourse and Jenkins pipelines.
 
-In the `concourse` folder you can find all the necessary scripts and setup to run Concourse demo.
+In the `concourse` folder, you can find all the necessary scripts and setup information to run the Concourse demo.
 
-In the `dist` folder you can find the packaged sources of the project. Since the package
-contains no tests or documentation it's extremely small and can be used in the pipelines.
+In the `dist` folder, you can find the packaged sources of the project. Since the package
+contains no tests or documentation, it is extremely small and can be used in the pipelines.
 
-In the `docs` folder you have the whole generated documentation of the project.
+In the `docs` folder, you can find the whole generated documentation of the project.
 
-In the `docs-source` folder you have the sources required to generate the documentation.
+In the `docs-source` folder, you can find the sources required to generate the documentation.
 
-In the `jenkins` folder you can find all the necessary scripts and setup to run Jenkins demo.
+In the `jenkins` folder, you can find all the necessary scripts and setup information to run the Jenkins demo.
 
+[[building-prerequisites]]
 === Prerequisites
 
-As prerequisites you need to have http://www.shellcheck.net/[shellcheck],
+As prerequisites, you need to have http://www.shellcheck.net/[shellcheck],
 https://github.com/sstephenson/bats[bats], https://stedolan.github.io/jq/[jq]
- and https://rubyinstaller.org/downloads/[ruby] installed. If you're on a Linux
- machine then `bats` and `shellcheck` will be installed for you.
+and https://rubyinstaller.org/downloads/[ruby] installed. If you use a Linux
+machine, `bats` and `shellcheck` are installed for you.
 
-To install the required software on Linux just type the following commands
+To install the required software on Linux, type the following command:
 
+====
 [source,bash]
 ----
 $ sudo apt-get install -y ruby jq
 ----
+====
 
-If you're on a Mac then just execute these commands to install the missing software
+If you use a Mac, run the following commands to install the missing software:
 
 [source,bash]
 ----
@@ -51,94 +69,113 @@ $ brew install bats
 $ brew install shellcheck
 ----
 
-=== Bats submodules
+[[building-bats-submodules]]
+=== Bats Submodules
 
-To make `bats` work properly we needed to attach Git submodules. To have them
-initialized either clone with appropriate command
+To make `bats` work properly, we needed to attach Git submodules. To have them
+initialized, either clone the project or (if you have already cloned the project)
+pull to update it. The following command clones the project:
 
+====
 [source,bash]
 ----
 $ git clone --recursive https://github.com/spring-cloud/spring-cloud-pipelines.git
 ----
+====
 
-or if you have already cloned the project and are just pulling changes
+The following commands pull the project:
 
+====
 [source,bash]
 ----
 $ git submodule init
 $ git submodule update
 ----
+====
 
-If you forget about this step, then Gradle will execute these steps for you.
+If you forget about this step, Gradle runs these steps for you.
 
+[[building-build-and-test]]
 === Build and test
 
-Once you have installed all the prerequisites you can execute
+Once you have installed all the prerequisites, you can run the following command to build and test the project:
 
+====
 [source,bash]
 ----
 $ ./gradlew clean build
 ----
+====
 
-to build and test the project.
+[[building-generate-documentation]]
+=== Generate Documentation
 
-=== Generate docs
+To generate the documentation, run the following command:
 
-To generate docs just run
-
+====
 [source,bash]
 ----
 $ ./gradlew generateDocs
 ----
+====
 
+[[building-distributions]]
 === Distributions
 
 Spring Cloud Pipelines has a lot of tests, including Git repositories. Those
-and the documentation weigh a lot. That's why under the `dist` folder we
-publish `zip` and `tar.gz` distributions of sources without tests and documentation.
-Whenever we release a distribution we attach a `VERSION` file to it that contains
-build and SCM information (e.g. build time, revision). To skip the distribution generation
-just pass the `skipDist` property
+and the documentation "`weigh`" a lot. That is why, under the `dist` folder, we
+publish `zip` and `tar.gz` distributions of the sources without tests and documentation.
+Whenever we release a distribution, we attach a `VERSION` file to it that contains
+build and SCM information (build time, revision number, and other details). To skip the
+distribution generation pass the `skipDist` property on the command line, as follows:
 
+====
 [source,bash]
 ----
 $ ./gradlew build -PskipDist
 ----
+====
 
+[[building-making-a-release]]
+=== Making a Release
 
-=== Making a release
+You can run the `release` task to automatically test the project,
+build the distributions, change the versions, build the docs, upload the docs to Spring Cloud Static,
+tag the repo, and then revert the changed versions back to default. To do so, run the
+following command:
 
-It's enough to execute the `release` task that will automatically test the project,
-build the distributions, change the versions, build the docs, upload them to Spring Cloud Static,
-tag the repo and then revert the changed versions back to default.
-
+====
 [source,bash]
 ----
 $ ./gradlew release -PnewVersion=1.0.0.RELEASE
 ----
+====
 
-== Releasing the project
+== Releasing the Project
+
+This section covers how to release the project by publishing a Docker image.
 
 === Publishing A Docker Image
 
-When doing a release you also need to push a Docker image to Dockerhub.
-From the project root, run the following commands replacing `<version>` with the
-version of the release.
+When doing a release, you also need to push a Docker image to Dockerhub.
+From the project root, run the following commands, replacing `<version>` with the
+version of the release:
 
+====
 [source,bash]
 ----
 $ docker login
 $ docker build -t springcloud/spring-cloud-pipeline-jenkins:<version> ./jenkins
 $ docker push springcloud/spring-cloud-pipeline-jenkins:<version>
 ----
+====
 
-== CI Server worker prerequisites
+== CI Server Worker Prerequisites
 
-Spring Cloud Pipelines uses Bash scripts extensively. Below you can find the list of software
-that needs to be installed on a CI server worker for the build to pass.
+Spring Cloud Pipelines uses Bash scripts extensively. The following list shows the software
+that needs to be installed on a CI server worker for the build to pass:
 
-TIP: In the demo setup all of these libraries are already installed.
-
+====
 [source,bash]
 ----
  apt-get -y install \
@@ -153,8 +190,11 @@ TIP: In the demo setup all of these libraries are already installed.
     python \
     jq
 ----
+====
 
-IMPORTANT: In the Jenkins case you will also need `bats` and `shellcheck`. They are not
-presented in the list since the installed versions by Linux distributions might be old.
-That's why this project's Gradle tasks will download latest versions of both libraries
+TIP: In the demo setup all of these libraries are already installed.
+
+IMPORTANT: In the Jenkins case, you also need `bats` and `shellcheck`. They are not
+included in the preceding list, because the versions installed by Linux distributions might be old.
+That is why this project's Gradle tasks download the latest versions of both libraries
 for you.

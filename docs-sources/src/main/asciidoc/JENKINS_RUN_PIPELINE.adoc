@@ -1,11 +1,13 @@
-We already create the seed job for you but you'll have to run it. When you do
-run it you have to provide some properties. By default we create a seed that
+We already created the seed job for you, but you have to run it. When you do
+run it, you have to provide some properties. By default, we create a seed that
 has all the properties options, but you can delete most of it. If you
-set the properties as global env variables you have to remove them from the
+set the properties as global environment variables, you have to remove them from the
 seed.
 
-Anyways, to run the demo just provide in the `REPOS` var the comma separated
- list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics`.
+To run the demo, provide a comma-separated
+ list of URLs of the two aforementioned forks (`github-webhook` and `github-analytics`) in the `REPOS` variable.
+
+The following images shows the steps involved:
 
 {nbsp}
 {nbsp}
@@ -20,10 +22,10 @@ image::{jenkins-root-docs}/pipeline_run.png[caption="Step 2: ", title="Run the p
 {nbsp}
 {nbsp}
 
-IMPORTANT: If your build fails on the *deploy previous version to stage* due to missing jar,
-that means that you've forgotten to clear the tags in your repo. Typically that's due to the fact that
-you've removed the Artifactory volume with deployed JAR whereas a tag in the repo is still pointing there.
-<<tags,Check out this section on how to remove the tag.>>
+IMPORTANT: If your build fails on *deploy previous version to stage* due to a missing jar,
+that means that you forgot to clear the tags in your repository. Typically, that happens because
+you removed the Artifactory volume with a deployed jar while a tag in the repository still points there.
+See <<tags,here>> for how to remove the tag.
 
 {nbsp}
 {nbsp}
@@ -33,8 +35,8 @@ image::{jenkins-root-docs}/pipeline_manual.png[caption="Step 3: ", title="Click 
 {nbsp}
 {nbsp}
 
-IMPORTANT: Most likely you will run out of memory so when reaching the stage
-environment it's good to kill all apps on test. <<faq,Check out the FAQ section for more details>>!
+IMPORTANT: Servers often run run out of resources at the stage step.
+For that reason, we suggest killing all applications on test. See the <<faq,FAQ>> for more detail.
 
 {nbsp}
 {nbsp}

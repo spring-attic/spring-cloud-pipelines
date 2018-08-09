@@ -1,44 +1,56 @@
 == The demo setup (Cloud Foundry)
 
-The demo uses 2 applications. https://github.com/spring-cloud-samples/github-webhook/[Github Webhook]
-and https://github.com/spring-cloud-samples/github-analytics/[Github analytics code]. Below you can
-see an image of how these application communicate with each other.
+The demo uses two applications: https://github.com/spring-cloud-samples/github-webhook/[Github Webhook]
+and https://github.com/spring-cloud-samples/github-analytics/[Github analytics code]. The following
+image shows how these application communicate with each other:
 
 include::DEMO_SETUP.adoc[]
 
-=== Deploying production applications to PCF Dev
+=== Deploying Production Applications to PCF Dev
 
-In the real world scenario we wouldn't want to automatically provision services like
-RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
-production is provisioned manually (using automated solutions). In our case, before
-you deploy to production you can provision the `pcfdev-prod` space using the
- `cf-helper.sh`. Just call
+In a real-world scenario, we would not want to automatically provision services such as
+RabbitMQ, MySQL, or Eureka each time we deploy a new application to production. Typically,
+production is provisioned manually (often by using automated solutions). In our case, before
+you deploy to production, you can provision the `pcfdev-prod` space by using the
+ `cf-helper.sh`. To do so, call the following script:
 
+====
 [source,bash]
 ----
 $ ./cf-helper.sh setup-prod-infra
 ----
+====
 
-What will happen is that the CF CLI will login to PCF Dev, target `pcfdev-prod` space,
-setup RabbitMQ (under `rabbitmq-github` name), MySQL (under `mysql-github-analytics` name)
-and Eureka (under `github-eureka` name).
+The CF CLI:
+
+* Logs in to PCF Dev,
+* Targets the `pcfdev-prod` space
+* Sets up:
+** RabbitMQ (under the `rabbitmq-github` name)
+** MySQL (under `mysql-github-analytics` name)
+** Eureka (under `github-eureka` name)
 
 === Running Prometheus on CF
 
 You can check out https://github.com/making/prometheus-on-PCF[Toshiaki Maki's code] on how to automate Prometheus installation on CF.
 
-Go to https://prometheus.io/download/ and download linux binary. Then call:
+Go to https://prometheus.io/download/ and download the Linux binary. Then run the following command:
 
-```
+====
+[source,bash]
+----
 cf push sc-pipelines-prometheus -b binary_buildpack -c './prometheus -web.listen-address=:8080' -m 64m
-```
+----
+====
 
-Also `localhost:9090` in `prometheus.yml` should be `localhost:8080`.
+Also, `localhost:9090` in `prometheus.yml` should be `localhost:8080`.
 
-The file should look like this to work with the demo setup (change `github-analytics-sc-pipelines.cfapps.io`
+The file should resemble the following listing to work with the demo setup (change `github-analytics-sc-pipelines.cfapps.io`
 to your `github-analytics` installation).
 
-```yml
+====
+[source,yml]
+----
 # my global config
 global:
   scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
@@ -77,21 +89,25 @@ scrape_configs:
 
     static_configs:
       - targets: ['github-analytics-sc-pipelines.cfapps.io']
-```
+----
+====
 
-A deployed version for the Spring Cloud Pipelines demo is available https://sc-pipelines-prometheus.cfapps.io/[here]
+A deployed version for the Spring Cloud Pipelines demo is available https://sc-pipelines-prometheus.cfapps.io/[here].
 
 === Running Grafana on CF
 
-You can check out https://github.com/making/cf-grafana[Toshiaki Maki's code] on how to automate Prometheus installation on CF.
+You can check out https://github.com/making/cf-grafana[Toshiaki Maki's code] to see how to automate Prometheus installation on CF.
 
-Download tarball from https://grafana.com/grafana/download?platform=linux
-Next set `http_port = 8080` in `conf/default.ini`. Then call
+Download the tarball from https://grafana.com/grafana/download?platform=linux
+and set `http_port = 8080` in `conf/default.ini`. Then run the following the command:
 
-```
+====
+[source,bash]
+----
 cf push sc-pipelines-grafana -b binary_buildpack -c './bin/grafana-server web' -m 64m
-```
+----
+====
 
-The demo is using Grafana Dashboard with ID `2471`.
+The demo uses Grafana Dashboard with an ID of `2471`.
 
 A deployed version for the Spring Cloud Pipelines demo is available https://sc-pipelines-grafana.cfapps.io/[here]

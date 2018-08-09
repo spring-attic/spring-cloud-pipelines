@@ -1,276 +1,286 @@
-== Opinionated implementation
+== Opinionated Implementation
 
-IMPORTANT: In the section below we're showing you a full flow of the demo apps.
-It doesn't mean that your applications are required to have the same dependencies
-such as e.g. `Eureka`.
+This section describes a full flow of the demo applications.
 
-For the demo purposes we're providing Docker Compose setup with Artifactory and Concourse / Jenkins tools.
-Regardless of the picked CD application for the pipeline to pass one needs either
+IMPORTANT: Your applications need not have the same dependencies (such as `Eureka`) as this demo.
 
-- a Cloud Foundry instance (for example https://run.pivotal.io/[Pivotal Web Services] or https://pivotal.io/pcf-dev[PCF Dev])
-- a Kubernetes cluster (for example https://github.com/kubernetes/minikube[Minikube])
-- the infrastructure applications deployed to the JAR hosting application (for the demo we're providing Artifactory).
-    - `Eureka` for Service Discovery
-    - `Stub Runner Boot` for running Spring Cloud Contract stubs.
+For demo purposes, we provide Docker Compose setup with Artifactory, Concourse, and Jenkins tools.
+Regardless of the CD application, for the pipeline to pass, you need one of the following:
 
-TIP: In the demos we're showing you how to first build the `github-webhook` project. That's because
-the `github-analytics` needs the stubs of `github-webhook` to pass the tests. Below you'll find
-references to `github-analytics` project since it contains more interesting pieces as far as testing
+* A Cloud Foundry instance (for example, https://run.pivotal.io/[Pivotal Web Services] or https://pivotal.io/pcf-dev[PCF Dev]).
+* A Kubernetes cluster (for example, https://github.com/kubernetes/minikube[Minikube]).
+* The infrastructure applications deployed to the JAR hosting application (for the demo, we provide Artifactory).
+* `Eureka` for Service Discovery.
+* `Stub Runner Boot` for running Spring Cloud Contract stubs.
+
+TIP: In the demos, we show you how to first build the `github-webhook` project. That is because
+the `github-analytics` needs the stubs of `github-webhook` to pass the tests. We also use
+references to the `github-analytics` project, since it contains more interesting pieces as far as testing
 is concerned.
 
 === Build
 
+The following image shows the results of building the demo pipeline (which the rest of this chapter describes):
+
 image::{intro-root-docs}/build.png[title="Build and upload artifacts"]
 
-In this step we're generating a version of the pipeline, next we're
- running unit, integration and contract tests. Finally we're:
+In this step, we  generate a version of the pipeline. Next, we
+run unit, integration, and contract tests. Finally, we:
 
-- publishing a fat jar of the application
-- publishing a Spring Cloud Contract jar containing stubs of the application
-- for Kubernetes - uploading a Docker image of the application
+* Publish a fat jar of the application.
+* Publish a Spring Cloud Contract jar containing stubs of the application.
+* For Kubernetes, upload a Docker image of the application.
 
-During this phase we're executing a `Maven` build using Maven Wrapper or a `Gradle` build using Gradle Wrapper
-, with unit and integration tests. We're also *tagging* the repository with `dev/${version}` format. That way in each
-subsequent step of the pipeline we're able to retrieve the tagged version. Also we know
+During this phase, we run a `Maven` build by using Maven Wrapper or a `Gradle` build by using Gradle Wrapper,
+with unit and integration tests. We also tag the repository with `dev/${version}`. That way, in each
+subsequent step of the pipeline, we can retrieve the tagged version. Also, we know
 exactly which version of the pipeline corresponds to which Git hash.
 
-Once the artifact got built we're running API compatibility check.
+Once the artifact is built, we run API compatibility check, as follows:
 
-- we're searching for the latest production deployment
-- we're retrieving the contracts that were used by that deployment
-- from the contracts we're generating API tests to see if the current implementation
-is fulfilling the HTTP / messaging contracts that the current production deployment
-has defined (we're checking backward compatibility of the API)
+* We search for the latest production deployment.
+* We retrieve the contracts that were used by that deployment.
+* From the contracts, we generat API tests to see if the current implementation
+is fulfilling the HTTP and messaging contracts that the current production deployment
+has defined (we check backward compatibility of the API).
 
 === Test
 
+The following image shows the result of doing smoke tests and rolling back:
+
 image::{intro-root-docs}/test.png[title="Smoke test and rollback test on test environment"]
 
-Here we're
+Here, we:
 
-- starting a RabbitMQ service in PaaS
-- deploying `Eureka` infrastructure application to PaaS
-- downloading the fat jar from Nexus and we're uploading it to PaaS. We want the application
+* Start a RabbitMQ service in PaaS.
+* Deploying `Eureka` infrastructure application to PaaS.
+* Download the fat jar from Nexus and upload it to PaaS. We want the application
 to run in isolation (be surrounded by stubs).
 
-TIP: Currently due to port constraints in Cloud Foundry
-we cannot run multiple stubbed HTTP services in the cloud so to fix this issue we're running
-the application with `smoke` Spring profile on which you can stub out all HTTP calls to return
-a mocked response
+TIP: Currently, due to port constraints in Cloud Foundry,
+we cannot run multiple stubbed HTTP services in the cloud. To fix this issue, we run
+the application with the `smoke` Spring profile, on which you can stub out all HTTP calls to return
+a mocked response.
 
-- if the application is using a database then it gets upgraded at this point via Flyway, Liquibase
-or any other tool once the application gets started
-- from the project's Maven or Gradle build we're extracting `stubrunner.ids` property that contains
- all the `groupId:artifactId:version:classifier` notation of dependant projects for which
- the stubs should be downloaded.
-- then we're uploading `Stub Runner Boot` and pass the extracted `stubrunner.ids` to it. That way
-we'll have a running application in Cloud Foundry that will download all the necessary stubs
-of our application
-- from the checked out code we're running the tests available under the `smoke` profile. In the
-case of `GitHub Analytics` application we're triggering a message from the `GitHub Webhook`
-application's stub, that is sent via RabbitMQ to GitHub Analytics. Then we're checking if
+* If the application uses a database, it gets upgraded at this point by Flyway, Liquibase,
+or any other migration tool once the application gets started.
+* From the project's Maven or Gradle build, we extract the `stubrunner.ids` property that contains
+all the `groupId:artifactId:version:classifier` notations of dependent projects for which
+the stubs should be downloaded.
+* We upload `Stub Runner Boot` and pass the extracted `stubrunner.ids` to it. That way,
+we have a running application in Cloud Foundry that downloads all the necessary stubs
+of our application.
+* From the checked-out code, we run the tests available under the `smoke` profile. In the
+case of the `GitHub Analytics` application, we trigger a message from the `GitHub Webhook`
+application's stub and send the message by RabbitMQ to GitHub Analytics. Then we check whether the
 message count has increased.
-- once the tests pass we're searching for the last production release. Once the application
-is deployed to production we're tagging it with `prod/${version}` tag. If there is no such tag
-(there was no production release) there will be no rollback tests executed. If there was
-a production release the tests will get executed.
-- assuming that there was a production release we're checking out the code corresponding to that
-release (we're checking out the tag), we're downloading the appropriate artifact (either JAR for Cloud Foundry
-or Docker image for Kubernetes) and we're uploading
-it to PaaS. *IMPORTANT* the _old_ artifact is running against the *NEW* version of the database.
-- we're running the _old_ `smoke` tests against the freshly deployed application surrounded by stubs.
-If those tests pass then we have a high probability that the application is backwards compatible
-- the default behaviour is that after all of those steps the user can manually click to deploy the
-application to a stage environment
+* Once the tests pass, we search for the last production release. Once the application
+is deployed to production, we tag it with `prod/${version}`. If there is no such tag
+(there was no production release), no rollback tests are run. If there was
+a production release, the tests get executed.
+* Assuming that there was a production release, we check out the code that corresponds to that
+release (we check out the tag), download the appropriate artifact (either a JAR for Cloud Foundry
+or a Docker image for Kubernetes), and we upload
+it to PaaS.
+
+IMPORTANT: The old artifact runs against the *NEW* version of the database.
+
+We run the old `smoke` tests against the freshly deployed application, surrounded by stubs.
+If those tests pass, we have a high probability that the application is backwards compatible.
+* The default behavior is that, after all of those steps, the user can manually click to deploy the
+application to a stage environment.
 
 === Stage
 
+The following image shows the result of deploying to a stage environment:
+
 image::{intro-root-docs}/stage.png[title="End to end tests on stage environment"]
 
-Here we're
+Here, we:
 
-- starting a RabbitMQ service in PaaS
-- deploying `Eureka` infrastructure application to PaaS
-- downloading the artifact (either JAR for Cloud Foundry or Docker image for Kubernetes)
-from and we're uploading it to PaaS.
+* Start a RabbitMQ service in PaaS.
+* Deploy `Eureka` infrastructure application to PaaS.
+* Download the artifact (either a JAR for Cloud Foundry or a Docker image for Kubernetes)
+upload it to PaaS.
 
-Next we have a manual step in which:
-
-- from the checked out code we're running the tests available under the `e2e` profile. In the
-case of `GitHub Analytics` application we're sending a HTTP message to GitHub Analytic's endpoint. Then we're checking if
+Next, we have a manual step in which, from the checked-out code, we run the tests available under the `e2e` profile. In the
+case of the `GitHub Analytics` application, we send an HTTP message to the GitHub Analytics endpoint. Then we check whether
 the received message count has increased.
 
-The step is manual by default due to the fact that stage environment is often shared between
-teams and some preparations on databases / infrastructure have to take place before running the tests.
-Ideally these step should be fully automatic.
+By default, this step is manual, because the stage environment is often shared between
+teams and some preparations on databases and infrastructure have to take place before the tests can be run.
+Ideally, these step should be fully automatic.
 
 === Prod
 
+The following image shows the result of deploying to a production environment:
+
 image::{intro-root-docs}/prod.png[title="Deployment to production"]
 
-The step to deploy to production is manual but ideally it should be automatic.
+The step to deploy to production is manual. However, ideally, it should be automatic.
 
-IMPORTANT: This step does deployment to production. On production you would assume
-that you have the infrastructure running. That's why before you run this step you
-must execute a script that will provision the services on the production environment.
-For `Cloud Foundry` just call `tools/cf-helper.sh setup-prod-infra` and
-for Kubernetes `tools/k8s-helper.sh setup-prod-infra`
+IMPORTANT: This step does deployment to production. On production, we assume
+that you have the infrastructure running. That is why, before you run this step, you
+must run a script that provisions the services on the production environment.
+For `Cloud Foundry`, call `tools/cf-helper.sh setup-prod-infra`.
+For Kubernetes, call `tools/k8s-helper.sh setup-prod-infra`.
 
-Here we're
+Here, we:
 
-- tagging the Git repo with `prod/${version}` tag
-- downloading the application artifact (either JAR for Cloud Foundry or Docker image for Kubernetes)
-- we're doing Blue Green deployment:
-    - for Cloud Foundry
-        * we're renaming the current instance of the app e.g. `fooService` to `fooService-venerable`
-        * we're deploying the new instance of the app under the `fooService` name
-        * now two instances of the same application are running on production
-    - for Kubernetes
-        * we're deploying a service with the name of the app e.g. `fooService`
-        * we're doing a deployment with the name of the app with version suffix (with the name escaped
-         to fulfill the DNS name requirements) e.g. `fooService-1-0-0-M1-123-456-VERSION`
-        * all deployments of the same application have the same label `name` equal to app name e.g. `fooService`
-        * the service is routing the traffic basing on the `name` label selector
-        * now two instances of the same application are running on production
-- in the `Complete switch over` which is a manual step
-    * we're stopping the old instance
-    * remember to run this step only after you have confirmed that both instances are working fine!
-- in the `Rollback` which is a manual step
-    * we're routing all the traffic to the old instance
-    ** in CF we do that by ensuring that blue is running and removing green
-    ** in K8S we do that by scaling the number of instances of green to 0
-    * we're removing the latest prod git tag
+* Tag the Git repo with `prod/${version}`.
+* Download the application artifact (either a JAR for Cloud Foundry or a Docker image for Kubernetes).
+* We do Blue Green deployment:
+** For Cloud Foundry:
+*** We rename the current instance of the application (for example, `myService` to `myService-venerable`).
+*** We deploy the new instance of the app under the `fooService` name
+*** Now, two instances of the same application are running on production.
+** For Kubernetes:
+*** We deploy a service with the name of the application (for example, `myService`)
+*** We do a deployment with the name of the application with version suffix,with the name escaped
+to fulfill the DNS name requirements (for example, `fooService-1-0-0-M1-123-456-VERSION`).
+*** All deployments of the same application have the same label `name`, which is equal to the application name (for example, `myService`).
+*** The service routes the traffic by basing on the `name` label selector.
+*** Now two instances of the same application are running in production.
+* In the `Complete switch over`, which is a manual step, we stop the old instance.
++
+NOTE: Remember to run this step only after you have confirmed that both instances work.
++
+* In the `Rollback`, which is a manual step,
+** We route all the traffic to the old instance.
+*** In CF, we do that by ensuring that blue is running and removing green.
+*** In K8S, we do that by scaling the number of instances of green to 0.
+** We remov the latest prod Git tag.
 
 [[project-opinions]]
-== Project opinions
+== Project Opinions
 
-In this section we will go through the assumptions we've made in the project
+This section goes through the assumptions we made in the project
 structure and project properties.
 
-=== Cloud Foundry project opinions
+=== Cloud Foundry Project Opinions
 
-We've taken the following opinionated decisions for a Cloud Foundry based project:
+We take the following opinionated decisions for a Cloud Foundry based project:
 
-- application built using Maven or Gradle wrappers
-- application deployment to Cloud Foundry
-- you application needs a `manifest.yml` Cloud Foundry descriptor
-- For Maven (https://github.com/spring-cloud-samples/github-webhook[example project]):
-    * usage of Maven Wrapper
-    * `settings.xml` is parametrized to pass the credentials to push code to Artifactory
-    ** `M2_SETTINGS_REPO_ID` - server id for Artifactory / Nexus deployment
-    ** `M2_SETTINGS_REPO_USERNAME` - username for Artifactory / Nexus deployment
-    ** `M2_SETTINGS_REPO_PASSWORD` - password for Artifactory / Nexus deployment
-    * artifacts deployment by `./mvnw clean deploy`
-    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
-    * `repo.with.binaries` property - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * `distribution.management.release.id` property - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in `settings.xml`
-    * `distribution.management.release.url` property - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * running API compatibility tests via the `apicompatibility` Maven profile
-    * `latest.production.version` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
-    * running smoke tests on a deployed app via the `smoke` Maven profile
-    * running end to end tests on a deployed app via the `e2e` Maven profile
-- For Gradle  (https://github.com/spring-cloud-samples/github-analytics[example project] check the `gradle/pipeline.gradle` file):
-    * usage of Gradlew Wrapper
-    * `deploy` task for artifacts deployment
-    * `REPO_WITH_BINARIES_FOR_UPLOAD` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * running API compatibility tests via the `apiCompatibility` task
-    * `latestProductionVersion` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
-    * running smoke tests on a deployed app via the `smoke` task
-    * running end to end tests on a deployed app via the `e2e` task
-    * `groupId` task to retrieve group id
-    * `artifactId` task to retrieve artifact id
-    * `currentVersion` task to retrieve the current version
-    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
-- For PHP (https://github.com/spring-cloud-samples/cf-php-example[example project]):
-    * usage of https://getcomposer.org/[Composer]
-    * `composer install` is called to fetch libraries
-    * the whole application is compressed to `tar.gz` and uploaded to binary storage
-    ** `REPO_WITH_BINARIES_FOR_UPLOAD` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
-    ** `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
-    ** `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * `group-id` Composer task that echos the group id
-    * `app-name` Composer task that echos application name
-    * `stub-ids` Composer task that echos stub runner ids
-    * `test-apicompatibility` Composer task that is executed for api compatibility tests
-    * `test-smoke` Composer task that is executed for smoke testing (`APPLICATION_URL` and `STUBRUNNER_URL` env vars are available here to be used)
-    * `test-e2e` Composer task that is executed for end to end testing (`APPLICATION_URL` env vars is available here to be used)
-    * `target` is assumed to be the output folder. Put it to `.gitignore`
-- For NodeJS (https://github.com/spring-cloud-samples/spring-cloud-contract-nodejs/tree/sc-pipelines[example project]):
-    * usage of https://www.npmjs.com/[npm]
-    * `npm install` is called to fetch libraries
-    * `npm test` is called to run tests
-    * `npm run group-id` npm task that echos the group id
-    * `npm run app-name` npm task that echos application name
-    * `npm run stub-ids` npm task that echos stub runner ids
-    * `npm run test-apicompatibility` npm task that is executed for api compatibility tests
-    * `npm run test-smoke` npm task that is executed for smoke testing
-    * `npm run test-e2e` npm task that is executed for end to end testing
-    * `target` is assumed to be the output folder. Put it to `.gitignore`
-- For .Net (https://github.com/spring-cloud-samples/AspNetCoreExample[example project]):
-    * usage of https://www.microsoft.com/net/core[ASP.NET core]
-    * `dotnet build` is called to build the project
-    * `dotnet msbuild /nologo /t:CFPUnitTests` is called to run unit tests
-    * `dotnet msbuild /nologo /t:CFPIntegrationTests` is called to run integration tests
-    * `dotnet msbuild /nologo /t:CFPPublish /p:Configuration=Release` is called to publish
-    ZIP with self contained DLL, together with all manifests and deployment files
-    * `dotnet msbuild /nologo /t:CFPGroupId` npm task that echos the group id
-    * `dotnet msbuild /nologo /t:CFPAppName` npm task that echos application name
-    * `dotnet msbuild /nologo /t:CFPStubIds` npm task that echos stub runner ids
-    * `dotnet msbuild /nologo /t:CFPApiCompatibilityTest` is executed for api compatibility tests
-    * `dotnet msbuild /nologo /t:CFPSmokeTests` is executed for smoke testing
-    * `dotnet msbuild /nologo /t:CFPE2eTests` is executed for end to end testing
-    * `target` is assumed to be the output folder. Put it to `.gitignore`
+* The application is built by using the Maven or Gradle wrapper.
+* The application is deployed to Cloud Foundry.
+* Your application needs a `manifest.yml` Cloud Foundry descriptor.
+* For the Maven (https://github.com/spring-cloud-samples/github-webhook[example project]), we assume:
+** Usage of the Maven Wrapper.
+** `settings.xml` is parametrized to pass the credentials to push code to Artifactory:
+*** `M2_SETTINGS_REPO_ID` contains the server ID for Artifactory or Nexus deployment.
+*** `M2_SETTINGS_REPO_USERNAME` contains the username for Artifactory or Nexus deployment.
+*** `M2_SETTINGS_REPO_PASSWORD` contains the password for Artifactory or Nexus deployment.
+** Artifacts are deployed by `./mvnw clean deploy`.
+** We use the `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded.
+** `repo.with.binaries` property (injected by the pipeline): Contains the URL to the repo containing binaries (for example, Artifactory).
+** `distribution.management.release.id` property (injected by the pipeline): Contains the ID of the distribution management. It corresponds to server ID in `settings.xml`.
+** `distribution.management.release.url` property (injected by the pipeline): Contains the URL of the repository that contains binaries (for example, Artifactory).
+** Running API compatibility tests with the `apicompatibility` Maven profile.
+** `latest.production.version` property (injected by the pipeline): Contains the latest production version for the repo (retrieved from Git tags).
+** Running smoke tests on a deployed app with the `smoke` Maven profile.
+** Running end to end tests on a deployed app with the `e2e` Maven profile.
+* For Gradle (https://github.com/spring-cloud-samples/github-analytics[example project] check the `gradle/pipeline.gradle` file), we assume:
+** Usage of the Gradlew Wrapper.
+** A `deploy` task for artifact deployment.
+** The `REPO_WITH_BINARIES_FOR_UPLOAD` environment variable (Injected by the pipeline) contains the URL to the repository that contains binaries (for example, Artifactory).
+** The `M2_SETTINGS_REPO_USERNAME` environment variable contains the user name used to send the binary to the repository that contains binaries (for exampl,e Artifactory).
+** The `M2_SETTINGS_REPO_PASSWORD` environment variable contains the password used to send the binary to the repository that contains binaries (for example, Artifactory).
+** Running API compatibility tests with the `apiCompatibility` task.
+** `latestProductionVersion` property (injected by the pipeline): Contains the latest production version for the repository (retrieved from Git tags).
+** Running smoke tests on a deployed app with the `smoke` task.
+** Running end to end tests on a deployed app with the `e2e` task.
+** `groupId` task to retrieve the group ID.
+** `artifactId` task to retrieve the artifact ID.
+** `currentVersion` task to retrieve the current version.
+** `stubIds` task to retrieve the list of collaborators for which stubs should be downloaded.
+* For PHP (https://github.com/spring-cloud-samples/cf-php-example[example project]), we asssume:
+** Usage of https://getcomposer.org/[Composer].
+** `composer install` is called to fetch libraries.
+** The whole application is compressed to `tar.gz` and uploaded to binary storage.
+*** `REPO_WITH_BINARIES_FOR_UPLOAD` environment variable (injected by the pipeline): Contains the URL of the repository that contains binaries (for example, Artifactory)
+*** The `M2_SETTINGS_REPO_USERNAME` environment variable contains the user name used to send the binary to the repo containing binaries (for example, Artifactory).
+*** The `M2_SETTINGS_REPO_PASSWORD` environment variable contains the password used to send the binary to the repo containing binaries (for example, Artifactory).
+** `group-id`: Composer task that echoes the group ID.
+** `app-name`: Composer task that echoes application name.
+** `stub-ids`: Composer task that echoes stub runner ids.
+** `test-apicompatibility`: Composer task that is executed for api compatibility tests.
+** `test-smoke`: Composer task that is executed for smoke testing (the `APPLICATION_URL` and `STUBRUNNER_URL` environment variables are available here to be used).
+** `test-e2e`: Composer task that is executed for end-to-end testing (`APPLICATION_URL` env vars is available here to be used)
+** `target` is assumed to be the output folder. Put it in `.gitignore`
+* For NodeJS (https://github.com/spring-cloud-samples/spring-cloud-contract-nodejs/tree/sc-pipelines[example project]), we assume:
+** Usage of https://www.npmjs.com/[npm]
+** `npm install` is called to fetch libraries.
+** `npm test` is called to run tests.
+** `npm run group-id`: npm task that echoes the group ID.
+** `npm run app-name`: npm task that echoes application name.
+** `npm run stub-ids`: npm task that echoes stub runner IDs.
+** `npm run test-apicompatibility`: npm task that is executed for api compatibility tests.
+** `npm run test-smoke`: npm task that is executed for smoke testing.
+** `npm run test-e2e`: npm task that is executed for end-to-end testing.
+** `target` is assumed to be the output folder. Put it in `.gitignore`
+* For .Net (https://github.com/spring-cloud-samples/AspNetCoreExample[example project]):
+** Usage of https://www.microsoft.com/net/core[ASP.NET core]
+** `dotnet build` is called to build the project.
+** `dotnet msbuild /nologo /t:CFPUnitTests` is called to run unit tests.
+** `dotnet msbuild /nologo /t:CFPIntegrationTests` is called to run integration tests.
+** `dotnet msbuild /nologo /t:CFPPublish /p:Configuration=Release` is called to publish a
+ZIP with a self-contained DLL, together with all manifests and deployment files.
+** `dotnet msbuild /nologo /t:CFPGroupId` is the npm task that echos the group ID.
+** `dotnet msbuild /nologo /t:CFPAppName` is the npm task that echos application name.
+** `dotnet msbuild /nologo /t:CFPStubIds` is the npm task that echos stub runner IDs.
+** `dotnet msbuild /nologo /t:CFPApiCompatibilityTest` is run for API compatibility tests.
+** `dotnet msbuild /nologo /t:CFPSmokeTests` is executed for smoke testing.
+** `dotnet msbuild /nologo /t:CFPE2eTests` is executed for end-to-end testing.
+** `target` is assumed to be the output folder. Add it to `.gitignore`.
 
-=== Kubernetes project opinions
+=== Kubernetes Project Opinions
 
-We've taken the following opinionated decisions for a Cloud Foundry based project:
+We use the following opinionated decisions for a Cloud Foundry based project:
 
-- application built using Maven or Gradle wrappers
-- application deployment to Kubernetes
-- The produced Java Docker image needs to allow passing of system properties via `SYSTEM_PROPS` env variable
-- For Maven (https://github.com/spring-cloud-samples/github-webhook-kubernetes[example project]):
-    * usage of Maven Wrapper
-    * `settings.xml` is parametrized to pass the credentials to push code to Artifactory and Docker repository
-    ** `M2_SETTINGS_REPO_ID` - server id for Artifactory / Nexus deployment
-    ** `M2_SETTINGS_REPO_USERNAME` - username for Artifactory / Nexus deployment
-    ** `M2_SETTINGS_REPO_PASSWORD` - password for Artifactory / Nexus deployment
-    ** `DOCKER_SERVER_ID` - server id for Docker image pushing
-    ** `DOCKER_USERNAME` - username for Docker image pushing
-    ** `DOCKER_PASSWORD` - password for Docker image pushing
-    ** `DOCKER_EMAIL` - email for Artifactory / Nexus deployment
-    * `DOCKER_REGISTRY_URL` env var - (Overridable - defaults to DockerHub) URL of the Docker registry
-    * `DOCKER_REGISTRY_ORGANIZATION` - env var containing the organization where your Docker repo lays
-    * artifacts and Docker image deployment by `./mvnw clean deploy`
-    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
-    * `repo.with.binaries` property - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * `distribution.management.release.id` property - (Injected by the pipeline) ID of the distribution management. Corresponds to server id in `settings.xml`
-    * `distribution.management.release.url` property - (Injected by the pipeline) Will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * `deployment.yml` contains the Kubernetes deployment descriptor
-    * `service.yml` contains the Kubernetes service descriptor
-    * running API compatibility tests via the `apicompatibility` Maven profile
-    * `latest.production.version` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
-    * running smoke tests on a deployed app via the `smoke` Maven profile
-    * running end to end tests on a deployed app via the `e2e` Maven profile
-- For Gradle  (https://github.com/spring-cloud-samples/github-analytics-kubernetes[example project] check the `gradle/pipeline.gradle` file):
-    * usage of Gradlew Wrapper
-    * `deploy` task for artifacts deployment
-    * `REPO_WITH_BINARIES_FOR_UPLOAD` env var - (Injected by the pipeline) will contain the URL to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_USERNAME` env var - Username used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * `M2_SETTINGS_REPO_PASSWORD` env var - Password used to send the binary to the repo containing binaries (e.g. Artifactory)
-    * `DOCKER_REGISTRY_URL` env var - (Overridable - defaults to DockerHub) URL of the Docker registry
-    * `DOCKER_USERNAME` env var - Username used to send the the Docker image
-    * `DOCKER_PASSWORD` env var - Password used to send the the Docker image
-    * `DOCKER_EMAIL` env var - Email used to send the the Docker image
-    * `DOCKER_REGISTRY_ORGANIZATION` - env var containing the organization where your Docker repo lays
-    * `deployment.yml` contains the Kubernetes deployment descriptor
-    * `service.yml` contains the Kubernetes service descriptor
-    * running API compatibility tests via the `apiCompatibility` task
-    * `latestProductionVersion` property - (Injected by the pipeline) will contain the latest production version for the repo (retrieved from Git tags)
-    * running smoke tests on a deployed app via the `smoke` task
-    * running end to end tests on a deployed app via the `e2e` task
-    * `groupId` task to retrieve group id
-    * `artifactId` task to retrieve artifact id
-    * `currentVersion` task to retrieve the current version
-    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
+* The application is built by using the Maven or Gradle wrappers.
+* The application is deployed to Kubernetes.
+* The Java Docker image needs to allow passing of system properties through the `SYSTEM_PROPS` environment variable.
+* For Maven (https://github.com/spring-cloud-samples/github-webhook-kubernetes[example project]), we assume:
+** Usage of the Maven Wrapper.
+** `settings.xml` is parametrized to pass the credentials to push code to Artifactory and Docker repositories:
+*** `M2_SETTINGS_REPO_ID`: Server ID for Artifactory or Nexus deployment.
+*** `M2_SETTINGS_REPO_USERNAME`: User name for Artifactory or Nexus deployment.
+*** `M2_SETTINGS_REPO_PASSWORD`: Password for Artifactory or Nexus deployment.
+*** `DOCKER_SERVER_ID`: Server ID for Docker image pushing.
+*** `DOCKER_USERNAME`: User name for Docker image pushing.
+*** `DOCKER_PASSWORD`: Password for Docker image pushing.
+*** `DOCKER_EMAIL`: Email for Artifactory or Nexus deployment
+** `DOCKER_REGISTRY_URL` environment variable: Contains (Overridable - defaults to DockerHub) URL of the Docker registry.
+** `DOCKER_REGISTRY_ORGANIZATION` environment variable: Contains the organization where your Docker repository resides.
+** Artifacts and Docker image deployment is done by using `./mvnw clean deploy`.
+** `stubrunner.ids` property: To retrieve list of collaborators for which stubs should be downloaded.
+** `repo.with.binaries` property (injected by the pipeline): Contains the URL to the repo containing binaries (for example, Artifactory).
+** `distribution.management.release.id` property (injected by the pipeline): Contains the ID of the distribution management. Corresponds to the server ID in `settings.xml`
+** `distribution.management.release.url` property (injected by the pipeline): Contains the URL or the repository that contains binaries (for example, Artifactory).
+** `deployment.yml` contains the Kubernetes deployment descriptor.
+** `service.yml` contains the Kubernetes service descriptor.
+** running API compatibility tests with the `apicompatibility` Maven profile.
+** `latest.production.version` property (injected by the pipeline): Contains the latest production version for the repository (retrieved from Git tags).
+** Running smoke tests on a deployed app with the `smoke` Maven profile.
+** Running end to end tests on a deployed app with the `e2e` Maven profile.
+* For Gradle  (https://github.com/spring-cloud-samples/github-analytics-kubernetes[example project] check the `gradle/pipeline.gradle` file), we assume:
+** Usage of the Gradlew Wrapper.
+** `deploy` task for artifact deployment.
+** `REPO_WITH_BINARIES_FOR_UPLOAD` env var (injected by the pipeline): Contains the URL to the repository that contains binaries (for example, Artifactory).
+** `M2_SETTINGS_REPO_USERNAME` environment variable: User name used to send the binary to the repository that contains binaries (for example, Artifactory).
+** `M2_SETTINGS_REPO_PASSWORD` environment variable: Password used to send the binary to the repository that contains binaries (for example, Artifactory).
+** `DOCKER_REGISTRY_URL` environment variable: (Overridable - defaults to DockerHub) URL of the Docker registry.
+** `DOCKER_USERNAME` environment variable: User name used to send the the Docker image.
+** `DOCKER_PASSWORD` environment variable: Password used to send the the Docker image.
+** `DOCKER_EMAIL` environment variable: Email used to send the the Docker image.
+** `DOCKER_REGISTRY_ORGANIZATION` environment variable: Contains the organization where your Docker repo resides.
+** `deployment.yml` contains the Kubernetes deployment descriptor.
+** `service.yml` contains the Kubernetes service descriptor.
+** Running API compatibility tests with the `apiCompatibility` task.
+** `latestProductionVersion` property (injected by the pipeline): Contains the latest production version for the repositoryi (retrieved from Git tags).
+** Running smoke tests on a deployed application with the `smoke` task.
+** Running end to end tests on a deployed application with the `e2e` task.
+** `groupId` task to retrieve group ID.
+** `artifactId` task to retrieve artifact ID.
+** `currentVersion` task to retrieve the current version.
+** `stubIds` task to retrieve the list of collaborators for which stubs should be downloaded.

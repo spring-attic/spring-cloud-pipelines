@@ -1,8 +1,9 @@
 You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
-https://jenkins.io/projects/blueocean/[Blue Ocean UI]. Here is a step by step guide to run a pipeline via
-this approach.
+https://jenkins.io/projects/blueocean/[Blue Ocean UI].
 
-The Blue Ocean UI is available under the `blue/` URL. E.g. for Docker Machine based setup `http://192.168.99.100:8080/blue`.
+The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `http://192.168.99.100:8080/blue`).
+
+The following images show the various steps involved:
 
 {nbsp}
 {nbsp}
@@ -43,11 +44,11 @@ image::{jenkins-root-docs}/blue_7.png[caption="Step 7: ", title="The pipeline is
 {nbsp}
 
 
-IMPORTANT: There is no possibility of restarting pipeline from specific stage, after failure. Please
-check out this https://issues.jenkins-ci.org/browse/JENKINS-33846[issue] for more information
+IMPORTANT: There is no possibility of restarting a pipeline from a specific stage after failure.
+See https://issues.jenkins-ci.org/browse/JENKINS-33846[this issue] for more information
 
-WARNING: Currently there is no way to introduce manual steps in a performant way. Jenkins is
-blocking an executor when manual step is required. That means that you'll run out of executors
-pretty fast. You can check out this https://issues.jenkins-ci.org/browse/JENKINS-36235[issue] for
-and this http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
+WARNING: Currently, there is no way to introduce manual steps in a performant way. Jenkins
+blocks an executor when a manual step is required. That means that you run out of executors
+pretty quickly. See https://issues.jenkins-ci.org/browse/JENKINS-36235[this issue]
+and http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
 for more information.
