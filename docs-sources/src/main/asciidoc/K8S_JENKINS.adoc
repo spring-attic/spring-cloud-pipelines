@@ -29,7 +29,7 @@ If you want only to run the demo as far as possible by using PCF Dev and Docker 
 . <<jenkins-pipeline-k8s,Run the `github-webhook` pipeline>>
 
 [[fork-repos-k8s]]
-==== Fork repos
+==== Fork Repositories
 
 [[jenkins-fork-k8s]]
 Four applications compose the pipeline

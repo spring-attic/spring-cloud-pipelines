@@ -20,15 +20,15 @@ This is a guide for the Jenkins Job DSL based pipeline.
 
 If you want only to run the demo as far as possible using PCF Dev and Docker Compose, do the following:
 
-. <<jenkins-fork-cf,Fork repos>>
+. <<jenkins-fork-cf,Fork Repositories>>
 . <<jenkins-start-cf,Start Jenkins and Artifactory>>
 . <<jenkins-deploy-cf,Deploy infra to Artifactory>>
 . <<jenkins-pcfdev-cf,Start PCF Dev (if you do not want to use an existing one)>>
-. <<jenkins-seed-cf,Run the seed job>>
-. <<jenkins-pipeline-cf,Run the `github-webhook` pipeline>>
+. <<jenkins-seed-cf,Run the Seed Job>>
+. <<jenkins-pipeline-cf,Run the `github-webhook` Pipeline>>
 
 [[fork-repos-cf]]
-==== Fork repos
+==== Fork Repositories
 
 [[jenkins-fork-cf]]
 Four applications compose the pipeline:
@@ -141,12 +141,12 @@ cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 You can also run the `./tools/cf-helper.sh setup-spaces` script to do this.
 
 [[jenkins-seed-cf]]
-==== Run the seed job
+==== Run the Seed Job
 
 include::JENKINS_RUN_SEED.adoc[]
 
 [[jenkins-pipeline-cf]]
-==== Run the `github-webhook` pipeline
+==== Run the `github-webhook` Pipeline
 
 include::JENKINS_RUN_PIPELINE.adoc[]
 

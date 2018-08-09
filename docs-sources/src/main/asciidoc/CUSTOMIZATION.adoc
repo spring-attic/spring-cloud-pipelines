@@ -1,4 +1,4 @@
-== Customizing the project
+== Customizing the Project
 
 Spring Cloud Pipelines offers a number of ways to customize a Pipelines project:
 

@@ -27,8 +27,8 @@ If you want only to run the demo as far as possible by using PCF Dev and Docker 
 . <<concourse-pcfdev-cf,Start PCF Dev (if you don't want to use an existing one)>>
 . <<concourse-fly-cf,Setup the `fly` CLI>>
 . <<concourse-credentials-cf,Setup your `credentials.yml`>>
-. <<concourse-build-cf,Run the seed job>>
-. <<concourse-run-cf,Run the `github-webhook` pipeline>>
+. <<concourse-build-cf,Build the Pipeline>>
+. <<concourse-run-cf,Run the `github-webhook` Pipeline>>
 
 [[concourse-fork-cf]]
 ==== Fork Repositories
