@@ -135,7 +135,7 @@ function deployService() {
 			IFS=${coordinatesSeparator} read -r STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
 			IFS="${previousIfs}"
 			local parsedStubRunnerUseClasspath
-			parsedStubRunnerUseClasspath="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/')"
+			parsedStubRunnerUseClasspath="$(echo "${PARSED_YAML}" | jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath')"
 			local stubRunnerUseClasspath
 			stubRunnerUseClasspath=$(if [[ "${parsedStubRunnerUseClasspath}" == "null" ]]; then
 				echo "false";
@@ -152,19 +152,19 @@ function deployService() {
 }
 
 function eurekaName() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
+	echo "${PARSED_YAML}" | jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' || echo ""
 }
 
 function rabbitMqName() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
+	echo "${PARSED_YAML}" | jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' || echo ""
 }
 
 function mySqlName() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .name' | sed 's/^"\(.*\)"$/\1/' || echo ""
+	echo "${PARSED_YAML}" | jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .name' || echo ""
 }
 
 function mySqlDatabase() {
-	echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .database' | sed 's/^"\(.*\)"$/\1/' || echo ""
+	echo "${PARSED_YAML}" | jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "mysql") | .database' || echo ""
 }
 
 function appSystemProps() {

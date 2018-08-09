@@ -137,18 +137,18 @@ function deployService() {
 	case ${serviceType} in
 		broker)
 			local broker
-			broker="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .broker' | sed 's/^"\(.*\)"$/\1/')"
+			broker="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .broker')"
 			local plan
-			plan="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .plan' | sed 's/^"\(.*\)"$/\1/')"
+			plan="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .plan')"
 			local params
-			params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
+			params="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params')"
 			deployBrokeredService "${serviceName}" "${broker}" "${plan}" "${params}"
 		;;
 		app)
 			local pathToManifest
-			pathToManifest="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .pathToManifest' | sed 's/^"\(.*\)"$/\1/')"
+			pathToManifest="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .pathToManifest')"
 			local serviceCoordinates
-			serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			serviceCoordinates="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates')"
 			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
 			IFS=${coordinatesSeparator} read -r APP_GROUP_ID APP_ARTIFACT_ID APP_VERSION <<<"${serviceCoordinates}"
@@ -159,26 +159,26 @@ function deployService() {
 		cups)
 			# Usage: cf cups SERVICE_INSTANCE -p CREDENTIALS (or credentials file)
 			local params
-			params="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params' | sed 's/^"\(.*\)"$/\1/')"
+			params="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .params')"
 			deployCupsService "${serviceName}" "-p" "${params}"
 		;;
 		cupsSyslog)
 			# Usage: cf cups SERVICE_INSTANCE -l SYSLOG_DRAIN_URL
 			local syslogDrainUrl
-			syslogDrainUrl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
+			syslogDrainUrl="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url')"
 			deployCupsService "${serviceName}" "-l" "${syslogDrainUrl}"
 		;;
 		cupsRoute)
 			# Usage: cf cups SERVICE_INSTANCE -r ROUTE_SERVICE_URL
 			local routeServiceurl
-			routeServiceurl="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url' | sed 's/^"\(.*\)"$/\1/')"
+			routeServiceurl="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .url')"
 			deployCupsService "${serviceName}" "-r" "${routeServiceurl}"
 		;;
 		stubrunner)
 			local pathToManifest
-			pathToManifest="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .pathToManifest' | sed 's/^"\(.*\)"$/\1/')"
+			pathToManifest="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .pathToManifest')"
 			local serviceCoordinates
-			serviceCoordinates="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates' | sed 's/^"\(.*\)"$/\1/')"
+			serviceCoordinates="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates')"
 			local coordinatesSeparator=":"
 			local PREVIOUS_IFS="${IFS}"
 			IFS="${coordinatesSeparator}" read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
@@ -242,7 +242,7 @@ function parseManifest() {
 # $1 - app name
 function getProfilesFromManifest() {
 	local appName="${1}"
-	echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE' | sed 's/^"\(.*\)"$/\1/'
+	echo "${PARSED_APP_MANIFEST_YAML}" |  jq -r --arg x "${appName}" '.applications[] | select(.name = $x) | .env | .SPRING_PROFILES_ACTIVE'
 } # }}}
 
 # FUNCTION: getHostFromManifest {{{
@@ -252,7 +252,7 @@ function getProfilesFromManifest() {
 function getHostFromManifest() {
 	local appName="${1}"
 	local host
-	echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .host' | sed 's/^"\(.*\)"$/\1/'
+	echo "${PARSED_APP_MANIFEST_YAML}" |  jq -r --arg x "${appName}" '.applications[] | select(.name = $x) | .host'
 } # }}}
 
 # FUNCTION: getInstancesFromManifest {{{
@@ -261,7 +261,7 @@ function getHostFromManifest() {
 # $1 - app name
 function getInstancesFromManifest() {
 	local appName="${1}"
-	echo "${PARSED_APP_MANIFEST_YAML}" |  jq --arg x "${appName}" '.applications[] | select(.name = $x) | .instances' | sed 's/^"\(.*\)"$/\1/'
+	echo "${PARSED_APP_MANIFEST_YAML}" |  jq -r --arg x "${appName}" '.applications[] | select(.name = $x) | .instances'
 } # }}}
 
 # FUNCTION: getAppHostFromPaas {{{
@@ -613,7 +613,7 @@ function addMultiplePortsSupport() {
 	local previousIfs="${IFS}"
 	local listOfPorts=""
 	local appGuid
-	appGuid="$( "${CF_BIN}" curl "/v2/apps?q=name:${stubRunnerName}" -X GET | jq '.resources[0].metadata.guid' | sed 's/^"\(.*\)"$/\1/' )"
+	appGuid="$( "${CF_BIN}" curl "/v2/apps?q=name:${stubRunnerName}" -X GET | jq -r '.resources[0].metadata.guid' )"
 	echo "App GUID for ${stubRunnerName} is ${appGuid}"
 	IFS="," read -ra vals <<< "${stubrunnerIds}"
 	for stub in "${vals[@]}"; do
@@ -638,7 +638,7 @@ function addMultiplePortsSupport() {
 		echo "Creating route with hostname [${newHostname}]"
 		"${CF_BIN}" create-route "${testSpace}" "${domain}" --hostname "${newHostname}"
 		local routeGuid
-		routeGuid="$( "${CF_BIN}" curl -X GET "/v2/routes?q=host:${newHostname}" | jq '.resources[0].metadata.guid' | sed 's/^"\(.*\)"$/\1/' )"
+		routeGuid="$( "${CF_BIN}" curl -X GET "/v2/routes?q=host:${newHostname}" | jq -r '.resources[0].metadata.guid' )"
 		echo "GUID of the new route is [${routeGuid}]. Will update the mapping for port [${port}]"
 		"${CF_BIN}" curl "/v2/route_mappings" -X POST -d "{ \"app_guid\": \"${appGuid}\", \"route_guid\": \"${routeGuid}\", \"app_port\": ${port} }"
 		echo "Successfully updated the new route mapping for port [${port}]"
@@ -865,7 +865,7 @@ function propagatePropertiesForTests() {
 	envNodeExists "${LOWERCASE_ENV}" && nodeExists="true" || nodeExists="false"
 	local stubRunnerName=""
 	if [[ "${nodeExists}" == "true" ]]; then
-		stubRunnerName="$(echo "${PARSED_YAML}" |  jq --arg x "${LOWERCASE_ENV}" --arg y "${serviceType}" '.[$x].services[] | select(.name == $y) | .name' | sed 's/^"\(.*\)"$/\1/')"
+		stubRunnerName="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceType}" '.[$x].services[] | select(.name == $y) | .name')"
 	fi
 	local fileLocation="${OUTPUT_FOLDER}/test.properties"
 	echo "Propagating properties for tests. Project [${projectArtifactId}] stub runner app name [${stubRunnerName}] properties location [${fileLocation}]"

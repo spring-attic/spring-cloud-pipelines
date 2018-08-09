@@ -105,14 +105,14 @@ function deployService() {
 		;;
 		stubrunner)
 			local eurekaName
-			eurekaName="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name' | sed 's/^"\(.*\)"$/\1/')"
+			eurekaName="$(echo "${PARSED_YAML}" | jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "eureka") | .name')"
 			local rabbitMqName
-			rabbitMqName="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name' | sed 's/^"\(.*\)"$/\1/')"
+			rabbitMqName="$(echo "${PARSED_YAML}" | jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "rabbitmq") | .name')"
 			local PREVIOUS_IFS="${IFS}"
 			IFS="${coordinatesSeparator}" read -r STUBRUNNER_GROUP_ID STUBRUNNER_ARTIFACT_ID STUBRUNNER_VERSION <<<"${serviceCoordinates}"
 			IFS="${PREVIOUS_IFS}"
 			local parsedStubRunnerUseClasspath
-			parsedStubRunnerUseClasspath="$(echo "${PARSED_YAML}" | jq --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath' | sed 's/^"\(.*\)"$/\1/')"
+			parsedStubRunnerUseClasspath="$(echo "${PARSED_YAML}" | jq -r --arg x "${LOWERCASE_ENV}" '.[$x].services[] | select(.type == "stubrunner") | .useClasspath')"
 			local stubRunnerUseClasspath
 			stubRunnerUseClasspath=$(if [[ "${parsedStubRunnerUseClasspath}" == "null" ]]; then
 				echo "false";
