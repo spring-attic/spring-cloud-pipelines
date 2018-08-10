@@ -1,11 +1,13 @@
-We already create the seed job for you but you'll have to run it. When you do
-run it you have to provide some properties. By default we create a seed that
+We created the seed job for you, but you have to run it. When you do
+run it, you have to provide some properties. By default we create a seed that
 has all the properties options, but you can delete most of it. If you
-set the properties as global env variables you have to remove them from the
+set the properties as global environment variables, you have to remove them from the
 seed.
 
-Anyways, to run the demo just provide in the `REPOS` var the comma separated
- list of URLs of the 2 aforementioned forks of `github-webhook` and `github-analytics'.
+To run the demo, provide a comma-separated
+list of the URLs of the two aforementioned forks (`github-webhook` and `github-analytics') in the `REPOS` variable.
+
+The following images shows the steps involved:
 
 {nbsp}
 {nbsp}

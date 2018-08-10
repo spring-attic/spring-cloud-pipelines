@@ -1,23 +1,32 @@
-== Customizing the project
+== Customizing the Project
 
-=== Overriding scripts
+Spring Cloud Pipelines offers a number of ways to customize a Pipelines project:
 
-Since Spring Cloud Pipelines evolves, you would like to pull the changes to your
-Spring Cloud Pipelines fork. In order not to have merge conflicts, the best approach
+* <<customization-overriding-scripts>>
+* <<customization-overriding-pipelines>>
+* <<customization-picking-features>>
+
+[[customization-overriding-scripts]]
+=== Overriding Scripts
+
+Since Spring Cloud Pipelines evolves, you may want to pull the most recent changes to your
+Spring Cloud Pipelines fork. To not have merge conflicts, the best approach
 to extending the functionality is to use a separate script with customizations.
 
-When we execute a script that represents a step (e.g. with name `build_and_upload.sh`),
-after we source all the deployment and build specific scripts (e.g. `pipeline-cf.sh`
+When we execute a script that represents a step (for example, a script named `build_and_upload.sh`),
+after we source all the deployment and build-specific scripts (such as `pipeline-cf.sh`
 and `projectType/pipeline-jvm.sh` with `projectType/pipeline-gradle.sh`), we set
-a hook that allows to customize the behaviour. If the script that we're executing
-is `common/src/main/bash/build_and_upload.sh` then we will search for a script in
-Spring Cloud Pipelines repository under `common/src/main/bash/custom/build_and_upload.sh`
-and we will source that script just before executing any functions.
+a hook that lets you customize the behavior. If the script that we run
+is `common/src/main/bash/build_and_upload.sh`, we search for a script in the
+Spring Cloud Pipelines repository under `common/src/main/bash/custom/build_and_upload.sh`,
+and we source that script just before running any functions.
 
-Example of such customization can be seen below:
+The following example shows such a customization:
 
 .custom/build_and_upload.sh
-```bash
+====
+[source,bash]
+----
 #!/bin/bash
 
 function build() {
@@ -25,21 +34,22 @@ function build() {
 }
 
 export -f build
-```
+----
+====
 
-when the function `build` will be called for our Gradle project, then instead of
-calling Gradle build process, we will just echo the `I am executing a custom build function`
-text.
+when the `build` function is called for our Gradle project, instead of
+calling the Gradle build process, we echo the following text: `I am executing a custom build function`.
 
-=== Overriding pipelines
+[[customization-overriding-pipelines]]
+=== Overriding Pipelines
 
-Currently the best way for extension of Concourse and Jenkins Jenkinsfile pipelines is to make
-a copy of the Concourse pipeline `yaml`s and Jenkins seed / pipeline jobs.
+Currently, the best way to extend the Concourse and Jenkins Jenkinsfile pipelines is to make
+a copy of the Concourse pipeline `yaml` files and the Jenkins seed and pipeline jobs.
 
 ==== Overriding Jenkins Job DSL pipelines
 
-We're providing an interface `org.springframework.cloud.pipelines.common.JobCustomizer`
-that allows you to provide customization for
+We provide an interface (called `org.springframework.cloud.pipelines.common.JobCustomizer`)
+that lets you provide customization for:
 
 * all jobs
 * build jobs
@@ -47,14 +57,16 @@ that allows you to provide customization for
 * stage jobs
 * prod jobs
 
-We're using the JDK's `java.util.ServiceLoader` mechanism to achieve extensibility.
+We use the JDK's `java.util.ServiceLoader` mechanism to achieve extensibility.
 
-It's enough for you to write an implementation of that interface (e.g. `com.example.MyJubCustomizer`)
+You can write an implementation of that interface (for example, `com.example.MyJubCustomizer`)
 and create a `META-INF/org.springframework.cloud.pipelines.common.JobCustomizer` file in which you put the
 `com.example.MyJubCustomizer` line.
 
-If you create a JAR with your class (e.g. `com.example:my-customizer:1.0.0`) just put it to the build classpath
+If you create a JAR with your class (for example `com.example:my-customizer:1.0.0`),
+put it on the build classpath, as the following example shows:
 
+====
 [source,groovy]
 ----
 dependencies {
@@ -63,25 +75,32 @@ dependencies {
     // ...
 }
 ----
+====
 
-Another option is to just create an implementation in the sources under `src/main/resources/META-INF`
-if you don't want to create a separate library.
+If you do not want to create a separate library, you can create an implementation in the
+sources under `src/main/resources/META-INF`.
 
-Regardless of what you chose, your implementation will be executed for each job. You can add notifications
+Regardless of what you chose, your implementation runs for each job. You can add notifications
 or any other customizations of your choosing.
 
-=== Leaving what's necessary
+[[customization-picking-features]]
+=== Picking Features
 
-If you want to pick only pieces (e.g. you're interested only in `Cloud Foundry` with
-`Concourse` combination) it's enough to execute this command:
+If you want to pick only pieces (for example you want only `Cloud Foundry` combined with
+`Concourse`), you can run the following command:
 
-```bash
+====
+[source,bash]
+----
 $ ./gradlew customize
-```
+----
+====
 
-You'll see a screen looking more or less like this:
+A screen resembling the following appears:
 
-```bash
+====
+[source,bash]
+----
 :customize
   ___          _              ___ _             _   ___ _           _ _
  / __|_ __ _ _(_)_ _  __ _   / __| |___ _  _ __| | | _ (_)_ __  ___| (_)_ _  ___ ___
@@ -98,9 +117,10 @@ Follow the instructions presented in the console or terminate the process to qui
 Which PAAS type do you want to use? Options: [CF, K8S, BOTH]
 <-------------> 0% EXECUTING
 > :customize
-```
+----
+====
 
-Now you need to answer a couple of questions. That way whole files and its pieces
-will get removed / updated accordingly. If you provide `CF` and `Concourse` options
-thn `Kubernetes` and `Jenkins` configuration / folders / pieces of code in
-the project will get removed.
+Now you need to answer a couple of questions. Depending on your choices, whole files and their pieces
+get removed and updated accordingly. For example, if you choose the `CF` and `Concourse` options,
+the `Kubernetes` and `Jenkins` configuration and folders and pieces of code in
+the project get removed.

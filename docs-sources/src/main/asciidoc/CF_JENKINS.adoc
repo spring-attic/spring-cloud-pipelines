@@ -1,97 +1,107 @@
 [[jenkins-pipeline-cf]]
 == Jenkins Pipeline (Cloud Foundry)
 
-IMPORTANT: In this chapter we assume that you perform deployment of your application
-to Cloud Foundry PaaS
+IMPORTANT: In this chapter, we assume that you deploy your application
+to Cloud Foundry PaaS.
 
-[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job DSL plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline, which uses the https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job DSL plugin]. Those jobs form an empty pipeline and a opinionated sample pipeline that you can use in your company.
 
-All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+The following projects take part in the `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
-- https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
-- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
-- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+* https://github.com/spring-cloud-samples/github-analytics[Github Analytics]: The app that has a REST endpoint and uses messaging -- part off our business application.
+* https://github.com/spring-cloud-samples/github-webhook[Github Webhook]: Project that emits messages that are used by Github Analytics -- part of our business application.
+* https://github.com/spring-cloud-samples/github-eureka[Eureka]: Simple Eureka Server. This is an infrastructure application.
+* https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot]: Stub Runner Boot server to be used for tests with Github Analytics and using Eureka and Messaging. This is an infrastructure application.
 
 [[step-by-step-cf]]
-=== Step by step
+=== Step-by-step
 
-This is a guide for Jenkins Job DSL based pipeline.
+This is a guide for the Jenkins Job DSL based pipeline.
 
-If you want to just run the demo as far as possible using PCF Dev and Docker Compose
+If you want only to run the demo as far as possible using PCF Dev and Docker Compose, do the following:
 
-- <<jenkins-fork-cf,Fork repos>>
-- <<jenkins-start-cf,Start Jenkins and Artifactory>>
-- <<jenkins-deploy-cf,Deploy infra to Artifactory>>
-- <<jenkins-pcfdev-cf,Start PCF Dev (if you don't want to use an existing one)>>
-- <<jenkins-seed-cf,Run the seed job>>
-- <<jenkins-pipeline-cf,Run the `github-webhook` pipeline>>
+. <<jenkins-fork-cf,Fork Repositories>>
+. <<jenkins-start-cf,Start Jenkins and Artifactory>>
+. <<jenkins-deploy-cf,Deploy infra to Artifactory>>
+. <<jenkins-pcfdev-cf,Start PCF Dev (if you do not want to use an existing one)>>
+. <<jenkins-seed-cf,Run the Seed Job>>
+. <<jenkins-pipeline-cf,Run the `github-webhook` Pipeline>>
 
 [[fork-repos-cf]]
-==== Fork repos
+==== Fork Repositories
 
-[[jenkins-fork-cf]] There are 4 apps that are composing the pipeline
+[[jenkins-fork-cf]]
+Four applications compose the pipeline:
 
-  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
-  - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
-  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
-  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Stub Runner Boot]
+* https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
+* https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
+* https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+* https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Stub Runner Boot]
 
-You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+You need to fork only the following, because only then can you tag and push the tag to your repository:
 
-  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
-  - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
+* https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
+* https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
 [[start-jenkins-cf]]
 ==== Start Jenkins and Artifactory
 
-[[jenkins-start-cf]] Jenkins + Artifactory can be ran locally. To do that just execute the
-`start.sh` script from this repo.
+[[jenkins-start-cf]]
+Jenkins + Artifactory can be ran locally. To do so, run the
+`start.sh` script from this repository. The following listing shows the script:
 
+====
 [source,bash]
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/jenkins
 ./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg
 ----
-Then Jenkins will be running on port `8080` and Artifactory `8081`.
-The provided parameters will be passed as env variables to Jenkins VM
-and credentials will be set in your set. That way you don't have to do
-any manual work on the Jenkins side. In the above parameters, the third parameter
-could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
-contain your GitHub org in which you have the forked repos.
+====
 
-Instead of the Git username and password parameters you could pass `-key <path_to_private_key>`
-if you prefer to use the key-based authentication with your Git repositories.
+Then Jenkins runs on port `8080`, and Artifactory runs on port `8081`.
+The parameters are passed as environment variables to the Jenkins VM,
+and credentials are set. That way, you need not do
+any manual work on the Jenkins side. In the above parameters, the third parameter
+could be `yourForkedGithubOrg` or `yourGithubUsername`. Also the `REPOS` environment variable
+contains your GitHub org (in which you have the forked repos).
+
+Instead of the Git username and password parameters, you could pass `-key <path_to_private_key>`
+(if you prefer to use key-based authentication with your Git repositories).
 
 [[deploy-infra-cf]]
-===== Deploy the infra JARs to Artifactory
+===== Deploy the Infra JARs to Artifactory
 
-[[jenkins-deploy-cf]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+[[jenkins-deploy-cf]]
+When Artifactory is running, run the `tools/deploy-infra.sh` script from this repo. The following listing shows the script:
 
+====
 [source,bash]
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/
 ./tools/deploy-infra.sh
 ----
+====
 
-As a result both `eureka` and `stub runner` repos will be cloned, built
+As a result, both the `eureka` and `stub runner` repositories are cloned, built,
 and uploaded to Artifactory.
 
 [[start-pcf-dev-cf]]
 ==== Start PCF Dev
 
-TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
-The only thing you have to do is to set up spaces.
+TIP: You can skip this step if you have CF installed and do not want to use PCF Dev.
+In that case, the only thing you have to do is to set up spaces.
 
-WARNING: It's more than likely that you'll run out of resources when you reach stage step.
-Don't worry! Keep calm and <<jenkins-cf-resources,clear some apps from PCF Dev and continue>>.
+WARNING: Servers often run run out of resources at the stage step.
+If that happens <<jenkins-cf-resources,clear some apps from PCF Dev and continue>>.
 
-[[jenkins-pcfdev-cf]] You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
+[[jenkins-pcfdev-cf]]
+You have to download and start PCF Dev, as described https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[here.]
 
-The default credentials when using PCF Dev are:
+The default credentials when using PCF Dev are as follows:
 
+====
 [source,bash]
 ----
 username: user
@@ -101,16 +111,20 @@ org: pcfdev-org
 space: pcfdev-space
 api: api.local.pcfdev.io
 ----
+====
 
-You can start the PCF Dev like this:
+You can start PCF Dev as follows:
 
+====
 [source,bash]
 ----
 cf dev start
 ----
+====
 
-You'll have to create 3 separate spaces (email admin, pass admin)
+You must create three separate spaces, as follows:
 
+====
 [source,bash]
 ----
 cf login -a https://api.local.pcfdev.io --skip-ssl-validation -u admin -p admin -o pcfdev-org
@@ -122,81 +136,84 @@ cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
 cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 ----
+====
 
-You can also execute the `./tools/cf-helper.sh setup-spaces` to do this.
+You can also run the `./tools/cf-helper.sh setup-spaces` script to do this.
 
 [[jenkins-seed-cf]]
-==== Run the seed job
+==== Run the Seed Job
 
 include::JENKINS_RUN_SEED.adoc[]
 
 [[jenkins-pipeline-cf]]
-==== Run the `github-webhook` pipeline
+==== Run the `github-webhook` Pipeline
 
 include::JENKINS_RUN_PIPELINE.adoc[]
 
 [[declarative-pipeline-cf]]
-=== Declarative pipeline & Blue Ocean
+=== Declarative Pipeline & Blue Ocean
 
 include::JENKINS_BLUE_OCEAN.adoc[]
 
 [[optional-steps-cf]]
-=== Jenkins Cloud Foundry customization
+=== Jenkins Cloud Foundry Customization
 
- All the steps below are not necessary to run the demo. They are needed only
-when you want to do some custom changes.
+You can customize Jenkins for Cloud Foundry by setting a variety of environment variables.
+
+NOTE: You need not see all the environment variables described in this section to run the demo. They are needed only
+when you want to make custom changes.
 
 [[all-env-vars-cf]]
-==== All env vars
+==== Environment Variable Summary
 
-The env vars that are used in all of the jobs are as follows:
+The environment variables that are used in all of the jobs are as follows:
 
 [frame="topbot",options="header,footer"]
 |======================
 |Property Name  | Property Description | Default value
-|PAAS_TEST_API_URL | The URL to the CF Api for TEST env| api.local.pcfdev.io
-|PAAS_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
-|PAAS_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
-|PAAS_TEST_ORG    | Name of the org for the test env | pcfdev-org
-|PAAS_TEST_SPACE_PREFIX  | Prefix of the name of the CF space for the test env to which the app name will be appended | sc-pipelines-test
-|PAAS_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
-|PAAS_STAGE_SPACE | Name of the space for the stage env | sc-pipelines-stage
-|PAAS_PROD_ORG   | Name of the org for the prod env | pcfdev-org
-|PAAS_PROD_SPACE | Name of the space for the prod env | sc-pipelines-prod
-|REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
-|M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
-|JDK_VERSION | The name of the JDK installation | jdk8
-|PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
-|GIT_EMAIL | The email used by Git to tag repo | email@example.com
-|GIT_NAME | The name used by Git to tag repo | Pivo Tal
-|PAAS_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
-|AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
-|AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
-|API_COMPATIBILITY_STEP_REQUIRED | Should api compatibility step be required | true
-|DB_ROLLBACK_STEP_REQUIRED | Should DB rollback step be present | true
-|DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
-|BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
-|BINARY_EXTENSION | Extension of the binary uploaded to Artifactory / Nexus. Example: change this to `war` for WAR artifacts | jar
+|`PAAS_TEST_API_URL` | The URL to the CF API for the TEST environment| `api.local.pcfdev.io`
+|`PAAS_STAGE_API_URL` | The URL to the CF API for the STAGE environment | `api.local.pcfdev.io`
+|`PAAS_PROD_API_URL` | The URL to the CF API for the PROD environment | `api.local.pcfdev.io`
+|`PAAS_TEST_ORG`    | Name of the org for the test env | `pcfdev-org`
+|`PAAS_TEST_SPACE_PREFIX`  | Prefix of the name of the CF space for the test environment to which the app name is appended | `sc-pipelines-test`
+|`PAAS_STAGE_ORG`   | Name of the org for the stage environment | `pcfdev-org`
+|`PAAS_STAGE_SPACE` | Name of the space for the stage environment | `sc-pipelines-stage`
+|`PAAS_PROD_ORG`   | Name of the org for the prod environment | `pcfdev-org`
+|`PAAS_PROD_SPACE` | Name of the space for the prod environment | `sc-pipelines-prod`
+|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `http://artifactory:8081/artifactory/libs-release-local`
+|`M2_SETTINGS_REPO_ID` | The ID of server from Maven `settings.xml` | `artifactory-local`
+|`JDK_VERSION` | The name of the JDK installation | `jdk8`
+|`PIPELINE_VERSION` | The version of the pipeline (ultimately, also the version of the jar) | `1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION`
+|`GIT_EMAIL` | The email used by Git to tag the repository | `email@example.com`
+|`GIT_NAME` | The name used by Git to tag the repository | `Pivo Tal`
+|`PAAS_HOSTNAME_UUID` | Additional suffix for the route. In a shared environment, the default routes can be already taken |
+|`AUTO_DEPLOY_TO_STAGE` | Whether deployment to stage be automatic | `false`
+|`AUTO_DEPLOY_TO_PROD` | Whether deployment to prod be automatic | `false`
+|`API_COMPATIBILITY_STEP_REQUIRED` | Whether the API compatibility step is required | `true`
+|`DB_ROLLBACK_STEP_REQUIRED` | Whether the DB rollback step is present | `true`
+|`DEPLOY_TO_STAGE_STEP_REQUIRED` | Whether to the deploy-to-stage step be present | `true`
+|`BUILD_OPTIONS` | Additional options you would like to pass to the Maven / Gradle build |
+|`BINARY_EXTENSION` | Extension of the binary uploaded to Artifactory / Nexus. Example: `war` for WAR artifacts | `jar`
 |======================
 
 [[jenkins-credentials-cf]]
 ==== Jenkins Credentials
 
-In your scripts we reference the credentials via IDs. These are the defaults for credentials
+Our scripts reference the credentials by IDs. The following table describes the defaults for the credentials:
 
 [frame="topbot",options="header,footer"]
 |======================
 |Property Name  | Property Description | Default value
-|GIT_CREDENTIAL_ID    | Credential ID used to tag a git repo | git
-|GIT_SSH_CREDENTIAL_ID    | SSH credential ID used to tag a git repo | gitSsh
-|GIT_USE_SSH_KEY    | if `true` will pick to use the SSH credential id | false
-|REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
-|PAAS_TEST_CREDENTIAL_ID  | Credential ID for CF Test env access | cf-test
-|PAAS_STAGE_CREDENTIAL_ID   | Credential ID for CF Stage env access | cf-stage
-|PAAS_PROD_CREDENTIAL_ID | Credential ID for CF Prod env access | cf-prod
+|`GIT_CREDENTIAL_ID`    | Credential ID used to tag a Git repo | `git`
+|`GIT_SSH_CREDENTIAL_ID`    | SSH credential ID used to tag a Git repo | `gitSsh`
+|`GIT_USE_SSH_KEY`    | If `true`, pick the SSH credential id to use | `false`
+|`REPO_WITH_BINARIES_CREDENTIAL_ID`    | Credential ID used for the repository with jars | `repo-with-binaries`
+|`PAAS_TEST_CREDENTIAL_ID`  | Credential ID for CF Test environment access | `cf-test`
+|`PAAS_STAGE_CREDENTIAL_ID`   | Credential ID for CF Stage environment access | `cf-stage`
+|`PAAS_PROD_CREDENTIAL_ID` | Credential ID for CF Prod environment access | `cf-prod`
 |======================
 
-If you already have in your system a credential to for example tag a repo
-you can use it by passing the value of the property `GIT_CREDENTIAL_ID`
+If you already have in your system a credential to (for example) tag a repository,
+you can use it by passing the value of the `GIT_CREDENTIAL_ID` property.
 
-TIP: Check out the `cf-helper` script for all the configuration options!
+TIP: See the `cf-helper` script for all the configuration options.

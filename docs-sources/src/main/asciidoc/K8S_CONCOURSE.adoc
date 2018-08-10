@@ -1,63 +1,66 @@
 [[concourse-pipeline-k8s]]
 == Concourse Pipeline (Kubernetes)
 
-IMPORTANT: In this chapter we assume that you perform deployment of your application
+IMPORTANT: In this chapter, we assume that you deploy your application
 to Kubernetes PaaS
 
-[[concourse]] The Spring Cloud Pipelines repository contains opinionated
-Concourse pipeline definition. Those jobs will form an empty pipeline and a
-sample, opinionated one that you can use in your company.
+[[concourse]]
+The Spring Cloud Pipelines repository contains opinionated
+Concourse pipeline definitions. Those jobs form an empty pipeline and an
+opinionated sample pipeline that you can use in your company.
 
-All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+The following projects take part in the `microservice setup` for this demo:
 
-- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
-- https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
-- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
-- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+* https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github Analytics]: The application that has a REST endpoint and uses messaging -- part of our business application.
+* https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]: Project that emits messages that are used by Github Analytics -- part of our business application.
+* https://github.com/spring-cloud-samples/github-eureka[Eureka]: Simple Eureka Server. This is an infrastructure application.
+* https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot]: Stub Runner Boot server to be used for tests with Github Analytics and uses Eureka and Messaging. This is an infrastructure application.
 
 [[step-by-step-k8s]]
-=== Step by step
+=== Step-by-step
 
-This is a guide for Concourse pipeline.
+If you want only to run the demo as far as possible by using PCF Dev and Docker Compose, do the following:
 
-If you want to just run the demo as far as possible using PCF Dev and Docker Compose
-
-- <<concourse-fork-k8s,Fork repos>>
-- <<concourse-start-k8s,Start Concourse and Artifactory>>
-- <<concourse-pipeline-fly-k8s,Setup the `fly` CLI >>
-- <<concourse-pipeline-credentials-k8s,Setup your `credentials.yml` >>
-- <<concourse-pipeline-build-k8s,Setup the pipeline >>
-- <<concourse-pipeline-run-k8s,Run the `github-webhook` pipeline>>
+. <<concourse-fork-k8s,Fork repos>>
+. <<concourse-start-k8s,Start Concourse and Artifactory>>
+. <<concourse-pipeline-fly-k8s,Setup the `fly` CLI >>
+. <<concourse-pipeline-credentials-k8s,Setup your `credentials.yml` >>
+. <<concourse-pipeline-build-k8s,Setup the pipeline >>
+. <<concourse-pipeline-run-k8s,Run the `github-webhook` pipeline>>
 
 [[fork-repos-k8s]]
-==== Fork repos
+==== Fork Repositories
 
-[[concourse-fork-k8s]] There are 4 apps that are composing the pipeline
+[[concourse-fork-k8s]]
+Four applications compose the pipeline:
 
-  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
-  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
-  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
-  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-classpath-stubs[Github Stub Runner Boot]
+* https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+* https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+* https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+* https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-classpath-stubs[Github Stub Runner Boot]
 
-You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+You need to fork only the following repositories, because only then can you tag and push the tag to the repository:
 
-  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
-  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+* https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+* https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
 
 [[concourse-start-k8s]]
 === Concourse in K8S (Kubernetes)
 
 The simplest way to deploy Concourse to K8S is to use https://github.com/kubernetes/helm[Helm].
 Once you have Helm installed and your `kubectl` is pointing to the
-cluster, just type this command to install the Concourse cluster in your K8S cluster.
+cluster, run the following command to install the Concourse cluster in your K8S cluster:
 
+====
 [source,bash]
 ----
 $ helm install stable/concourse --name concourse
 ----
+====
 
-Once it's done you'll see the following output
+Once the script is done, you should see the following output
 
+====
 [source,bash]
 ----
 1. Concourse can be accessed:
@@ -77,20 +80,24 @@ Once it's done you'll see the following output
   Username: concourse
   Password: concourse
 ----
+====
 
-Just follow these steps and log in to Concourse under http://127.0.0.1:8080.
+Follow the steps and log in to Concourse under http://127.0.0.1:8080.
 
 ==== Deploying Artifactory to K8S
 
-We can use Helm also to deploy Artifactory to K8S
+You can use Helm also to deploy Artifactory to K8S, as follows:
 
+====
 [source,bash]
 ----
 $ helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss stable/artifactory
 ----
+====
 
-After executing this you'll see the following output
+After you run this command, you should see the following output:
 
+====
 [source,bash]
 ----
 NOTES:
@@ -108,71 +115,73 @@ Congratulations. You have just deployed JFrog Artifactory Pro!
    user: admin
    password: password
 ----
+====
 
-Next, we need to set up the repositories.
+Next, you need to set up the repositories.
 
 First, access the Artifactory URL and log in with
-user, `admin` and `password` password.
+a user name of `admin` and a password of `password`.
 
-image::{concourse-root-docs}/artifactory_quick_setup.png[title="Click on the `Quick Setup`"]
+image::{concourse-root-docs}/artifactory_quick_setup.png[title="Click on Quick Setup"]
 
-Then, click on the Maven setup and click `Create`.
+Then, click on Maven setup and click `Create`.
 
 image::{concourse-root-docs}/artifactory_maven_repo.png[title="Create the `Maven` Repository"]
 
 [[concourse-pipeline-fly-k8s]]
 ==== Setup the `fly` CLI
 
-[[fly]] If you go to Concourse website you should see sth like this:
-
-{nbsp}
-{nbsp}
+[[fly]] If you go to the Concourse website you should see something resembling the following:
 
 image::{concourse-root-docs}/running_concourse.png[]
 
-{nbsp}
-{nbsp}
+You can click one of the icons (depending on your OS) to download `fly`, which is the Concourse CLI. Once you download that (and maybe added it to your PATH, depending on your OS) you can run the following command:
 
-You can click one of the icons (depending on your OS) to download `fly`, which is the Concourse CLI. Once you've downloaded that (and maybe added to your PATH) you can run:
-
+====
 [source,bash]
 ----
 fly --version
 ----
+====
 
-If `fly` is properly installed then it should print out the version.
+If `fly` is properly installed, it should print out the version.
 
 [[concourse-pipeline-credentials-k8s]]
 ==== Setup your `credentials.yml`
 
-There is a sample credentials file called `credentials-sample-k8s.yml`
+We made a sample credentials file called `credentials-sample-k8s.yml`
 prepared for `k8s`. You can use it as a base for your `credentials.yml`.
 
-To allow the Concourse worker's spawned container to connect to
-Kubernetes cluster you will need to pass the CA contents and the
+To allow the Concourse worker's spawned container to connect to the
+Kubernetes cluster, you must pass the CA contents and the
 auth token.
 
-To get the contents of CA for GCE just execute
+To get the contents of CA for GCE, run the following command:
 
+====
 [source,bash]
 ----
 $ kubectl get secret $(kubectl get secret | grep default-token | awk '{print $1}') -o jsonpath='{.data.ca\.crt}' | base64 --decode
 ----
+====
 
-To get the token just type:
+To get the auth token, run the following command:
 
+====
 [source,bash]
 ----
 $ kubectl get secret $(kubectl get secret | grep default-token | awk '{print $1}') -o jsonpath='{.data.token}' | base64 --decode
 ----
+====
 
-Set that value under `paas-test-client-token`, `paas-stage-client-token` and `paas-prod-client-token`
+Set that value under `paas-test-client-token`, `paas-stage-client-token`, and `paas-prod-client-token`
 
 [[concourse-pipeline-build-k8s]]
 ==== Build the pipeline
 
-After running Concourse you should get the following output in your terminal
+After running Concourse, you should get the following output in your terminal:
 
+====
 [source,bash]
 ----
 $ export POD_NAME=$(kubectl get pods --namespace default -l "app=concourse-web" -o jsonpath="{.items[0].metadata.name}")
@@ -180,23 +189,30 @@ $ echo "Visit http://127.0.0.1:8080 to use Concourse"
 $ kubectl port-forward --namespace default $POD_NAME 8080:8080
 Visit http://127.0.0.1:8080 to use Concourse
 ----
+====
 
-Log in (e.g. for Concourse running at `127.0.0.1` - if you don't provide any value then `localhost` is assumed). If you execute this script  (it assumes that either `fly` is on your `PATH` or it's in the same folder as the script is):
+Log in (for example, for Concourse running at `127.0.0.1` -- if you do not provide any value, `localhost` is assumed). If you run this script, it assumes that either `fly` is on your `PATH` or that it is in the same folder as the script:
 
+====
 [source,bash]
 ----
 $ fly -t k8s login -c http://localhost:8080 -u concourse -p concourse
 ----
+====
 
-Next run the command to create the pipeline.
+Next, run the following command to create the pipeline:
 
+====
 [source,bash]
 ----
 $ ./set_pipeline.sh github-webhook k8s credentials-k8s.yml
 ----
+====
 
 [[concourse-pipeline-run-k8s]]
-==== Run the `github-webhook` pipeline
+==== Run the `github-webhook` Pipeline
+
+The following images show the various steps involved in runnig the `github-webhook` pipeline:
 
 {nbsp}
 {nbsp}
@@ -247,4 +263,3 @@ image::{concourse-root-docs}/job_running.png[caption="Step 9: ", title="Job is p
 {nbsp}
 
 image::{concourse-root-docs}/running_pipeline.png[caption="Step 10: ", title="Job is running in the main screen"]
-

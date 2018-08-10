@@ -1,31 +1,30 @@
 [[concourse-faq]]
 == Concourse FAQ
 
-=== Can I use the pipeline for some other repos?
+This section covers the most commonly asked questions about using Concourse with Spring Cloud Pipeline:
 
-Sure! Just change the `app-url` in `credentials.yml`!
+Can I use the pipeline for some other repos?::
+Yes To do so, change the `app-url` in `credentials.yml`!
 
-=== Will this work for ANY project out of the box?
-
-Not really. This is an `opinionated pipeline` that's why we took some
-opinionated decisions. Check out the documentation to see
+Does this work for ANY project out of the box?::
+Not really. This is an `opinionated pipeline`. That is why we took some
+opinionated decisions. See the documentation to learn
 what those decisions are.
 
-=== Can I modify this to reuse in my project?
-
-Sure! It's open-source! The important thing is that the core part of the logic is written in
+Can I modify this to reuse in my project?::
+Yes It is an open-source project. The important thing is that the core part of the logic is written in
 Bash scripts. That way, in the majority of cases, you could change only the bash scripts without changing the
 whole pipeline. https://github.com/spring-cloud/spring-cloud-pipelines/tree/master/common/src/main/bash[You can check out the scripts here.]
-
-Furthermore, if you only want to customize a particular function under `common/src/main/bash`, you can provide your own
++
+Furthermore, if you want only to customize a particular function under `common/src/main/bash`, you can provide your own
 function under `common/src/main/bash/<some custom identifier>` where `<some custom identifier>` is equal to the value of
 the `CUSTOM_SCRIPT_IDENTIFIER` environment variable. It defaults to `custom`.
 
-=== I ran out of resources!! (PCF Dev)
-
-[[resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
- solve it is to kill some apps from test / stage env. To achieve that just call
-
+I ran out of resources! (PCF Dev)::
+[[resources]] When deploying the application to stage or prod, you can get an `Insufficient resources` exception. The way to
+resolve it is to kill some apps from the test or stage environment. To do so, run the following commands:
++
+====
 [source,bash]
 ----
 cf target -o pcfdev-org -s pcfdev-test
@@ -33,44 +32,48 @@ cf stop github-webhook
 cf stop github-eureka
 cf stop stubrunner
 ----
-
-You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove
+====
++
+You can also run `./tools/cf-helper.sh kill-all-apps` to remove
 all demo-related apps deployed to PCF Dev.
 
-=== The rollback step fails due to missing JAR ?!
-
-You must have pushed some tags and have removed the Artifactory volume that
-contained them. To fix this, just remove the tags
-
+The rollback step fails due to a missing JAR.::
+You must have pushed some tags and must have also removed the Artifactory volume that
+contained them. To fix this, remove the tags by running the following command:
++
+====
 [source,bash]
 ----
 git tag -l | xargs -n 1 git push --delete origin
 ----
+====
 
-=== Can I see the output of a job from the terminal?
-
-Yes! Assuming that pipeline name is `github-webhook` and job name is `build-and-upload` you can running
-
+Can I see the output of a job from the terminal?::
+Yes. Assuming that pipeline name is `github-webhook` and the job name is
+`build-and-upload` you can see the output by running the following command:
++
+====
 [source,bash]
 ----
 fly watch --job github-webhook/build-and-upload -t docker
 ----
+====
 
-=== I clicked the job and it's constantly pending...
-
-Don't worry... most likely you've just forgotten to click the `play` button to
-unpause the pipeline. Click to the top left, expand the list of pipelines and click
+I clicked the job and it is constantly pending.::
+Most likely, you forgot to click the `play` button to
+unpause the pipeline. Click the top left, expand the list of pipelines, and click
 the `play` button next to `github-webhook`.
-
++
 Another problem that might occur is that you need to have the `version` branch.
-Concourse will wait for the `version` branch to appear in your repo. So in order for
-the pipeline to start ensure that when doing some git operations you haven't
-forgotten to create / copy the `version` branch too.
+Concourse waits for the `version` branch to appear in your repository. So, for
+the pipeline to start, ensure that when doing some git operations, you have not
+forgotten to create and copy the `version` branch too.
 
-=== The route is already in use (CF)
-
-If you play around with Jenkins / Concourse you might end up with the routes occupied
-
+The route is already in use (CF)::
+If you play around with Jenkins and Concourse you might end up with the routes occupied,
+as indicated by a message similar to the following:
++
+====
 [source,bash]
 ----
 Using route github-webhook-test.local.pcfdev.io
@@ -78,9 +81,11 @@ Binding github-webhook-test.local.pcfdev.io to github-webhook...
 FAILED
 The route github-webhook-test.local.pcfdev.io is already in use.
 ----
-
-Just delete the routes
-
+====
++
+To fix the problem, you can delete the routes, as follows:
++
+====
 [source,bash]
 ----
 yes | cf delete-route local.pcfdev.io -n github-webhook-test
@@ -91,18 +96,16 @@ yes | cf delete-route local.pcfdev.io -n github-eureka-stage
 yes | cf delete-route local.pcfdev.io -n github-webhook-prod
 yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
+====
++
+You can also run the `./tools/cf-helper.sh delete-routes` script.
 
-You can also execute the `./tools/cf-helper.sh delete-routes`
+I mm unauthorized to deploy infrastructure jars::
+Most likely, you forgot to update your local `settings.xml` file with Artifactory's
+setup. See <<settings,this section of the docs and update your `settings.xml` file>>.
 
-=== I'm unauthorized to deploy infrastructure jars
-
-Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
-setup. Check out <<settings,this section of the docs and update your `settings.xml`>>.
-
-=== `version` resource is broken
-
-When I click on it it looks like this:
-
+The `version` resource is broken. When I click on it, I get the following error::
+====
 [source,bash]
 ----
 resource script '/opt/resource/check []' failed: exit status 128
@@ -113,6 +116,6 @@ Cloning into '/tmp/git-resource-repo-cache'...
 warning: Could not find remote branch version to clone.
 fatal: Remote branch version not found in upstream origin
 ----
-
-That means that your repo doesn't have the `version` branch. Please
+====
+That means that your repo does not have the `version` branch. You need
 set it up.

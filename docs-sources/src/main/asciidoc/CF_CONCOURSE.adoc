@@ -1,55 +1,57 @@
 [[concourse-pipeline-cf]]
 == Concourse Pipeline (Cloud Foundry)
 
-IMPORTANT: In this chapter we assume that you perform deployment of your application
-to Cloud Foundry PaaS
+IMPORTANT: In this chapter, we assume that you deploy your application
+to Cloud Foundry PaaS.
 
-[[concourse]] The Spring Cloud Pipelines repository contains opinionated
-Concourse pipeline definition. Those jobs will form an empty pipeline and a
-sample, opinionated one that you can use in your company.
+[[concourse]]
+The Spring Cloud Pipelines repository contains opinionated
+Concourse pipeline definitions. Those jobs form an empty pipeline and an
+opinionated sample pipeline one that you can use in your company.
 
-All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+There following projects take part in the  `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
-- https://github.com/spring-cloud-samples/github-webhook[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
-- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
-- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+* https://github.com/spring-cloud-samples/github-analytics[Github Analytics]: The app that has a REST endpoint and uses messaging -- part of our business application.
+* https://github.com/spring-cloud-samples/github-webhook[Github Webhook]: Project that emits messages that are used by Github Analytics -- part of our business application.
+* https://github.com/spring-cloud-samples/github-eureka[Eureka]: Simple Eureka Server. This is an infrastructure application.
+* https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot]: Stub Runner Boot server to be used for tests with Github Analytics and uses Eureka and Messaging. This is an infrastructure application.
 
 [[concourse-pipeline-step-by-step-cf]]
-=== Step by step
+=== Step-by-step
 
-If you want to just run the demo as far as possible using PCF Dev and Docker Compose
+If you want only to run the demo as far as possible by using PCF Dev and Docker Compose, do the following:
 
-- <<concourse-fork-cf,Fork repos>>
-- <<concourse-start-cf,Start Concourse and Artifactory>>
-- <<concourse-deploy-cf,Deploy infra to Artifactory>>
-- <<concourse-pcfdev-cf,Start PCF Dev (if you don't want to use an existing one)>>
-- <<concourse-fly-cf,Setup the `fly` CLI>>
-- <<concourse-credentials-cf,Setup your `credentials.yml`>>
-- <<concourse-build-cf,Run the seed job>>
-- <<concourse-run-cf,Run the `github-webhook` pipeline>>
+. <<concourse-fork-cf,Fork repos>>
+. <<concourse-start-cf,Start Concourse and Artifactory>>
+. <<concourse-deploy-cf,Deploy infra to Artifactory>>
+. <<concourse-pcfdev-cf,Start PCF Dev (if you don't want to use an existing one)>>
+. <<concourse-fly-cf,Setup the `fly` CLI>>
+. <<concourse-credentials-cf,Setup your `credentials.yml`>>
+. <<concourse-build-cf,Build the Pipeline>>
+. <<concourse-run-cf,Run the `github-webhook` Pipeline>>
 
 [[concourse-fork-cf]]
-==== Fork repos
+==== Fork Repositories
 
-There are 4 apps that are composing the pipeline
+Four applications compose the pipeline
 
-  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
-  - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
-  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
-  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Stub Runner Boot]
+* https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
+* https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
+* https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+* https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Stub Runner Boot]
 
-You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+You need to fork only the following repositories, because only then can you tag and push the tag to the repository:
 
-  - https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
-  - https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
+* https://github.com/spring-cloud-samples/github-webhook[Github Webhook]
+* https://github.com/spring-cloud-samples/github-analytics/[Github Analytics]
 
 [[concourse-start-cf]]
 ==== Start Concourse and Artifactory
 
-Concourse + Artifactory can be run locally. To do that just execute the
-`start.sh` script from this repo.
+You can run Concourse + Artifactory locally. To do so, run the
+`start.sh` script from this repository. The following listing shows the script:
 
+====
 [source,bash]
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
@@ -57,43 +59,48 @@ cd spring-cloud-pipelines/concourse
 ./setup_docker_compose.sh
 ./start.sh 192.168.99.100
 ----
+====
 
-The `setup_docker_compose.sh` script should be executed once only to allow
+The `setup_docker_compose.sh` script should be run only once, to allow
 generation of keys.
 
 The `192.168.99.100` param is an example of an external URL of Concourse
-(equal to Docker-Machine ip in this example).
+(equal to the Docker-Machine IP in this example).
 
-Then Concourse will be running on port `8080` and Artifactory `8081`.
+Then Concourse runs on port `8080`, and Artifactory runs on `8081`.
 
 [[concourse-deploy-cf]]
 ===== Deploy the infra JARs to Artifactory
 
-When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+When Artifactory is running, run the `tools/deploy-infra.sh` script from this repo.
+The following listing shows the script:
 
+====
 [source,bash]
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/
 ./tools/deploy-infra.sh
 ----
+====
 
-As a result both `eureka` and `stub runner` repos will be cloned, built
+As a result, both `eureka` and `stub runner` repos are cloned, built,
 and uploaded to Artifactory.
 
 [[concourse-pcfdev-cf]]
 ==== Start PCF Dev
 
-TIP: You can skip this step if you have CF installed and don't want to use PCF Dev
+TIP: You can skip this step if you have CF installed and do not want to use PCF Dev.
 The only thing you have to do is to set up spaces.
 
-WARNING: It's more than likely that you'll run out of resources when you reach stage step.
-Don't worry! Keep calm and <<resources,clear some apps from PCF Dev and continue>>.
+WARNING: Servers often run run out of resources at the stage step.
+If that happens, <<resources,clear some apps from PCF Dev and continue>>.
 
-You have to download and start PCF Dev. https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[A link how to do it is available here.]
+You have to download and start PCF Dev, as described  https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/install-pcf-dev[here.]
 
-The default credentials when using PCF Dev are:
+The default credentials for PCF Dev are as follows:
 
+====
 [source,bash]
 ----
 username: user
@@ -103,16 +110,20 @@ org: pcfdev-org
 space: pcfdev-space
 api: api.local.pcfdev.io
 ----
+====
 
-You can start the PCF Dev like this:
+You can start the PCF Dev as follows:
 
+====
 [source,bash]
 ----
 cf dev start
 ----
+====
 
-You'll have to create 3 separate spaces (email admin, pass admin)
+You must create three separate spaces, as follows:
 
+====
 [source,bash]
 ----
 cf login -a https://api.local.pcfdev.io --skip-ssl-validation -u admin -p admin -o pcfdev-org
@@ -124,86 +135,91 @@ cf set-space-role user pcfdev-org pcfdev-stage SpaceDeveloper
 cf create-space pcfdev-prod
 cf set-space-role user pcfdev-org pcfdev-prod SpaceDeveloper
 ----
+====
 
-You can also execute the `./tools/cf-helper.sh setup-spaces` to do this.
+You can also run the `./tools/cf-helper.sh setup-spaces` script to create the spaces.
 
 [[concourse-fly-cf]]
 ==== Setup the `fly` CLI
 
-If you go to Concourse website you should see sth like this:
-
-{nbsp}
-{nbsp}
+If you go to the Concourse website, you should see something resembling the following image:
 
 image::{concourse-root-docs}/running_concourse.png[]
 
-{nbsp}
-{nbsp}
+You can click one of the icons (depending on your OS) to download `fly`, which is the Concourse CLI. Once you download that (and maybe, depending on your OS, add it to your PATH) you can run the following command:
 
-You can click one of the icons (depending on your OS) to download `fly`, which is the Concourse CLI. Once you've downloaded that (and maybe added to your PATH) you can run:
-
+====
 [source,bash]
 ----
 fly --version
 ----
+====
 
-If `fly` is properly installed then it should print out the version.
+If `fly` is properly installed, it should print out the version.
 
 [[concourse-credentials-cf]]
-==== Setup your `credentials.yml`
+==== Set up Your `credentials.yml` File
 
-The repo comes with `credentials-sample-cf.yml` which is set up with sample data (most credentials) are set to be applicable for PCF Dev. Copy this file to a new file `credentials.yml` (the file is added to .gitignore so don't worry that you'll push it with your passwords) and edit it as you wish. For our demo just setup:
+The repository comes with `credentials-sample-cf.yml`, which is set up with sample data (mostly credentials) that are applicable for PCF Dev. Copy this file to a new file called `credentials.yml` (the file is added to `.gitignore` so that you cannot push it with your passwords) and edit it as you wish. For our demo, set up the following:
 
-  - `app-url` - url pointing to your forked `github-webhook` repo
-  - `github-private-key` - your private key to clone / tag GitHub repos
-  - `repo-with-binaries` - the IP is set to the defaults for Docker Machine. You should update it to point to your setup
+* `app-url`: URL pointing to your forked `github-webhook` repository.
+* `github-private-key`: Your private key to clone and tag GitHub repositorys.
+* `repo-with-binaries`: The IP is set to the defaults for Docker Machine. You should update it to point to your setup.
 
-If you don't have a Docker Machine just execute `./whats_my_ip.sh` script to
-get an external IP that you can pass to your `repo-with-binaries` instead of the default
+If you do not have a Docker Machine, run th `./whats_my_ip.sh` script to
+get an external IP that you can pass to your `repo-with-binaries`, instead of the default
 Docker Machine IP.
 
-Below you can see what environment variables are required by the scripts. To the right hand side you can see the default values for PCF Dev that we set in the `credentials-sample-cf.yml`.
+The following table describes the environment variables required by the scripts:
 
 [frame="topbot",options="header,footer"]
 |======================
 |Property Name  | Property Description | Default value
-|PAAS_TEST_API_URL | The URL to the CF Api for TEST env| api.local.pcfdev.io
-|PAAS_STAGE_API_URL | The URL to the CF Api for STAGE env | api.local.pcfdev.io
-|PAAS_PROD_API_URL | The URL to the CF Api for PROD env | api.local.pcfdev.io
-|PAAS_TEST_ORG    | Name of the org for the test env | pcfdev-org
-|PAAS_TEST_SPACE_PREFIX  | Prefix of the name of the CF space for the test env to which the app name will be appended | sc-pipelines-test
-|PAAS_STAGE_ORG   | Name of the org for the stage env | pcfdev-org
-|PAAS_STAGE_SPACE | Name of the space for the stage env | sc-pipelines-stage
-|PAAS_PROD_ORG   | Name of the org for the prod env | pcfdev-org
-|PAAS_PROD_SPACE | Name of the space for the prod env | sc-pipelines-prod
-|REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
-|M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
-|PAAS_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
-|BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
+|`PAAS_TEST_API_URL` | The URL to the CF Api for TEST env| `api.local.pcfdev.io`
+|`PAAS_STAGE_API_URL` | The URL to the CF Api for STAGE env | `api.local.pcfdev.io`
+|`PAAS_PROD_API_URL` | The URL to the CF Api for PROD env | `api.local.pcfdev.io`
+|`PAAS_TEST_ORG`    | Name of the org for the test env | `pcfdev-org`
+|`PAAS_TEST_SPACE_PREFIX`  | Prefix of the name of the CF space for the test env to which the app name will be appended | `sc-pipelines-test`
+|`PAAS_STAGE_ORG`   | Name of the org for the stage env | `pcfdev-org`
+|`PAAS_STAGE_SPACE` | Name of the space for the stage env | `sc-pipelines-stage`
+|`PAAS_PROD_ORG`   | Name of the org for the prod env | `pcfdev-org`
+|`PAAS_PROD_SPACE` | Name of the space for the prod env | `sc-pipelines-prod`
+|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL to repo with the deployed jars | `http://192.168.99.100:8081/artifactory/libs-release-local`
+|`M2_SETTINGS_REPO_ID` | The id of server from Maven settings.xml | `artifactory-local`
+|`PAAS_HOSTNAME_UUID` | Additional suffix for the route. In a shared environment the default routes can be already taken |
+|`BUILD_OPTIONS` | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
+The right column shows the default values for PCF Dev that we set in the `credentials-sample-cf.yml`. `PAAS_HOSTNAME_UUID` and `BUILD_OPTIONS` have no default values.
+
 [[concourse-build-cf]]
-==== Build the pipeline
+==== Build the Pipeline
 
-Log in (e.g. for Concourse running at `192.168.99.100` - if you don't provide any value then `localhost` is assumed). If you execute this script  (it assumes that either `fly` is on your `PATH` or it's in the same folder as the script is):
+Log in (for example, for a Concourse instance running at `192.168.99.100` -- if you do not provide any value, `localhost` is assumed). If you run the login script, it assumes that either `fly` is on your `PATH` or it is in the same folder as the script. The following example shows how to specify an IP address for the login script:
 
+====
 [source,bash]
 ----
 ./login.sh 192.168.99.100
 ----
+====
 
-Next run the command to create the pipeline.
+Next, run the command to create the pipeline, as follows:
 
+====
 [source,bash]
 ----
 ./set_pipeline.sh
 ----
+====
 
-Then you'll create a `github-webhook` pipeline under the `docker` alias, using the provided `credentials.yml` file.
-You can override these values in exactly that order (e.g. `./set-pipeline.sh some-project another-target some-other-credentials.yml`)
+Then you can create a `github-webhook` pipeline under the `docker` alias, using the provided `credentials.yml` file.
+You can override these values in exactly that order (for example `./set-pipeline.sh some-project another-target some-other-credentials.yml`)
 
 [[concourse-run-cf]]
-==== Run the `github-webhook` pipeline
+==== Run the `github-webhook` Pipeline
+
+The following images show the various steps involved in running the `github-webhook` pipeline:
 
 {nbsp}
 {nbsp}

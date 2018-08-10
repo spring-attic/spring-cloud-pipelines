@@ -1,92 +1,102 @@
 [[jenkins-pipeline-k8s]]
 == Jenkins Pipeline (Kubernetes)
 
-IMPORTANT: In this chapter we assume that you perform deployment of your application
-to Kubernetes PaaS
+IMPORTANT: In this chapter, we assume that you deploy your application
+to Kubernetes PaaS.
 
-[[jenkins]] The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline using https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job DSL plugin]. Those jobs will form an empty pipeline and a sample, opinionated one that you can use in your company.
+[[jenkins]]
+The Spring Cloud Pipelines repository contains job definitions and the opinionated setup pipeline that uses https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins Job DSL plugin]. Those jobs form an empty pipeline and an opinionated sample pipeline that you can use in your company.
 
-All in all there are the following projects taking part in the whole `microservice setup` for this demo.
+The following projects take part in the `microservice setup` for this demo.
 
-- https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github Analytics] - the app that has a REST endpoint and uses messaging. Our business application.
-- https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook] - project that emits messages that are used by Github Analytics. Our business application.
-- https://github.com/spring-cloud-samples/github-eureka[Eureka] - simple Eureka Server. This is an infrastructure application.
-- https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot] - Stub Runner Boot server to be used for tests with Github Analytics. Uses Eureka and Messaging. This is an infrastructure application.
+* https://github.com/spring-cloud-samples/github-analytics-kubernetes[Github Analytics]: The app that has a REST endpoint and uses messaging -- part of our business application.
+* https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]: Project that emits messages that are used by Github Analytics -- part of our business application.
+* https://github.com/spring-cloud-samples/github-eureka[Eureka]: Simple Eureka Server. This is an infrastructure application.
+* https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot[Github Analytics Stub Runner Boot]: Stub Runner Boot server to be used for tests with Github Analytics ad uses Eureka and Messaging. This is an infrastructure application.
 
 [[step-by-step-k8s]]
-=== Step by step
+=== Step-by-step
 
-This is a guide for Jenkins Job DSL based pipeline.
+This is a guide for a Jenkins Job DSL based pipeline.
 
-If you want to just run the demo as far as possible using PCF Dev and Docker Compose
+If you want only to run the demo as far as possible by using PCF Dev and Docker Compose, do the following:
 
-- <<jenkins-fork-k8s,Fork repos>>
-- <<jenkins-start-k8s,Start Jenkins and Artifactory>>
-- <<jenkins-deploy-k8s,Deploy infra to Artifactory>>
-- <<jenkins-minikube-k8s,Start Minikube (if you don't want to use an existing one)>>
-- <<jenkins-seed-k8s,Run the seed job>>
-- <<jenkins-pipeline-k8s,Run the `github-webhook` pipeline>>
+. <<jenkins-fork-k8s,Fork repos>>
+. <<jenkins-start-k8s,Start Jenkins and Artifactory>>
+. <<jenkins-deploy-k8s,Deploy infra to Artifactory>>
+. <<jenkins-minikube-k8s,Start Minikube (if you don't want to use an existing one)>>
+. <<jenkins-seed-k8s,Run the seed job>>
+. <<jenkins-pipeline-k8s,Run the `github-webhook` pipeline>>
 
 [[fork-repos-k8s]]
-==== Fork repos
+==== Fork Repositories
 
-[[jenkins-fork-k8s]] There are 4 apps that are composing the pipeline
+[[jenkins-fork-k8s]]
+Four applications compose the pipeline
 
-  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
-  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
-  - https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
-  - https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-classpath-stubs[Github Stub Runner Boot]
+* https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+* https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+* https://github.com/spring-cloud-samples/github-eureka[Github Eureka]
+* https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot-classpath-stubs[Github Stub Runner Boot]
 
-You need to fork only these. That's because only then will your user be able to tag and push the tag to repo.
+You need to fork only the following repositories, because only then can you tag and push the tag to your repository:
 
-  - https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
-  - https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
+* https://github.com/spring-cloud-samples/github-webhook-kubernetes[Github Webhook]
+* https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github Analytics]
 
 [[start-jenkins-k8s]]
 ==== Start Jenkins and Artifactory
 
-[[jenkins-start-k8s]] Jenkins + Artifactory can be ran locally. To do that just execute the
-`start.sh` script from this repo.
+[[jenkins-start-k8s]]
+Jenkins and Artifactory can be ran locally. To do so, run the
+`start.sh` script from this repo. The following listing shows the script:
 
+====
 [source,bash]
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/jenkins
 ./start.sh yourGitUsername yourGitPassword yourForkedGithubOrg yourDockerRegistryOrganization yourDockerRegistryUsername yourDockerRegistryPassword yourDockerRegistryEmail
 ----
-Then Jenkins will be running on port `8080` and Artifactory `8081`.
-The provided parameters will be passed as env variables to Jenkins VM
-and credentials will be set in your set. That way you don't have to do
-any manual work on the Jenkins side. In the above parameters, the third parameter
-could be yourForkedGithubOrg or yourGithubUsername. Also the `REPOS` env variable will
-contain your GitHub org in which you have the forked repos.
+====
 
-Instead of the Git username and password parameters you could pass `-key <path_to_private_key>`
+Then Jenkins runs on port `8080`, and Artifactory runs on port `8081`.
+The provided parameters are passed as environment variables to the Jenkins VM
+and credentials are set. That way, you need not do
+any manual work on the Jenkins side. In the preceding script, the third parameter
+could be `yourForkedGithubOrg` or `yourGithubUsername`. Also the `REPOS` environment variable
+contains your GitHub org in which you have the forked repositories.
+
+Instead of the Git username and password parameters, you could pass `-key <path_to_private_key>`
 if you prefer to use the key-based authentication with your Git repositories.
 
-You need to pass the credentials for the Docker organization (by default we will
-search for the Docker images at Docker Hub) so that the pipeline will be able
-to push images to your org.
+You need to pass the credentials for the Docker organization (by default, we
+search for the Docker images at Docker Hub) so that the pipeline can
+push images to your org.
 
 [[deploy-infra-k8s]]
-===== Deploy the infra JARs to Artifactory
+===== Deploy the Infra JARs to Artifactory
 
-[[jenkins-deploy-k8s]] When Artifactory is running, just execute the `tools/deploy-infra.sh` script from this repo.
+[[jenkins-deploy-k8s]]
+When Artifactory is running, run the `tools/deploy-infra.sh` script from this repo.
+The following listing shows the script:
 
+====
 [source,bash]
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/
 ./tools/deploy-infra-k8s.sh
 ----
+====
 
-As a result both `eureka` and `stub runner` repos will be cloned, built,
-uploaded to Artifactory and their docker images will be built.
+As a result, both the `eureka` and `stub runner` repos are cloned, built, and
+uploaded to Artifactory and their docker images are built.
 
-IMPORTANT: Your local Docker process will be reused by the Jenkins instance running
-in Docker. That's why you don't have to push these images to Docker Hub. On the
-other hand if you run this sample in a remote Kubernetes cluster the driver
-will not be shared by the Jenkins workers so you can consider pushing these
+IMPORTANT: Your local Docker process is reused by the Jenkins instance running
+in Docker. That is why you do not have to push these images to Docker Hub. On the
+other hand, if you run this sample in a remote Kubernetes cluster, the driver
+is not shared by the Jenkins workers, so you can consider pushing these
 Docker images to Docker Hub too.
 
 [[jenkins-seed-k8s]]
@@ -107,169 +117,177 @@ include::JENKINS_BLUE_OCEAN.adoc[]
 [[optional-steps-k8s]]
 === Jenkins Kubernetes customization
 
-IMPORTANT: All the steps below are not necessary to run the demo. They are needed only
-when you want to do some custom changes.
+You can customize Jenkins for Cloud Foundry by setting a variety of environment variables.
+
+NOTE: You need not see all the environment variables described in this section to run the demo. They are needed only
+when you want to make custom changes.
 
 [[all-env-vars-k8s]]
 ==== All env vars
 
-The env vars that are used in all of the jobs are as follows:
+The environment variables that are used in all of the jobs are as follows:
 
 [frame="topbot",options="header,footer"]
 |======================
 |Property Name  | Property Description | Default value
-|DOCKER_REGISTRY_ORGANIZATION | Name of the docker organization to which Docker images should be deployed | scpipelines
-|DOCKER_REGISTRY_CREDENTIAL_ID | Credential ID used to push Docker images | docker-registry
-|DOCKER_SERVER_ID | Server ID in `settings.xml` and Maven builds | docker-repo
-|DOCKER_EMAIL | Email used to connect to Docker registry` and Maven builds | change@me.com
-|DOCKER_REGISTRY_ORGANIZATION | URL to Kubernetes cluster for test env | scpipelines
-|DOCKER_REGISTRY_URL | URL to the docker registry | https://index.docker.io/v1/
-|PAAS_TEST_API_URL | URL of the API of the Kubernetes cluster for test environment | 192.168.99.100:8443
-|PAAS_STAGE_API_URL | URL of the API of the Kubernetes cluster for stage environment  | 192.168.99.100:8443
-|PAAS_PROD_API_URL | URL of the API of the Kubernetes cluster for prod environment | 192.168.99.100:8443
-|PAAS_TEST_CA_PATH | Path to the certificate authority for test environment | /usr/share/jenkins/cert/ca.crt
-|PAAS_STAGE_CA_PATH | Path to the certificate authority for stage environment | /usr/share/jenkins/cert/ca.crt
-|PAAS_PROD_CA_PATH | Path to the certificate authority for prod environment | /usr/share/jenkins/cert/ca.crt
-|PAAS_TEST_CLIENT_CERT_PATH | Path to the client certificate for test environment | /usr/share/jenkins/cert/apiserver.crt
-|PAAS_STAGE_CLIENT_CERT_PATH | Path to the client certificate for stage environment | /usr/share/jenkins/cert/apiserver.crt
-|PAAS_PROD_CLIENT_CERT_PATH | Path to the client certificate for prod environment | /usr/share/jenkins/cert/apiserver.crt
-|PAAS_TEST_CLIENT_KEY_PATH | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
-|PAAS_STAGE_CLIENT_KEY_PATH | Path to the client key for stage environment | /usr/share/jenkins/cert/apiserver.key
-|PAAS_PROD_CLIENT_KEY_PATH | Path to the client key for test environment | /usr/share/jenkins/cert/apiserver.key
-|PAAS_TEST_CLIENT_TOKEN_PATH | Path to the file containing the token for test env |
-|PAAS_STAGE_CLIENT_TOKEN_PATH | Path to the file containing the token for stage env |
-|PAAS_PROD_CLIENT_TOKEN_PATH | Path to the file containing the token for prod env |
-|PAAS_TEST_CLIENT_TOKEN_ID | ID of the credential containing access token for test environment |
-|PAAS_STAGE_CLIENT_TOKEN_ID | ID of the credential containing access token for stage environment |
-|PAAS_PROD_CLIENT_TOKEN_ID | ID of the credential containing access token for prod environment |
-|PAAS_TEST_CLUSTER_NAME | Name of the cluster for test environment | minikube
-|PAAS_STAGE_CLUSTER_NAME | Name of the cluster for stage environment | minikube
-|PAAS_PROD_CLUSTER_NAME | Name of the cluster for prod environment | minikube
-|PAAS_TEST_CLUSTER_USERNAME | Name of the user for test environment | minikube
-|PAAS_STAGE_CLUSTER_USERNAME | Name of the user for stage environment | minikube
-|PAAS_PROD_CLUSTER_USERNAME | Name of the user for prod environment | minikube
-|PAAS_TEST_SYSTEM_NAME | Name of the system for test environment | minikube
-|PAAS_STAGE_SYSTEM_NAME | Name of the system for stage environment | minikube
-|PAAS_PROD_SYSTEM_NAME | Name of the system for prod environment | minikube
-|PAAS_TEST_NAMESPACE | Namespace for test environment | sc-pipelines-test
-|PAAS_STAGE_NAMESPACE | Namespace for stage environment | sc-pipelines-stage
-|PAAS_PROD_NAMESPACE | Namespace for prod environment | sc-pipelines-prod
-|KUBERNETES_MINIKUBE | Will you connect to Minikube? | true
-|REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
-|REPO_WITH_BINARIES_CREDENTIAL_ID    | Credential ID used for the repo with jars | repo-with-binaries
-|M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
-|JDK_VERSION | The name of the JDK installation | jdk8
-|PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
-|GIT_EMAIL | The email used by Git to tag repo | email@example.com
-|GIT_NAME | The name used by Git to tag repo | Pivo Tal
-|AUTO_DEPLOY_TO_STAGE | Should deployment to stage be automatic | false
-|AUTO_DEPLOY_TO_PROD | Should deployment to prod be automatic | false
-|API_COMPATIBILITY_STEP_REQUIRED | Should api compatibility step be required | true
-|DB_ROLLBACK_STEP_REQUIRED | Should DB rollback step be present | true
-|DEPLOY_TO_STAGE_STEP_REQUIRED | Should deploy to stage step be present | true
-|BUILD_OPTIONS | Additional options you would like to pass to the Maven / Gradle build |
+|`DOCKER_REGISTRY_ORGANIZATION` | Name of the docker organization to which Docker images should be deployed | `scpipelines`
+|`DOCKER_REGISTRY_CREDENTIAL_ID` | Credential ID used to push Docker images | `docker-registry`
+|`DOCKER_SERVER_ID` | Server ID in `settings.xml` and Maven builds | `docker-repo`
+|`DOCKER_EMAIL` | Email used to connect to Docker registry and Maven builds | `change@me.com`
+|`DOCKER_REGISTRY_ORGANIZATION` | URL of the Kubernetes cluster for the test environment | `scpipelines`
+|`DOCKER_REGISTRY_URL` | URL of the docker registry | `https://index.docker.io/v1/`
+|`PAAS_TEST_API_URL` | URL of the API of the Kubernetes cluster for the test environment | `192.168.99.100:8443`
+|`PAAS_STAGE_API_URL` | URL of the API of the Kubernetes cluster for the stage environment  | `192.168.99.100:8443`
+|`PAAS_PROD_API_URL` | URL of the API of the Kubernetes cluster for the prod environment | `192.168.99.100:8443`
+|`PAAS_TEST_CA_PATH` | Path to the certificate authority for test the environment | `/usr/share/jenkins/cert/ca.crt`
+|`PAAS_STAGE_CA_PATH` | Path to the certificate authority for stage the environment | `/usr/share/jenkins/cert/ca.crt`
+|`PAAS_PROD_CA_PATH` | Path to the certificate authority for the prod environment | `/usr/share/jenkins/cert/ca.crt`
+|`PAAS_TEST_CLIENT_CERT_PATH` | Path to the client certificate for the test environment | `/usr/share/jenkins/cert/apiserver.crt`
+|`PAAS_STAGE_CLIENT_CERT_PATH` | Path to the client certificate for the stage environment | `/usr/share/jenkins/cert/apiserver.crt`
+|`PAAS_PROD_CLIENT_CERT_PATH` | Path to the client certificate for the prod environment | `/usr/share/jenkins/cert/apiserver.crt`
+|`PAAS_TEST_CLIENT_KEY_PATH` | Path to the client key for the test environment | `/usr/share/jenkins/cert/apiserver.key`
+|`PAAS_STAGE_CLIENT_KEY_PATH` | Path to the client key for the stage environment | `/usr/share/jenkins/cert/apiserver.key`
+|`PAAS_PROD_CLIENT_KEY_PATH` | Path to the client key for the test environment | `/usr/share/jenkins/cert/apiserver.key`
+|`PAAS_TEST_CLIENT_TOKEN_PATH` | Path to the file containing the token for the test environment |
+|`PAAS_STAGE_CLIENT_TOKEN_PATH` | Path to the file containing the token for the stage environment |
+|`PAAS_PROD_CLIENT_TOKEN_PATH` | Path to the file containing the token for the prod environment |
+|`PAAS_TEST_CLIENT_TOKEN_ID` | ID of the credential containing access token for test environment |
+|`PAAS_STAGE_CLIENT_TOKEN_ID` | ID of the credential containing access token for the stage environment |
+|`PAAS_PROD_CLIENT_TOKEN_ID` | ID of the credential containing access token for the prod environment |
+|`PAAS_TEST_CLUSTER_NAME` | Name of the cluster for the test environment | `minikube`
+|`PAAS_STAGE_CLUSTER_NAME` | Name of the cluster for the stage environment | `minikube`
+|`PAAS_PROD_CLUSTER_NAME` | Name of the cluster for the prod environment | `minikube`
+|`PAAS_TEST_CLUSTER_USERNAME` | Name of the user for the test environment | `minikube`
+|`PAAS_STAGE_CLUSTER_USERNAME` | Name of the user for the stage environment | `minikube`
+|`PAAS_PROD_CLUSTER_USERNAME` | Name of the user for the prod environment | `minikube`
+|`PAAS_TEST_SYSTEM_NAME` | Name of the system for the test environment | `minikube`
+|`PAAS_STAGE_SYSTEM_NAME` | Name of the system for the stage environment | `minikube`
+|`PAAS_PROD_SYSTEM_NAME` | Name of the system for the prod environment | `minikube`
+|`PAAS_TEST_NAMESPACE` | Namespace for the test environment | `sc-pipelines-test`
+|`PAAS_STAGE_NAMESPACE` | Namespace for the stage environment | `sc-pipelines-stage`
+|`PAAS_PROD_NAMESPACE` | Namespace for the prod environment | `sc-pipelines-prod`
+|`KUBERNETES_MINIKUBE` | Whether to connect to Minikube | `true`
+|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `http://artifactory:8081/artifactory/libs-release-local`
+|`REPO_WITH_BINARIES_CREDENTIAL_ID` | Credential ID used for the repository with jars | `repo-with-binaries`
+|`M2_SETTINGS_REPO_ID` | The ID of server from Maven `settings.xml` | `artifactory-local`
+|`JDK_VERSION` | The name of the JDK installation | `jdk8`
+|`PIPELINE_VERSION` | The version of the pipeline (ultimately, also the version of the jar) | `1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION`
+|`GIT_EMAIL` | The email used by Git to tag the repository | `email@example.com`
+|`GIT_NAME` | The name used by Git to tag the repository | `Pivo Tal`
+|`AUTO_DEPLOY_TO_STAGE` | Whether deployment to stage be automatic | `false`
+|`AUTO_DEPLOY_TO_PROD` | Whether deployment to prod be automatic | `false`
+|`API_COMPATIBILITY_STEP_REQUIRED` | Whether the API compatibility step is required | `true`
+|`DB_ROLLBACK_STEP_REQUIRED` | Whether the DB rollback step is present | `true`
+|`DEPLOY_TO_STAGE_STEP_REQUIRED` | Whether the deploy-to-stage step is present | `true`
+|`BUILD_OPTIONS` | Additional options you would like to pass to the Maven / Gradle build |
 |======================
 
-=== Preparing to connect to GCE
+=== Preparing to Connect to GCE
 
-IMPORTANT: Skip this step if you're not using GCE
+IMPORTANT: Skip this step if you do not use GCE
 
-In order to use GCE we need to have `gcloud` running. If you already have the
-CLI installed, skip this step. If not just execute to have the CLI
-downloaded and an installer started
+In order to use GCE, we need to have `gcloud` running. If you already have the
+CLI installed, skip this step. If not run the following command to have the CLI
+downloaded and an installer started:
 
-```bash
+====
+[source,bash]
+----
 $ ./tools/k8s-helper.sh download-gcloud
-```
+----
+====
 
-Next, configure `gcloud`. Execute `gcloud init` and log in
-to your cluster. You will get redirected to a login page, pick the
+Next, configure `gcloud`. Run `gcloud init` and log in
+to your cluster. You are redirected to a login page. Pick the
 proper Google account and log in.
 
 Pick an existing project or create a new one.
 
-Go to your platform page (click on `Container Engine`) in GCP and connect to your cluster
+Go to your platform page (click on `Container Engine`) in GCP and connect to your cluster with the following values:
 
-```bash
+====
+[source,bash]
+----
 $ CLUSTER_NAME=...
 $ ZONE=us-east1-b
 $ PROJECT_NAME=...
 $ gcloud container clusters get-credentials ${CLUSTER_NAME} --zone ${ZONE} --project ${PROJECT_NAME}
 $ kubectl proxy
-```
+----
+====
 
-The Kubernetes dashboard will be running at `http://localhost:8001/ui/`.
+The Kubernetes dashboard runs at `http://localhost:8001/ui/`.
 
-We'll need a Persistent Disk for our Jenkins installation. Let's create it
+We need a Persistent Disk for our Jenkins installation. Create it as follows:
 
-```bash
+====
+[source,bash]
+----
 $ ZONE=us-east1-b
 $ gcloud compute disks create --size=200GB --zone=${ZONE} sc-pipelines-jenkins-disk
-```
+----
+====
 
-Since the disk got created now we need to format it. You can check out
-the instructions on how to do it here - https://cloud.google.com/compute/docs/disks/add-persistent-disk#formatting
+Once the disk has been created, you need to format it. See
+the instructions at https://cloud.google.com/compute/docs/disks/add-persistent-disk#formatting
 
-=== Connecting to a Kubo or GCE cluster
+=== Connecting to a Kubo or GCE Cluster
 
-IMPORTANT: Skip this step if you're not using Kubo or GCE
+IMPORTANT: Skip this step if you do not use Kubo or GCE
 
-In this section a description of steps required to deploy Jenkins and
-Artifactory to a Kubernetes cluster deployed via Kubo.
+This section describes how to deploy Jenkins and
+Artifactory to a Kubernetes cluster deployed with Kubo.
 
-TIP: To see the dashboard just do `kubectl proxy` and access `localhost:8081/ui`
+TIP: To see the dashboard, run `kubectl proxy` and access `localhost:8081/ui`.
 
-- Log in to the cluster
-- Deploy Jenkins and Artifactory to the cluster 
+. Log in to the cluster.
+. Deploy Jenkins and Artifactory to the cluster:
 * `./tools/k8s-helper.sh setup-tools-infra-vsphere` for a cluster deployed on VSphere
 * `./tools/k8s-helper.sh setup-tools-infra-gce` for a cluster deployed to GCE
-- Forward the ports so that you can access the Jenkins UI from your local machine
-
-```bash
+. Forward the ports so that you can access the Jenkins UI from your local machine, by using the following settings
+====
+[source,bash]
 $ NAMESPACE=default
 $ JENKINS_POD=jenkins-1430785859-nfhx4
 $ LOCAL_PORT=32044
 $ CONTAINER_PORT=8080
 $ kubectl port-forward --namespace=${NAMESPACE} ${JENKINS_POD} ${LOCAL_PORT}:${CONTAINER_PORT}
-```
-- Go to `Credentials`, click `System` and `Global credentials`
-
+----
+====
+. Go to `Credentials`, click `System` and `Global credentials`, as the following image shows:
 image::{jenkins-root-docs}/kubo_credentials.png[caption="Click `Global credentials`"]
-
-- Update `git`, `repo-with-binaries` and `docker-registry` credentials
-- Run the `jenkins-pipeline-k8s-seed` seed job and fill it out with the following data
-* Put `kubernetes.default:443` here (or `KUBERNETES_API:KUBERNETES_PORT`)
+. Update `git`, `repo-with-binaries` and `docker-registry` credentials
+. Run the `jenkins-pipeline-k8s-seed` seed job and fill it out with the following data
+. Put `kubernetes.default:443` here (or `KUBERNETES_API:KUBERNETES_PORT`)
 ** `PAAS_TEST_API_URL`
 ** `PAAS_STAGE_API_URL`
 ** `PAAS_PROD_API_URL`
-* Put `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt` data here
+. Put `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt` data here:
 ** `PAAS_TEST_CA_PATH`
 ** `PAAS_STAGE_CA_PATH`
 ** `PAAS_PROD_CA_PATH`
-* Uncheck the `Kubernetes Minikube` value
-* Clear the following vars
+. Uncheck the `Kubernetes Minikube` value.
+- Clear the following variables:
 ** `PAAS_TEST_CLIENT_CERT_PATH`
 ** `PAAS_STAGE_CLIENT_CERT_PATH`
 ** `PAAS_PROD_CLIENT_CERT_PATH`
 ** `PAAS_TEST_CLIENT_KEY_PATH`
 ** `PAAS_STAGE_CLIENT_KEY_PATH`
 ** `PAAS_PROD_CLIENT_KEY_PATH`
-* Set `/var/run/secrets/kubernetes.io/serviceaccount/token` value to these vars
+. Set `/var/run/secrets/kubernetes.io/serviceaccount/token` value to these variables:
 ** `PAAS_TEST_CLIENT_TOKEN_PATH`
 ** `PAAS_STAGE_CLIENT_TOKEN_PATH`
 ** `PAAS_STAGE_CLIENT_TOKEN_PATH`
-* Set the cluster name to these vars (you can get it by calling `kubectl config current-context`)
+* Set the cluster name to these variables (you can get the cluster name by calling `kubectl config current-context`):
 ** `PAAS_TEST_CLUSTER_NAME`
 ** `PAAS_STAGE_CLUSTER_NAME`
 ** `PAAS_PROD_CLUSTER_NAME`
-* Set the system name to these vars (you can get it by calling `kubectl config current-context`)
+. Set the system name to these variables (you can get the system name by calling `kubectl config current-context`):
 ** `PAAS_TEST_SYSTEM_NAME`
 ** `PAAS_STAGE_SYSTEM_NAME`
 ** `PAAS_PROD_SYSTEM_NAME`
-* Update the `DOCKER_EMAIL` property with your email
-* Update the `DOCKER_REGISTRY_ORGANIZATION` with your Docker organization name
-* If you don't want to upload the images to DockerHub update  `DOCKER_REGISTRY_URL`
-
+. Update the `DOCKER_EMAIL` property with your email address.
+. Update the `DOCKER_REGISTRY_ORGANIZATION` with your Docker organization name.
+. If you do not want to upload the images to DockerHub, update `DOCKER_REGISTRY_URL`.
 image::{jenkins-root-docs}/pks_seed.png[caption="Example of a filled out seed job"]
-
-- Run the pipeline
+. Run the pipeline

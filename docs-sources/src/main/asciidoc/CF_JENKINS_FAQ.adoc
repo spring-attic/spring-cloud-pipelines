@@ -1,8 +1,8 @@
-=== I ran out of resources!! (Cloud Foundry)
-
-[jenkins-cf-resources]] When deploying the app to stage or prod you can get an exception `Insufficient resources`. The way to
- solve it is to kill some apps from test / stage env. To achieve that just call
-
+I ran out of resources. (Cloud Foundry)::
+[jenkins-cf-resources]] When deploying the application to stage or prod, you can get an `Insufficient resources` exception. The way to
+solve it is to kill some applications from the test and stage environments. To do so, run the following commands:
++
+====
 [source,bash]
 ----
 cf target -o pcfdev-org -s pcfdev-test
@@ -10,14 +10,15 @@ cf stop github-webhook
 cf stop github-eureka
 cf stop stubrunner
 ----
-
-You can also execute `./tools/cf-helper.sh kill-all-apps` that will remove all demo-related apps
+====
++
+You can also run `./tools/cf-helper.sh kill-all-apps` to remove all demo-related apps
 deployed to PCF Dev.
 
-=== Deploying to test / stage / prod fails - error finding space (Cloud Foundry)
-
-If you receive a similar exception:
-
+Deploying to test or stage or prod fails with an error about finding space (Cloud Foundry)::
+You receive an exception similar to the following:
++
+====
 [source,bash]
 ----
 20:26:18 API endpoint:   https://api.local.pcfdev.io (API version: 2.58.0)
@@ -28,13 +29,15 @@ If you receive a similar exception:
 20:26:18 Error finding space pcfdev-test
 20:26:18 Space pcfdev-test not found
 ----
+====
++
+It means that you forgot to <<jenkins_pcfdev,create the spaces>> in your PCF Dev installation.
 
-It means that you've forgotten to <<jenkins_pcfdev,create the spaces>> in your PCF Dev installation.
-
-=== The route is already in use (Cloud Foundry)
-
-If you play around with Jenkins / Concourse you might end up with the routes occupied
-
+The route is already in use (Cloud Foundry).::
+If you play around with Jenkins and Concourse, you can end up with routes that are
+already occupied, as identified by errors similar to the following:
++
+====
 [source,bash]
 ----
 Using route github-webhook-test.local.pcfdev.io
@@ -42,9 +45,11 @@ Binding github-webhook-test.local.pcfdev.io to github-webhook...
 FAILED
 The route github-webhook-test.local.pcfdev.io is already in use.
 ----
-
-Just delete the routes
-
+====
++
+To resolve the issue, delete the offending routes, by using commands similar to the following:
++
+====
 [source,bash]
 ----
 yes | cf delete-route local.pcfdev.io -n github-webhook-test
@@ -55,17 +60,20 @@ yes | cf delete-route local.pcfdev.io -n github-eureka-stage
 yes | cf delete-route local.pcfdev.io -n github-webhook-prod
 yes | cf delete-route local.pcfdev.io -n github-eureka-prod
 ----
+====
++
+You can also run the `./tools/cf-helper.sh delete-routes` script.
 
-You can also execute the `./tools/cf-helper.sh delete-routes`
-
-=== How to execute helper scripts against a real CF instance I'm logged into (Cloud Foundry)
-
-Assuming that you're already logged into the cluster it's enough to run the
-helper script with the `REUSE_CF_LOGIN=true` env variable. Example:
-
-```bash
+How can I run helper scripts against a real Cloud Foundry instance that I'm logged into?::
+Assuming that you are already logged into the cluster, uyou can run the
+helper script with the `REUSE_CF_LOGIN=true` env variable, as shown in the following example:
++
+====
+[source,bash]
+----
 REUSE_CF_LOGIN=true ./tools/cf-helper.sh setup-prod-infra
-```
-
-This script will create the mysql db, rabbit mq service, download and deploy Eureka
-to the space and organization you're logged into.
+----
+====
++
+This script create the MySQL database and the RabbitMQ service and downloads and deploys Eureka
+to the space and organization you are logged into.

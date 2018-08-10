@@ -1,12 +1,12 @@
+[[jenkins_faq]]
 == Jenkins FAQ
 
-Below you can find the answers to most frequently asked questions.
+This section provides answers to the most frequently asked questions about using Jenkins with Spring Cloud Pipelines.
 
-[[jenkins_faq]]
-=== Pipeline version contains ${PIPELINE_VERSION}
-
-You can check the Jenkins logs and you'll see
-
+Pipeline version contains ${PIPELINE_VERSION}::
+You can check the Jenkins logs and see the following warning:
++
+====
 [source,bash]
 ----
 WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
@@ -15,17 +15,18 @@ WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pip
 	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
 	to whitelist specific parameter names, even though it represents a security breach
 ----
-
-To fix it you have to do exactly what the warning suggests... Also ensure that the `Groovy token macro processing`
+====
++
+To fix it, you have to do exactly what the warning suggests. Also, you should ensure that the `Groovy token macro processing`
 checkbox is set.
 
-=== Pipeline version is not passed to the build
-
-You can see that the Jenkins version is properly set but in the build version is still snapshot and
-the `echo "${PIPELINE_VERSION}"` doesn't print anything.
-
-You can check the Jenkins logs and you'll see
-
+Pipeline version is not passed to the build::
+You can see that the Jenkins version is properly set. However, in the build version, it is still snapshot and
+the `echo "${PIPELINE_VERSION}"` does not print anything.
++
+You can check the Jenkins logs and see the following warning:
++
+====
 [source,bash]
 ----
 WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pipeline-sample-build`.
@@ -34,152 +35,114 @@ WARNING: Skipped parameter `PIPELINE_VERSION` as it is undefined on `jenkins-pip
 	`-Dhudson.model.ParametersAction.safeParameters=[comma-separated list]`
 	to whitelist specific parameter names, even though it represents a security breach
 ----
+====
++
+To fix it, you have to do exactly what the warning suggests.
 
-To fix it you have to do exactly what the warning suggests...
-
-=== The build times out with `pipeline.sh` info
-
-Docker compose, docker compose, docker compose... The problem is that for some reason, only in Docker, the execution of
-Java hangs. But it hangs randomly and only the first time you try to execute the pipeline.
-
-The solution to this is to run the pipeline again. If once it suddenly, magically passes then
+The build times out with `pipeline.sh` information::
+This is a Docker compose issue. The problem is that for some reason, only in Docker, the execution of
+Java hangs. However, it hangs randomly and only the first time you try to run the pipeline.
++
+The solution to this issue is to run the pipeline again. If it passes once,
 it will pass for any subsequent build.
++
+Another thing that you can try is to run it with plain Docker. That helps sometimes.
 
-Another thing that you can try is to run it with plain Docker. Maybe that will help.
+Can I use the pipeline for some other repositories?::
+Yes. You can pass the `REPOS` variable with a comma-separated list of
+`project_name$project_url` format. If you do not provide the `PROJECT_NAME`, the
+repository name is extracted and used as the name of the project.
++
+For example, a `REPOS` value equal to `https://github.com/spring-cloud-samples/github-analytics,https://github.com/spring-cloud-samples/github-webhook`
+results in the creation of pipelines with root names `github-analytics` and `github-webhook`.
++
+For example, a `REPOS` equal to `myanalytics$https://github.com/spring-cloud-samples/github-analytics,myfeed$https://github.com/spring-cloud-samples/atom-feed`
+results in the creation of pipelines with root names `myanalytics` for `github-analytics`
+and `myfeed` for `github-webhook`.
 
-=== Can I use the pipeline for some other repos?
-
-Sure! you can pass `REPOS` variable with comma separated list of
-`project_name$project_url` format. If you don't provide the PROJECT_NAME the
-repo name will be extracted and used as the name of the project.
-
-E.g. for `REPOS` equal to:
-
-`https://github.com/spring-cloud-samples/github-analytics,https://github.com/spring-cloud-samples/github-webhook`
-
-will result in the creation of pipelines with root names `github-analytics` and `github-webhook`.
-
-E.g. for `REPOS` equal to:
-
-`foo$https://github.com/spring-cloud-samples/github-analytics,bar$https://github.com/spring-cloud-samples/atom-feed`
-
-will result in the creation of pipelines with root names `foo` for `github-analytics`
-and `bar` for `github-webhook`.
-
-=== Will this work for ANY project out of the box?
-
-Not really. This is an `opinionated pipeline` that's why we took some
-opinionated decisions like:
-
-- usage of Spring Cloud, Spring Cloud Contract Stub Runner and Spring Cloud Eureka
-- application deployment to Cloud Foundry
-- For Maven:
-    * usage of Maven Wrapper
-    * artifacts deployment by `./mvnw clean deploy`
-    * `stubrunner.ids` property to retrieve list of collaborators for which stubs should be downloaded
-    * running smoke tests on a deployed app via the `smoke` Maven profile
-    * running end to end tests on a deployed app via the `e2e` Maven profile
-- For Gradle (in the `github-analytics` application check the `gradle/pipeline.gradle` file):
-    * usage of Gradlew Wrapper
-    * `deploy` task for artifacts deployment
-    * running smoke tests on a deployed app via the `smoke` task
-    * running end to end tests on a deployed app via the `e2e` task
-    * `groupId` task to retrieve group id
-    * `artifactId` task to retrieve artifact id
-    * `currentVersion` task to retrieve the current version
-    * `stubIds` task to retrieve list of collaborators for which stubs should be downloaded
-
+Can this work for ANY project out of the box?::
+Not really. This is an "`opinionated pipeline`". That is why we took some
+opinionated decisions, such as:
++
+* Using Spring Cloud, Spring Cloud Contract Stub Runner, and Spring Cloud Eureka.
+* Application deployment to Cloud Foundry.
+* Maven, including:
+** Using the Maven Wrapper.
+** Artifacts deployment by using `./mvnw clean deploy`.
+** The `stubrunner.ids` property to retrieve the list of collaborators for which stubs should be downloaded.
+** Running smoke tests on a deployed app with the `smoke` Maven profile.
+** Running end to end tests on a deployed app with the `e2e` Maven profile.
+* Gradle (in the `github-analytics` application check in the `gradle/pipeline.gradle` file), including:
+** Using the Gradlew Wrapper.
+** A `deploy` task for artifacts deployment.
+** Running smoke tests on a deployed application with the `smoke` task.
+** Running end to end tests on a deployed application with the `e2e` task.
+** A `groupId` task to retrieve group ID.
+** An `artifactId` task to retrieve artifact ID.
+** A `currentVersion` task to retrieve the current version.
+** A `stubIds` task to retrieve the list of collaborators for which stubs should be downloaded.
++
 This is the initial approach that can be easily changed in the future.
 
-=== Can I modify this to reuse in my project?
-
-Sure! It's open-source! The important thing is that the core part of the logic is written
+Can I modify this to reuse in my project?::
+Yes. It is open-source. The important thing is that the core part of the logic is written
 in Bash scripts. That way, in the majority of cases, you could change only the bash
 scripts without changing the whole pipeline.
 
-=== The rollback step fails due to missing JAR ?!
-
+The rollback step fails due to a missing JAR::
 [[jenkins_tags]] You must have pushed some tags and have removed the Artifactory volume that
-contained them. To fix this, just remove the tags
-
+contained them. To fix this, remove the tags by using the following command:
++
+====
 [source,bash]
 ----
 git tag -l | xargs -n 1 git push --delete origin
 ----
+====
 
-=== I want to provide a different JDK version
-
-- by default we assume that you have jdk with id `jdk8` configured
-- if you want a different one just override `JDK_VERSION` env var and point to the proper one
-
+I want to provide a different JDK version.::
+* By default, we assume that you have configured a JDK with an ID of `jdk8`.
+* If you want a different one, override the `JDK_VERSION` environment variable to point to the proper one.
++
 TIP: The docker image comes in with Java installed at `/usr/lib/jvm/java-8-openjdk-amd64`.
-You can go to `Global Tools` and create a JDK with `jdk8` id and JAVA_HOME
- pointing to `/usr/lib/jvm/java-8-openjdk-amd64`
+You can go to `Global Tools` and create a JDK with an ID of `jdk8` and set `JAVA_HOME`
+to `/usr/lib/jvm/java-8-openjdk-amd64`.
 
-To change the default one just follow these steps:
-
-{nbsp}
-{nbsp}
+To change the default settings, follow the steps shown in the following images:
 
 image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
-
-{nbsp}
-{nbsp}
 
 image::{jenkins-root-docs}/global_tool.png[caption="Step 2: ", title="Click 'Global Tool'"]
 
-{nbsp}
-{nbsp}
-
 image::{jenkins-root-docs}/jdk_installation.png[caption="Step 3: ", title="Click 'JDK Installations'"]
-
-{nbsp}
-{nbsp}
 
 image::{jenkins-root-docs}/jdk.png[caption="Step 4: ", title="Fill out JDK Installation with path to your JDK"]
 
-{nbsp}
-{nbsp}
-
-And that's it!
-
 [[groovy-token-macro]]
-=== Enable Groovy Token Macro Processing
-
-With scripted that but if you needed to this manually then this is how to do it:
-
-{nbsp}
-{nbsp}
+How can I enable groovy token macro processing?::
+We scripted that. However, if you need to this manually, follow the steps shown in the following images:
 
 image::{jenkins-root-docs}/manage_jenkins.png[caption="Step 1: ", title="Click 'Manage Jenkins'"]
 
-{nbsp}
-{nbsp}
-
 image::{jenkins-root-docs}/configure_system.png[caption="Step 2: ", title="Click 'Configure System'"]
-
-{nbsp}
-{nbsp}
 
 image::{jenkins-root-docs}/groovy_token.png[caption="Step 3: ", title="Click 'Allow token macro processing'"]
 
-=== I want deployment to stage and prod be automatic
+How can I make deployment to stage and prod be automatic?::
+Set the relevant property or environment variable to `true`:
++
+* `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage.
+* `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod.
++
+How can I skip testing API compatibility?::
+Set the `API_COMPATIBILITY_STEP_REQUIRED` environment variable
+to `false` and re-run the seed (you can pick it from the seed
+job's properties, too).
 
-No problem, just set the property / env var to true
-
-- `AUTO_DEPLOY_TO_STAGE` to automatically deploy to stage
-- `AUTO_DEPLOY_TO_PROD` to automatically deploy to prod
-
-=== I don't want to test API compativility
-
-No problem, just set the `API_COMPATIBILITY_STEP_REQUIRED` env variable
-to `false` and rerun the seed (you can pick it from the seed
-job's properties too).
-
-=== I can't tag the repo!
-
-When you get sth like this:
-
+I can't tag the repo.::
+You may get an error similar to the following:
++
+====
 [source,bash]
 ----
 19:01:44 stderr: remote: Invalid username or password.
@@ -200,40 +163,37 @@ When you get sth like this:
 19:01:44 	at hudson.model.ResourceController.execute(ResourceController.java:98)
 19:01:44 	at hudson.model.Executor.run(Executor.java:404)
 ----
+====
++
+Most likely, you passed a wrong password. Check the <<jenkins_credentials,credentials>> section
+for how to update your credentials.
 
-most likely you've passed a wrong password. Check the <<jenkins_credentials,credentials>> section
-on how to update your credentials.
+I am unauthorized to deploy infrastructure jars.::
+Most likely, you forgot to update your local `settings.xml` file with the Artifactory's
+setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml` file>>.
 
-=== I'm unauthorized to deploy infrastructure jars
+Signing Artifacts::
+In some cases, it may be required that, when you perform a release, that the artifacts be signed
+before you push them to the repository.
+To do this, you  need to import your GPG keys into the Docker image that runs Jenkins.
+This can be done by placing a file called `public.key` that contains your public key
+and a file called `private.key` that contains your private key in the `seed` directory.
+These keys are imported by the `init.groovy` script runs when Jenkins starts.
 
-Most likely you've forgotten to update your local `settings.xml` with the Artifactory's
-setup. Check out <<jenkins_settings,this section of the docs and update your `settings.xml`>>.
+Using SSH keys for Git::
+The seed job checks whether an environment variable called `GIT_USE_SSH_KEY` is set to `true`. If it is `true`, the
+environment variable called `GIT_SSH_CREDENTIAL_ID` is chosen as the one that contains the
+ID of the credential that contains SSH private key. By default, `GIT_CREDENTIAL_ID` is picked
+as the one that contains the username and password to connect to git.
++
+You can set these values in the seed job by filling out the form and toggling a checkbox.
 
-=== Signing Artifacts
-
-In some cases it may be required that when performing a release that the artifacts be signed
-before pushing them to the repository.
-To do this you will need to import your GPG keys into the Docker image running Jenkins.
-This can be done by placing a file called `public.key` containing your public key
-and a file called `private.key` containing your private key in the `seed` directory.
-These keys will be imported by the `init.groovy` script that is run when Jenkins starts.
-
-=== Using SSH keys for git
-
-The seed job checks if an env variable `GIT_USE_SSH_KEY` is set to `true`. If that's the case
-then env variable `GIT_SSH_CREDENTIAL_ID` will be chosen as the one that contains the
-id of the credential that contains SSH private key. By default `GIT_CREDENTIAL_ID` will be picked
-as the one that contains username and password to connect to git.
-
-You can set these values in the seed job by filling out the form / toggling a checkbox.
-
-=== Deploy to stage fails and doesn't redeploy a service (Kubernetes)
-
-There can be a number of reason but remember that for stage we
-assume that a sequence of manual steps need to be performed. We don't
-redeploy any existing services cause most likely you deliberately
-have set it up in that way or the other. If in the logs of your application
-you can see that you can't connect to a service, first ensure that
-the service is forwarding traffic to a pod. Next if that's not the case
-please delete the service and re-run the step in the pipeline. That way
-Spring Cloud Pipelines will redeploy the service and the underlying pods.
+Deploy to stage fails and does not redeploy a service (Kubernetes).::
+There can be a number of reasons for this issue. Remember, though, that, for stage, we
+assume that a sequence of manual steps needs to be performed. We do not
+redeploy any existing services, because, most likely, you deliberately
+have it set up that way. If, in the logs of your application,
+you can see that you cannot connect to a service, first ensure that
+the service is forwarding traffic to a pod. Next, if that is not the case,
+delete the service and re-run the step in the pipeline. That way,
+Spring Cloud Pipelines redeploy the service and the underlying pods.

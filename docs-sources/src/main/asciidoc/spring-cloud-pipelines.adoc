@@ -4,9 +4,17 @@
 :intro-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/intro
 :demo-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/demo
 :cf-migration-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/cf-migration
+Marcin Grzejszczak; Cora Iberkleid; Jay Bryant
+:docinfo: shared
+:doctype: book
+:stylesdir: stylesheets
+:stylesheet: spring.css
 :toc: left
-:toclevels: 8
-:nofooter:
-:sectlinks: true
+:toclevels: 4
+:source-highlighter: prettify
+:numbered:
+:icons: font
+:sectanchors:
+ifdef::epub[:front-cover-image: image:epub-cover.png[Front Cover,1050,1600]]
 
 include::DOCS.adoc[]

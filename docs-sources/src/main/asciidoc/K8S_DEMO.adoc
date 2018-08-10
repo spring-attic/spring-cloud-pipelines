@@ -1,32 +1,35 @@
 == The demo setup (Kubernetes)
 
-The demo uses 2 applications. https://github.com/spring-cloud-samples/github-webhook-kubernetes/[Github Webhook]
-and https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github analytics code]. Below you can
-see an image of how these application communicate with each other.
+The demo uses two applications: https://github.com/spring-cloud-samples/github-webhook-kubernetes/[Github Webhook]
+and https://github.com/spring-cloud-samples/github-analytics-kubernetes/[Github analytics code]. The following
+image shows how these application communicate with each other:
 
 include::DEMO_SETUP.adoc[]
 
-=== Deploying production applications to Minikube
+=== Deploying Production Applications to Minikube
 
-In the real world scenario we wouldn't want to automatically provision services like
-RabbitMQ, MySQL or Eureka each time we deploy a new application to production. Typically
-production is provisioned manually (using automated solutions). In our case, before
-you deploy to production you can provision the `sc-pipelines-prod` namespace using the
- `k8s-helper.sh`. Just call
+In a real-world scenario, we would not want to automatically provision services such as
+RabbitMQ, MySQL, or Eureka each time we deploy a new application to production. Typically,
+production is provisioned manually (often by using automated solutions). In our case, before
+you deploy to production, you can provision the `sc-pipelines-prod` namespace by using the
+ `k8s-helper.sh`. To do so, call the following script:
 
+====
 [source,bash]
 ----
 $ ./k8s-helper.sh setup-prod-infra
 ----
+====
 
 === Running Prometheus on Kubernetes
 
-Use Helm to install Prometheus. We will point it to the services
+Use Helm to install Prometheus. Later in this demo, we point it to the services
 deployed to our cluster.
 
-Create a file called `values.yaml`.
+Create a file called `values.yaml` with the following content:
 
 .values.yaml
+====
 [source,yml]
 ----
 rbac:
@@ -812,16 +815,20 @@ networkPolicy:
   ##
   enabled: false
 ----
+====
 
-Next, let's create the prometheus installation with the predefined values.
+Next, create the prometheus installation with the predefined values. To do so, run the following command:
 
+====
 [source,bash]
 ----
 $ helm install --name sc-pipelines-prometheus stable/prometheus -f values.yaml
 ----
+====
 
-Then you should see the following output
+Then you should see the following output:
 
+====
 [source,bash]
 ----
 NOTES:
@@ -854,16 +861,22 @@ Get the PushGateway URL by running these commands in the same shell:
 For more information on running Prometheus, visit:
 https://prometheus.io/
 ----
+====
 
 === Running Grafana on Kubernetes
 
-Use Helm to install Grafana
+Use Helm to install Grafana, by running the following command:
 
+====
 [source,bash]
 ----
 $ helm install --name sc-pipelines-grafana stable/grafana
 ----
+====
 
+You should see the following output:
+
+====
 [source,bash]
 ----
 NOTES:
@@ -882,31 +895,35 @@ NOTES:
 
 3. Login with the password from step 1 and the username: admin
 ----
+====
 
-Perform the aforementioned steps and add the Grafana's datasource
-as Prometheus with URL `http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local`
+Perform the steps listed in the preceding output and add the Grafana's datasource
+as Prometheus with the following URL: `http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local`
 
-You can pick the dashboard via the Grafana ID (2471). This is the
+You can pick up the dashboard with the Grafana ID (2471). This is the
 default dashboard for the Spring Cloud Pipelines demo apps.
 
-If you have both apps (`github-webhook` and `github-analytics`) running on production
-we can now trigger the messages. Download the JSON with a sample request
+If you have both apps (`github-webhook` and `github-analytics`) running on production,
+you can now trigger the messages. Download the JSON with a sample request
 from https://github.com/marcingrzejszczak/github-webhook-kubernetes/blob/master/src/test/resources/github-webhook-input/hook-created.json[the github-webhook repository].
 Next, pick one of the `github-webhook` pods and forward its port
-locally to a port `9876` like this:
+locally to a port `9876`, as follows:
 
+====
 [source,bash]
 ----
 $ kubectl port-forward --namespace=sc-pipelines-prod $( kubectl get pods --namespace=sc-pipelines-prod | grep github-webhook | head -1 | awk '{print $1}' ) 9876:8080
 ----
+====
 
-next send a couple of requests (more than 4).
+Next, send a couple of requests (more than four), by using cURL as follows:
 
+====
 [source,bash]
 ----
 $ curl -X POST http://localhost:9876/ -d @path/to/issue-created.json \
 --header "Content-Type: application/json"
 ----
+====
 
-Then if you check out Grafana you'll see that you went above the
-threshold.
+Then, if you use Grafana, you can see that you went above the threshold.
