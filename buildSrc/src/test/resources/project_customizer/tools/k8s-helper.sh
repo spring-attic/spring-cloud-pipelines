@@ -168,15 +168,15 @@ case $1 in
 
 	setup-prod-infra)
 		copyK8sYamls
-		deployService "rabbitmq" "github-rabbitmq" "scpipelines/github-analytics-stub-runner-boot-classpath-stubs:latest"
-		deployService "eureka" "github-eureka" "scpipelines/github-eureka:latest"
+		deployService "github-rabbitmq" "rabbitmq" "cloudpipelines/github-analytics-stub-runner-boot-classpath-stubs:latest"
+		deployService "github-eureka" "eureka" "cloudpipelines/github-eureka:latest"
 		export MYSQL_USER
 		MYSQL_USER=username
 		export MYSQL_PASSWORD
 		MYSQL_PASSWORD=password
 		export MYSQL_ROOT_PASSWORD
 		MYSQL_ROOT_PASSWORD=rootpassword
-		deployService "mysql" "mysql-github-analytics"
+		deployService "mysql-github-analytics" "mysql"
 		;;
 
 	setup-tools-infra-vsphere)
