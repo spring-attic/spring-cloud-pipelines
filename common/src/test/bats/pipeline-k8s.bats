@@ -1206,3 +1206,23 @@ export -f mockGradlew
 	refute_output --partial "YOU'VE FORGOTTEN TO PASS KUBECONFIG"
 	assert_success
 }
+
+@test "should deploy service with a service that has coordinates [K8S]" {
+	export KUBECTL_BIN="kubectl"
+	export K8S_CONTEXT="context"
+	export PAAS_NAMESPACE="sc-pipelines-test"
+	export KUBERNETES_MINIKUBE="false"
+	export BUILD_PROJECT_TYPE="gradle"
+	export OUTPUT_DIR="build/libs"
+	export PROJECT_NAME="empty_project"
+	cp "${FIXTURES_DIR}/sc-pipelines-k8s.yml" "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project/sc-pipelines.yml"
+	cd "${TEMP_DIR}/${BUILD_PROJECT_TYPE}/empty_project"
+	touch "${KUBECTL_BIN}"
+	source "${SOURCE_DIR}/pipeline.sh"
+
+	run deployService "eureka-github-webhook" "eureka"
+
+	# logged in
+	assert_output --partial "Will deploy service with type [eureka] name [eureka-github-webhook] and coordinates [com.example.eureka:github-eureka:0.0.1.M1]"
+	assert_success
+}

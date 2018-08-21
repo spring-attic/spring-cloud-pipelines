@@ -104,11 +104,10 @@ function deployService() {
 	local serviceType
 	serviceType="$(toLowerCase "${2}")"
 	local serviceCoordinates
-	serviceCoordinates="$(if [[ "${3}" == "null" ]]; then
-		echo "";
-	else
-		echo "${3}";
-	fi)"
+	serviceCoordinates="$(echo "${PARSED_YAML}" |  jq -r --arg x "${LOWERCASE_ENV}" --arg y "${serviceName}" '.[$x].services[] | select(.name == $y) | .coordinates')"
+	if [[ "${serviceCoordinates}" == "null" ]]; then
+		serviceCoordinates=""
+	fi
 	local coordinatesSeparator=":"
 	echo "Will deploy service with type [${serviceType}] name [${serviceName}] and coordinates [${serviceCoordinates}]"
 	case ${serviceType} in
