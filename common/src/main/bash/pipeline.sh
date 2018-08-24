@@ -12,6 +12,7 @@ set -o pipefail
 #  - projectType/pipeline-projectType.sh
 #  - pipeline-${paasType}.sh (e.g. pipeline-cf.sh)
 #  - custom/${scriptName}.sh (e.g. custom/build_and_upload.sh)
+#  - custom/pipeline-${paasType}.sh (e.g. custom/pipeline-cf.sh)
 #
 # Essentially, the scripts implementing the functions can be divided
 # into 2 types.
@@ -563,7 +564,10 @@ CUSTOM_SCRIPT_DIR="${__ROOT}/${CUSTOM_SCRIPT_IDENTIFIER}"
 mkdir -p "${__ROOT}/${CUSTOM_SCRIPT_IDENTIFIER}"
 # The check for null is used for tests
 [[ -z "${CUSTOM_SCRIPT_NAME}" ]] && CUSTOM_SCRIPT_NAME="$(basename "${BASH_SOURCE[1]}")"
-echo "Path to custom script is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
+echo "Path to custom script for current step is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
+# The check for null is used for tests
+[[ -z "${CUSTOM_PAAS_SCRIPT_NAME}" ]] && CUSTOM_PAAS_SCRIPT_NAME="pipeline-${PAAS_TYPE}.sh"
+echo "Path to custom script for PAAS is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_PAAS_SCRIPT_NAME}]"
 
 # ================================================================
 #  [SOURCE] Sourcing a custom script if one is available
@@ -571,6 +575,9 @@ echo "Path to custom script is [${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}]"
 # shellcheck source=/dev/null
 [[ -f "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ]] && source "${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME}" ||  \
  echo "No ${CUSTOM_SCRIPT_DIR}/${CUSTOM_SCRIPT_NAME} found"
+# shellcheck source=/dev/null
+[[ -f "${CUSTOM_SCRIPT_DIR}/${CUSTOM_PAAS_SCRIPT_NAME}" ]] && source "${CUSTOM_SCRIPT_DIR}/${CUSTOM_PAAS_SCRIPT_NAME}" ||  \
+ echo "No ${CUSTOM_SCRIPT_DIR}/${CUSTOM_PAAS_SCRIPT_NAME} found"
 
 OUTPUT_FOLDER="$(outputFolder)"
 TEST_REPORTS_FOLDER="$(testResultsAntPattern)"

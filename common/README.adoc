@@ -66,6 +66,11 @@ that can override those functions. Spring Cloud Pipelines will source custom scr
 where `<replaced_with_custom_script_identifier>` is the value of the `CUSTOM_SCRIPT_IDENTIFIER`
 environment variable.
 
+Another customization option is the convention that under `common/src/main/bash/<replaced_with_custom_script_identifier>`,
+if we find the file equal to the name of the sourced PAAS script (e.g.
+`pipeline-cf.sh`) then we will source it after all the other scripts got sourced.
+That way you can override the way platform related functionality is executed.
+
 Specifically for Concourse, you also need to name the script that will replace the function the same name
 as the Concourse task but with underscores in replace of the dashes.
 

@@ -442,6 +442,18 @@ teardown() {
 	assert_success
 }
 
+@test "should source a custom PAAS script if present" {
+	export PAAS_TYPE=cf
+	cd "${TEMP_DIR}/gradle/build_project"
+	ln -s "${FIXTURES_DIR}/custom/pipeline-cf.sh" "${TEMP_DIR}/sc-pipelines/custom/pipeline-cf.sh"
+	source "${TEMP_DIR}/sc-pipelines/pipeline.sh"
+
+	run logInToPaas
+
+	assert_output --partial "I am executing a custom login function"
+	assert_success
+}
+
 function stubbed_git() {
 	echo "git $*"
 }
