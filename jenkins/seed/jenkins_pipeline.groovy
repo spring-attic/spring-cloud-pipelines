@@ -642,7 +642,7 @@ factory.job('jenkins-pipeline-ansible-seed') {
 			booleanParam('API_COMPATIBILITY_STEP_REQUIRED', true, 'Should api compatibility step be present')
 			booleanParam('DB_ROLLBACK_STEP_REQUIRED', true, 'Should DB rollback step be present')
 			booleanParam('DEPLOY_TO_STAGE_STEP_REQUIRED', true, 'Should deploy to stage step be present')
-			stringParam('PAAS_TYPE', 'cf', "Which PAAS do you want to choose")
+			stringParam('PAAS_TYPE', 'ansible', "Which PAAS do you want to choose")
 			stringParam('PIPELINE_DESCRIPTOR', '', "The name of the pipeline descriptor. If none is set then `sc-pipelines.yml` will be assumed")
 			stringParam('ANSIBLE_INVENTORY_DIR', '', "Directory where the Ansible inventory files will be stored")
 			textParam('ANSIBLE_TEST_INVENTORY', '', "Content of the Ansible static inventory for TEST environment")
