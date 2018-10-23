@@ -69,7 +69,7 @@ ext {
 	}
 
 	git = org.ajoberstar.grgit.Grgit.open()
-	revision = git.head().id
+	revision = git.head()?.id
 }
 
 subprojects {
@@ -248,7 +248,7 @@ task dumpBuildInfo() {
 	doLast {
 		String versionContents = """\
 buildDate: ${new Date().format('dd-MM-yyyy HH:mm:ss')}
-revision : ${revision}
+revision : ${revision ?: ""}
 version  : ${project.version}
 """
 		def fileToStore = new File(project.buildDir, "VERSION")
@@ -295,4 +295,3 @@ task release(dependsOn: ["build", "assembleDist", "generateDocs"]) {
 task wrapper(type: Wrapper) {
 	gradleVersion = '4.8'
 }
-
