@@ -7,4 +7,8 @@ image::https://circleci.com/gh/spring-cloud/spring-cloud-pipelines.svg?style=svg
 :demo-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/demo
 :cf-migration-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/cf-migration
 
+= Migration
+
+This project is deprecatre. It was migrated to: https://github.com/CloudPipelines/[Cloud Pipelines].
+
 include::DOCS.adoc[]
