@@ -31,7 +31,7 @@ Has 21 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_, _source_
 
-_Exports (environment):_ BINARY_EXTENSION [big]*//* MAVEN_OPTS [big]*//* PROJECT_TYPE [big]*//* projectType
+_Exports (environment):_ BINARY_EXTENSION [big]*//* MAVEN_OPTS [big]*//* projectType [big]*//* PROJECT_TYPE
 
 downloadAppBinary
 ~~~~~~~~~~~~~~~~~

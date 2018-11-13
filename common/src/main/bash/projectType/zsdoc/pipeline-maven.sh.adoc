@@ -37,7 +37,7 @@ Has 24 line(s). No functions are called (may set up e.g. a hook, a Zle widget bo
 
 Uses feature(s): _export_
 
-_Exports (environment):_ BUILD_OPTIONS [big]*//* MAVENW_BIN [big]*//* build [big]*//* executeApiCompatibilityCheck [big]*//* outputFolder [big]*//* retrieveAppName [big]*//* retrieveGroupId [big]*//* runE2eTests [big]*//* runSmokeTests [big]*//* testResultsAntPattern
+_Exports (environment):_ build [big]*//* BUILD_OPTIONS [big]*//* executeApiCompatibilityCheck [big]*//* MAVENW_BIN [big]*//* outputFolder [big]*//* retrieveAppName [big]*//* retrieveGroupId [big]*//* runE2eTests [big]*//* runSmokeTests [big]*//* testResultsAntPattern
 
 build
 ~~~~~

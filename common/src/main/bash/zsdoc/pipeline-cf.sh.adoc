@@ -331,7 +331,7 @@ Has 57 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
-_Environment variables used:_ pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> PARSED_YAML
+_Environment variables used:_ pipeline.sh -> PARSED_YAML [big]*//* pipeline.sh -> LOWERCASE_ENV
 
 deployStubRunnerBoot
 ~~~~~~~~~~~~~~~~~~~~
@@ -391,7 +391,7 @@ Has 16 line(s). Calls functions:
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
-_Environment variables used:_ pipeline.sh -> BINARY_ARTIFACT_TYPE_NAME [big]*//* pipeline.sh -> LANGUAGE_TYPE [big]*//* pipeline.sh -> SOURCE_ARTIFACT_TYPE_NAME [big]*//* pipeline.sh -> PARSED_YAML
+_Environment variables used:_ pipeline.sh -> PARSED_YAML [big]*//* pipeline.sh -> BINARY_ARTIFACT_TYPE_NAME [big]*//* pipeline.sh -> LANGUAGE_TYPE [big]*//* pipeline.sh -> SOURCE_ARTIFACT_TYPE_NAME
 
 getDomain
 ~~~~~~~~~
@@ -620,7 +620,7 @@ Called by:
  test_rollback_smoke.sh/Script-Body
  test_smoke.sh/Script-Body
 
-_Environment variables used:_ APPLICATION_URL [big]*//* STUBRUNNER_URL [big]*//* pipeline.sh -> OUTPUT_FOLDER [big]*//* pipeline.sh -> LATEST_PROD_TAG
+_Environment variables used:_ APPLICATION_URL [big]*//* STUBRUNNER_URL [big]*//* pipeline.sh -> LATEST_PROD_TAG [big]*//* pipeline.sh -> OUTPUT_FOLDER
 
 prodDeploy
 ~~~~~~~~~~
@@ -674,7 +674,7 @@ Called by:
 
 _List of exports (to environment):_ APPLICATION_URL [big]*//* STUBRUNNER_URL
 
-_Environment variables used:_ pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> OUTPUT_FOLDER [big]*//* pipeline.sh -> PARSED_YAML
+_Environment variables used:_ pipeline.sh -> PARSED_YAML [big]*//* pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> OUTPUT_FOLDER
 
 readTestPropertiesFromFile
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

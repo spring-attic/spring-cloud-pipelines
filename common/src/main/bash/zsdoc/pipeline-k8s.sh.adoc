@@ -31,11 +31,11 @@ Has 5 line(s). No functions are called (may set up e.g. a hook, a Zle widget bou
 deployService
 ~~~~~~~~~~~~~
 
-Has 681 line(s). Doesn't call other functions.
+Has 680 line(s). Doesn't call other functions.
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
-_Environment variables used:_ pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> OUTPUT_FOLDER [big]*//* pipeline.sh -> PARSED_YAML [big]*//* test_smoke.sh -> ENVIRONMENT
+_Environment variables used:_ pipeline.sh -> PARSED_YAML [big]*//* pipeline.sh -> LOWERCASE_ENV [big]*//* pipeline.sh -> OUTPUT_FOLDER [big]*//* test_smoke.sh -> ENVIRONMENT
 
 logInToPaas
 ~~~~~~~~~~~
