@@ -9,6 +9,11 @@ image::https://circleci.com/gh/spring-cloud/spring-cloud-pipelines.svg?style=svg
 :demo-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/demo
 :cf-migration-root-docs: https://raw.githubusercontent.com/spring-cloud/spring-cloud-pipelines/{branch}/docs-sources/src/main/asciidoc/images/cf-migration
 
+= Migration
+
+This project is deprecated. It was migrated to: https://github.com/CloudPipelines/[Cloud Pipelines].
+
+
 = Spring Cloud Pipelines
 
 Spring, Spring Boot, and Spring Cloud are tools that let developers speed up the
