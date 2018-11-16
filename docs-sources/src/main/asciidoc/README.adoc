@@ -9,6 +9,7 @@ image::https://circleci.com/gh/spring-cloud/spring-cloud-pipelines.svg?style=svg
 
 = Migration
 
-This project is deprecatre. It was migrated to: https://github.com/CloudPipelines/[Cloud Pipelines].
+This project is deprecated. It was migrated to: https://github.com/CloudPipelines/[Cloud Pipelines].
+You can read more about it https://spring.io/blog/2018/11/13/spring-cloud-pipelines-to-cloud-pipelines-migration[here].
 
 include::DOCS.adoc[]
