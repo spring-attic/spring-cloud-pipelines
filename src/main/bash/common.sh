@@ -2,7 +2,7 @@
 
 function retrieve_current_branch() {
 	# Code getting the name of the current branch. For master we want to publish as we did until now
-	# http://stackoverflow.com/questions/1593051/how-to-programmatically-determine-the-current-checked-out-git-branch
+	# https://stackoverflow.com/questions/1593051/how-to-programmatically-determine-the-current-checked-out-git-branch
 	# If there is a branch already passed will reuse it - otherwise will try to find it
 	CURRENT_BRANCH=${BRANCH}
 	if [[ -z "${CURRENT_BRANCH}" ]] ; then
