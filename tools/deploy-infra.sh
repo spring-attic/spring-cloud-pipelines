@@ -7,7 +7,7 @@
 # Examples:
 #   $ ./tools/deploy-infra.sh
 #   $ ./tools/deploy-infra.sh ../repos/pivotal/
-#   $ ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
+#   $ ARTIFACTORY_URL="https://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
 #
 
 set -o errexit
@@ -23,7 +23,7 @@ if [[ -z "${POTENTIAL_DOCKER_HOST}" ]]; then
     POTENTIAL_DOCKER_HOST="localhost"
 fi
 
-ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://admin:password@${POTENTIAL_DOCKER_HOST}:8081/artifactory/libs-release-local}"
+ARTIFACTORY_URL="${ARTIFACTORY_URL:-https://admin:password@${POTENTIAL_DOCKER_HOST}:8081/artifactory/libs-release-local}"
 ARTIFACTORY_ID="${ARTIFACTORY_ID:-artifactory-local}"
 
 function deploy_project {
