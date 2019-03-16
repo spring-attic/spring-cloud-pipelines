@@ -14,7 +14,7 @@ sourceSets {
 repositories {
     jcenter()
     mavenCentral()
-    maven { url 'http://repo.jenkins-ci.org/releases/' }
+    maven { url 'https://repo.jenkins-ci.org/releases/' }
 }
 
 dependencies {
