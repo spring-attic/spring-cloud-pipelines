@@ -192,7 +192,7 @@ fi
         <userRemoteConfigs>
             <hudson.plugins.git.UserRemoteConfig>
                 <name>origin</name>
-                <url>http://bar.com/baz/foo.git</url>
+                <url>https://bar.com/baz/foo.git</url>
                 <credentialsId>git</credentialsId>
             </hudson.plugins.git.UserRemoteConfig>
         </userRemoteConfigs>
