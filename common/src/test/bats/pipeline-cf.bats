@@ -12,7 +12,7 @@ setup() {
 
 	export ENVIRONMENT="TEST"
 	export PAAS_TYPE="CF"
-	export REPO_WITH_BINARIES="http://foo"
+	export REPO_WITH_BINARIES="https://foo"
 
 	export PAAS_TEST_USERNAME="test-username"
 	export PAAS_TEST_PASSWORD="test-password"
@@ -310,7 +310,7 @@ export -f fakeRetrieveStubRunnerIds
 	# Stub Runner
 	assert_output --partial "Setting env var [APPLICATION_HOSTNAME] -> [stubrunner-test-my-project] for app [stubrunner]"
 	assert_output --partial "Setting env var [APPLICATION_DOMAIN] -> [cfapps.io] for app [stubrunner]"
-	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
+	assert_output --partial "curl -u foo:bar https://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
 	assert_output --partial "cf create-route test-space-my-project cfapps.io --hostname stubrunner-test-my-project-10000"
@@ -348,7 +348,7 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf login -u ${env}-username -p ${env}-password -o ${env}-org -s ${env}-space-my-project"
 	refute_output --partial "No pipeline descriptor found - will not deploy any services"
 	# App
-	assert_output --partial "curl -u foo:bar http://foo/com/example/my-project/1.0.0.M8/my-project-1.0.0.M8.tar.gz -o ${TEMP_DIR}/generic/php_repo/target/my-project-1.0.0.M8.tar.gz --fail"
+	assert_output --partial "curl -u foo:bar https://foo/com/example/my-project/1.0.0.M8/my-project-1.0.0.M8.tar.gz -o ${TEMP_DIR}/generic/php_repo/target/my-project-1.0.0.M8.tar.gz --fail"
 	assert_output --partial "tar -zxf ${TEMP_DIR}/generic/php_repo/target/my-project-1.0.0.M8.tar.gz -C target/source"
 	assert_output --partial "cf push my-project -f manifest.yml -p . -n my-project-test -i 1 --no-start"
 	assert_output --partial "cf set-env my-project SPRING_PROFILES_ACTIVE cloud,smoke,test"
@@ -408,7 +408,7 @@ export -f fakeRetrieveStubRunnerIds
 	# Stub Runner
 	assert_output --partial "Setting env var [APPLICATION_HOSTNAME] -> [stubrunner-test-${projectNameUppercase}] for app [stubrunner]"
 	assert_output --partial "Setting env var [APPLICATION_DOMAIN] -> [artifactId] for app [stubrunner]"
-	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
+	assert_output --partial "curl -u foo:bar https://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
 	assert_output --partial "cf create-route test-space-${projectNameUppercase} artifactId --hostname stubrunner-test-${projectNameUppercase}-10000"

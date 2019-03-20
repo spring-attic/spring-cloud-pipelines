@@ -46,7 +46,7 @@ Throughout this tutorial, we use the following tools:
 ** https://github.com/ciberkleid/app-config[`app-confi`g]
 ** https://github.com/spring-cloud-samples/cloudfoundry-stub-runner-boot[`cloudfoundry-stub-runner-boot`]
 ** https://github.com/spring-cloud/spring-cloud-pipelines[`spring-cloud-pipelines`]
-* *Pivotal Web Services*: Publicly hosted Cloud Foundry offering http://run.pivotal.io[free trial accounts] and including MySQL, Rabbit, and Pivotal Spring Cloud Services in the Marketplace
+* *Pivotal Web Services*: Publicly hosted Cloud Foundry offering https://run.pivotal.io[free trial accounts] and including MySQL, Rabbit, and Pivotal Spring Cloud Services in the Marketplace
 * *Concourse*
 * *JFrog Bintray*: Publicly hosted Maven repository offering free https://bintray.com/signup/oss[OSS accounts]
 * *Client Tools*: On your local machine, you need an IDE as well as the mvn, git, cf, and fly (Concourse) CLIs

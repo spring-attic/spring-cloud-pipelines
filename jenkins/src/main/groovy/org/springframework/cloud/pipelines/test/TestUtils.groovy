@@ -13,5 +13,5 @@ import org.springframework.cloud.projectcrawler.Repository
 @CompileStatic
 class TestUtils {
 
-	public static List<Repository> TEST_REPO = [new Repository("foo", "git@bar.com:baz/foo.git", "http://bar.com/baz/foo.git", "master")]
+	public static List<Repository> TEST_REPO = [new Repository("foo", "git@bar.com:baz/foo.git", "https://bar.com/baz/foo.git", "master")]
 }

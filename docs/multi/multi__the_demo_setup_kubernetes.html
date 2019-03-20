@@ -100,7 +100,7 @@ alertmanager:
 
     ## alertmanager data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## Ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
     accessModes:
       - ReadWriteOnce
@@ -143,7 +143,7 @@ alertmanager:
   replicaCount: 1
 
   ## alertmanager resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -185,7 +185,7 @@ configmapReload:
     pullPolicy: IfNotPresent
 
   ## configmap-reload resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
 
@@ -220,7 +220,7 @@ kubeStateMetrics:
   replicaCount: 1
 
   ## kube-state-metrics resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -417,7 +417,7 @@ server:
 
     ## Prometheus server data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## Ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
     accessModes:
       - ReadWriteOnce
@@ -461,7 +461,7 @@ server:
   replicaCount: 1
 
   ## Prometheus server resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -551,7 +551,7 @@ pushgateway:
   replicaCount: 1
 
   ## pushgateway resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -840,7 +840,7 @@ https://prometheus.io/</pre></div></div><div class="section"><div class="titlepa
      kubectl --namespace default port-forward $POD_NAME <span class="hl-number">3000</span>
 
 <span class="hl-number">3.</span> Login with the password from step <span class="hl-number">1</span> and the username: admin</pre></div><p>Perform the steps listed in the preceding output and add the Grafana&#8217;s datasource
-as Prometheus with the following URL: <code class="literal"><a class="link" href="http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local" target="_top">http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local</a></code></p><p>You can pick up the dashboard with the Grafana ID (2471). This is the
+as Prometheus with the following URL: <code class="literal"><a class="link" href="https://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local" target="_top">https://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local</a></code></p><p>You can pick up the dashboard with the Grafana ID (2471). This is the
 default dashboard for the Spring Cloud Pipelines demo apps.</p><p>If you have both apps (<code class="literal">github-webhook</code> and <code class="literal">github-analytics</code>) running on production,
 you can now trigger the messages. Download the JSON with a sample request
 from <a class="link" href="https://github.com/marcingrzejszczak/github-webhook-kubernetes/blob/master/src/test/resources/github-webhook-input/hook-created.json" target="_top">the github-webhook repository</a>.

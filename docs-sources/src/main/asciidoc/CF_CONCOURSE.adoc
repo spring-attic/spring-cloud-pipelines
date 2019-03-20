@@ -184,7 +184,7 @@ The following table describes the environment variables required by the scripts:
 |`PAAS_STAGE_SPACE` | Name of the space for the stage env | `sc-pipelines-stage`
 |`PAAS_PROD_ORG`   | Name of the org for the prod env | `pcfdev-org`
 |`PAAS_PROD_SPACE` | Name of the space for the prod env | `sc-pipelines-prod`
-|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL to repo with the deployed jars | `http://192.168.99.100:8081/artifactory/libs-release-local`
+|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL to repo with the deployed jars | `https://192.168.99.100:8081/artifactory/libs-release-local`
 |`M2_SETTINGS_REPO_ID` | The id of server from Maven settings.xml | `artifactory-local`
 |`PAAS_HOSTNAME_UUID` | Additional suffix for the route. In a shared environment the default routes can be already taken |
 |`BUILD_OPTIONS` | Additional options you would like to pass to the Maven / Gradle build |

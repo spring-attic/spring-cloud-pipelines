@@ -116,7 +116,7 @@ alertmanager:
 
     ## alertmanager data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## Ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
     accessModes:
       - ReadWriteOnce
@@ -159,7 +159,7 @@ alertmanager:
   replicaCount: 1
 
   ## alertmanager resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -201,7 +201,7 @@ configmapReload:
     pullPolicy: IfNotPresent
 
   ## configmap-reload resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
 
@@ -236,7 +236,7 @@ kubeStateMetrics:
   replicaCount: 1
 
   ## kube-state-metrics resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -433,7 +433,7 @@ server:
 
     ## Prometheus server data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## Ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
     accessModes:
       - ReadWriteOnce
@@ -477,7 +477,7 @@ server:
   replicaCount: 1
 
   ## Prometheus server resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -567,7 +567,7 @@ pushgateway:
   replicaCount: 1
 
   ## pushgateway resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -898,7 +898,7 @@ NOTES:
 ====
 
 Perform the steps listed in the preceding output and add the Grafana's datasource
-as Prometheus with the following URL: `http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local`
+as Prometheus with the following URL: `https://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local`
 
 You can pick up the dashboard with the Grafana ID (2471). This is the
 default dashboard for the Spring Cloud Pipelines demo apps.

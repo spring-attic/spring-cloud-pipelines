@@ -65,7 +65,7 @@ executing `tools/deploy-infra.sh`. Example for deploying to Artifactory at IP `1
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/
-ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
+ARTIFACTORY_URL="https://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
 ----
 
 [[setup-settings-xml]]
@@ -473,7 +473,7 @@ image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 4: ", title="The 
 You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
 https://jenkins.io/projects/blueocean/[Blue Ocean UI].
 
-The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `http://192.168.99.100:8080/blue`).
+The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `https://192.168.99.100:8080/blue`).
 
 The following images show the various steps involved:
 
@@ -522,7 +522,7 @@ See https://issues.jenkins-ci.org/browse/JENKINS-33846[this issue] for more info
 WARNING: Currently, there is no way to introduce manual steps in a performant way. Jenkins
 blocks an executor when a manual step is required. That means that you run out of executors
 pretty quickly. See https://issues.jenkins-ci.org/browse/JENKINS-36235[this issue]
-and http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
+and https://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
 for more information.
 
 [[optional-steps-cf]]
@@ -550,7 +550,7 @@ The environment variables that are used in all of the jobs are as follows:
 |`PAAS_STAGE_SPACE` | Name of the space for the stage environment | `sc-pipelines-stage`
 |`PAAS_PROD_ORG`   | Name of the org for the prod environment | `pcfdev-org`
 |`PAAS_PROD_SPACE` | Name of the space for the prod environment | `sc-pipelines-prod`
-|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `http://artifactory:8081/artifactory/libs-release-local`
+|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `https://artifactory:8081/artifactory/libs-release-local`
 |`M2_SETTINGS_REPO_ID` | The ID of server from Maven `settings.xml` | `artifactory-local`
 |`JDK_VERSION` | The name of the JDK installation | `jdk8`
 |`PIPELINE_VERSION` | The version of the pipeline (ultimately, also the version of the jar) | `1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION`
@@ -782,7 +782,7 @@ image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 4: ", title="The 
 You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
 https://jenkins.io/projects/blueocean/[Blue Ocean UI].
 
-The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `http://192.168.99.100:8080/blue`).
+The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `https://192.168.99.100:8080/blue`).
 
 The following images show the various steps involved:
 
@@ -831,7 +831,7 @@ See https://issues.jenkins-ci.org/browse/JENKINS-33846[this issue] for more info
 WARNING: Currently, there is no way to introduce manual steps in a performant way. Jenkins
 blocks an executor when a manual step is required. That means that you run out of executors
 pretty quickly. See https://issues.jenkins-ci.org/browse/JENKINS-36235[this issue]
-and http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
+and https://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
 for more information.
 
 [[optional-steps-k8s]]
@@ -887,7 +887,7 @@ The environment variables that are used in all of the jobs are as follows:
 |`PAAS_STAGE_NAMESPACE` | Namespace for the stage environment | `sc-pipelines-stage`
 |`PAAS_PROD_NAMESPACE` | Namespace for the prod environment | `sc-pipelines-prod`
 |`KUBERNETES_MINIKUBE` | Whether to connect to Minikube | `true`
-|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `http://artifactory:8081/artifactory/libs-release-local`
+|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `https://artifactory:8081/artifactory/libs-release-local`
 |`REPO_WITH_BINARIES_CREDENTIAL_ID` | Credential ID used for the repository with jars | `repo-with-binaries`
 |`M2_SETTINGS_REPO_ID` | The ID of server from Maven `settings.xml` | `artifactory-local`
 |`JDK_VERSION` | The name of the JDK installation | `jdk8`

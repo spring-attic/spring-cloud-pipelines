@@ -59,7 +59,7 @@ function curl {
 	export PIPELINE_VERSION=1.0.0.M8
 	export M2_SETTINGS_REPO_USERNAME="foo"
 	export M2_SETTINGS_REPO_PASSWORD="bar"
-	export REPO_WITH_BINARIES_FOR_UPLOAD="http://foo"
+	export REPO_WITH_BINARIES_FOR_UPLOAD="https://foo"
 	source "${SOURCE_DIR}/projectType/pipeline-php.sh"
 
 	run build
@@ -67,7 +67,7 @@ function curl {
 	# App
 	assert_output --partial "composer install"
 	assert_output --partial "tar -czf"
-	assert_output --partial "curl -u foo:bar -X PUT http://foo/com/example/my-project/1.0.0.M8/my-project-1.0.0.M8.tar.gz --upload-file"
+	assert_output --partial "curl -u foo:bar -X PUT https://foo/com/example/my-project/1.0.0.M8/my-project-1.0.0.M8.tar.gz --upload-file"
 	# We don't want exception on jq parsing
 	refute_output --partial "Cannot iterate over null (null)"
 	assert_success

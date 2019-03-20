@@ -270,11 +270,11 @@ microservices. That way, the testing setup looks like the following image:
 image::{intro-root-docs}/stubbed_dependencies.png[title="We're testing microservices in isolation"]
 
 Such an approach to testing and deployment gives the following benefits
-(thanks to the usage of http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract]):
+(thanks to the usage of https://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract]):
 
 * No need to deploy dependent services.
 * The stubs used for the tests run on a deployed microservice are the same as those used during integration tests.
-* Those stubs have been tested against the application that produces them (see http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract] for more information).
+* Those stubs have been tested against the application that produces them (see https://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract] for more information).
 * We do not have many slow tests running on a deployed application, so the pipeline gets executed much faster.
 * We do not have to queue deployments. We test in isolation so that pipelines do not interfere with each other.
 * We do not have to spawn virtual machines each time for deployment purposes.
@@ -1287,7 +1287,7 @@ Throughout this tutorial, we use the following tools:
 ** https://github.com/ciberkleid/app-config[`app-confi`g]
 ** https://github.com/spring-cloud-samples/cloudfoundry-stub-runner-boot[`cloudfoundry-stub-runner-boot`]
 ** https://github.com/spring-cloud/spring-cloud-pipelines[`spring-cloud-pipelines`]
-* *Pivotal Web Services*: Publicly hosted Cloud Foundry offering http://run.pivotal.io[free trial accounts] and including MySQL, Rabbit, and Pivotal Spring Cloud Services in the Marketplace
+* *Pivotal Web Services*: Publicly hosted Cloud Foundry offering https://run.pivotal.io[free trial accounts] and including MySQL, Rabbit, and Pivotal Spring Cloud Services in the Marketplace
 * *Concourse*
 * *JFrog Bintray*: Publicly hosted Maven repository offering free https://bintray.com/signup/oss[OSS accounts]
 * *Client Tools*: On your local machine, you need an IDE as well as the mvn, git, cf, and fly (Concourse) CLIs
@@ -3130,7 +3130,7 @@ The following table describes the environment variables required by the scripts:
 |`PAAS_STAGE_SPACE` | Name of the space for the stage env | `sc-pipelines-stage`
 |`PAAS_PROD_ORG`   | Name of the org for the prod env | `pcfdev-org`
 |`PAAS_PROD_SPACE` | Name of the space for the prod env | `sc-pipelines-prod`
-|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL to repo with the deployed jars | `http://192.168.99.100:8081/artifactory/libs-release-local`
+|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL to repo with the deployed jars | `https://192.168.99.100:8081/artifactory/libs-release-local`
 |`M2_SETTINGS_REPO_ID` | The id of server from Maven settings.xml | `artifactory-local`
 |`PAAS_HOSTNAME_UUID` | Additional suffix for the route. In a shared environment the default routes can be already taken |
 |`BUILD_OPTIONS` | Additional options you would like to pass to the Maven / Gradle build |
@@ -3549,7 +3549,7 @@ executing `tools/deploy-infra.sh`. Example for deploying to Artifactory at IP `1
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/
-ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
+ARTIFACTORY_URL="https://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
 ----
 
 [[setup-settings-xml]]
@@ -3957,7 +3957,7 @@ image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 4: ", title="The 
 You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
 https://jenkins.io/projects/blueocean/[Blue Ocean UI].
 
-The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `http://192.168.99.100:8080/blue`).
+The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `https://192.168.99.100:8080/blue`).
 
 The following images show the various steps involved:
 
@@ -4006,7 +4006,7 @@ See https://issues.jenkins-ci.org/browse/JENKINS-33846[this issue] for more info
 WARNING: Currently, there is no way to introduce manual steps in a performant way. Jenkins
 blocks an executor when a manual step is required. That means that you run out of executors
 pretty quickly. See https://issues.jenkins-ci.org/browse/JENKINS-36235[this issue]
-and http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
+and https://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
 for more information.
 
 [[optional-steps-cf]]
@@ -4034,7 +4034,7 @@ The environment variables that are used in all of the jobs are as follows:
 |`PAAS_STAGE_SPACE` | Name of the space for the stage environment | `sc-pipelines-stage`
 |`PAAS_PROD_ORG`   | Name of the org for the prod environment | `pcfdev-org`
 |`PAAS_PROD_SPACE` | Name of the space for the prod environment | `sc-pipelines-prod`
-|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `http://artifactory:8081/artifactory/libs-release-local`
+|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `https://artifactory:8081/artifactory/libs-release-local`
 |`M2_SETTINGS_REPO_ID` | The ID of server from Maven `settings.xml` | `artifactory-local`
 |`JDK_VERSION` | The name of the JDK installation | `jdk8`
 |`PIPELINE_VERSION` | The version of the pipeline (ultimately, also the version of the jar) | `1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION`
@@ -4266,7 +4266,7 @@ image::{jenkins-root-docs}/pipeline_finished.png[caption="Step 4: ", title="The 
 You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
 https://jenkins.io/projects/blueocean/[Blue Ocean UI].
 
-The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `http://192.168.99.100:8080/blue`).
+The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `https://192.168.99.100:8080/blue`).
 
 The following images show the various steps involved:
 
@@ -4315,7 +4315,7 @@ See https://issues.jenkins-ci.org/browse/JENKINS-33846[this issue] for more info
 WARNING: Currently, there is no way to introduce manual steps in a performant way. Jenkins
 blocks an executor when a manual step is required. That means that you run out of executors
 pretty quickly. See https://issues.jenkins-ci.org/browse/JENKINS-36235[this issue]
-and http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
+and https://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
 for more information.
 
 [[optional-steps-k8s]]
@@ -4371,7 +4371,7 @@ The environment variables that are used in all of the jobs are as follows:
 |`PAAS_STAGE_NAMESPACE` | Namespace for the stage environment | `sc-pipelines-stage`
 |`PAAS_PROD_NAMESPACE` | Namespace for the prod environment | `sc-pipelines-prod`
 |`KUBERNETES_MINIKUBE` | Whether to connect to Minikube | `true`
-|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `http://artifactory:8081/artifactory/libs-release-local`
+|`REPO_WITH_BINARIES_FOR_UPLOAD` | URL of the repository with the deployed jars | `https://artifactory:8081/artifactory/libs-release-local`
 |`REPO_WITH_BINARIES_CREDENTIAL_ID` | Credential ID used for the repository with jars | `repo-with-binaries`
 |`M2_SETTINGS_REPO_ID` | The ID of server from Maven `settings.xml` | `artifactory-local`
 |`JDK_VERSION` | The name of the JDK installation | `jdk8`
@@ -4947,7 +4947,7 @@ alertmanager:
 
     ## alertmanager data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## Ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
     accessModes:
       - ReadWriteOnce
@@ -4990,7 +4990,7 @@ alertmanager:
   replicaCount: 1
 
   ## alertmanager resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -5032,7 +5032,7 @@ configmapReload:
     pullPolicy: IfNotPresent
 
   ## configmap-reload resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
 
@@ -5067,7 +5067,7 @@ kubeStateMetrics:
   replicaCount: 1
 
   ## kube-state-metrics resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -5264,7 +5264,7 @@ server:
 
     ## Prometheus server data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## Ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
     accessModes:
       - ReadWriteOnce
@@ -5308,7 +5308,7 @@ server:
   replicaCount: 1
 
   ## Prometheus server resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -5398,7 +5398,7 @@ pushgateway:
   replicaCount: 1
 
   ## pushgateway resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -5729,7 +5729,7 @@ NOTES:
 ====
 
 Perform the steps listed in the preceding output and add the Grafana's datasource
-as Prometheus with the following URL: `http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local`
+as Prometheus with the following URL: `https://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local`
 
 You can pick up the dashboard with the Grafana ID (2471). This is the
 default dashboard for the Spring Cloud Pipelines demo apps.
@@ -5807,7 +5807,7 @@ In the `jenkins` folder, you can find all the necessary scripts and setup inform
 [[building-prerequisites]]
 === Prerequisites
 
-As prerequisites, you need to have http://www.shellcheck.net/[shellcheck],
+As prerequisites, you need to have https://www.shellcheck.net/[shellcheck],
 https://github.com/sstephenson/bats[bats], https://stedolan.github.io/jq/[jq]
 and https://rubyinstaller.org/downloads/[ruby] installed. If you use a Linux
 machine, `bats` and `shellcheck` are installed for you.

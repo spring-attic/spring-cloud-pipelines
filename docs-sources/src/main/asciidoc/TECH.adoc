@@ -45,7 +45,7 @@ In the `jenkins` folder, you can find all the necessary scripts and setup inform
 [[building-prerequisites]]
 === Prerequisites
 
-As prerequisites, you need to have http://www.shellcheck.net/[shellcheck],
+As prerequisites, you need to have https://www.shellcheck.net/[shellcheck],
 https://github.com/sstephenson/bats[bats], https://stedolan.github.io/jq/[jq]
 and https://rubyinstaller.org/downloads/[ruby] installed. If you use a Linux
 machine, `bats` and `shellcheck` are installed for you.

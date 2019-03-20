@@ -238,11 +238,11 @@ microservices. That way, the testing setup looks like the following image:
 image::{intro-root-docs}/stubbed_dependencies.png[title="We're testing microservices in isolation"]
 
 Such an approach to testing and deployment gives the following benefits
-(thanks to the usage of http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract]):
+(thanks to the usage of https://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract]):
 
 * No need to deploy dependent services.
 * The stubs used for the tests run on a deployed microservice are the same as those used during integration tests.
-* Those stubs have been tested against the application that produces them (see http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract] for more information).
+* Those stubs have been tested against the application that produces them (see https://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract] for more information).
 * We do not have many slow tests running on a deployed application, so the pipeline gets executed much faster.
 * We do not have to queue deployments. We test in isolation so that pipelines do not interfere with each other.
 * We do not have to spawn virtual machines each time for deployment purposes.

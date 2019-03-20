@@ -60,7 +60,7 @@ if (m2HomeFile.exists()) {
 String modifiedSeedJob = jobScript.text
 	.replace('https://github.com/marcingrzejszczak', "https://github.com/${System.getenv('FORKED_ORG') ?: "marcingrzejszczak"}")
 // the default will work for K8S and docker-compose
-	.replace('http://artifactory', "http://${System.getenv('EXTERNAL_IP') ?: "artifactory"}")
+	.replace('https://artifactory', "http://${System.getenv('EXTERNAL_IP') ?: "artifactory"}")
 
 println "Creating repo with binaries credentials"
 String repoWithBinariesCredId = "repo-with-binaries"

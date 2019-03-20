@@ -2,7 +2,7 @@
 	"name": "bookstore",
 	"version": "1.0.0",
 	"description": "Simple bookstore app",
-	"repository": "http://registry.npmjs.org/",
+	"repository": "https://registry.npmjs.org/",
 	"main": "app.js",
 	"scripts": {
 		"test": "./run_tests.sh"

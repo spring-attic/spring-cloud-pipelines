@@ -1,7 +1,7 @@
 You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline] approach with the
 https://jenkins.io/projects/blueocean/[Blue Ocean UI].
 
-The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `http://192.168.99.100:8080/blue`).
+The Blue Ocean UI is available under the `blue/` URL (for example, for Docker Machine-based setup: `https://192.168.99.100:8080/blue`).
 
 The following images show the various steps involved:
 
@@ -50,5 +50,5 @@ See https://issues.jenkins-ci.org/browse/JENKINS-33846[this issue] for more info
 WARNING: Currently, there is no way to introduce manual steps in a performant way. Jenkins
 blocks an executor when a manual step is required. That means that you run out of executors
 pretty quickly. See https://issues.jenkins-ci.org/browse/JENKINS-36235[this issue]
-and http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
+and https://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[this StackOverflow question]
 for more information.

@@ -163,7 +163,7 @@ The env vars that are used in all of the jobs are as follows:
 |PAAS_STAGE_SPACE | Name of the space for the stage env | sc-pipelines-stage
 |PAAS_PROD_ORG   | Name of the org for the prod env | pcfdev-org
 |PAAS_PROD_SPACE | Name of the space for the prod env | sc-pipelines-prod
-|REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | http://artifactory:8081/artifactory/libs-release-local
+|REPO_WITH_BINARIES_FOR_UPLOAD | URL to repo with the deployed jars | https://artifactory:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |JDK_VERSION | The name of the JDK installation | jdk8
 |PIPELINE_VERSION | What should be the version of the pipeline (ultimately also version of the jar) | 1.0.0.M1-${GROOVY,script ="new Date().format('yyMMdd_HHmmss')"}-VERSION
