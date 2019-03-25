@@ -52,7 +52,7 @@ RUN apt-get update && \
 # Install cf-cli
 RUN apt-get -y install apt-transport-https && \
     wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | apt-key add - && \
-    echo "deb http://packages.cloudfoundry.org/debian stable main" | tee /etc/apt/sources.list.d/cloudfoundry-cli.list && \
+    echo "deb https://packages.cloudfoundry.org/debian stable main" | tee /etc/apt/sources.list.d/cloudfoundry-cli.list && \
     apt-get -y update && \
     apt-get -y install cf-cli
 
@@ -75,7 +75,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y install apt-tran
 # You can use Jenkins API to generate the list of plugins from a running
 # Jenkins instance:
 #
-#  $ JENKINS_URL="http://user:pass@localhost:8080"
+#  $ JENKINS_URL="https://user:pass@localhost:8080"
 #  $ curl -sSL "${JENKINS_URL}/pluginManager/api/json?depth=1" | \
 #    jq -r '.plugins[] | .shortName +":"+ .version' | sort > plugins.txt
 #
