@@ -34,7 +34,7 @@ CF_DEFAULT_ORG="${CF_DEFAULT_ORG:-pcfdev-org}"
 export CF_DEFAULT_SPACE
 CF_DEFAULT_SPACE="${CF_DEFAULT_SPACE:-pcfdev-test}"
 export ARTIFACTORY_URL
-ARTIFACTORY_URL="${ARTIFACTORY_URL:-http://repo.spring.io/libs-milestone}"
+ARTIFACTORY_URL="${ARTIFACTORY_URL:-https://repo.spring.io/libs-milestone}"
 export EUREKA_MEMORY
 EUREKA_MEMORY="${EUREKA_MEMORY:-1024m}"
 
