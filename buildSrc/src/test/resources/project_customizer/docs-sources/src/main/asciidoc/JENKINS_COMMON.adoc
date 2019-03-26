@@ -60,7 +60,7 @@ executing `tools/deploy-infra.sh`. Example for deploying to Artifactory at IP `1
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/
-ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
+ARTIFACTORY_URL="https://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
 ----
 
 [[setup-settings-xml]]

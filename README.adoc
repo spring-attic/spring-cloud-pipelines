@@ -210,11 +210,11 @@ microservices. That way the testing setup looks like this:
 image::{intro-root-docs}/stubbed_dependencies.png[title="We're testing microservices in isolation"]
 
 Such an approach to testing and deployment gives the following benefits
-(thanks to the usage of http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract]):
+(thanks to the usage of https://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract]):
 
 - No need to deploy dependant services
 - The stubs used for the tests ran on a deployed microservice are the same as those used during integration tests
-- Those stubs have been tested against the application that produces them (check http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract] for more information)
+- Those stubs have been tested against the application that produces them (check https://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract] for more information)
 - We don't have many slow tests running on a deployed application - thus the pipeline gets executed much faster
 - We don't have to queue deployments - we're testing in isolation thus pipelines don't interfere with each other
 - We don't have to spawn virtual machines each time for deployment purposes
@@ -756,7 +756,7 @@ Below you can see what environment variables are required by the scripts. To the
 |PAAS_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
 |PAAS_PROD_ORG   | Name of the org for the prod env | pcfdev-org
 |PAAS_PROD_SPACE | Name of the space for the prod env | pcfdev-space
-|REPO_WITH_BINARIES | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
+|REPO_WITH_BINARIES | URL to repo with the deployed jars | https://192.168.99.100:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |PAAS_HOSTNAME_UUID | Additional suffix for the route. In a shared environment the default routes can be already taken |
 |APP_MEMORY_LIMIT | How much memory should be used by the infra apps (Eureka, Stub Runner etc.) | 256m
@@ -1273,7 +1273,7 @@ executing `tools/deploy-infra.sh`. Example for deploying to Artifactory at IP `1
 ----
 git clone https://github.com/spring-cloud/spring-cloud-pipelines
 cd spring-cloud-pipelines/
-ARTIFACTORY_URL="http://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
+ARTIFACTORY_URL="https://192.168.99.100:8081/artifactory/libs-release-local" ./tools/deploy-infra.sh
 ----
 
 [[setup-settings-xml]]
@@ -1656,7 +1656,7 @@ You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pi
 https://jenkins.io/projects/blueocean/[Blue Ocean UI]. Here is a step by step guide to run a pipeline via
 this approach.
 
-The Blue Ocean UI is available under the `blue/` URL. E.g. for Docker Machine based setup `http://192.168.99.100:8080/blue`.
+The Blue Ocean UI is available under the `blue/` URL. E.g. for Docker Machine based setup `https://192.168.99.100:8080/blue`.
 
 {nbsp}
 {nbsp}
@@ -1703,7 +1703,7 @@ check out this https://issues.jenkins-ci.org/browse/JENKINS-33846[issue] for mor
 WARNING: Currently there is no way to introduce manual steps in a performant way. Jenkins is
 blocking an executor when manual step is required. That means that you'll run out of executors
 pretty fast. You can check out this https://issues.jenkins-ci.org/browse/JENKINS-36235[issue] for
-and this http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
+and this https://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
 for more information.
 
 [[optional-steps-cf]]
@@ -1947,7 +1947,7 @@ You can also use the https://jenkins.io/doc/book/pipeline/syntax/[declarative pi
 https://jenkins.io/projects/blueocean/[Blue Ocean UI]. Here is a step by step guide to run a pipeline via
 this approach.
 
-The Blue Ocean UI is available under the `blue/` URL. E.g. for Docker Machine based setup `http://192.168.99.100:8080/blue`.
+The Blue Ocean UI is available under the `blue/` URL. E.g. for Docker Machine based setup `https://192.168.99.100:8080/blue`.
 
 {nbsp}
 {nbsp}
@@ -1994,7 +1994,7 @@ check out this https://issues.jenkins-ci.org/browse/JENKINS-33846[issue] for mor
 WARNING: Currently there is no way to introduce manual steps in a performant way. Jenkins is
 blocking an executor when manual step is required. That means that you'll run out of executors
 pretty fast. You can check out this https://issues.jenkins-ci.org/browse/JENKINS-36235[issue] for
-and this http://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
+and this https://stackoverflow.com/questions/42561241/how-to-wait-for-user-input-in-a-declarative-pipeline-without-blocking-a-heavywei[StackOverflow question]
 for more information.
 
 [[optional-steps-k8s]]
@@ -2875,7 +2875,7 @@ alertmanager:
 
     ## alertmanager data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## Ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
     accessModes:
       - ReadWriteOnce
@@ -2918,7 +2918,7 @@ alertmanager:
   replicaCount: 1
 
   ## alertmanager resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -2960,7 +2960,7 @@ configmapReload:
     pullPolicy: IfNotPresent
 
   ## configmap-reload resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
 
@@ -2995,7 +2995,7 @@ kubeStateMetrics:
   replicaCount: 1
 
   ## kube-state-metrics resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -3192,7 +3192,7 @@ server:
 
     ## Prometheus server data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## Ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
     accessModes:
       - ReadWriteOnce
@@ -3236,7 +3236,7 @@ server:
   replicaCount: 1
 
   ## Prometheus server resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -3326,7 +3326,7 @@ pushgateway:
   replicaCount: 1
 
   ## pushgateway resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources: {}
     # limits:
@@ -3646,7 +3646,7 @@ NOTES:
 ----
 
 Perform the aforementioned steps and add the Grafana's datasource
-as Prometheus with URL `http://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local`
+as Prometheus with URL `https://sc-pipelines-prometheus-prometheus-server.default.svc.cluster.local`
 
 You can pick the dashboard via the Grafana ID (2471). This is the
 default dashboard for the Spring Cloud Pipelines demo apps.
@@ -3678,7 +3678,7 @@ threshold.
 
 === Prerequisites
 
-As prerequisites you need to have http://www.shellcheck.net/[shellcheck],
+As prerequisites you need to have https://www.shellcheck.net/[shellcheck],
 https://github.com/sstephenson/bats[bats], https://stedolan.github.io/jq/[jq]
  and https://rubyinstaller.org/downloads/[ruby] installed. If you're on a Linux
  machine then `bats` and `shellcheck` will be installed for you.
