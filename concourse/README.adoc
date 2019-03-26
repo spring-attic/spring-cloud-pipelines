@@ -204,7 +204,7 @@ Below you can see what environment variables are required by the scripts. To the
 |CF_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
 |CF_PROD_ORG   | Name of the org for the prod env | pcfdev-org
 |CF_PROD_SPACE | Name of the space for the prod env | pcfdev-space
-|REPO_WITH_JARS | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
+|REPO_WITH_JARS | URL to repo with the deployed jars | https://192.168.99.100:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |======================
 

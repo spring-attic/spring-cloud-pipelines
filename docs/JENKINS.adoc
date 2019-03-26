@@ -287,7 +287,7 @@ Github Eureka:
 ----
 git clone https://github.com/spring-cloud-samples/github-eureka
 cd github-eureka
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
+./mvnw clean deploy -Ddistribution.management.release.url=https://192.168.99.100:8081/artifactory/libs-release-local
 ----
 
 Github Stub Runner:
@@ -296,7 +296,7 @@ Github Stub Runner:
 ----
 git clone https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot
 cd github-analytics-stub-runner-boot
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
+./mvnw clean deploy -Ddistribution.management.release.url=https://192.168.99.100:8081/artifactory/libs-release-local
 ----
 
 ==== Setup settings.xml for Maven deployment

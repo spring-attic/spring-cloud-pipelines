@@ -222,11 +222,11 @@ microservices. That way the testing setup looks like this:
 image::{intro-root-docs}/stubbed_dependencies.png[title="We're testing microservices in isolation"]
 
 Such an approach to testing and deployment gives the following benefits
-(thanks to the usage of http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract]):
+(thanks to the usage of https://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract]):
 
 - No need to deploy dependant services
 - The stubs used for the tests ran on a deployed microservice are the same as those used during integration tests
-- Those stubs have been tested against the application that produces them (check http://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract] for more information)
+- Those stubs have been tested against the application that produces them (check https://cloud.spring.io/spring-cloud-contract/spring-cloud-contract.html[Spring Cloud Contract] for more information)
 - We don't have many slow tests running on a deployed application - thus the pipeline gets executed much faster
 - We don't have to queue deployments - we're testing in isolation thus pipelines don't interfere with each other
 - We don't have to spawn virtual machines each time for deployment purposes
@@ -560,7 +560,7 @@ Below you can see what environment variables are required by the scripts. To the
 |CF_STAGE_SPACE | Name of the space for the stage env | pcfdev-space
 |CF_PROD_ORG   | Name of the org for the prod env | pcfdev-org
 |CF_PROD_SPACE | Name of the space for the prod env | pcfdev-space
-|REPO_WITH_JARS | URL to repo with the deployed jars | http://192.168.99.100:8081/artifactory/libs-release-local
+|REPO_WITH_JARS | URL to repo with the deployed jars | https://192.168.99.100:8081/artifactory/libs-release-local
 |M2_SETTINGS_REPO_ID | The id of server from Maven settings.xml | artifactory-local
 |======================
 
@@ -1041,7 +1041,7 @@ Github Eureka:
 ----
 git clone https://github.com/spring-cloud-samples/github-eureka
 cd github-eureka
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
+./mvnw clean deploy -Ddistribution.management.release.url=https://192.168.99.100:8081/artifactory/libs-release-local
 ----
 
 Github Stub Runner:
@@ -1050,7 +1050,7 @@ Github Stub Runner:
 ----
 git clone https://github.com/spring-cloud-samples/github-analytics-stub-runner-boot
 cd github-analytics-stub-runner-boot
-./mvnw clean deploy -Ddistribution.management.release.url=http://192.168.99.100:8081/artifactory/libs-release-local
+./mvnw clean deploy -Ddistribution.management.release.url=https://192.168.99.100:8081/artifactory/libs-release-local
 ----
 
 ==== Setup settings.xml for Maven deployment
