@@ -257,7 +257,7 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf restart eureka-github-webhook"
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
-	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
+	assert_output --partial "curl -u foo:bar https://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
 	assert_output --partial "cf create-route test-space-my-project cfapps.io --hostname stubrunner-test-my-project-10000"
@@ -327,7 +327,7 @@ export -f fakeRetrieveStubRunnerIds
 	assert_output --partial "cf restart eureka-github-webhook"
 	assert_output --partial "cf cups eureka-github-webhook -p"
 	# Stub Runner
-	assert_output --partial "curl -u foo:bar http://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
+	assert_output --partial "curl -u foo:bar https://foo/com/example/github/github-analytics-stub-runner-boot-classpath-stubs/0.0.1.M1/github-analytics-stub-runner-boot-classpath-stubs-0.0.1.M1.jar -o"
 	assert_output --partial "cf curl /v2/apps/4215794a-eeef-4de2-9a80-c73b5d1a02be -X PUT"
 	assert_output --partial "[8080,10000,10001,10002"
 	assert_output --partial "cf create-route test-space-${projectNameUppercase} cfapps.io --hostname stubrunner-test-${projectNameUppercase}-10000"
