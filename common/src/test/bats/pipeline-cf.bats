@@ -222,7 +222,7 @@ export -f mockGradlew
 	assert_output --partial "cf set-env eureka-github-webhook APPLICATION_DOMAIN eureka-github-webhook-sc-pipelines.demo.io"
 	assert_output --partial "cf set-env eureka-github-webhook JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
 	assert_output --partial "cf restart eureka-github-webhook"
-	assert_output --partial 'cf create-user-provided-service eureka-github-webhook -p {"uri":"http://eureka-github-webhook-sc-pipelines.demo.io"}'
+	assert_output --partial 'cf create-user-provided-service eureka-github-webhook -p {"uri":"https://eureka-github-webhook-sc-pipelines.demo.io"}'
 	# Stub Runner
 	assert_output --partial "cf delete -f stubrunner-github-webhook"
 	assert_output --partial "cf delete-service -f stubrunner-github-webhook"
@@ -309,7 +309,7 @@ export -f mockGradlew
 	assert_output --partial "cf set-env eureka-github-webhook APPLICATION_DOMAIN eureka-github-webhook-sc-pipelines.demo.io"
 	assert_output --partial "cf set-env eureka-github-webhook JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
 	assert_output --partial "cf restart eureka-github-webhook"
-	assert_output --partial 'cf create-user-provided-service eureka-github-webhook -p {"uri":"http://eureka-github-webhook-sc-pipelines.demo.io"}'
+	assert_output --partial 'cf create-user-provided-service eureka-github-webhook -p {"uri":"https://eureka-github-webhook-sc-pipelines.demo.io"}'
 	# Stub Runner
 	assert_output --partial "cf delete -f stubrunner-github-webhook"
 	assert_output --partial "cf delete-service -f stubrunner-github-webhook"
@@ -564,7 +564,7 @@ export -f mockGradlew
 	assert_output --partial "cf set-env github-eureka APPLICATION_DOMAIN github-eureka-sc-pipelines.demo.io"
 	assert_output --partial "cf set-env github-eureka JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
 	assert_output --partial "cf restart github-eureka"
-	assert_output --partial 'cf create-user-provided-service github-eureka -p {"uri":"http://github-eureka-sc-pipelines.demo.io"}'
+	assert_output --partial 'cf create-user-provided-service github-eureka -p {"uri":"https://github-eureka-sc-pipelines.demo.io"}'
 	# App
 	refute_output --partial "cf delete -f my-project"
 	assert_output --partial "cf push my-project"
@@ -640,7 +640,7 @@ export -f mockGradlew
 	assert_output --partial "cf set-env github-eureka APPLICATION_DOMAIN github-eureka-sc-pipelines.demo.io"
 	assert_output --partial "cf set-env github-eureka JAVA_OPTS -Djava.security.egd=file:///dev/urandom"
 	assert_output --partial "cf restart github-eureka"
-	assert_output --partial 'cf create-user-provided-service github-eureka -p {"uri":"http://github-eureka-sc-pipelines.demo.io"}'
+	assert_output --partial 'cf create-user-provided-service github-eureka -p {"uri":"https://github-eureka-sc-pipelines.demo.io"}'
 	# App
 	refute_output --partial "cf delete -f ${projectName}"
 	assert_output --partial "cf push ${projectName}"
