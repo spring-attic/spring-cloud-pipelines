@@ -2,7 +2,7 @@
 
 === Prerequisites
 
-As prerequisites you need to have http://www.shellcheck.net/[shellcheck],
+As prerequisites you need to have https://www.shellcheck.net/[shellcheck],
 https://github.com/sstephenson/bats[bats], https://stedolan.github.io/jq/[jq]
  and https://rubyinstaller.org/downloads/[ruby] installed. If you're on a Linux
  machine then `bats` and `shellcheck` will be installed for you.
